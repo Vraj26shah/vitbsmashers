@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VITB Smashers - CGPA Calculator</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="cgpa.css">
+    <style>
+
+    </style>
+</head>
+<body>
+    <!-- Header with Menu Toggle -->
+    <header class="header">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="logo">
+<img src="../images/logo.png" alt="VITB Smashers Logo">            <div class="logo-text">
+                <h1>VITB Smashers</h1>
+                <span>CGPA Calculator</span>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <i class='bx bxs-user'></i>
+                </div>
+                <div class="user-name">Student</div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Main Navigation</div>
+        <ul class="sidebar-menu">
+            <!-- <li><a href="#"><i class='bx bxs-dashboard'></i> Dashboard</a></li> -->
+            <li><a href="../profile/profile.html"><i class='bx bxs-user'></i> Profile</a></li>
+            <li><a href="../attendance/attedance.html" ><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+
+            <li><a href="../gpa-calculator/cgpa.html" class="active"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+            <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Resources</div>
+        <ul class="sidebar-menu">
+            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+            <li><a href="../club/club.html" ><i class='bx bxs-group'></i> Club Info</a></li>
+
+            <li><a href="../faculty/faculty.html" ><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+            <!-- <li><a href="#"><i class='bx bxs-book'></i> Study Materials</a></li> -->
+        </ul>
+        
+        <div class="sidebar-title">Quick Links</div>
+        <ul class="sidebar-menu">
+            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
+            <!-- <li><a href="#"><i class='bx bxs-file'></i> Assignments</a></li> -->
+            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Account</div>
+        <ul class="sidebar-menu">
+            <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li>
+            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+        </ul>
+    </nav>    
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">
+            <i class='bx bxs-calculator'></i> CGPA Calculator
+        </h1>
+        
+        <div class="calculator-container">
+            <div class="calculator-card">
+                <div class="calculator-header">
+                    <h2>Calculate Your CGPA</h2>
+                    <p>Enter your subject details to calculate your CGPA accurately</p>
+                    <div class="subject-count">
+                        <span id="subjectCount">4</span> Subjects
+                    </div>
+                </div>
+                
+                <div class="subject-container" id="subjectContainer">
+                    <!-- Subject rows will be added here dynamically -->
+                </div>
+                
+                <div class="btn-group">
+                    <button class="add-btn" id="addSubject">
+                        <i class="fas fa-plus"></i> Add Subject
+                    </button>
+                    <button class="calculate-btn" id="calculateBtn">
+                        <i class="fas fa-calculator"></i> Calculate CGPA
+                    </button>
+                </div>
+            </div>
+            
+            <div class="result-card">
+                <h3>Your CGPA Result</h3>
+                <div class="gpa-display">0.00</div>
+                <div class="result-message">Enter your subject details to calculate your CGPA</div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Grade points mapping
+        const gradePoints = {
+            'S': 10, 'A': 9, 'B': 8, 
+            'C': 7, 'D': 6, 'E': 5, 'F': 0
+        };
+
+        // Initialize with 4 subjects
+        document.addEventListener('DOMContentLoaded', function() {
+            for (let i = 0; i < 4; i++) {
+                addSubjectRow();
+            }
+            setDemoValues();
+        });
+
+        // Add subject button
+        document.getElementById('addSubject').addEventListener('click', addSubjectRow);
+
+        // Calculate button
+        document.getElementById('calculateBtn').addEventListener('click', calculateCGPA);
+
+        // Toggle sidebar
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+        
+        // Close sidebar when clicking outside
+        document.addEventListener('click', (e) => {
+            if (sidebar.classList.contains('active') && 
+                !sidebar.contains(e.target) && 
+                !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+
+        // Function to add a new subject row
+        function addSubjectRow() {
+            const container = document.getElementById('subjectContainer');
+            const rowCount = container.children.length;
+            const subjectNumber = rowCount + 1;
+            
+            const row = document.createElement('div');
+            row.className = 'subject-row';
+            row.innerHTML = `
+                <div class="subject-label">${subjectNumber}</div>
+                <div class="input-group">
+                    <label for="subject${subjectNumber}">Subject</label>
+                    <input type="text" id="subject${subjectNumber}" name="subject[]" placeholder="Subject name">
+                </div>
+                <div class="input-group">
+                    <label for="credits${subjectNumber}">Credits</label>
+                    <input type="number" id="credits${subjectNumber}" name="credits[]" min="1" max="10" placeholder="e.g. 4" required>
+                </div>
+                <div class="input-group">
+                    <label for="grade${subjectNumber}">Grade</label>
+                    <select id="grade${subjectNumber}" name="grade[]" required>
+                        <option value="">Select Grade</option>
+                        <option value="S">S</option>
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                        <option value="D">D</option>
+                        <option value="E">E</option>
+                        <option value="F">F</option>
+                    </select>
+                </div>
+                <div class="remove-btn" onclick="removeSubject(this)">
+                    <i class="fas fa-times"></i>
+                </div>
+            `;
+            
+            container.appendChild(row);
+            updateSubjectCount();
+        }
+
+        // Function to remove a subject row
+        function removeSubject(element) {
+            const row = element.closest('.subject-row');
+            row.remove();
+            
+            // Renumber the remaining subjects
+            const rows = document.querySelectorAll('.subject-row');
+            rows.forEach((row, index) => {
+                row.querySelector('.subject-label').textContent = index + 1;
+            });
+            
+            updateSubjectCount();
+        }
+
+        // Update the subject count display
+        function updateSubjectCount() {
+            const count = document.querySelectorAll('.subject-row').length;
+            document.getElementById('subjectCount').textContent = count;
+        }
+
+        // Set demo values for initial subjects
+        function setDemoValues() {
+            const demoValues = [
+                { subject: "Mathematics", credits: 4, grade: 'A' },
+                { subject: "Physics", credits: 3, grade: 'B' },
+                { subject: "Chemistry", credits: 3, grade: 'S' },
+                { subject: "Computer Science", credits: 4, grade: 'A' }
+            ];
+            
+            const rows = document.querySelectorAll('.subject-row');
+            rows.forEach((row, index) => {
+                if (demoValues[index]) {
+                    row.querySelector('input[type="text"]').value = demoValues[index].subject;
+                    row.querySelector('input[type="number"]').value = demoValues[index].credits;
+                    row.querySelector('select').value = demoValues[index].grade;
+                }
+            });
+        }
+
+        // Calculate the CGPA
+        function calculateCGPA() {
+            const rows = document.querySelectorAll('.subject-row');
+            let totalPoints = 0;
+            let totalCredits = 0;
+            let allValid = true;
+            
+            rows.forEach(row => {
+                const creditsInput = row.querySelector('input[type="number"]');
+                const gradeSelect = row.querySelector('select');
+                
+                // Validate inputs
+                if (!creditsInput.value || !gradeSelect.value) {
+                    allValid = false;
+                    if (!creditsInput.value) {
+                        creditsInput.style.borderColor = '#ff6b6b';
+                    }
+                    if (!gradeSelect.value) {
+                        gradeSelect.style.borderColor = '#ff6b6b';
+                    }
+                    return;
+                } else {
+                    creditsInput.style.borderColor = '';
+                    gradeSelect.style.borderColor = '';
+                }
+                
+                const credits = parseFloat(creditsInput.value);
+                const grade = gradeSelect.value;
+                const point = gradePoints[grade];
+                
+                totalPoints += credits * point;
+                totalCredits += credits;
+            });
+            
+            if (!allValid) {
+                document.querySelector('.result-message').textContent = "Please fill in all required subject details";
+                return;
+            }
+            
+            if (totalCredits === 0) {
+                document.querySelector('.result-message').textContent = "Please add at least one subject";
+                return;
+            }
+            
+            const gpa = totalPoints / totalCredits;
+            const message = getMessageBasedOnGPA(gpa);
+            
+            // Update the display
+            const gpaDisplay = document.querySelector('.gpa-display');
+            animateValue(gpaDisplay, parseFloat(gpaDisplay.textContent || 0), gpa, 1000);
+            document.querySelector('.result-message').textContent = message;
+        }
+
+        // Get personalized message based on GPA
+        function getMessageBasedOnGPA(gpa) {
+            if (gpa >= 9.5) return "Outstanding performance! You're at the top of your class!";
+            if (gpa >= 8.5) return "Excellent work! Keep up the great performance!";
+            if (gpa >= 7.5) return "Very good! You're doing well in your studies.";
+            if (gpa >= 6.5) return "Good job! There's room for improvement.";
+            if (gpa >= 5.5) return "Satisfactory. Focus on improving your grades.";
+            return "You need to work harder. Focus on your studies.";
+        }
+
+        // Animate the GPA value
+        function animateValue(element, start, end, duration) {
+            let startTimestamp = null;
+            const step = (timestamp) => {
+                if (!startTimestamp) startTimestamp = timestamp;
+                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+                const value = (progress * (end - start) + start).toFixed(2);
+                element.textContent = value;
+                if (progress < 1) {
+                    window.requestAnimationFrame(step);
+                }
+            };
+            window.requestAnimationFrame(step);
+        }
+    </script>
+</body>
+</html>

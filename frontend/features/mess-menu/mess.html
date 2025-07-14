@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mess Menus - VITB Smashers</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --accent-color: #3498db;
+            --accent-dark: #2980b9;
+            --light-color: #ecf0f1;
+            --dark-color: #1a252f;
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --sidebar-width: 280px;
+            --header-height: 80px;
+            --transition-speed: 0.3s;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+            color: var(--light-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Header Styles */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            background: rgba(26, 37, 47, 0.98);
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            z-index: 1000;
+            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .menu-toggle {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin-right: 20px;
+            transition: var(--transition-speed);
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 25px;
+            height: 3px;
+            background: var(--light-color);
+            margin: 2px 0;
+            border-radius: 3px;
+            transition: var(--transition-speed);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 60px;
+            width: auto;
+            margin-right: 15px;
+        }
+
+        .logo-text h1 {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--light-color);
+        }
+
+        .logo-text span {
+            font-size: 14px;
+            color: var(--success-color);
+            display: block;
+        }
+
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 5px 15px;
+            border-radius: 30px;
+            background: rgba(52, 152, 219, 0.2);
+            transition: var(--transition-speed);
+        }
+
+        .user-profile:hover {
+            background: var(--accent-color);
+        }
+
+        .user-avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin-right: 10px;
+            border: 2px solid var(--light-color);
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 16px;
+        }
+
+        /* Sidebar Navigation */
+        .sidebar {
+            position: fixed;
+            top: var(--header-height);
+            left: calc(-1 * var(--sidebar-width));
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            background: rgba(26, 37, 47, 0.98);
+            backdrop-filter: blur(10px);
+            z-index: 900;
+            transition: var(--transition-speed);
+            border-right: 2px solid var(--accent-color);
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.4);
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 15px 25px;
+            color: var(--light-color);
+            text-decoration: none;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu a:hover, .sidebar-menu a.active {
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 3px solid var(--accent-color);
+        }
+
+        .sidebar-menu i {
+            font-size: 22px;
+            margin-right: 15px;
+            width: 25px;
+            text-align: center;
+            color: var(--accent-color);
+        }
+
+        .sidebar-title {
+            padding: 20px 25px 10px;
+            font-size: 16px;
+            color: var(--accent-color);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            padding: calc(var(--header-height) + 30px) 40px 40px;
+            transition: var(--transition-speed);
+            margin-left: 0;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .sidebar.active + .main-content {
+            margin-left: var(--sidebar-width);
+        }
+
+        /* Mess Menu Section */
+        .mess-menu-section {
+            background: rgba(44, 62, 80, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 40px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+            border: 2px solid var(--accent-color);
+            margin-top: 50px;
+        }
+
+        .section-title {
+            font-size: 26px;
+            color: var(--light-color);
+            margin-bottom: 25px;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 80px;
+            height: 3px;
+            background: var(--accent-color);
+            border-radius: 3px;
+        }
+
+        .filter-container {
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .filter-container label {
+            color: var(--light-color);
+            font-weight: 500;
+        }
+
+        .filter-container select {
+            padding: 10px 15px;
+            background: rgba(44, 62, 80, 0.8);
+            border: 1px solid var(--accent-color);
+            border-radius: 8px;
+            color: var(--light-color);
+            font-size: 16px;
+            width: 200px;
+            cursor: pointer;
+        }
+
+        .mess-menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .mess-card {
+            background: rgba(44, 62, 80, 0.5);
+            border-radius: 15px;
+            padding: 25px;
+            border: 1px solid var(--accent-color);
+            transition: all 0.4s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .mess-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            background: rgba(44, 62, 80, 0.7);
+        }
+
+        .mess-card h3 {
+            font-size: 22px;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+        }
+
+        .menu-image {
+            height: 200px;
+            background-size: cover;
+            background-position: center;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+
+        .mess-card:hover .menu-image {
+            transform: scale(1.05);
+        }
+
+        .mess-card p {
+            color: #ddd;
+            font-size: 16px;
+        }
+
+        .image-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .mess-card:hover .image-overlay {
+            opacity: 1;
+        }
+
+        .image-overlay i {
+            font-size: 50px;
+            color: white;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.95);
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        .modal-content-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            cursor: grab;
+        }
+
+        .modal-content-container.dragging {
+            cursor: grabbing;
+        }
+
+        .modal-content {
+            display: block;
+            max-width: 90%;
+            max-height: 90vh;
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(52, 152, 219, 0.5);
+            transition: transform 0.1s ease;
+            transform-origin: 0 0;
+            user-select: none;
+        }
+
+        .modal-header {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            z-index: 10;
+            display: flex;
+            gap: 15px;
+        }
+
+        .modal-btn {
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid var(--accent-color);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 24px;
+            transition: all 0.3s;
+            z-index: 20;
+        }
+
+        .modal-btn:hover {
+            background: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        .close-modal {
+            font-size: 36px;
+            font-weight: bold;
+        }
+
+        .mess-title {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 30px;
+            z-index: 10;
+            border: 2px solid var(--accent-color);
+        }
+
+        .zoom-controls {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            z-index: 10;
+            display: flex;
+            gap: 15px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 15px;
+            border-radius: 30px;
+            border: 2px solid var(--accent-color);
+        }
+
+        .zoom-btn {
+            width: 45px;
+            height: 45px;
+            background: rgba(52, 152, 219, 0.3);
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .zoom-btn:hover {
+            background: var(--accent-color);
+            transform: scale(1.1);
+        }
+
+        .zoom-level {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: white;
+            font-size: 18px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 15px;
+            border-radius: 30px;
+            z-index: 10;
+            border: 2px solid var(--accent-color);
+        }
+
+        .instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 16px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 8px 15px;
+            border-radius: 30px;
+            z-index: 10;
+            border: 2px solid var(--accent-color);
+            text-align: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .mess-menu-grid {
+                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                padding: calc(var(--header-height) + 20px) 20px 20px;
+            }
+
+            .mess-menu-section {
+                padding: 25px;
+            }
+
+            .mess-card h3 {
+                font-size: 20px;
+            }
+
+            .menu-image {
+                height: 150px;
+            }
+            
+            .modal-header {
+                top: 10px;
+                right: 10px;
+            }
+            
+            .modal-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+            
+            .mess-title {
+                font-size: 18px;
+                padding: 8px 15px;
+            }
+            
+            .zoom-controls {
+                bottom: 10px;
+                right: 10px;
+                padding: 8px 12px;
+            }
+            
+            .zoom-btn {
+                width: 36px;
+                height: 36px;
+                font-size: 20px;
+            }
+            
+            .zoom-level {
+                bottom: 10px;
+                left: 10px;
+                font-size: 16px;
+                padding: 6px 12px;
+            }
+            
+            .instructions {
+                font-size: 14px;
+                bottom: 60px;
+                width: 90%;
+                max-width: 350px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .mess-menu-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Header with Menu Toggle -->
+    <header class="header">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="logo">
+            <img src="../images/logo.png" alt="VITB Smashers Logo">
+            <div class="logo-text">
+                <h1>VITB Smashers</h1>
+                <span>Mess Menu</span>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="" alt="Profile" id="userAvatar">
+                </div>
+                <div class="user-name">Student</div>
+            </div>
+        </div>
+    </header>
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Main Navigation</div>
+        <ul class="sidebar-menu">
+            <!-- <li><a href="#"><i class='bx bxs-dashboard'></i> Dashboard</a></li> -->
+            <li><a href="../profile/profile.html"><i class='bx bxs-user'></i> Profile</a></li>
+            <li><a href="../attendance/attedance.html" ><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+
+            <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+            <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Resources</div>
+        <ul class="sidebar-menu">
+            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+            <li><a href="../club/club.html" ><i class='bx bxs-group'></i> Club Info</a></li>
+
+            <li><a href="../faculty/faculty.html" ><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="../mess-menu/mess.html" class="active"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+            <!-- <li><a href="#"><i class='bx bxs-book'></i> Study Materials</a></li> -->
+        </ul>
+        
+        <div class="sidebar-title">Quick Links</div>
+        <ul class="sidebar-menu">
+            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
+            <!-- <li><a href="#"><i class='bx bxs-file'></i> Assignments</a></li> -->
+            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Account</div>
+        <ul class="sidebar-menu">
+            <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li>
+            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+        </ul>
+    </nav>
+    
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+        <div class="mess-menu-section" id="messMenuSection">
+            <h2 class="section-title">Mess Menus</h2>
+            <div class="filter-container">
+                <label for="mess-filter">Filter by:</label>
+                <select id="mess-filter">
+                    <option value="all">All</option>
+                    <option value="boys">Boys</option>
+                    <option value="girls">Girls</option>
+                    <option value="canteen">Canteen</option>
+                    <option value="night canteen">Night Canteen</option>
+                </select>
+            </div>
+            <div class="mess-menu-grid" id="messMenuGrid">
+                <!-- Mess cards will be dynamically added here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Full-Screen View -->
+    <div id="menuModal" class="modal">
+        <div class="modal-content-container" id="modalContainer">
+            <div class="modal-header">
+                <button class="modal-btn" id="resetZoom" title="Reset Zoom">
+                    <i class='bx bx-reset'></i>
+                </button>
+                <button class="modal-btn close-modal" title="Close">
+                    <i class='bx bx-x'></i>
+                </button>
+            </div>
+            
+            <h3 class="mess-title" id="modalTitle"></h3>
+            
+            <img class="modal-content" id="modalImage">
+            
+            <div class="zoom-level" id="zoomLevel">100%</div>
+            
+            <div class="zoom-controls">
+                <button class="zoom-btn" id="zoomIn" title="Zoom In">
+                    <i class='bx bx-zoom-in'></i>
+                </button>
+                <button class="zoom-btn" id="zoomOut" title="Zoom Out">
+                    <i class='bx bx-zoom-out'></i>
+                </button>
+            </div>
+            
+            <div class="instructions">
+                <i class='bx bx-mouse'></i> Scroll to zoom | 
+                <i class='bx bx-move'></i> Drag to pan | 
+                <i class='bx bx-reset'></i> Double-click to reset
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mess Menu Data
+        const messes = [
+            { name: "CRCL Mess", type: "boys", image: "crcl.jpeg", updated: "2025-07-02T18:30:00+05:30" },
+            { name: "Mayuri(boys) Mess", type: "boys", image: "mayuri(boys).jpeg", updated: "2025-07-02T19:00:00+05:30" },
+            { name: "JMB Mess", type: "boys", image: "jmb.jpeg", updated: "2025-07-02T17:45:00+05:30" },
+            { name: "Safal Mess", type: "boys", image: "safal.jpeg", updated: "2025-07-02T18:15:00+05:30" },
+            { name: "AB Catering Mess", type: "girls", image: "images/girls_mess1.jpg", updated: "2025-07-02T20:00:00+05:30" },
+            { name: "Mayuri(girls) Mess", type: "girls", image: "images/girls_mess2.jpg", updated: "2025-07-02T19:30:00+05:30" },
+            { name: "Mayuri Canteen (AB)", type: "canteen", image: "images/canteen.jpg", updated: "2025-07-02T17:00:00+05:30" },
+            { name: "Mayuri Canteen (AB 02)", type: "canteen", image: "images/canteen.jpg", updated: "2025-07-02T17:00:00+05:30" },
+            { name: "AB Dakshin Canteen", type: "canteen", image: "images/canteen.jpg", updated: "2025-07-02T17:00:00+05:30" },
+            { name: "Mayuri Night Canteen(boys)", type: "canteen", image: "images/canteen.jpg", updated: "2025-07-02T17:00:00+05:30" },
+            { name: "CRCL Night Canteen", type: "canteen", image: "images/canteen.jpg", updated: "2025-07-02T17:00:00+05:30" },
+            { name: "Mayuri Night Canteen(girls)", type: "canteen", image: "images/canteen.jpg", updated: "2025-07-02T17:00:00+05:30" }
+        ];
+
+        function getRelativeTime(updatedTime) {
+            const currentTime = new Date('2025-07-03T00:59:00+05:30');
+            const updatedDate = new Date(updatedTime);
+            const diffMs = currentTime - updatedDate;
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            if (diffHours < 1) {
+                return 'Less than an hour ago';
+            } else if (diffHours < 24) {
+                return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            } else {
+                const diffDays = Math.floor(diffHours / 24);
+                return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            }
+        }
+
+        function generateMessCards(filter = 'all') {
+            const grid = document.getElementById('messMenuGrid');
+            grid.innerHTML = '';
+            messes.forEach((mess, index) => {
+                if (filter === 'all' || mess.type === filter) {
+                    const card = document.createElement('div');
+                    card.className = 'mess-card';
+                    card.dataset.index = index;
+                    const relativeTime = getRelativeTime(mess.updated);
+                    card.innerHTML = `
+                        <h3>${mess.name}</h3>
+                        <div class="menu-image" style="background-image: url('${mess.image}');">
+                            <div class="image-overlay">
+                                <i class='bx bx-expand'></i>
+                            </div>
+                        </div>
+                        <p>Last updated: ${relativeTime}</p>
+                    `;
+                    grid.appendChild(card);
+                }
+            });
+            
+            // Add click event listeners to all mess cards
+            document.querySelectorAll('.mess-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const index = this.dataset.index;
+                    openFullscreenModal(index);
+                });
+            });
+        }
+
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let startX, startY;
+        let startTranslateX, startTranslateY;
+        let zoomLevel = document.getElementById('zoomLevel');
+        let modalImage = document.getElementById('modalImage');
+        let modalContainer = document.getElementById('modalContainer');
+        let naturalWidth, naturalHeight;
+
+        function openFullscreenModal(index) {
+            const modal = document.getElementById('menuModal');
+            const modalTitle = document.getElementById('modalTitle');
+            
+            const mess = messes[index];
+            modalImage.src = mess.image;
+            modalTitle.textContent = mess.name;
+            modal.style.display = "block";
+            
+            // Reset zoom and position
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
+            zoomLevel.textContent = "100%";
+            
+            modalImage.onload = function() {
+                naturalWidth = this.naturalWidth;
+                naturalHeight = this.naturalHeight;
+            };
+            
+            // Prevent scrolling on body when modal is open
+            document.body.style.overflow = "hidden";
+        }
+
+        // Update image transform based on current scale and position
+        function updateImageTransform() {
+            modalImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            zoomLevel.textContent = `${Math.round(scale * 100)}%`;
+        }
+
+        function zoomAtPoint(delta, clientX, clientY) {
+            const rect = modalContainer.getBoundingClientRect();
+            
+            const containerX = clientX - rect.left;
+            const containerY = clientY - rect.top;
+            
+            const imageX = (containerX - translateX) / scale;
+            const imageY = (containerY - translateY) / scale;
+            
+            // Calculate new scale
+            const newScale = Math.max(0.5, Math.min(5, scale + delta));
+            
+            translateX = containerX - imageX * newScale;
+            translateY = containerY - imageY * newScale;
+            
+            scale = newScale;
+            updateImageTransform();
+        }
+
+        function resetZoom() {
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
+        }
+
+        document.getElementById('zoomIn').addEventListener('click', function() {
+            const rect = modalContainer.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            zoomAtPoint(0.2, centerX, centerY);
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', function() {
+            const rect = modalContainer.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            zoomAtPoint(-0.2, centerX, centerY);
+        });
+
+        document.getElementById('resetZoom').addEventListener('click', resetZoom);
+
+        modalImage.addEventListener('dblclick', resetZoom);
+
+        modalContainer.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            zoomAtPoint(delta, e.clientX, e.clientY);
+        });
+
+        modalContainer.addEventListener('mousedown', function(e) {
+            if (scale > 1) {
+                isDragging = true;
+                modalContainer.classList.add('dragging');
+                startX = e.clientX;
+                startY = e.clientY;
+                startTranslateX = translateX;
+                startTranslateY = translateY;
+            }
+        });
+
+        modalContainer.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                translateX = startTranslateX + deltaX;
+                translateY = startTranslateY + deltaY;
+                
+                updateImageTransform();
+            }
+        });
+
+        modalContainer.addEventListener('mouseup', function() {
+            isDragging = false;
+            modalContainer.classList.remove('dragging');
+        });
+
+        modalContainer.addEventListener('mouseleave', function() {
+            isDragging = false;
+            modalContainer.classList.remove('dragging');
+        });
+
+        modalContainer.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                startTranslateX = translateX;
+                startTranslateY = translateY;
+                isDragging = true;
+                modalContainer.classList.add('dragging');
+            } else if (e.touches.length === 2) {
+                // Pinch zoom
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const distance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+                modalContainer.dataset.pinchDistance = distance;
+                modalContainer.dataset.pinchScale = scale;
+            }
+        }, { passive: false });
+
+        modalContainer.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 1 && isDragging) {
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+                
+                translateX = startTranslateX + deltaX;
+                translateY = startTranslateY + deltaY;
+                
+                updateImageTransform();
+            } else if (e.touches.length === 2) {
+                // Pinch zoom
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const distance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+                const startDistance = parseFloat(modalContainer.dataset.pinchDistance);
+                const startScale = parseFloat(modalContainer.dataset.pinchScale);
+                
+                if (startDistance && startScale) {
+                    const newScale = startScale * (distance / startDistance);
+                    scale = Math.max(0.5, Math.min(5, newScale));
+                    
+                    // Calculate center point for zoom
+                    const centerX = (touch1.clientX + touch2.clientX) / 2;
+                    const centerY = (touch1.clientY + touch2.clientY) / 2;
+                    
+                    zoomAtPoint(0, centerX, centerY);
+                }
+            }
+        }, { passive: false });
+
+        modalContainer.addEventListener('touchend', function() {
+            isDragging = false;
+            modalContainer.classList.remove('dragging');
+            delete modalContainer.dataset.pinchDistance;
+            delete modalContainer.dataset.pinchScale;
+        });
+
+        document.querySelector('.close-modal').addEventListener('click', function() {
+            const modal = document.getElementById('menuModal');
+            modal.style.display = "none";
+            document.body.style.overflow = "auto";
+            resetZoom();
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('menuModal');
+            if (event.target === modal) {
+                modal.style.display = "none";
+                document.body.style.overflow = "auto";
+                resetZoom();
+            }
+        });
+
+        document.addEventListener('keydown', function(event) {
+            const modal = document.getElementById('menuModal');
+            if (event.key === "Escape" && modal.style.display === "block") {
+                modal.style.display = "none";
+                document.body.style.overflow = "auto";
+                resetZoom();
+            }
+        });
+
+        // Initial load of mess cards
+        generateMessCards();
+
+        document.getElementById('mess-filter').addEventListener('change', function() {
+            generateMessCards(this.value);
+        });
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (sidebar.classList.contains('active') && 
+                !sidebar.contains(e.target) && 
+                !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>
