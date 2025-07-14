@@ -182,242 +182,229 @@
                 sidebar.classList.remove('active');
             }
         });
+const subjectNameInput = document.getElementById('subjectName');
+const totalClassesInput = document.getElementById('totalClasses');
+const attendedClassesInput = document.getElementById('attendedClasses');
+const calculateBtn = document.getElementById('calculateBtn');
+const saveSubjectBtn = document.getElementById('saveSubject');
+const resetFormBtn = document.getElementById('resetForm');
+const clearAllBtn = document.getElementById('clearAll');
+const attendancePercentage = document.getElementById('attendancePercentage');
+const attendanceStatus = document.getElementById('attendanceStatus');
+const requiredClasses = document.getElementById('requiredClasses');
+const allowedAbsences = document.getElementById('allowedAbsences');
+const subjectList = document.getElementById('subjectList');
+const subjectCount = document.getElementById('subjectCount');
+
+let subjects = [];
+
+function loadSubjects() {
+    const saved = localStorage.getItem('attendanceSubjects');
+    if (saved) {
+        subjects = JSON.parse(saved);
+        renderSubjects();
+    }
+}
+
+function saveSubjects() {
+    localStorage.setItem('attendanceSubjects', JSON.stringify(subjects));
+}
+
+function renderSubjects() {
+    subjectList.innerHTML = '';
+    subjectCount.textContent = subjects.length;
+    
+    if (subjects.length === 0) {
+        subjectList.innerHTML = `
+            <div class="empty-state">
+                <i class='bx bx-bookmark-alt'></i>
+                <p>No subjects saved yet</p>
+                <p>Add your first subject to track attendance</p>
+            </div>
+        `;
+        return;
+    }
+    
+    subjects.forEach((subject, index) => {
+        const item = document.createElement('div');
+        item.className = 'subject-item';
         
-        const subjectNameInput = document.getElementById('subjectName');
-        const totalClassesInput = document.getElementById('totalClasses');
-        const attendedClassesInput = document.getElementById('attendedClasses');
-        const calculateBtn = document.getElementById('calculateBtn');
-        const saveSubjectBtn = document.getElementById('saveSubject');
-        const resetFormBtn = document.getElementById('resetForm');
-        const clearAllBtn = document.getElementById('clearAll');
-        const attendancePercentage = document.getElementById('attendancePercentage');
-        const attendanceStatus = document.getElementById('attendanceStatus');
-        const requiredClasses = document.getElementById('requiredClasses');
-        const allowedAbsences = document.getElementById('allowedAbsences');
-        const subjectList = document.getElementById('subjectList');
-        const subjectCount = document.getElementById('subjectCount');
-        
-        // Subjects array
-        let subjects = [];
-        
-        function loadSubjects() {
-            const saved = localStorage.getItem('attendanceSubjects');
-            if (saved) {
-                subjects = JSON.parse(saved);
-                renderSubjects();
-            }
+        let statusColor = '';
+        if (subject.percentage >= 75) {
+            statusColor = 'color: var(--success-color);';
+        } else if (subject.percentage >= 65) {
+            statusColor = 'color: var(--warning-color);';
+        } else {
+            statusColor = 'color: var(--secondary-color);';
         }
         
-        function saveSubjects() {
-            localStorage.setItem('attendanceSubjects', JSON.stringify(subjects));
-        }
-        
-        function renderSubjects() {
-            subjectList.innerHTML = '';
-            subjectCount.textContent = subjects.length;
-            
-            if (subjects.length === 0) {
-                subjectList.innerHTML = `
-                    <div class="empty-state">
-                        <i class='bx bx-bookmark-alt'></i>
-                        <p>No subjects saved yet</p>
-                        <p>Add your first subject to track attendance</p>
-                    </div>
-                `;
-                return;
-            }
-            
-            subjects.forEach((subject, index) => {
-                const item = document.createElement('div');
-                item.className = 'subject-item';
-                
-                // Determine status color
-                let statusColor = '';
-                if (subject.percentage >= 75) {
-                    statusColor = 'color: var(--success-color);';
-                } else if (subject.percentage >= 65) {
-                    statusColor = 'color: var(--warning-color);';
-                } else {
-                    statusColor = 'color: var(--secondary-color);';
-                }
-                
-                item.innerHTML = `
-                    <div class="subject-info">
-                        <div class="subject-name">${subject.name}</div>
-                        <div class="subject-stats">
-                            <span>${subject.attended} / ${subject.total} classes</span>
-                            <span style="${statusColor}">${subject.percentage}%</span>
-                        </div>
-                    </div>
-                    <div class="subject-actions">
-                        <button class="action-btn edit-btn" data-index="${index}">
-                            <i class='bx bx-edit'></i>
-                        </button>
-                        <button class="action-btn delete-btn" data-index="${index}">
-                            <i class='bx bx-trash'></i>
-                        </button>
-                    </div>
-                `;
-                subjectList.appendChild(item);
-            });
-            
-            document.querySelectorAll('.edit-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = this.getAttribute('data-index');
-                    editSubject(index);
-                });
-            });
-            
-            document.querySelectorAll('.delete-btn').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = this.getAttribute('data-index');
-                    deleteSubject(index);
-                });
-            });
-        }
-        
-        function editSubject(index) {
-            const subject = subjects[index];
-            subjectNameInput.value = subject.name;
-            totalClassesInput.value = subject.total;
-            attendedClassesInput.value = subject.attended;
-            
-            calculateAttendance();
-            
-            subjects.splice(index, 1);
-            saveSubjects();
-            renderSubjects();
-        }
-        
-        // Delete subject
-        function deleteSubject(index) {
-            subjects.splice(index, 1);
-            saveSubjects();
-            renderSubjects();
-        }
-        
-        function calculateAttendance() {
-            const totalClasses = parseInt(totalClassesInput.value);
-            const attendedClasses = parseInt(attendedClassesInput.value);
-            
-            if (isNaN(totalClasses) || totalClasses <= 0) {
-                alert('Please enter a valid number for total classes');
-                totalClassesInput.focus();
-                return;
-            }
-            
-            if (isNaN(attendedClasses) || attendedClasses < 0) {
-                alert('Please enter a valid number for classes attended');
-                attendedClassesInput.focus();
-                return;
-            }
-            
-            if (attendedClasses > totalClasses) {
-                alert('Attended classes cannot be more than total classes');
-                attendedClassesInput.value = '';
-                attendedClassesInput.focus();
-                return;
-            }
-            
-            // Calculate attendance percentage
-            const percentage = (attendedClasses / totalClasses) * 100;
-            attendancePercentage.textContent = percentage.toFixed(1) + '%';
-            
-            attendancePercentage.style.transform = 'scale(1.1)';
-            setTimeout(() => {
-                attendancePercentage.style.transform = 'scale(1)';
-            }, 300);
-            
-            if (percentage >= 75) {
-                attendanceStatus.textContent = 'Good Standing';
-                attendanceStatus.className = 'attendance-status status-safe';
-            } else if (percentage >= 65) {
-                attendanceStatus.textContent = 'Warning - Close to Minimum';
-                attendanceStatus.className = 'attendance-status status-warning';
-            } else {
-                attendanceStatus.textContent = 'Danger - Below Requirement';
-                attendanceStatus.className = 'attendance-status status-danger';
-            }
-            
-            // Calculate required classes to reach 75%
-            const requiredFor75 = Math.ceil((0.75 * totalClasses - attendedClasses));
-            requiredClasses.textContent = requiredFor75 > 0 ? requiredFor75 : 0;
-            
-            // Calculate allowed absences
-            const currentAbsences = totalClasses - attendedClasses;
-            const maxAllowedAbsences = Math.floor(totalClasses * 0.25);
-            const remainingAbsences = maxAllowedAbsences - currentAbsences;
-            allowedAbsences.textContent = remainingAbsences > 0 ? remainingAbsences : 0;
-            
-            return { total: totalClasses, attended: attendedClasses, percentage: percentage.toFixed(1) };
-        }
-        
-        // Save subject
-        function saveSubject() {
-            const subjectData = calculateAttendance();
-            if (!subjectData) return;
-            
-            let subjectName = subjectNameInput.value.trim();
-            if (!subjectName) {
-                const subjectCount = subjects.length + 1;
-                subjectName = `Subject ${subjectCount}`;
-            }
-            
-            if (subjects.some(sub => sub.name === subjectName)) {
-                alert('A subject with this name already exists. Please use a different name.');
-                return;
-            }
-            
-            subjects.push({
-                name: subjectName,
-                total: subjectData.total,
-                attended: subjectData.attended,
-                percentage: subjectData.percentage
-            });
-            
-            // Save and render
-            saveSubjects();
-            renderSubjects();
-            
-            // Reset form
-            resetForm();
-            
-            attendanceStatus.textContent = 'Subject saved successfully!';
-            attendanceStatus.className = 'attendance-status status-safe';
-            setTimeout(() => {
-                attendanceStatus.textContent = 'Enter values to calculate';
-                attendanceStatus.className = 'attendance-status';
-            }, 2000);
-        }
-        
-        function resetForm() {
-            subjectNameInput.value = '';
-            totalClassesInput.value = '';
-            attendedClassesInput.value = '';
-            attendancePercentage.textContent = '0%';
-            requiredClasses.textContent = '0';
-            allowedAbsences.textContent = '0';
-            attendanceStatus.textContent = 'Enter values to calculate';
-            attendanceStatus.className = 'attendance-status';
-        }
-        
-        function clearAllSubjects() {
-            if (subjects.length === 0) return;
-            
-            if (confirm('Are you sure you want to delete all saved subjects?')) {
-                subjects = [];
-                saveSubjects();
-                renderSubjects();
-            }
-        }
-        
-        // Event Listeners
-        calculateBtn.addEventListener('click', calculateAttendance);
-        saveSubjectBtn.addEventListener('click', saveSubject);
-        resetFormBtn.addEventListener('click', resetForm);
-        clearAllBtn.addEventListener('click', clearAllSubjects);
-        
-        loadSubjects();
+        item.innerHTML = `
+            <div class="subject-info">
+                <div class="subject-name">${subject.name}</div>
+                <div class="subject-stats">
+                    <span>${subject.attended} / ${subject.total} classes</span>
+                    <span style="${statusColor}">${subject.percentage}%</span>
+                </div>
+            </div>
+            <div class="subject-actions">
+                <button class="action-btn edit-btn" data-index="${index}">
+                    <i class='bx bx-edit'></i>
+                </button>
+                <button class="action-btn delete-btn" data-index="${index}">
+                    <i class='bx bx-trash'></i>
+                </button>
+            </div>
+        `;
+        subjectList.appendChild(item);
+    });
+    
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = this.getAttribute('data-index');
+            editSubject(index);
+        });
+    });
+    
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = this.getAttribute('data-index');
+            deleteSubject(index);
+        });
+    });
+}
+
+function editSubject(index) {
+    const subject = subjects[index];
+    subjectNameInput.value = subject.name;
+    totalClassesInput.value = subject.total;
+    attendedClassesInput.value = subject.attended;
+    
+    calculateAttendance();
+    
+    subjects.splice(index, 1);
+    saveSubjects();
+    renderSubjects();
+}
+
+function deleteSubject(index) {
+    subjects.splice(index, 1);
+    saveSubjects();
+    renderSubjects();
+}
+
+function calculateAttendance() {
+    const totalClasses = parseInt(totalClassesInput.value);
+    const attendedClasses = parseInt(attendedClassesInput.value);
+    
+    if (isNaN(totalClasses) || totalClasses <= 0) {
+        alert('Please enter a valid number for total classes');
+        totalClassesInput.focus();
+        return;
+    }
+    
+    if (isNaN(attendedClasses) || attendedClasses < 0) {
+        alert('Please enter a valid number for classes attended');
+        attendedClassesInput.focus();
+        return;
+    }
+    
+    if (attendedClasses > totalClasses) {
+        alert('Attended classes cannot be more than total classes');
+        attendedClassesInput.value = '';
+        attendedClassesInput.focus();
+        return;
+    }
+    
+    const percentage = (attendedClasses / totalClasses) * 100;
+    attendancePercentage.textContent = percentage.toFixed(1) + '%';
+    
+    attendancePercentage.style.transform = 'scale(1.1)';
+    setTimeout(() => {
+        attendancePercentage.style.transform = 'scale(1)';
+    }, 300);
+    
+    if (percentage >= 75) {
+        attendanceStatus.textContent = 'Good Standing';
+        attendanceStatus.className = 'attendance-status status-safe';
+    } else if (percentage >= 65) {
+        attendanceStatus.textContent = 'Warning - Close to Minimum';
+        attendanceStatus.className = 'attendance-status status-warning';
+    } else {
+        attendanceStatus.textContent = 'Danger - Below Requirement';
+        attendanceStatus.className = 'attendance-status status-danger';
+    }
+    
+    const requiredFor75 = Math.max(0, 3 * totalClasses - 4 * attendedClasses);
+    requiredClasses.textContent = requiredFor75;
+    
+    const maxConsecutiveMisses = Math.floor((attendedClasses / 0.75) - totalClasses);
+    allowedAbsences.textContent = maxConsecutiveMisses > 0 ? maxConsecutiveMisses : 0;
+    
+    return { total: totalClasses, attended: attendedClasses, percentage: percentage.toFixed(1) };
+}
+
+function saveSubject() {
+    const subjectData = calculateAttendance();
+    if (!subjectData) return;
+    
+    let subjectName = subjectNameInput.value.trim();
+    if (!subjectName) {
+        const subjectCount = subjects.length + 1;
+        subjectName = `Subject ${subjectCount}`;
+    }
+    
+    if (subjects.some(sub => sub.name === subjectName)) {
+        alert('A subject with this name already exists. Please use a different name.');
+        return;
+    }
+    
+    subjects.push({
+        name: subjectName,
+        total: subjectData.total,
+        attended: subjectData.attended,
+        percentage: subjectData.percentage
+    });
+    
+    saveSubjects();
+    renderSubjects();
+    
+    resetForm();
+    
+    attendanceStatus.textContent = 'Subject saved successfully!';
+    attendanceStatus.className = 'attendance-status status-safe';
+    setTimeout(() => {
+        attendanceStatus.textContent = 'Enter values to calculate';
+        attendanceStatus.className = 'attendance-status';
+    }, 2000);
+}
+
+function resetForm() {
+    subjectNameInput.value = '';
+    totalClassesInput.value = '';
+    attendedClassesInput.value = '';
+    attendancePercentage.textContent = '0%';
+    requiredClasses.textContent = '0';
+    allowedAbsences.textContent = '0';
+    attendanceStatus.textContent = 'Enter values to calculate';
+    attendanceStatus.className = 'attendance-status';
+}
+
+function clearAllSubjects() {
+    if (subjects.length === 0) return;
+    
+    if (confirm('Are you sure you want to delete all saved subjects?')) {
+        subjects = [];
+        saveSubjects();
+        renderSubjects();
+    }
+}
+
+calculateBtn.addEventListener('click', calculateAttendance);
+saveSubjectBtn.addEventListener('click', saveSubject);
+resetFormBtn.addEventListener('click', resetForm);
+clearAllBtn.addEventListener('click', clearAllSubjects);
+
+loadSubjects();  
     </script>
 </body>
 </html>
