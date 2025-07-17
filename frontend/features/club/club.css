@@ -1,961 +1,1146 @@
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-        :root {
-            --primary-color: #2c3e50;
-            --secondary-color: #e74c3c;
-            --accent-color: #3498db;
-            --accent-dark: #2980b9;
-            --light-color: #ecf0f1;
-            --dark-color: #1a252f;
-            --success-color: #2ecc71;
-            --warning-color: #f39c12;
-            --gold-color: #FFD700;
-            --premium-color: #9b59b6;
-            --sidebar-width: 280px;
-            --header-height: 80px;
-            --transition-speed: 0.3s;
-        }
+:root {
+    --primary-color: #2c3e50;
+    --secondary-color: #e74c3c;
+    --accent-color: #3498db;
+    --accent-dark: #2980b9;
+    --light-color: #ecf0f1;
+    --dark-color: #1a252f;
+    --success-color: #2ecc71;
+    --warning-color: #f39c12;
+    --gold-color: #FFD700;
+    --premium-color: #9b59b6;
+    --sidebar-width: 280px;
+    --header-height: 80px;
+    --transition-speed: 0.3s;
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Poppins', sans-serif;
+}
 
-        body {
-            background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
-            color: var(--light-color);
-            min-height: 100vh;
-            overflow-x: hidden;
-        }
+body {
+    background: linear-gradient(135deg, var(--primary-color), var(--dark-color));
+    color: var(--light-color);
+    min-height: 100vh;
+    overflow-x: hidden;
+}
 
-        /* Header Styles */
-        .header {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: var(--header-height);
-            background: rgba(26, 37, 47, 0.98);
-            backdrop-filter: blur(10px);
-            display: flex;
-            align-items: center;
-            padding: 0 20px;
-            z-index: 1000;
-            box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
-            border-bottom: 2px solid var(--accent-color);
-        }
+body.no-scroll {
+    overflow: hidden;
+}
 
-        .menu-toggle {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            cursor: pointer;
-            margin-right: 15px;
-            transition: var(--transition-speed);
-        }
+/* Header Styles */
+.header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: var(--header-height);
+    background: rgba(26, 37, 47, 0.98);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    z-index: 1000;
+    box-shadow: 0 5px 30px rgba(0, 0, 0, 0.3);
+    border-bottom: 2px solid var(--accent-color);
+}
 
-        .menu-toggle span {
-            display: block;
-            width: 25px;
-            height: 3px;
-            background: var(--light-color);
-            margin: 2px 0;
-            border-radius: 3px;
-            transition: var(--transition-speed);
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-        }
-
-        .logo img {
-            height: 60px;
-            width: auto;
-            margin-right: 15px;
-        }
-
-        .logo i {
-            font-size: 32px;
-            color: var(--accent-color);
-            margin-right: 10px;
-        }
-
-        .logo-text h1 {
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--light-color);
-        }
-
-        .logo-text span {
-            font-size: 14px;
-            color: var(--success-color);
-            display: block;
-        }
-
-        .header-actions {
-            margin-left: auto;
-            display: flex;
-            align-items: center;
-            gap: 20px;
-        }
-
-        .user-profile {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            padding: 5px 12px;
-            border-radius: 30px;
-            background: rgba(52, 152, 219, 0.2);
-            transition: var(--transition-speed);
-        }
-
-        .user-profile:hover {
-            background: var(--accent-color);
-        }
-
-        .user-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            background: var(--accent-color);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 16px;
-            margin-right: 8px;
-            border: 2px solid var(--light-color);
-            overflow: hidden;
-        }
-
-        .user-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .user-name {
-            font-weight: 500;
-            font-size: 14px;
-        }
-
-        /* Sidebar Navigation */
-        .sidebar {
-            position: fixed;
-            top: var(--header-height);
-            left: calc(-1 * var(--sidebar-width));
-            width: var(--sidebar-width);
-            height: calc(100vh - var(--header-height));
-            background: rgba(26, 37, 47, 0.98);
-            backdrop-filter: blur(10px);
-            z-index: 900;
-            transition: var(--transition-speed);
-            border-right: 2px solid var(--accent-color);
-            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.4);
-            overflow-y: auto;
-            padding: 20px 0;
-        }
-
-        .sidebar.active {
-            left: 0;
-        }
-
-        .sidebar-menu {
-            list-style: none;
-        }
-
-        .sidebar-menu li {
-            margin-bottom: 5px;
-        }
-
-        .sidebar-menu a {
-            display: flex;
-            align-items: center;
-            padding: 14px 20px;
-            color: var(--light-color);
-            text-decoration: none;
-            font-size: 15px;
-            transition: all 0.3s ease;
-            border-left: 3px solid transparent;
-        }
-
-        .sidebar-menu a:hover, .sidebar-menu a.active {
-            background: rgba(52, 152, 219, 0.2);
-            border-left: 3px solid var(--accent-color);
-        }
-
-        .sidebar-menu i {
-            font-size: 20px;
-            margin-right: 12px;
-            width: 22px;
-            text-align: center;
-            color: var(--accent-color);
-        }
-
-        .sidebar-title {
-            padding: 18px 20px 8px;
-            font-size: 15px;
-            color: var(--accent-color);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            padding: calc(var(--header-height) + 20px) 25px 30px;
-            transition: var(--transition-speed);
-            margin-left: 0;
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-
-        .sidebar.active + .main-content {
-            margin-left: var(--sidebar-width);
-        }
-
-        .page-title {
-            font-size: 28px;
-            margin-bottom: 25px;
-            color: var(--light-color);
-            position: relative;
-            padding-bottom: 12px;
-            display: flex;
-            align-items: center;
-        }
-
-        .page-title::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 80px;
-            height: 4px;
-            background: var(--accent-color);
-            border-radius: 4px;
-        }
-        
-        /* Tabs */
-        .tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 25px;
-            background: rgba(44, 62, 80, 0.7);
-            border-radius: 12px;
-            padding: 15px;
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-            border: 1px solid rgba(52, 152, 219, 0.3);
-            flex-wrap: wrap;
-        }
-        
-        .tab-btn {
-            background: rgba(52, 152, 219, 0.2);
-            color: var(--accent-color);
-            border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-size: 16px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex: 1;
-            min-width: 200px;
-            justify-content: center;
-        }
-        
-        .tab-btn.active, .tab-btn:hover {
-            background: var(--accent-color);
-            color: white;
-        }
-        
-        .tab-btn i {
-            font-size: 18px;
-        }
-        
-        .tab-content {
-            display: none;
-        }
-        
-        .tab-content.active {
-            display: block;
-            animation: fadeIn 0.5s ease;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* Club Registration Form */
-        .club-registration {
-            background: rgba(44, 62, 80, 0.7);
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(52, 152, 219, 0.3);
-        }
-        
-        .form-title {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: var(--accent-color);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .form-row {
-            display: flex;
-            gap: 20px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        
-        .form-group {
-            flex: 1;
-            min-width: 300px;
-        }
-        
-        .form-group label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--light-color);
-        }
-        
-        .form-group label.required::after {
-            content: ' *';
-            color: var(--secondary-color);
-        }
-        
-        .form-group input, 
-        .form-group textarea, 
-        .form-group select {
-            width: 100%;
-            padding: 14px;
-            background: rgba(26, 37, 47, 0.9);
-            border: 2px solid rgba(52, 152, 219, 0.5);
-            border-radius: 10px;
-            color: var(--light-color);
-            font-size: 16px;
-            transition: all 0.3s ease;
-        }
-        
-        .form-group input:focus, 
-        .form-group textarea:focus, 
-        .form-group select:focus {
-            outline: none;
-            border-color: var(--accent-color);
-            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.3);
-        }
-        
-        .form-group textarea {
-            min-height: 120px;
-            resize: vertical;
-        }
-        
-        .file-upload {
-            position: relative;
-            display: inline-block;
-            width: 100%;
-        }
-        
-        .file-upload input {
-            position: absolute;
-            left: 0;
-            top: 0;
-            opacity: 0;
-            width: 100%;
-            height: 100%;
-            cursor: pointer;
-        }
-        
-        .file-upload-label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 14px;
-            background: rgba(26, 37, 47, 0.9);
-            border: 2px dashed rgba(52, 152, 219, 0.5);
-            border-radius: 10px;
-            color: #aaa;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-        
-        .file-upload-label:hover {
-            border-color: var(--accent-color);
-        }
-        
-        .file-upload-label i {
-            margin-right: 8px;
-            font-size: 20px;
-            color: var(--accent-color);
-        }
-        
-        .preview-container {
-            margin-top: 15px;
-            text-align: center;
-        }
-        
-        .logo-preview {
-            max-width: 200px;
-            max-height: 150px;
-            border-radius: 8px;
-            border: 2px solid rgba(52, 152, 219, 0.5);
-            display: none;
-        }
-        
-        .submit-btn {
-            background: var(--success-color);
-            color: white;
-            border: none;
-            padding: 14px 28px;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 16px;
-            margin-top: 20px;
-        }
-        
-        .submit-btn:hover {
-            background: #27ae60;
-            transform: translateY(-3px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
-        
-        /* Club Grid */
-        .club-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 50px;
-        }
-        
-        .club-card {
-            background: rgba(44, 62, 80, 0.7);
-            backdrop-filter: blur(10px);
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(52, 152, 219, 0.3);
-            transition: all 0.4s ease;
-            position: relative;
-            cursor: pointer;
-            
-        }
-        
-        .club-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
-            border-color: var(--accent-color);
-        }
-        
-        .club-image {
-            height: 180px;
-            width: 100%;
-            background-size: cover;
-            background-position: center;
-            background-color: #1a252f;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: relative;
-        }
-        
-        .club-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .club-image i {
-            font-size: 64px;
-            color: var(--accent-color);
-        }
-        
-        .club-info {
-            padding: 20px;
-        }
-        
-        .club-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 12px;
-        }
-        
-        .club-title {
-            font-size: 20px;
-            font-weight: 700;
-            color: var(--light-color);
-            margin-bottom: 8px;
-            line-height: 1.3;
-        }
-        
-        .club-category {
-            font-size: 14px;
-            color: var(--accent-color);
-            margin-bottom: 12px;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-        
-        .club-meta {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 15px;
-            flex-wrap: wrap;
-        }
-        
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
-            font-size: 13px;
-            color: #aaa;
-        }
-        
-        .club-description {
-            color: #ddd;
-            margin-bottom: 20px;
-            line-height: 1.5;
-            font-size: 14px;
-        }
-        
-        .club-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 10px;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
-            padding-top: 15px;
-        }
-        
-        .contact-btn {
-            background: transparent;
-            color: var(--accent-color);
-            border: 2px solid var(--accent-color);
-            padding: 8px 16px;
-            border-radius: 7px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-        
-        .contact-btn:hover {
-            background: var(--accent-color);
-            color: white;
-        }
-        
-        .update-btn {
-            background: transparent;
-            color: var(--warning-color);
-            border: 2px solid var(--warning-color);
-            padding: 8px 16px;
-            border-radius: 7px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 14px;
-        }
-        
-        .update-btn:hover {
-            background: var(--warning-color);
-            color: white;
-        }
-        
-        /* Admin Panel */
-        .admin-panel {
-            background: rgba(44, 62, 80, 0.7);
-            border-radius: 16px;
-            padding: 30px;
-            margin-bottom: 30px;
-            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
-            border: 2px solid rgba(52, 152, 219, 0.3);
-        }
-        
-        .admin-title {
-            font-size: 24px;
-            margin-bottom: 20px;
-            color: var(--warning-color);
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        
-        .admin-tabs {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            background: rgba(26, 37, 47, 0.7);
-            border-radius: 8px;
-            padding: 8px;
-            flex-wrap: wrap;
-        }
-        
-        .admin-tab-btn {
-            background: transparent;
-            color: #aaa;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            font-weight: 500;
-            flex: 1;
-            min-width: 180px;
-        }
-        
-        .admin-tab-btn.active, .admin-tab-btn:hover {
-            background: var(--accent-color);
-            color: white;
-        }
-        
-        .admin-tab-content {
-            display: none;
-        }
-        
-        .admin-tab-content.active {
-            display: block;
-        }
-        
-        .pending-clubs, .pending-updates {
-            margin-top: 20px;
-        }
-        
-        .pending-club, .pending-update {
-            background: rgba(26, 37, 47, 0.9);
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 15px;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            align-items: flex-start;
-        }
-        
-        .pending-club-image, .pending-update-image {
-            width: 100px;
-            height: 100px;
-            border-radius: 10px;
-            background: #1a252f;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-        }
-        
-        .pending-club-image img, .pending-update-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-        
-        .pending-club-image i, .pending-update-image i {
-            font-size: 32px;
-            color: var(--accent-color);
-        }
-        
-        .pending-club-details, .pending-update-details {
-            flex: 1;
-            min-width: 300px;
-        }
-        
-        .pending-club-title, .pending-update-title {
-            font-size: 18px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            color: var(--light-color);
-        }
-        
-        .pending-club-meta, .pending-update-meta {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 10px;
-            flex-wrap: wrap;
-        }
-        
-        .pending-club-description, .pending-update-description {
-            color: #ddd;
-            margin-bottom: 15px;
-            line-height: 1.5;
-        }
-        
-        .pending-club-actions, .pending-update-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-        
-        .action-btn {
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-size: 14px;
-            border: none;
-        }
-        
-        .approve-btn {
-            background: var(--success-color);
-            color: white;
-        }
-        
-        .reject-btn {
-            background: var(--secondary-color);
-            color: white;
-        }
-        
-        .view-btn {
-            background: var(--accent-color);
-            color: white;
-        }
-        
-        .action-btn:hover {
-            opacity: 0.9;
-            transform: translateY(-2px);
-        }
-        
-        /* Update Changes Section */
-        .update-changes {
-            background: rgba(26, 37, 47, 0.7);
-            border-radius: 10px;
-            padding: 15px;
-            margin-top: 15px;
-            border-left: 3px solid var(--accent-color);
-        }
-        
-        .update-changes h4 {
-            color: var(--accent-color);
-            margin-bottom: 10px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        
-        .change-item {
-            display: flex;
-            margin-bottom: 8px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-        
-        .change-field {
-            flex: 1;
-            font-weight: 500;
-            color: var(--light-color);
-        }
-        
-        .change-old {
-            flex: 1;
-            color: #ff6b6b;
-            text-decoration: line-through;
-        }
-        
-        .change-new {
-            flex: 1;
-            color: var(--success-color);
-            font-weight: 500;
-        }
-        
-        /* Status Indicator */
-        .status-indicator {
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-            display: inline-block;
-        }
-        
-        .status-pending {
-            background: rgba(243, 156, 18, 0.2);
-            color: var(--warning-color);
-        }
-        
-        .status-approved {
-            background: rgba(46, 204, 113, 0.2);
-            color: var(--success-color);
-        }
-        
-        /* Success Message */
-        .success-message {
-            background: rgba(46, 204, 113, 0.2);
-            border: 1px solid var(--success-color);
-            color: var(--success-color);
-            padding: 15px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-.club-card {
+.menu-toggle {
+    width: 40px;
+    height: 40px;
     display: flex;
     flex-direction: column;
-    height: 100%; /* Ensures the card stretches to the full height of the grid cell */
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    margin-right: 15px;
+    transition: var(--transition-speed);
+}
+
+.menu-toggle span {
+    display: block;
+    width: 25px;
+    height: 3px;
+    background: var(--light-color);
+    margin: 2px 0;
+    border-radius: 3px;
+    transition: var(--transition-speed);
+}
+
+.logo {
+    display: flex;
+    align-items: center;
+}
+
+.logo img {
+    height: 60px;
+    width: auto;
+    margin-right: 15px;
+}
+
+.logo i {
+    font-size: 32px;
+    color: var(--accent-color);
+    margin-right: 10px;
+}
+
+.logo-text h1 {
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--light-color);
+}
+
+.logo-text span {
+    font-size: 14px;
+    color: var(--success-color);
+    display: block;
+}
+
+.header-actions {
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.user-profile {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 5px 15px;
+    border-radius: 30px;
+    background: rgba(52, 152, 219, 0.2);
+    transition: var(--transition-speed);
+}
+
+.user-profile:hover {
+    background: var(--accent-color);
+}
+
+.user-avatar {
+    width: 45px;
+    height: 45px;
+    border-radius: 50%;
+    background: var(--accent-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+    margin-right: 10px;
+    border: 2px solid var(--light-color);
+    overflow: hidden;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-name {
+    font-weight: 500;
+    font-size: 16px;
+}
+
+.map-access {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(52, 152, 219, 0.2);
+    color: var(--light-color);
+    font-size: 20px;
+    transition: var(--transition-speed);
+    text-decoration: none;
+    z-index: 1002;
+    visibility: visible;
+    flex-shrink: 0;
+}
+
+.map-access:hover {
+    background: var(--accent-color);
+}
+
+/* Sidebar Navigation */
+.sidebar {
+    position: fixed;
+    top: var(--header-height);
+    left: calc(-1 * var(--sidebar-width));
+    width: var(--sidebar-width);
+    height: calc(100vh - var(--header-height));
+    background: rgba(26, 37, 47, 0.98);
+    backdrop-filter: blur(10px);
+    z-index: 900;
+    transition: var(--transition-speed);
+    border-right: 2px solid var(--accent-color);
+    box-shadow: 5px 0 30px rgba(0, 0, 0, 0.4);
+    overflow-y: auto;
+    padding: 20px 0;
+}
+
+.sidebar.active {
+    left: 0;
+}
+
+.sidebar-menu {
+    list-style: none;
+}
+
+.sidebar-menu li {
+    margin-bottom: 5px;
+}
+
+.sidebar-menu a {
+    display: flex;
+    align-items: center;
+    padding: 14px 20px;
+    color: var(--light-color);
+    text-decoration: none;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+}
+
+.sidebar-menu a:hover, .sidebar-menu a.active {
+    background: rgba(52, 152, 219, 0.2);
+    border-left: 3px solid var(--accent-color);
+}
+
+.sidebar-menu i {
+    font-size: 20px;
+    margin-right: 12px;
+    width: 22px;
+    text-align: center;
+    color: var(--accent-color);
+}
+
+.sidebar-title {
+    padding: 18px 20px 8px;
+    font-size: 15px;
+    color: var(--accent-color);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    padding: calc(var(--header-height) + 30px) 40px 40px;
+    transition: var(--transition-speed);
+    margin-left: 0;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.sidebar.active + .main-content {
+    margin-left: var(--sidebar-width);
+}
+
+.sidebar.active ~ .main-content::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 899;
+    display: none;
+}
+
+.page-title {
+    font-size: 28px;
+    margin-bottom: 25px;
+    color: var(--light-color);
+    position: relative;
+    padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+}
+
+.page-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 80px;
+    height: 4px;
+    background: var(--accent-color);
+    border-radius: 4px;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 25px;
+    background: rgba(44, 62, 80, 0.7);
+    border-radius: 12px;
+    padding: 15px;
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    flex-wrap: wrap;
+}
+
+.tab-btn {
+    background: rgba(52, 152, 219, 0.2);
+    color: var(--accent-color);
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 200px;
+    justify-content: center;
+    z-index: 10;
+    opacity: 1;
+    visibility: visible;
+}
+
+.tab-btn.active, .tab-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.tab-btn i {
+    font-size: 18px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+    animation: fadeIn 0.5s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Club Registration Form */
+.club-registration {
+    background: rgba(44, 62, 80, 0.7);
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(52, 152, 219, 0.3);
+}
+
+.form-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: var(--accent-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.form-group {
+    flex: 1;
+    min-width: 300px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: var(--light-color);
+}
+
+.form-group label.required::after {
+    content: ' *';
+    color: var(--secondary-color);
+}
+
+.form-group input, 
+.form-group textarea, 
+.form-group select {
+    width: 100%;
+    padding: 14px;
+    background: rgba(26, 37, 47, 0.9);
+    border: 2px solid rgba(52, 152, 219, 0.5);
+    border-radius: 10px;
+    color: var(--light-color);
+    font-size: 16px;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus, 
+.form-group textarea:focus, 
+.form-group select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.3);
+}
+
+.form-group textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.file-upload {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.file-upload input {
+    position: absolute;
+    left: 0;
+    top: 0;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.file-upload-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px;
+    background: rgba(26, 37, 47, 0.9);
+    border: 2px dashed rgba(52, 152, 219, 0.5);
+    border-radius: 10px;
+    color: #aaa;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-upload-label:hover {
+    border-color: var(--accent-color);
+}
+
+.file-upload-label i {
+    margin-right: 8px;
+    font-size: 20px;
+    color: var(--accent-color);
+}
+
+.preview-container {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.logo-preview {
+    max-width: 200px;
+    max-height: 150px;
+    border-radius: 8px;
+    border: 2px solid rgba(52, 152, 219, 0.5);
+    display: none;
+}
+
+.submit-btn {
+    background: var(--success-color);
+    color: white;
+    border: none;
+    padding: 14px 28px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    margin-top: 20px;
+    min-width: 100px;
+    z-index: 10;
+    opacity: 1;
+    visibility: visible;
+}
+
+.submit-btn:hover {
+    background: #27ae60;
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Club Grid */
+.club-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 25px;
+    margin-bottom: 50px;
+}
+
+.club-card {
+    background: rgba(44, 62, 80, 0.7);
+    backdrop-filter: blur(10px);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(52, 152, 219, 0.3);
+    transition: all 0.4s ease;
+    position: relative;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.club-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+    border-color: var(--accent-color);
 }
 
 .club-image {
-    height: 180px; /* Fixed height for the image, adjust as needed */
+    height: 180px;
+    width: 100%;
+    background-size: cover;
+    background-position: center;
+    background-color: #1a252f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.club-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.club-image i {
+    font-size: 64px;
+    color: var(--accent-color);
 }
 
 .club-info {
-    flex: 1; /* Takes up all available space between image and footer */
+    padding: 20px;
+    flex: 1;
     display: flex;
     flex-direction: column;
 }
 
-.club-footer {
-    margin-top: auto; /* Pushes the footer to the bottom of club-info */
-    padding: 15px 20px; /* Optional: ensures consistent spacing */
+.club-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 12px;
 }
-        /* Responsive Design */
-        @media (max-width: 1200px) {
-            .club-grid {
-                grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            }
-        }
 
-        @media (max-width: 992px) {
-            .sidebar {
-                width: 240px;
-            }
-        }
+.club-title {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--light-color);
+    margin-bottom: 8px;
+    line-height: 1.3;
+}
 
-        @media (max-width: 768px) {
-            .header {
-                padding: 0 15px;
-                height: 70px;
-            }
-            .logo img {
-                height: 40px;
-            }
-            .logo-text h1 {
-                font-size: 18px;
-            }
-            .user-name {
-                display: none;
-            }
-            .user-profile {
-                padding: 5px;
-            }
-            .user-avatar {
-                width: 35px;
-                height: 35px;
-                font-size: 14px;
-            }
-            .main-content {
-                padding: calc(70px + 15px) 18px 20px;
-            }
-            .page-title {
-                font-size: 24px;
-                margin-bottom: 20px;
-            }
-            .tabs {
-                flex-direction: column;
-            }
-            .form-row {
-                flex-direction: column;
-                gap: 15px;
-            }
-            .club-registration, .admin-panel {
-                padding: 20px;
-            }
-            .pending-club, .pending-update {
-                flex-direction: column;
-            }
-            .pending-club-image, .pending-update-image {
-                width: 100%;
-                height: 150px;
-            }
-        }
+.club-category {
+    font-size: 14px;
+    color: var(--accent-color);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
 
-        @media (max-width: 576px) {
-            :root {
-                --header-height: 60px;
-            }
-            .header {
-                height: 60px;
-                padding: 0 12px;
-            }
-            .menu-toggle {
-                width: 35px;
-                height: 35px;
-                margin-right: 10px;
-            }
-            .menu-toggle span {
-                width: 22px;
-                height: 2.5px;
-            }
-            .logo img {
-                height: 35px;
-                margin-right: 8px;
-            }
-            .logo-text h1 {
-                font-size: 16px;
-            }
-            .logo-text span {
-                font-size: 10px;
-            }
-            .user-avatar {
-                width: 30px;
-                height: 30px;
-                font-size: 12px;
-            }
-            .main-content {
-                padding: calc(60px + 12px) 15px 15px;
-            }
-            .page-title {
-                font-size: 22px;
-                padding-bottom: 10px;
-            }
-            .page-title i {
-                font-size: 24px;
-            }
-            .club-grid {
-                grid-template-columns: 1fr;
-                gap: 18px;
-            }
-            .club-image {
-                height: 160px;
-            }
-            .club-title {
-                font-size: 18px;
-            }
-            .club-category {
-                font-size: 13px;
-            }
-            .tab-btn {
-                min-width: 100%;
-            }
-        }
+.club-meta {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 13px;
+    color: #aaa;
+}
+
+.club-description {
+    color: #ddd;
+    margin-bottom: 20px;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+.club-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 15px;
+    margin-top: auto;
+    padding: 15px 20px;
+}
+
+.contact-btn {
+    background: transparent;
+    color: var(--accent-color);
+    border: 2px solid var(--accent-color);
+    padding: 8px 16px;
+    border-radius: 7px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    min-width: 100px;
+    z-index: 10;
+    opacity: 1;
+    visibility: visible;
+}
+
+.contact-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.update-btn {
+    background: transparent;
+    color: var(--warning-color);
+    border: 2px solid var(--warning-color);
+    padding: 8px 16px;
+    border-radius: 7px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    min-width: 100px;
+    z-index: 10;
+    opacity: 1;
+    visibility: visible;
+}
+
+.update-btn:hover {
+    background: var(--warning-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+/* Admin Panel */
+.admin-panel {
+    background: rgba(44, 62, 80, 0.7);
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 30px;
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+    border: 2px solid rgba(52, 152, 219, 0.3);
+}
+
+.admin-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: var(--warning-color);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.admin-tabs {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    background: rgba(26, 37, 47, 0.7);
+    border-radius: 8px;
+    padding: 8px;
+    flex-wrap: wrap;
+}
+
+.admin-tab-btn {
+    background: transparent;
+    color: #aaa;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-weight: 500;
+    flex: 1;
+    min-width: 180px;
+    z-index: 10;
+    opacity: 1;
+    visibility: visible;
+}
+
+.admin-tab-btn.active, .admin-tab-btn:hover {
+    background: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.admin-tab-content {
+    display: none;
+}
+
+.admin-tab-content.active {
+    display: block;
+}
+
+.pending-clubs, .pending-updates {
+    margin-top: 20px;
+}
+
+.pending-club, .pending-update {
+    background: rgba(26, 37, 47, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
+}
+
+.pending-club-image, .pending-update-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 10px;
+    background: #1a252f;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.pending-club-image img, .pending-update-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.pending-club-image i, .pending-update-image i {
+    font-size: 32px;
+    color: var(--accent-color);
+}
+
+.pending-club-details, .pending-update-details {
+    flex: 1;
+    min-width: 300px;
+}
+
+.pending-club-title, .pending-update-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--light-color);
+}
+
+.pending-club-meta, .pending-update-meta {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+}
+
+.pending-club-description, .pending-update-description {
+    color: #ddd;
+    margin-bottom: 15px;
+    line-height: 1.5;
+}
+
+.pending-club-actions, .pending-update-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    border: none;
+    min-width: 80px;
+    z-index: 10;
+    opacity: 1;
+    visibility: visible;
+}
+
+.approve-btn {
+    background: var(--success-color);
+    color: white;
+}
+
+.reject-btn {
+    background: var(--secondary-color);
+    color: white;
+}
+
+.view-btn {
+    background: var(--accent-color);
+    color: white;
+}
+
+.action-btn:hover {
+    opacity: 0.9;
+    transform: translateY(-2px);
+}
+
+/* Update Changes Section */
+.update-changes {
+    background: rgba(26, 37, 47, 0.7);
+    border-radius: 10px;
+    padding: 15px;
+    margin-top: 15px;
+    border-left: 3px solid var(--accent-color);
+}
+
+.update-changes h4 {
+    color: var(--accent-color);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.change-item {
+    display: flex;
+    margin-bottom: 8px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.change-field {
+    flex: 1;
+    font-weight: 500;
+    color: var(--light-color);
+}
+
+.change-old {
+    flex: 1;
+    color: #ff6b6b;
+    text-decoration: line-through;
+}
+
+.change-new {
+    flex: 1;
+    color: var(--success-color);
+    font-weight: 500;
+}
+
+/* Status Indicator */
+.status-indicator {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.status-pending {
+    background: rgba(243, 156, 18, 0.2);
+    color: var(--warning-color);
+}
+
+.status-approved {
+    background: rgba(46, 204, 113, 0.2);
+    color: var(--success-color);
+}
+
+/* Success Message */
+.success-message {
+    background: rgba(46, 204, 113, 0.2);
+    border: 1px solid var(--success-color);
+    color: var(--success-color);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .club-grid {
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    }
+    .main-content {
+        padding: calc(var(--header-height) + 20px) 20px 20px;
+        max-width: 1000px;
+    }
+}
+
+@media (max-width: 992px) {
+    .sidebar {
+        width: 240px;
+        left: -240px;
+    }
+    .sidebar.active {
+        left: 0;
+    }
+}
+
+@media (max-width: 768px) {
+    :root {
+        --header-height: 70px;
+    }
+    .header {
+        padding: 0 15px;
+        height: 70px;
+    }
+    .header-actions {
+        gap: 8px;
+    }
+    .menu-toggle {
+        width: 35px;
+        height: 35px;
+        margin-right: 10px;
+    }
+    .menu-toggle span {
+        width: 22px;
+        height: 2.5px;
+    }
+    .logo img {
+        height: 40px;
+        margin-right: 8px;
+    }
+    .logo-text h1 {
+        font-size: 18px;
+    }
+    .logo-text span {
+        font-size: 10px;
+    }
+    .user-name {
+        display: none;
+    }
+    .user-profile {
+        padding: 5px;
+    }
+    .user-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+    .map-access {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    .sidebar {
+        width: 100%;
+        left: -100%;
+    }
+    .sidebar.active {
+        left: 0;
+    }
+    .sidebar.active ~ .main-content::before {
+        display: block;
+    }
+    .main-content {
+        padding: calc(var(--header-height) + 15px) 18px 20px;
+    }
+    .page-title {
+        font-size: 24px;
+        margin-bottom: 20px;
+    }
+    .tabs {
+        flex-direction: column;
+    }
+    .tab-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+        min-width: 100%;
+    }
+    .form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .club-registration, .admin-panel {
+        padding: 20px;
+    }
+    .pending-club, .pending-update {
+        flex-direction: column;
+    }
+    .pending-club-image, .pending-update-image {
+        width: 100%;
+        height: 150px;
+    }
+    .submit-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+        min-width: 80px;
+    }
+    .contact-btn, .update-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+        min-width: 80px;
+    }
+    .action-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+        min-width: 70px;
+    }
+}
+
+@media (max-width: 576px) {
+    :root {
+        --header-height: 60px;
+    }
+    .header {
+        height: 60px;
+        padding: 0 12px;
+    }
+    .menu-toggle {
+        width: 35px;
+        height: 35px;
+        margin-right: 10px;
+    }
+    .menu-toggle span {
+        width: 22px;
+        height: 2.5px;
+    }
+    .logo img {
+        height: 35px;
+        margin-right: 8px;
+    }
+    .logo-text h1 {
+        font-size: 16px;
+    }
+    .logo-text span {
+        font-size: 10px;
+    }
+    .user-avatar {
+        width: 30px;
+        height: 30px;
+        font-size: 12px;
+    }
+    .map-access {
+        width: 32px;
+        height: 32px;
+        font-size: 16px;
+    }
+    .main-content {
+        padding: calc(var(--header-height) + 12px) 15px 15px;
+    }
+    .page-title {
+        font-size: 22px;
+        padding-bottom: 10px;
+    }
+    .page-title i {
+        font-size: 24px;
+    }
+    .club-grid {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+    .club-image {
+        height: 160px;
+    }
+    .club-title {
+        font-size: 18px;
+    }
+    .club-category {
+        font-size: 13px;
+    }
+    .tab-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+        min-width: 100%;
+    }
+    .form-group {
+        min-width: 100%;
+    }
+    .club-registration, .admin-panel {
+        padding: 15px;
+    }
+    .submit-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+        min-width: 80px;
+    }
+    .contact-btn, .update-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+        min-width: 80px;
+    }
+    .action-btn {
+        padding: 6px 12px;
+        font-size: 13px;
+        min-width: 70px;
+    }
+}
+
+@media (max-width: 400px) {
+    .logo-text h1 {
+        font-size: 14px;
+    }
+    .logo-text span {
+        font-size: 10px;
+    }
+    .page-title {
+        font-size: 20px;
+    }
+    .club-title {
+        font-size: 16px;
+    }
+    .club-category {
+        font-size: 12px;
+    }
+    .tab-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+        min-width: 80px;
+    }
+    .submit-btn {
+        padding: 8px 14px;
+        font-size: 13px;
+        min-width: 70px;
+    }
+    .contact-btn, .update-btn {
+        padding: 7px 12px;
+        font-size: 12px;
+        min-width: 70px;
+    }
+    .action-btn {
+        padding: 6px 10px;
+        font-size: 12px;
+        min-width: 60px;
+    }
+    .map-access {
+        width: 30px;
+        height: 30px;
+        font-size: 14px;
+    }
+}

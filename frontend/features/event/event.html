@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>VITB Smashers - Event Management</title>
+    <title>Scholars Stack - Event Management</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="event.css">
@@ -21,9 +21,9 @@
         </div>
         
         <div class="logo">
-            <img src="../images/logo.png" alt="VITB Smashers Logo">
+            <img src="../images/logo.png" alt="Scholars Stack Logo">
             <div class="logo-text">
-                <h1>VITB Smashers</h1>
+                <h1>Scholars Stack</h1>
                 <span>Event Info</span>
             </div>
         </div>
@@ -31,10 +31,14 @@
         <div class="header-actions">
             <div class="user-profile">
                 <div class="user-avatar">
-                    <img src="https://ui-avatars.com/api/?name=Admin&background=3498db&color=fff" alt="Profile">
+                    <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
+                    <span>S</span>
                 </div>
-                <div class="user-name">Admin</div>
+                <div class="user-name">Student</div>
             </div>
+            <a href="../maps/maps.html" class="map-access" title="Campus Map" aria-label="View Campus Map">
+                <i class='bx bxs-map'></i>
+            </a>
         </div>
     </header>
     
@@ -1019,7 +1023,7 @@
         function sendApprovalEmail(email, eventName) {
             console.log(`Sending approval email to ${email}`);
             console.log(`Subject: Your Event "${eventName}" Has Been Approved!`);
-            console.log(`Body: Congratulations! Your event registration for "${eventName}" has been approved and is now listed on the VITB Smashers platform.`);
+            console.log(`Body: Congratulations! Your event registration for "${eventName}" has been approved and is now listed on the Scholars Stack platform.`);
         }
 
         // Simulate sending rejection email
@@ -1033,7 +1037,7 @@
         function sendUpdateApprovalEmail(email, eventName) {
             console.log(`Sending update approval email to ${email}`);
             console.log(`Subject: Event Update Approved for "${eventName}"`);
-            console.log(`Body: Your requested updates for "${eventName}" have been approved and are now live on the VITB Smashers platform.`);
+            console.log(`Body: Your requested updates for "${eventName}" have been approved and are now live on the Scholars Stack platform.`);
         }
         
         // Simulate sending update rejection email
