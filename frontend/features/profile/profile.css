@@ -1495,3 +1495,41 @@ textarea.form-control {
         font-size: 14px;
     }
 }
+.mobile-overlay {
+    position: fixed;
+    top: var(--header-height);
+    left: 0;
+    width: 100%;
+    height: calc(100vh - var(--header-height));
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 899;
+    opacity: 0;
+    visibility: hidden;
+    transition: var(--transition-speed);
+}
+
+.mobile-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        left: -100%;
+        z-index: 900;
+    }
+    
+    .sidebar.active {
+        left: 0;
+    }
+    
+    .sidebar.active ~ .mobile-overlay {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    body.sidebar-active {
+        overflow: hidden;
+    }
+}
