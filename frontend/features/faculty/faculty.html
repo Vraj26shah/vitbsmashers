@@ -141,10 +141,7 @@
                     </div>
                     
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="facultyPhone" class="optional">Phone Number(optional)</label>
-                            <input type="tel" id="facultyPhone" name="facultyPhone" optional placeholder="Enter faculty phone number">
-                        </div>
+                        
                         <div class="form-group">
                             <label for="facultyCabin" class="required">Cabin Number</label>
                             <input type="text" id="facultyCabin" name="facultyCabin" required placeholder="Enter faculty cabin number">
@@ -201,10 +198,7 @@
                     </div>
                     
                     <div class="form-row">
-                        <div class="form-group">
-                            <label for="updateFacultyPhone" class="required">Phone Number</label>
-                            <input type="tel" id="updateFacultyPhone" name="updateFacultyPhone" required placeholder="Enter faculty phone number">
-                        </div>
+                        
                         <div class="form-group">
                             <label for="updateFacultyCabin" class="required">Cabin Number</label>
                             <input type="text" id="updateFacultyCabin" name="updateFacultyCabin" required placeholder="Enter faculty cabin number">
@@ -706,14 +700,12 @@
             
             const facultyName = document.getElementById('facultyName').value;
             const facultyEmail = document.getElementById('facultyEmail').value;
-            const facultyPhone = document.getElementById('facultyPhone').value;
             const facultyCabin = document.getElementById('facultyCabin').value;
             
             const newFaculty = {
                 id: Date.now(),
                 name: facultyName,
                 email: facultyEmail,
-                phone: facultyPhone,
                 cabin: facultyCabin,
                 status: "pending"
             };
@@ -768,7 +760,6 @@
                 document.getElementById('updateFacultyId').value = f.id;
                 document.getElementById('updateFacultyName').value = f.name;
                 document.getElementById('updateFacultyEmail').value = f.email;
-                document.getElementById('updateFacultyPhone').value = f.phone;
                 document.getElementById('updateFacultyCabin').value = f.cabin;
                 
                 document.getElementById('selectFacultyToUpdate').value = f.id;
@@ -789,7 +780,6 @@
             
             const updatedName = document.getElementById('updateFacultyName').value;
             const updatedEmail = document.getElementById('updateFacultyEmail').value;
-            const updatedPhone = document.getElementById('updateFacultyPhone').value;
             const updatedCabin = document.getElementById('updateFacultyCabin').value;
             
             const changes = {};
