@@ -9,7 +9,6 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <!-- Animated Background -->
     <div class="bg-particles">
         <div class="particle"></div>
         <div class="particle"></div>
@@ -19,30 +18,35 @@
     </div>
 
     <!-- Header -->
-    <header>
+    <header id="mainHeader">
         <div class="container header-content">
-<div class="logo">
-  <!-- Replace the <li> with a proper img tag -->
+            <div class="logo" id="mainLogo">
   <div class="logo-icon">
     <a href="#"><img src="../frontend/features/images/logo.png" alt="Scholars Stack Logo"></a>
   </div>
   <div class="logo-text">
-    <h1>Scholars <span> Stack</span></h1>
+                    <h1>Scholars <span>Stack</span></h1>
     <p>Premium Academic Resources</p>
   </div>
 </div>
-            <nav>
+            
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation menu">
+                <i class="fas fa-bars" id="menuIcon"></i>
+            </button>
+            
+            <nav id="mainNav">
                 <ul>
-                    <li><a href="#features">Features</a></li>
-                    <li><a href="#testimonials">Testimonials</a></li>
-                    <li><a href="login1.html">Resources</a></li>
+                    <li><a href="#features" class="nav-link">Features</a></li>
+                    <li><a href="#testimonials" class="nav-link">Testimonials</a></li>
+                    <li><a href="login1.html" class="nav-link">Resources</a></li>
                     <li><a href="login1.html" class="nav-btn"><i class="fas fa-rocket"></i> Get Started</a></li>
                 </ul>
             </nav>
         </div>
+        
+        <div class="nav-overlay" id="navOverlay"></div>
     </header>
 
-    <!-- Hero Section -->
     <section class="hero">
         <div class="container">
             <div class="hero-content">
@@ -99,7 +103,6 @@
         </div>
     </section>
 
-    <!-- Features Section -->
    <section id="features" class="features">
     <div class="container">
         <div class="section-title">
@@ -107,7 +110,6 @@
             <p>Everything you need to excel at VIT Bhopal</p>
         </div>
         <div class="features-grid">
-            <!-- Add data-url attribute to each card -->
             <a class="feature-card" href="../frontend/features/marketplace/market.html">
                 <div class="feature-icon">
                     <i class="fas fa-pencil-alt"></i>
@@ -154,7 +156,6 @@
     </div>
 </section>
 
-    <!-- Testimonials Section -->
     <section id="testimonials" class="testimonials">
         <div class="container">
             <div class="section-title">
@@ -164,43 +165,35 @@
             <div class="testimonial-grid">
                 <div class="testimonial-card">
                     <div class="testimonial-content">
-                        <p>The Data Structures notes helped me understand concepts that even the textbook couldn't explain clearly. I went from barely passing to scoring an A+ in the course!</p>
+                        <p>Honestly, I was drowning in notes and random YouTube videos before this. Your curated stuff saved me SO much time – finally found explanations that actually made sense! The timetable feature? Lifesaver. Went from barely passing to an A- in organic chem. Can't believe I waited this long.</p>
                     </div>
                     <div class="testimonial-author">
-                        <div class="author-img">
-                            <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="Rohit Kumar">
-                        </div>
                         <div class="author-info">
-                            <h4>Rohit Kumar</h4>
-                            <p>CSE 3rd Year | GPA: 9.6</p>
+                            <h4>Yash Patel</h4>
+                            <p>CSE 3rd Year | GPA: 9.16</p>
                         </div>
                     </div>
                 </div>
                 <div class="testimonial-card">
                     <div class="testimonial-content">
-                        <p>As someone who struggles with thermodynamics, the curated video links along with the handwritten notes made all the difference. The way complex concepts are broken down is amazing.</p>
+                        <p>I was skeptical about 'bought notes' but wow. These aren't just summaries – they're structured like a tutor planned them. Paired with the timetable tool? Finally stopped cramming. Went from B's to straight A's this semester. Seriously, if you're struggling to organize, just try it.</p>
                     </div>
                     <div class="testimonial-author">
-                        <div class="author-img">
-                            <img src="https://randomuser.me/api/portraits/women/44.jpg" alt="Sneha Reddy">
-                        </div>
+                       
                         <div class="author-info">
-                            <h4>Sneha Reddy</h4>
-                            <p>MECH 2nd Year | GPA: 9.3</p>
+                            <h4>Priyanshu Sharma</h4>
+                            <p>AI 2nd Year | GPA: 8.89</p>
                         </div>
                     </div>
                 </div>
                 <div class="testimonial-card">
                     <div class="testimonial-content">
-                        <p>The previous year papers with solutions saved me during exams. Being able to see how toppers approach problems changed my entire perspective on studying.</p>
+                        <p>Dude, the fluid dynamics notes + linked videos? Spot on. Explained concepts my prof couldn't. But the attendance calculator was low-key genius – took so much stress off my shoulders. Actually had time to breathe between labs. 10/10 would recommend for any overloaded eng student.</p>
                     </div>
                     <div class="testimonial-author">
-                        <div class="author-img">
-                            <img src="https://randomuser.me/api/portraits/men/67.jpg" alt="Arjun Singh">
-                        </div>
                         <div class="author-info">
-                            <h4>Arjun Singh</h4>
-                            <p>ECE 4th Year | GPA: 9.4</p>
+                            <h4>Shlok Pastagia</h4>
+                            <p>CSE 3th Year | GPA: 9.23</p>
                         </div>
                     </div>
                 </div>
@@ -208,12 +201,11 @@
         </div>
     </section>
 
-    <!-- CTA Section -->
     <section class="cta">
         <div class="container">
             <div class="cta-content">
                 <h2>Ready to Transform Your Academic Journey?</h2>
-                <p>Join thousands of VITB students who are using our premium resources to maximize their academic performance and achieve their GPA goals.</p>
+                <p>Join hundreds of VITB students who are using our premium resources to maximize their academic performance and achieve their GPA goals.</p>
                 <a href="login1.html" class="btn btn-primary btn-light">
                     <i class="fas fa-rocket"></i> Get Started Now
                 </a>
@@ -222,7 +214,6 @@
         </div>
     </section>
 
-    <!-- Footer -->
     <footer>
         <div class="container">
             <div class="footer-content">
@@ -274,67 +265,200 @@
     </footer>
 
     <script>
-        // Simple animation on scroll
         document.addEventListener('DOMContentLoaded', function() {
+            const mobileToggle = document.getElementById('mobileToggle');
+            const mainNav = document.getElementById('mainNav');
+            const navOverlay = document.getElementById('navOverlay');
+            const menuIcon = document.getElementById('menuIcon');
+            const mainHeader = document.getElementById('mainHeader');
+            const mainLogo = document.getElementById('mainLogo');
+            
+            // Toggle mobile menu
+            function toggleMobileMenu() {
+                const isOpen = mainNav.classList.contains('active');
+                
+                if (isOpen) {
+                    mainNav.classList.remove('active');
+                    navOverlay.classList.remove('active');
+                    mobileToggle.classList.remove('active');
+                    menuIcon.className = 'fas fa-bars';
+                    document.body.style.overflow = '';
+                } else {
+                    mainNav.classList.add('active');
+                    navOverlay.classList.add('active');
+                    mobileToggle.classList.add('active');
+                    menuIcon.className = 'fas fa-times';
+                    document.body.style.overflow = 'hidden';
+                }
+            }
+            
+            mobileToggle.addEventListener('click', toggleMobileMenu);
+            navOverlay.addEventListener('click', toggleMobileMenu);
+            
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    if (mainNav.classList.contains('active')) {
+                        toggleMobileMenu();
+                    }
+                });
+            });
+            
+            function handleScroll() {
+                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                
+                if (scrollTop > 50) {
+                    mainHeader.classList.add('scrolled');
+                    mainLogo.classList.add('scrolled');
+                } else {
+                    mainHeader.classList.remove('scrolled');
+                    mainLogo.classList.remove('scrolled');
+                }
+            }
+            
+            function smoothScrollTo(target) {
+                const element = document.querySelector(target);
+                if (element) {
+                    const headerHeight = mainHeader.offsetHeight;
+                    const elementPosition = element.offsetTop - headerHeight - 20;
+                    
+                    window.scrollTo({
+                        top: elementPosition,
+                        behavior: 'smooth'
+                    });
+                }
+            }
+            
+            // Add smooth scrolling to nav links
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    const href = link.getAttribute('href');
+                    if (href.startsWith('#')) {
+                        e.preventDefault();
+                        smoothScrollTo(href);
+                    }
+                });
+            });
+            
+            window.addEventListener('scroll', handleScroll);
+            
+            handleScroll();
+            
             const featureCards = document.querySelectorAll('.feature-card');
             const testimonialCards = document.querySelectorAll('.testimonial-card');
             
-            // Animate features on scroll
-            const featureObserver = new IntersectionObserver((entries) => {
+            const animationObserver = new IntersectionObserver((entries) => {
                 entries.forEach(entry => {
                     if (entry.isIntersecting) {
                         entry.target.style.opacity = "1";
                         entry.target.style.transform = "translateY(0)";
+                        entry.target.classList.add('animated');
                     }
                 });
-            }, { threshold: 0.1 });
+            }, { 
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            });
             
             featureCards.forEach(card => {
                 card.style.opacity = "0";
-                card.style.transform = "translateY(20px)";
-                card.style.transition = "all 0.6s ease";
-                featureObserver.observe(card);
+                card.style.transform = "translateY(30px)";
+                card.style.transition = "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
+                animationObserver.observe(card);
             });
-            
-            // Animate testimonials on scroll
-            const testimonialObserver = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        entry.target.style.opacity = "1";
-                        entry.target.style.transform = "translateY(0)";
-                    }
-                });
-            }, { threshold: 0.1 });
             
             testimonialCards.forEach(card => {
                 card.style.opacity = "0";
-                card.style.transform = "translateY(20px)";
-                card.style.transition = "all 0.6s ease";
-                testimonialObserver.observe(card);
+                card.style.transform = "translateY(30px)";
+                card.style.transition = "all 0.6s cubic-bezier(0.4, 0, 0.2, 1)";
+                animationObserver.observe(card);
             });
-        });
-                const featureCards = document.querySelectorAll('.feature-card');
         
         featureCards.forEach(card => {
-            card.addEventListener('click', function() {
+                card.addEventListener('click', function(e) {
                 // Add active class for visual feedback
                 this.classList.add('active');
-                
-                // Get the URL from data-url attribute
-                const url = this.getAttribute('data-url');
                 
                 // Remove active class after animation completes
                 setTimeout(() => {
                     this.classList.remove('active');
-                    
-                    // Redirect to the page after a short delay
-                    if (url) {
-                        setTimeout(() => {
-                            window.location.href = url;
-                        }, 100);
-                    }
-                }, 300);
+                    }, 300);
+                });
+                
+                card.addEventListener('touchstart', function() {
+                    this.style.transform = 'scale(0.98)';
+                });
+                
+                card.addEventListener('touchend', function() {
+                    this.style.transform = '';
+                });
             });
+            
+            const statNumbers = document.querySelectorAll('.stat-number');
+            const statsObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const target = entry.target;
+                        const finalValue = parseInt(target.textContent);
+                        const duration = 2000;
+                        const increment = finalValue / (duration / 16);
+                        let currentValue = 0;
+                        
+                        const timer = setInterval(() => {
+                            currentValue += increment;
+                            if (currentValue >= finalValue) {
+                                target.textContent = finalValue + (target.textContent.includes('+') ? '+' : '');
+                                clearInterval(timer);
+                            } else {
+                                target.textContent = Math.floor(currentValue) + (target.textContent.includes('+') ? '+' : '');
+                            }
+                        }, 16);
+                        
+                        statsObserver.unobserve(target);
+                    }
+                });
+            }, { threshold: 0.5 });
+            
+            statNumbers.forEach(stat => {
+                statsObserver.observe(stat);
+            });
+            
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && mainNav.classList.contains('active')) {
+                    toggleMobileMenu();
+                }
+            });
+            
+            // Resize handler for responsive behavior
+            function handleResize() {
+                if (window.innerWidth > 768 && mainNav.classList.contains('active')) {
+                    toggleMobileMenu();
+                }
+            }
+            
+            window.addEventListener('resize', handleResize);
+            
+            let ticking = false;
+            function updateScroll() {
+                handleScroll();
+                ticking = false;
+            }
+            
+            function requestTick() {
+                if (!ticking) {
+                    requestAnimationFrame(updateScroll);
+                    ticking = true;
+                }
+            }
+            
+            window.addEventListener('scroll', requestTick);
+            
+            window.addEventListener('load', function() {
+                document.body.style.opacity = '1';
+                document.body.style.transition = 'opacity 0.5s ease';
+            });
+            
+            document.body.style.opacity = '0';
         });
     </script>
 </body>

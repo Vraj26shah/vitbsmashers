@@ -309,6 +309,130 @@ body.no-scroll {
     line-height: 1.6;
 }
 
+/* Usage Notes Section */
+.usage-notes-container {
+    background: rgba(52, 152, 219, 0.1);
+    border: 2px solid var(--accent-color);
+    border-radius: 12px;
+    margin: 20px 0;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(52, 152, 219, 0.2);
+}
+
+.usage-notes-header {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+    padding: 15px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.usage-notes-header:hover {
+    background: linear-gradient(135deg, var(--accent-dark), var(--accent-color));
+}
+
+.usage-notes-header i {
+    font-size: 20px;
+    color: var(--light-color);
+}
+
+.usage-notes-header h3 {
+    color: var(--light-color);
+    font-size: 18px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.usage-notes-content {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 15px;
+    transition: all 0.3s ease;
+}
+
+.usage-notes-content.collapsed {
+    display: none;
+}
+
+.note-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-left: 3px solid var(--accent-color);
+    transition: all 0.3s ease;
+}
+
+.note-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+.note-icon {
+    flex-shrink: 0;
+    width: 35px;
+    height: 35px;
+    background: var(--accent-color);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 2px;
+}
+
+.note-icon i {
+    color: var(--light-color);
+    font-size: 14px;
+}
+
+.note-text {
+    flex: 1;
+    color: var(--light-color);
+    font-size: 14px;
+    line-height: 1.5;
+}
+
+.note-text strong {
+    color: var(--accent-color);
+    font-weight: 600;
+}
+
+.usage-notes-toggle {
+    width: 100%;
+    background: rgba(52, 152, 219, 0.1);
+    border: none;
+    padding: 12px;
+    color: var(--accent-color);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: all 0.3s ease;
+    border-top: 1px solid rgba(52, 152, 219, 0.2);
+}
+
+.usage-notes-toggle:hover {
+    background: rgba(52, 152, 219, 0.2);
+    color: var(--light-color);
+}
+
+.usage-notes-toggle i {
+    transition: transform 0.3s ease;
+}
+
+.usage-notes-toggle.collapsed i {
+    transform: rotate(180deg);
+}
+
 /* Control Panel */
 .control-panel {
     display: flex;
@@ -1330,6 +1454,32 @@ footer {
         min-width: 100px;
         padding: 10px 20px;
         font-size: 0.9rem;
+    }
+    
+    .usage-notes-content {
+        grid-template-columns: 1fr;
+        padding: 15px;
+    }
+    
+    .note-item {
+        padding: 10px;
+    }
+    
+    .note-icon {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .note-text {
+        font-size: 13px;
+    }
+    
+    .usage-notes-header {
+        padding: 12px 15px;
+    }
+    
+    .usage-notes-header h3 {
+        font-size: 16px;
     }
 
     th, td {

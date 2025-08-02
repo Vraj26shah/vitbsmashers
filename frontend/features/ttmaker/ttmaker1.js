@@ -1167,3 +1167,23 @@ function toggleSlotSelection(slotElement) {
     document.getElementById('selectedCountText').textContent = selectedSlots.length;
     document.getElementById('selectedCount').textContent = selectedSlots.length;
 }
+
+// Toggle usage notes section
+function toggleUsageNotes() {
+    const content = document.querySelector('.usage-notes-content');
+    const toggle = document.querySelector('.usage-notes-toggle');
+    const icon = toggle.querySelector('i');
+    const span = toggle.querySelector('span');
+    
+    if (content.classList.contains('collapsed')) {
+        content.classList.remove('collapsed');
+        toggle.classList.remove('collapsed');
+        icon.className = 'fas fa-chevron-up';
+        span.textContent = 'Hide Tips';
+    } else {
+        content.classList.add('collapsed');
+        toggle.classList.add('collapsed');
+        icon.className = 'fas fa-chevron-down';
+        span.textContent = 'Show Tips';
+    }
+}

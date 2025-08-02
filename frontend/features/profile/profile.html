@@ -404,10 +404,9 @@
             {
                 id: "cs101",
                 title: "Data Structures & Algorithms",
-                professor: "Dr. Sharma",
+
                 modules: 12,
-                progress: 65,
-                lastAccessed: "2 days ago",
+
                 link: "#",
                 subjects: [
                     "Introduction to Data Structures",
@@ -421,10 +420,7 @@
             {
                 id: "cs202",
                 title: "Database Management Systems",
-                professor: "Prof. Gupta",
                 modules: 10,
-                progress: 30,
-                lastAccessed: "1 week ago",
                 link: "#",
                 subjects: [
                     "Database Fundamentals",
@@ -438,10 +434,7 @@
             {
                 id: "cs305",
                 title: "Machine Learning Fundamentals",
-                professor: "Dr. Patel",
                 modules: 15,
-                progress: 85,
-                lastAccessed: "Yesterday",
                 link: "#",
                 subjects: [
                     "Introduction to Machine Learning",
@@ -455,10 +448,7 @@
             {
                 id: "math201",
                 title: "Advanced Calculus",
-                professor: "Dr. Singh",
                 modules: 8,
-                progress: 45,
-                lastAccessed: "3 days ago",
                 link: "#",
                 subjects: [
                     "Limits and Continuity",
@@ -562,16 +552,9 @@
                         </button>
                     </div>
                     <div class="purchased-course-info">
-                        <span>Prof. ${course.professor}</span>
                         <span>${course.modules} Modules</span>
                     </div>
-                    <div class="course-progress">
-                        <div class="progress-bar" style="width: ${course.progress}%"></div>
-                    </div>
-                    <div class="course-meta">
-                        <div class="progress-percent">${course.progress}% Completed</div>
-                        <div class="last-accessed">${course.lastAccessed}</div>
-                    </div>
+                    
                     <div class="course-subjects">
                         ${subjectsHTML}
                     </div>
