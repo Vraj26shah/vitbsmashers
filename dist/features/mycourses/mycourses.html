@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholars Stack - My Courses</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="mycourses.css">
+</head>
+<body>
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    
+    <header class="header">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="logo">
+            <img src="../images/logo.png" alt="Scholars Stack Logo" >
+            <div class="logo-text">
+                <h1>Scholars Stack</h1>
+                <span>My Courses</span>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
+                    <span>S</span>
+                </div>
+                <div class="user-name">Student</div>
+            </div>
+            <a href="../maps/maps.html" class="map-access" title="Campus Map" aria-label="View Campus Map">
+                <i class='bx bxs-map'></i>
+            </a>
+        </div>
+    </header>
+    
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Main Navigation</div>
+        <ul class="sidebar-menu">
+            <li><a href="../profile/profile.html"><i class='bx bxs-user'></i> Profile</a></li>
+            <li><a href="../attendance/attedance.html"><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+            <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+            <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Resources</div>
+        <ul class="sidebar-menu">
+            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+            <li><a href="../club/club.html"><i class='bx bxs-group'></i> Club Info</a></li>
+            <li><a href="../faculty/faculty.html"><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Quick Links</div>
+        <ul class="sidebar-menu">
+            <li><a href="../mycourses/mycourses.html" class="active"><i class='bx bxs-graduation'></i> My Courses</a></li>
+            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Account</div>
+        <ul class="sidebar-menu">
+            <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li>
+            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+        </ul>
+    </nav>
+    
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">
+            <i class='bx bxs-graduation'></i> My Courses
+        </h1>
+        
+        <div class="course-grid" id="myCoursesGrid">
+        </div>
+    </main>
+
+    <script>
+        const courses = [
+            {
+                id: "dsa",
+                title: "Data Structures & Algorithms",
+                image: "https://images.unsplash.com/photo-1550439062-609e1531270e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                directLink: "#",
+                subjects: [
+                    "Introduction to Data Structures",
+                    "Arrays and Linked Lists",
+                    "Stacks and Queues",
+                    "Trees and Binary Search Trees",
+                    "Graphs and Graph Algorithms",
+                    "Sorting and Searching Algorithms",
+                    "Data Compression and Encryption"
+                ]
+            },
+            {
+                id: "dbms",
+                title: "Database Management Systems",
+                image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                directLink: "#",
+                subjects: [
+                    "Database Fundamentals",
+                    "Relational Model and SQL",
+                    "Database Design and Normalization",
+                    "Transaction Management",
+                    "Indexing and Query Optimization",
+                    "NoSQL Databases"
+
+                ]
+            },
+            {
+                id: "webdev",
+                title: "Web Development",
+                image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                directLink: "#",
+                subjects: [
+                    "HTML5 and CSS3",
+                    "JavaScript Fundamentals",
+                    "React.js Components_CR",
+                    "Node.js and Express",
+                    "MongoDB Integration",
+                    "Cloud Deployment"
+                ]
+            }
+        ];
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        const courseGrid = document.getElementById('myCoursesGrid');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            mobileOverlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : 'auto';
+        });
+
+        mobileOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            mobileOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+
+        function loadCourses() {
+            courseGrid.innerHTML = '';
+            courses.forEach(course => {
+                const courseCard = document.createElement('div');
+                courseCard.className = 'course-card';
+                courseCard.dataset.course = course.id;
+
+                let subjectsHTML = '';
+                course.subjects.forEach(subject => {
+                    subjectsHTML += `
+                        <div class="subject-item">
+                            <i class='bx bx-book'></i>
+                            <div class="subject-name">${subject}</div>
+                            <button class="access-btn" data-subject="${subject}">Access</button>
+                        </div>
+                    `;
+                });
+
+                courseCard.innerHTML = `
+                    <div class="course-image" style="background-image: url('${course.image}');"></div>
+                    <div class="course-info">
+                        <div class="course-header">
+                            <h3 class="course-title">${course.title}</h3>
+                            <button class="expand-btn">
+                                <i class='bx bx-chevron-down'></i>
+                                <span class="subject-count">${course.subjects.length} subjects</span>
+                            </button>
+                        </div>
+                        <div class="course-subjects">
+                            ${subjectsHTML}
+                        </div>
+                        <a href="${course.directLink}" class="access-btn">Access Full Course</a>
+                    </div>
+                `;
+                courseGrid.appendChild(courseCard);
+
+                const expandBtn = courseCard.querySelector('.expand-btn');
+                const subjectsSection = courseCard.querySelector('.course-subjects');
+
+                function toggleSubjects(e) {
+                    if (e.target.classList.contains('access-btn') || e.target.parentElement.classList.contains('access-btn')) {
+                        return;
+                    }
+                    expandBtn.classList.toggle('expanded');
+                    subjectsSection.classList.toggle('expanded');
+                }
+
+                courseCard.addEventListener('click', toggleSubjects);
+                expandBtn.addEventListener('click', toggleSubjects);
+
+                const subjectAccessBtns = courseCard.querySelectorAll('.access-btn[data-subject]');
+                subjectAccessBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const subject = btn.dataset.subject;
+                        alert(`Accessing subject: ${subject}`);
+                    });
+                });
+            });
+        }
+
+        loadCourses();
+    </script>
+</body>
+</html>

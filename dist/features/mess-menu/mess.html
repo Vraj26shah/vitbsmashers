@@ -1,0 +1,501 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mess Menus - Scholars Stack</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="mess.css">
+</head>
+<body>
+    <!-- Header with Menu Toggle -->
+    <header class="header">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="logo">
+            <img src="../images/logo.png" alt="Scholars Stack Logo">
+            <div class="logo-text">
+                <h1>Scholars Stack</h1>
+                <span>Mess Menu</span>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
+                    <span>S</span>
+                </div>
+                <div class="user-name">Student</div>
+            </div>
+            <a href="../maps/maps.html" class="map-access" title="Campus Map" aria-label="View Campus Map">
+                <i class='bx bxs-map'></i>
+            </a>
+        </div>
+    </header>
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Main Navigation</div>
+        <ul class="sidebar-menu">
+            <!-- <li><a href="#"><i class='bx bxs-dashboard'></i> Dashboard</a></li> -->
+            <li><a href="../profile/profile.html"><i class='bx bxs-user'></i> Profile</a></li>
+            <li><a href="../attendance/attedance.html" ><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+
+            <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+            <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Resources</div>
+        <ul class="sidebar-menu">
+            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+            <li><a href="../club/club.html" ><i class='bx bxs-group'></i> Club Info</a></li>
+
+            <li><a href="../faculty/faculty.html" ><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="../mess-menu/mess.html" class="active"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+            <!-- <li><a href="#"><i class='bx bxs-book'></i> Study Materials</a></li> -->
+        </ul>
+        
+        <div class="sidebar-title">Quick Links</div>
+        <ul class="sidebar-menu">
+            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
+            <!-- <li><a href="#"><i class='bx bxs-file'></i> Assignments</a></li> -->
+            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Account</div>
+        <ul class="sidebar-menu">
+            <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li>
+            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+        </ul>
+    </nav>
+    
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+        <div class="mess-menu-section" id="messMenuSection">
+            <h2 class="section-title">Mess Menus</h2>
+            <div class="filter-container">
+                <label for="mess-filter">Filter by:</label>
+                <select id="mess-filter">
+                    <option value="all">All</option>
+                    <option value="boys">Boys</option>
+                    <option value="girls">Girls</option>
+                    <option value="canteen">Canteen</option>
+                    <option value="night canteen">Night Canteen</option>
+                </select>
+            </div>
+            <div class="mess-menu-grid" id="messMenuGrid">
+                <!-- Mess cards will be dynamically added here -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Modal for Full-Screen View -->
+    <div id="menuModal" class="modal">
+        <div class="modal-content-container" id="modalContainer">
+            <div class="modal-header">
+                <button class="modal-btn" id="resetZoom" title="Reset Zoom">
+                    <i class='bx bx-reset'></i>
+                </button>
+                <button class="modal-btn close-modal" title="Close">
+                    <i class='bx bx-x'></i>
+                </button>
+            </div>
+            
+            <h3 class="mess-title" id="modalTitle"></h3>
+            
+            <img class="modal-content" id="modalImage">
+            
+            <div class="zoom-level" id="zoomLevel">100%</div>
+            
+            <div class="zoom-controls">
+                <button class="zoom-btn" id="zoomIn" title="Zoom In">
+                    <i class='bx bx-zoom-in'></i>
+                </button>
+                <button class="zoom-btn" id="zoomOut" title="Zoom Out">
+                    <i class='bx bx-zoom-out'></i>
+                </button>
+            </div>
+            
+            <div class="instructions">
+                <i class='bx bx-mouse'></i> Scroll to zoom | 
+                <i class='bx bx-move'></i> Drag to pan | 
+                <i class='bx bx-reset'></i> Double-click to reset
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Mess Menu Data
+        const messes = [
+            { name: "CRCL Mess", type: "boys", image: "crcl.jpeg", updated: "2025-07-02T18:30:00+05:30" },
+            { name: "Mayuri(boys) Mess", type: "boys", image: "mayuri(boys).jpeg", updated: "2025-07-02T19:00:00+05:30" },
+            { name: "JMB Mess", type: "boys", image: "jmb.jpeg", updated: "2025-07-02T17:45:00+05:30" },
+            { name: "Safal Mess", type: "boys", image: "safal.jpeg", updated: "2025-07-02T18:15:00+05:30" },
+            { name: "AB Catering Mess", type: "girls", image: "images/girls_mess1.jpg", updated: "2025-07-02T20:00:00+05:30" },
+            { name: "Mayuri(girls) Mess", type: "girls", image: "images/girls_mess2.jpg", updated: "2025-07-02T19:30:00+05:30" },
+            { name: "Mayuri Canteen (AB)", type: "canteen", image: "images/canteen.jpg", updated: "2025-07-02T17:00:00+05:30" },
+            { name: "Mayuri Canteen (AB 02)", type: "canteen", image: "images/canteen.jpg", updated: "2025-07-02T17:00:00+05:30" },
+            { name: "AB Dakshin Canteen", type: "canteen", image: "images/canteen.jpg", updated: "2025-07-02T17:00:00+05:30" },
+            { name: "Mayuri Night Canteen(boys)", type: "canteen", image: "images/canteen.jpg", updated: "2025-07-02T17:00:00+05:30" },
+            { name: "CRCL Night Canteen", type: "canteen", image: "images/canteen.jpg", updated: "2025-07-02T17:00:00+05:30" },
+            { name: "Mayuri Night Canteen(girls)", type: "canteen", image: "images/canteen.jpg", updated: "2025-07-02T17:00:00+05:30" }
+        ];
+
+        function getRelativeTime(updatedTime) {
+            const currentTime = new Date();
+            const updatedDate = new Date(updatedTime);
+            const diffMs = currentTime - updatedDate;
+            const diffMinutes = Math.floor(diffMs / (1000 * 60));
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            if (diffMinutes < 1) {
+                return 'Just now';
+            } else if (diffMinutes < 60) {
+                return `${diffMinutes} minute${diffMinutes > 1 ? 's' : ''} ago`;
+            } else if (diffHours < 24) {
+                return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+            } else if (diffDays < 7) {
+                return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+            } else {
+                return updatedDate.toLocaleDateString('en-US', { 
+                    month: 'short', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            }
+        }
+
+        function getFormattedDate(updatedTime) {
+            const updatedDate = new Date(updatedTime);
+            return updatedDate.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+
+        function getFormattedTime(updatedTime) {
+            const updatedDate = new Date(updatedTime);
+            return updatedDate.toLocaleString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+            });
+        }
+
+        function generateMessCards(filter = 'all') {
+            const grid = document.getElementById('messMenuGrid');
+            grid.innerHTML = '';
+            messes.forEach((mess, index) => {
+                if (filter === 'all' || mess.type === filter) {
+                    const card = document.createElement('div');
+                    card.className = 'mess-card';
+                    card.dataset.index = index;
+                    const relativeTime = getRelativeTime(mess.updated);
+                    card.innerHTML = `
+                        <h3>${mess.name}</h3>
+                        <div class="menu-image" style="background-image: url('${mess.image}');">
+                            <div class="image-overlay">
+                                <i class='bx bx-expand'></i>
+                            </div>
+                        </div>
+                        <div class="update-info">
+                            <div class="update-date">
+                                <i class='bx bx-calendar'></i>
+                                <span class="update-date-text">${getFormattedDate(mess.updated)}</span>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(card);
+                }
+            });
+            
+            // Add click event listeners to all mess cards
+            document.querySelectorAll('.mess-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    const index = this.dataset.index;
+                    openFullscreenModal(index);
+                });
+            });
+        }
+
+        let scale = 1;
+        let translateX = 0;
+        let translateY = 0;
+        let isDragging = false;
+        let startX, startY;
+        let startTranslateX, startTranslateY;
+        let zoomLevel = document.getElementById('zoomLevel');
+        let modalImage = document.getElementById('modalImage');
+        let modalContainer = document.getElementById('modalContainer');
+        let naturalWidth, naturalHeight;
+
+        function openFullscreenModal(index) {
+            const modal = document.getElementById('menuModal');
+            const modalTitle = document.getElementById('modalTitle');
+            
+            const mess = messes[index];
+            modalImage.src = mess.image;
+            modalTitle.textContent = mess.name;
+            modal.style.display = "block";
+            
+            // Reset zoom and position
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
+            zoomLevel.textContent = "100%";
+            
+            modalImage.onload = function() {
+                naturalWidth = this.naturalWidth;
+                naturalHeight = this.naturalHeight;
+            };
+            
+            // Prevent scrolling on body when modal is open
+            document.body.style.overflow = "hidden";
+        }
+
+        // Update image transform based on current scale and position
+        function updateImageTransform() {
+            modalImage.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+            zoomLevel.textContent = `${Math.round(scale * 100)}%`;
+        }
+
+        function zoomAtPoint(delta, clientX, clientY) {
+            const rect = modalContainer.getBoundingClientRect();
+            
+            const containerX = clientX - rect.left;
+            const containerY = clientY - rect.top;
+            
+            const imageX = (containerX - translateX) / scale;
+            const imageY = (containerY - translateY) / scale;
+            
+            // Calculate new scale
+            const newScale = Math.max(0.5, Math.min(5, scale + delta));
+            
+            translateX = containerX - imageX * newScale;
+            translateY = containerY - imageY * newScale;
+            
+            scale = newScale;
+            updateImageTransform();
+        }
+
+        function resetZoom() {
+            scale = 1;
+            translateX = 0;
+            translateY = 0;
+            updateImageTransform();
+        }
+
+        document.getElementById('zoomIn').addEventListener('click', function() {
+            const rect = modalContainer.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            zoomAtPoint(0.2, centerX, centerY);
+        });
+
+        document.getElementById('zoomOut').addEventListener('click', function() {
+            const rect = modalContainer.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+            zoomAtPoint(-0.2, centerX, centerY);
+        });
+
+        document.getElementById('resetZoom').addEventListener('click', resetZoom);
+
+        modalImage.addEventListener('dblclick', resetZoom);
+
+        modalContainer.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.1 : 0.1;
+            zoomAtPoint(delta, e.clientX, e.clientY);
+        });
+
+        modalContainer.addEventListener('mousedown', function(e) {
+            if (scale > 1) {
+                isDragging = true;
+                modalContainer.classList.add('dragging');
+                startX = e.clientX;
+                startY = e.clientY;
+                startTranslateX = translateX;
+                startTranslateY = translateY;
+            }
+        });
+
+        modalContainer.addEventListener('mousemove', function(e) {
+            if (isDragging) {
+                const deltaX = e.clientX - startX;
+                const deltaY = e.clientY - startY;
+                
+                translateX = startTranslateX + deltaX;
+                translateY = startTranslateY + deltaY;
+                
+                updateImageTransform();
+            }
+        });
+
+        modalContainer.addEventListener('mouseup', function() {
+            isDragging = false;
+            modalContainer.classList.remove('dragging');
+        });
+
+        modalContainer.addEventListener('mouseleave', function() {
+            isDragging = false;
+            modalContainer.classList.remove('dragging');
+        });
+
+        modalContainer.addEventListener('touchstart', function(e) {
+            if (e.touches.length === 1) {
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                startTranslateX = translateX;
+                startTranslateY = translateY;
+                isDragging = true;
+                modalContainer.classList.add('dragging');
+            } else if (e.touches.length === 2) {
+                // Pinch zoom
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const distance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+                modalContainer.dataset.pinchDistance = distance;
+                modalContainer.dataset.pinchScale = scale;
+            }
+        }, { passive: false });
+
+        modalContainer.addEventListener('touchmove', function(e) {
+            if (e.touches.length === 1 && isDragging) {
+                const touch = e.touches[0];
+                const deltaX = touch.clientX - startX;
+                const deltaY = touch.clientY - startY;
+                
+                translateX = startTranslateX + deltaX;
+                translateY = startTranslateY + deltaY;
+                
+                updateImageTransform();
+            } else if (e.touches.length === 2) {
+                // Pinch zoom
+                e.preventDefault();
+                const touch1 = e.touches[0];
+                const touch2 = e.touches[1];
+                const distance = Math.hypot(
+                    touch2.clientX - touch1.clientX,
+                    touch2.clientY - touch1.clientY
+                );
+                const startDistance = parseFloat(modalContainer.dataset.pinchDistance);
+                const startScale = parseFloat(modalContainer.dataset.pinchScale);
+                
+                if (startDistance && startScale) {
+                    const newScale = startScale * (distance / startDistance);
+                    scale = Math.max(0.5, Math.min(5, newScale));
+                    
+                    // Calculate center point for zoom
+                    const centerX = (touch1.clientX + touch2.clientX) / 2;
+                    const centerY = (touch1.clientY + touch2.clientY) / 2;
+                    
+                    zoomAtPoint(0, centerX, centerY);
+                }
+            }
+        }, { passive: false });
+
+        modalContainer.addEventListener('touchend', function() {
+            isDragging = false;
+            modalContainer.classList.remove('dragging');
+            delete modalContainer.dataset.pinchDistance;
+            delete modalContainer.dataset.pinchScale;
+        });
+
+        document.querySelector('.close-modal').addEventListener('click', function() {
+            const modal = document.getElementById('menuModal');
+            modal.style.display = "none";
+            document.body.style.overflow = "auto";
+            resetZoom();
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', function(event) {
+            const modal = document.getElementById('menuModal');
+            if (event.target === modal) {
+                modal.style.display = "none";
+                document.body.style.overflow = "auto";
+                resetZoom();
+            }
+        });
+
+        document.addEventListener('keydown', function(event) {
+            const modal = document.getElementById('menuModal');
+            if (event.key === "Escape" && modal.style.display === "block") {
+                modal.style.display = "none";
+                document.body.style.overflow = "auto";
+                resetZoom();
+            }
+        });
+
+        // Function to update dates when mess data changes
+        function updateDates() {
+            document.querySelectorAll('.update-date-text').forEach(dateElement => {
+                const card = dateElement.closest('.mess-card');
+                const index = card.dataset.index;
+                const mess = messes[index];
+                if (mess) {
+                    dateElement.textContent = getFormattedDate(mess.updated);
+                }
+            });
+        }
+
+        // Function to manually update a specific mess timestamp
+        // Usage: updateMessTimestamp(0, "2025-01-15T14:30:00+05:30")
+        // First parameter: mess index (0 for CRCL, 1 for Mayuri boys, etc.)
+        // Second parameter: new timestamp in ISO format
+        function updateMessTimestamp(messIndex, newTimestamp) {
+            if (messes[messIndex]) {
+                messes[messIndex].updated = newTimestamp;
+                updateDates();
+                console.log(`Updated mess ${messIndex} timestamp to: ${newTimestamp}`);
+            }
+        }
+
+        // Function to update timestamp to current time
+        function updateMessToCurrentTime(messIndex) {
+            const now = new Date().toISOString();
+            updateMessTimestamp(messIndex, now);
+        }
+
+        // Initial load of mess cards
+        generateMessCards();
+
+        document.getElementById('mess-filter').addEventListener('change', function() {
+            generateMessCards(this.value);
+        });
+
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (sidebar.classList.contains('active') && 
+                !sidebar.contains(e.target) && 
+                !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

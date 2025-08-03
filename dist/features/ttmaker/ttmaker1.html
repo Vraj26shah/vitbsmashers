@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholars Stack - Timetable Maker</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="ttmaker1.css">
+</head>
+<body>
+    <!-- Header with Menu Toggle -->
+    <header class="header">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="logo">
+            <img src="../images/logo.png" alt="Scholars Stack Logo">
+            <div class="logo-text">
+                <h1>Scholars Stack</h1>
+                <span>Timetable Maker</span>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
+                    <span>S</span>
+                </div>
+                <div class="user-name">Student</div>
+            </div>
+            <a href="../maps/maps.html" class="map-access" title="Campus Map" aria-label="View Campus Map">
+                <i class='bx bxs-map'></i>
+            </a>
+        </div>
+    </header>
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Main Navigation</div>
+        <ul class="sidebar-menu">
+            <!-- <li><a href="#"><i class='bx bxs-dashboard'></i> Dashboard</a></li> -->
+            <li><a href="../profile/profile.html"><i class='bx bxs-user'></i> Profile</a></li>
+            <li><a href="../attendance/attedance.html" ><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+
+            <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+            <li><a href="../ttmaker/ttmaker1.html" class="active"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Resources</div>
+        <ul class="sidebar-menu">
+            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+            <li><a href="../club/club.html" ><i class='bx bxs-group'></i> Club Info</a></li>
+
+            <li><a href="../faculty/faculty.html" ><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+            <!-- <li><a href="#"><i class='bx bxs-book'></i> Study Materials</a></li> -->
+        </ul>
+        
+        <div class="sidebar-title">Quick Links</div>
+        <ul class="sidebar-menu">
+            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
+            <!-- <li><a href="#"><i class='bx bxs-file'></i> Assignments</a></li> -->
+            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Account</div>
+        <ul class="sidebar-menu">
+            <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li>
+            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+        </ul>
+    </nav>
+    
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+        <div class="timetable-container">
+            <div class="timetable-header">
+                <h1><i class="fas fa-calendar-alt"></i> FFCS Timetable Maker</h1>
+                <p>Plan your timetable with precision. Tentative slots help you reserve time without commitment.</p>
+            </div>
+
+            <!-- Important Usage Notes Section -->
+            <div class="usage-notes-container">
+                <div class="usage-notes-header">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <h3>Important Notes</h3>
+                </div>
+                <div class="usage-notes-content">
+                    <div class="note-item">
+                        <div class="note-icon">
+                            <i class="fas fa-redo"></i>
+                        </div>
+                        <div class="note-text">
+                            <strong>Reset First:</strong> Always click "Reset All" before starting a new timetable to ensure a clean slate.
+                        </div>
+                    </div>
+                    <div class="note-item">
+                        <div class="note-icon">
+                            <i class="fas fa-search"></i>
+                        </div>
+                        <div class="note-text">
+                            <strong>Search Slots:</strong> Use the search box to find specific slot codes (e.g., A11+B11+C11/a11+b11+c11) for quick selection.
+                        </div>
+                    </div>
+                    <div class="note-item">
+                        <div class="note-icon">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <div class="note-text">
+                            <strong>Tentative Slots:</strong> Mark slots as tentative to reserve time without final commitment - perfect for planning multiple options.
+                        </div>
+                    </div>
+                    <div class="note-item">
+                        <div class="note-icon">
+                            <i class="fas fa-palette"></i>
+                        </div>
+                        <div class="note-text">
+                            <strong>Color Coding:</strong> Use different colors for different courses to easily distinguish them in your timetable.
+                        </div>
+                    </div>
+                    <div class="note-item">
+                        <div class="note-icon">
+                            <i class="fas fa-download"></i>
+                        </div>
+                        <div class="note-text">
+                            <strong>Save Your Work:</strong> Download your timetable as PDF or PNG to keep a copy for reference.
+                        </div>
+                    </div>
+                    <div class="note-item">
+                        <div class="note-icon">
+                            <i class="fas fa-exchange-alt"></i>
+                        </div>
+                        <div class="note-text">
+                            <strong>Convert Tentative to Main:</strong> You can convert tentative slots to main subjects later, or handle them as individual slots for flexible planning.
+                        </div>
+                    </div>
+                </div>
+                <button class="usage-notes-toggle" onclick="toggleUsageNotes()">
+                    <i class="fas fa-chevron-up"></i>
+                    <span>Hide Tips</span>
+                </button>
+            </div>
+
+            <!-- Restructured Control Panel -->
+            <div class="control-panel">
+                <!-- Top Row: Search Section -->
+                <div class="search-section">
+                    <div class="search-container">
+                        <input type="text" class="search-box" id="searchBox" placeholder="Enter slot codes (e.g., A11+B11+C11)">
+                    </div>
+                    <button class="btn btn-search" onclick="highlightSlots()">
+                        <i class="fas fa-search"></i> Search & Select Slots
+                    </button>
+                </div>
+                
+                <!-- Error Message -->
+                <p id="slotErrorMessage" style="color: var(--secondary-color); text-align: center; margin-bottom: 15px; display: none;"></p>
+                
+                <!-- Middle Row: Stats Cards -->
+                <div class="stats-row">
+                    <div class="stats-card">
+                        <div class="number" id="totalSlots">42</div>
+                        <div class="label">Total Slots</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="number" id="occupiedSlots">0</div>
+                        <div class="label">Occupied</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="number" id="coursesCount">0</div>
+                        <div class="label">Courses</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="number" id="tentativeCount">0</div>
+                        <div class="label">Tentative</div>
+                    </div>
+                    <div class="stats-card">
+                        <div class="number" id="selectedCount">0</div>
+                        <div class="label">Selected</div>
+                    </div>
+                </div>
+                
+                <!-- Bottom Row: Action Buttons -->
+                <div class="actions-section">
+                    <button class="btn btn-primary" onclick="saveSelection()">
+                        <i class="fas fa-save"></i> Save Course
+                    </button>
+                    <button class="btn btn-tentative" onclick="markAsTentative()">
+                        <i class="fas fa-question-circle"></i> Mark Tentative
+                    </button>
+                    <button class="btn btn-danger" onclick="clearAllTentative()">
+                        <i class="fas fa-trash-alt"></i> Clear Tentative
+                    </button>
+                    <button class="btn btn-secondary" onclick="resetTable()">
+                        <i class="fas fa-redo"></i> Reset All
+                    </button>
+                    <div class="download-dropdown" id="downloadDropdown">
+                        <button class="btn btn-primary" onclick="toggleDownloadDropdown()">
+                            <i class="fas fa-download"></i> Download
+                        </button>
+                        <div class="download-dropdown-content">
+                            <a href="#" id="downloadPDF" onclick="downloadTimetableAsPDF(event)">
+                                <i class="fas fa-file-pdf"></i> Download as PDF
+                            </a>
+                            <a href="#" id="downloadImage" onclick="downloadTimetableAsImage(event)">
+                                <i class="fas fa-file-image"></i> Download as PNG
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="timetable-content" id="timetableToDownload">
+                <table>
+                    <tr>
+                        <th></th>
+                        <th>Slot 1<br><span>08:30 - 10:00</span></th>
+                        <th>Slot 2<br><span>10:05 - 11:35</span></th>
+                        <th>Slot 3<br><span>11:40 - 13:10</span></th>
+                        <th class="lunch">Lunch</th>
+                        <th>Slot 4<br><span>13:15 - 14:45</span></th>
+                        <th>Slot 5<br><span>14:50 - 16:20</span></th>
+                        <th>Slot 6<br><span>16:25 - 17:55</span></th>
+                        <th>Slot 7<br><span>18:00 - 19:30</span></th>
+                    </tr>
+                    <tr>
+                        <th>Monday</th>
+                        <td class="selectable" data-slot="A11"><span class="slot-code">A11</span></td>
+                        <td class="selectable" data-slot="B11"><span class="slot-code">B11</span></td>
+                        <td class="selectable" data-slot="C11"><span class="slot-code">C11</span></td>
+                        <td class="lunch">Lunch</td>
+                        <td class="selectable" data-slot="A21"><span class="slot-code">A21</span></td>
+                        <td class="selectable" data-slot="A14"><span class="slot-code">A14</span></td>
+                        <td class="selectable" data-slot="B21"><span class="slot-code">B21</span></td>
+                        <td class="selectable" data-slot="C21"><span class="slot-code">C21</span></td>
+                    </tr>
+                    <tr>
+                        <th>Tuesday</th>
+                        <td class="selectable" data-slot="D11"><span class="slot-code">D11</span></td>
+                        <td class="selectable" data-slot="E11"><span class="slot-code">E11</span></td>
+                        <td class="selectable" data-slot="F11"><span class="slot-code">F11</span></td>
+                        <td class="lunch">Lunch</td>
+                        <td class="selectable" data-slot="D21"><span class="slot-code">D21</span></td>
+                        <td class="selectable" data-slot="E14"><span class="slot-code">E14</span></td>
+                        <td class="selectable" data-slot="E21"><span class="slot-code">E21</span></td>
+                        <td class="selectable" data-slot="F21"><span class="slot-code">F21</span></td>
+                    </tr>
+                    <tr>
+                        <th>Wednesday</th>
+                        <td class="selectable" data-slot="A12"><span class="slot-code">A12</span></td>
+                        <td class="selectable" data-slot="B12"><span class="slot-code">B12</span></td>
+                        <td class="selectable" data-slot="C12"><span class="slot-code">C12</span></td>
+                        <td class="lunch">Lunch</td>
+                        <td class="selectable" data-slot="A22"><span class="slot-code">A22</span></td>
+                        <td class="selectable" data-slot="B14"><span class="slot-code">B14</span></td>
+                        <td class="selectable" data-slot="B22"><span class="slot-code">B22</span></td>
+                        <td class="selectable" data-slot="A24"><span class="slot-code">A24</span></td>
+                    </tr>
+                    <tr>
+                        <th>Thursday</th>
+                        <td class="selectable" data-slot="D12"><span class="slot-code">D12</span></td>
+                        <td class="selectable" data-slot="E12"><span class="slot-code">E12</span></td>
+                        <td class="selectable" data-slot="F12"><span class="slot-code">F12</span></td>
+                        <td class="lunch">Lunch</td>
+                        <td class="selectable" data-slot="D22"><span class="slot-code">D22</span></td>
+                        <td class="selectable" data-slot="F14"><span class="slot-code">F14</span></td>
+                        <td class="selectable" data-slot="E22"><span class="slot-code">E22</span></td>
+                        <td class="selectable" data-slot="F22"><span class="slot-code">F22</span></td>
+                    </tr>
+                    <tr>
+                        <th>Friday</th>
+                        <td class="selectable" data-slot="A13"><span class="slot-code">A13</span></td>
+                        <td class="selectable" data-slot="B13"><span class="slot-code">B13</span></td>
+                        <td class="selectable" data-slot="C13"><span class="slot-code">C13</span></td>
+                        <td class="lunch">Lunch</td>
+                        <td class="selectable" data-slot="A23"><span class="slot-code">A23</span></td>
+                        <td class="selectable" data-slot="C14"><span class="slot-code">C14</span></td>
+                        <td class="selectable" data-slot="B23"><span class="slot-code">B23</span></td>
+                        <td class="selectable" data-slot="B24"><span class="slot-code">B24</span></td>
+                    </tr>
+                    <tr>
+                        <th>Saturday</th>
+                        <td class="selectable" data-slot="D13"><span class="slot-code">D13</span></td>
+                        <td class="selectable" data-slot="E13"><span class="slot-code">E13</span></td>
+                        <td class="selectable" data-slot="F13"><span class="slot-code">F13</span></td>
+                        <td class="lunch">Lunch</td>
+                        <td class="selectable" data-slot="D23"><span class="slot-code">D23</span></td>
+                        <td class="selectable" data-slot="D14"><span class="slot-code">D14</span></td>
+                        <td class="selectable" data-slot="D24"><span class="slot-code">D24</span></td>
+                        <td class="selectable" data-slot="E23"><span class="slot-code">E23</span></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="selected-slots-container">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2 class="section-title">Your Courses</h2>
+                    <div class="tentative-tag">
+                        <i class="fas fa-info-circle"></i> Tentative slots are striped
+                    </div>
+                </div>
+                <div class="selected-slots">
+                    <ul id="coursesList" class="slot-list"></ul>
+                </div>
+            </div>
+
+            <div class="tentative-slots-container">
+                <div class="action-bar">
+                    <h2 class="section-title">Tentative Slots</h2>
+                </div>
+                <div class="selected-slots">
+                    <div id="tentativeList"></div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p class="creator">Created by Vraj Shah</p>
+            <p>VIT Bhopal University • Computer Science Engineering</p>
+        </footer>
+    </main>
+
+    <!-- Course Details Modal -->
+    <div id="courseModal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <button class="close-modal" onclick="closeCourseModal()">
+                <i class="fas fa-times"></i>
+            </button>
+            <h2 id="modalTitle">Add Course Details</h2>
+            <p id="currentSlotText">Assign to <strong id="selectedCountText">0</strong> slots: <strong id="currentSlot"></strong></p>
+            
+            <div id="errorContainer" class="error-container" style="display: none; background: rgba(231, 76, 60, 0.2); border-radius: 8px; padding: 15px; margin: 20px 0; border-left: 4px solid var(--secondary-color);">
+                <div class="error-title" style="color: var(--secondary-color); font-weight: 600; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <span>Unable to save course</span>
+                </div>
+                <ul id="errorList" class="error-list" style="list-style: none; padding-left: 10px;"></ul>
+            </div>
+            
+            <div class="rainbow-picker" id="rainbowPicker">
+                <div class="rainbow-selector" id="rainbowSelector"></div>
+            </div>
+            
+            <div class="color-palette">
+                <div class="color-option active" style="background-color: #D8D8F6;" data-color="#D8D8F6"></div>
+                <div class="color-option" style="background-color: #2ecc71;" data-color="#2ecc71"></div>
+                <div class="color-option" style="background-color: #f39c12;" data-color="#f39c12"></div>
+                <div class="color-option" style="background-color: #e74c3c;" data-color="#e74c3c"></div>
+                <div class="color-option" style="background-color: #1abc9c;" data-color="#1abc9c"></div>
+                <div class="color-option" style="background-color: #9b59b6;" data-color="#9b59b6"></div>
+            </div>
+            
+            <div class="color-picker">
+                <div class="color-preview-large" id="customColorPreview"></div>
+                <input type="text" class="color-input" id="customColorInput" placeholder="#RRGGBB">
+            </div>
+            
+            <div class="form-group">
+                <label>Course Name <span class="optional-label">(Optional)</span></label>
+                <input type="text" id="courseName" placeholder="e.g., Mathematics">
+            </div>
+            
+            <div class="form-group">
+                <label>Course Code <span class="optional-label">(Optional)</span></label>
+                <input type="text" id="courseCode" placeholder="e.g., MAT101">
+            </div>
+            
+            <div class="form-group">
+                <label>Teacher Name <span class="optional-label">(Optional)</span></label>
+                <input type="text" id="teacherName" placeholder="e.g., Dr. Sharma">
+            </div>
+            
+            <div class="tentative-controls">
+                <button class="btn btn-primary" id="saveCourseBtn" onclick="saveCourse()">
+                    <i class="fas fa-save"></i> Save Course
+                </button>
+                <button class="btn btn-tentative" id="saveTentativeBtn" onclick="saveAsTentative()">
+                    <i class="fas fa-question-circle"></i> Mark as Tentative
+                </button>
+                <button class="btn" style="background: #6c757d; color: white;" onclick="closeCourseModal()">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </div>
+        </div>
+
+    </div>
+
+<script src="ttmaker1.js"></script>
+</body>
+</html>

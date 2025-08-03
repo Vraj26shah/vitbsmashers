@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholars Stack - Club Management</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="club.css">
+    <style>
+
+    </style>
+</head>
+<body>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    
+    <!-- Header with Menu Toggle -->
+    <header class="header">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="logo">
+            <img src="../images/logo.png" alt="Scholars Stack Logo">
+            <div class="logo-text">
+                <h1>Scholars Stack</h1>
+                <span>Club Info</span>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
+                    <span>S</span>
+                </div>
+                <div class="user-name">Student</div>
+            </div>
+            <a href="../maps/maps.html" class="map-access" title="Campus Map" aria-label="View Campus Map">
+                <i class='bx bxs-map'></i>
+            </a>
+        </div>
+    </header>
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Main Navigation</div>
+        <ul class="sidebar-menu">
+            <!-- <li><a href="#"><i class='bx bxs-dashboard'></i> Dashboard</a></li> -->
+            <li><a href="../profile/profile.html"><i class='bx bxs-user'></i> Profile</a></li>
+            <li><a href="../attendance/attedance.html"><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+            <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+            <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Resources</div>
+        <ul class="sidebar-menu">
+            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+            <li><a href="../club/club.html" class="active"><i class='bx bxs-group'></i> Club Info</a></li>
+
+            <li><a href="../faculty/faculty.html" ><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+            <!-- <li><a href="#"><i class='bx bxs-book'></i> Study Materials</a></li> -->
+        </ul>
+        
+        <div class="sidebar-title">Quick Links</div>
+        <ul class="sidebar-menu">
+            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
+            <!-- <li><a href="#"><i class='bx bxs-file'></i> Assignments</a></li> -->
+            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Account</div>
+        <ul class="sidebar-menu">
+            <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li>
+            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+        </ul>
+    </nav>    
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">
+            <i class='bx bxs-group'></i> Club Management
+        </h1>
+        
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="clubs">
+                <i class='bx bxs-group'></i> Browse Clubs
+            </button>
+            <button class="tab-btn" data-tab="register">
+                <i class='bx bxs-plus-circle'></i> Register Club
+            </button>
+            <button class="tab-btn" data-tab="update">
+                <i class='bx bxs-edit-alt'></i> Update Club
+            </button>
+            <button class="tab-btn" data-tab="admin" id="adminTab">
+                <i class='bx bxs-shield'></i> Admin Panel
+            </button>
+        </div>
+        
+        <!-- Browse Clubs Section -->
+        <section class="tab-content active" id="clubs-tab">
+            <div class="club-grid" id="clubsGrid">
+                <!-- Clubs will be populated by JavaScript -->
+            </div>
+        </section>
+        
+        
+        <!-- Register Club Section -->
+        <section class="tab-content" id="register-tab">
+            <div class="club-registration">
+                <h2 class="form-title">
+                    <i class='bx bxs-plus-circle'></i> Register Your Club
+                </h2>
+                
+                <div id="successMessage" class="success-message" style="display: none;">
+                    <i class='bx bx-check-circle'></i>
+                    <p>Your club registration has been submitted successfully! The admin will review your application and you'll receive a confirmation email once approved.</p>
+                </div>
+                
+                <form id="clubRegistrationForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="clubName" class="required">Club Name</label>
+                            <input type="text" id="clubName" name="clubName" required placeholder="Enter club name">
+                        </div>
+                        <div class="form-group">
+                            <label for="clubCategory" class="required">Category</label>
+                            <select id="clubCategory" name="clubCategory" required>
+                                <option value="">Select a category</option>
+                                <option value="Technical">Technical</option>
+                                <option value="Cultural">Cultural</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Social">Social Service</option>
+                                <option value="Entrepreneurship">Entrepreneurship</option>
+                                <option value="Arts">Arts</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="clubDescription" class="required">Description</label>
+                            <textarea id="clubDescription" name="clubDescription" required placeholder="Describe your club's purpose and activities"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="facultyName" class="required">Faculty Coordinator Name</label>
+                            <input type="text" id="facultyName" name="facultyName" required placeholder="Enter faculty coordinator name">
+                        </div>
+                        <div class="form-group">
+                            <label for="facultyEmail" class="required">Faculty Coordinator Email</label>
+                            <input type="email" id="facultyEmail" name="facultyEmail" required placeholder="Enter faculty coordinator email">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="coFacultyName">Co-Faculty Coordinator Name (Optional)</label>
+                            <input type="text" id="coFacultyName" name="coFacultyName" placeholder="Enter co-faculty coordinator name">
+                        </div>
+                        <div class="form-group">
+                            <label for="coFacultyEmail">Co-Faculty Coordinator Email (Optional)</label>
+                            <input type="email" id="coFacultyEmail" name="coFacultyEmail" placeholder="Enter co-faculty coordinator email">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="contactPerson" class="required">Contact Person</label>
+                            <input type="text" id="contactPerson" name="contactPerson" required placeholder="Enter contact person name">
+                        </div>
+                        <div class="form-group">
+                            <label for="contactEmail" class="required">Contact Email</label>
+                            <input type="email" id="contactEmail" name="contactEmail" required placeholder="Enter contact email">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="clubMembers">Number of Members (Optional)</label>
+                            <input type="number" id="clubMembers" name="clubMembers" placeholder="Enter number of members">
+                        </div>
+                        <div class="form-group">
+                            <label for="clubEvents">Events Organized (Optional)</label>
+                            <input type="number" id="clubEvents" name="clubEvents" placeholder="Enter number of events">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="clubLogo">Club Logo (Optional)</label>
+                            <div class="file-upload">
+                                <input type="file" id="clubLogo" name="clubLogo" accept="image/*">
+                                <div class="file-upload-label">
+                                    <i class='bx bx-cloud-upload'></i>
+                                    <span>Click to upload logo (Max 2MB)</span>
+                                </div>
+                            </div>
+                            <div class="preview-container">
+                                <img id="logoPreview" class="logo-preview" alt="Logo preview">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <i class='bx bx-send'></i> Submit Registration
+                    </button>
+                </form>
+            </div>
+        </section>
+        
+        <!-- Update Club Section -->
+        <section class="tab-content" id="update-tab">
+            <div class="club-registration">
+                <h2 class="form-title">
+                    <i class='bx bxs-edit-alt'></i> Update Club Information
+                </h2>
+                
+                <div id="updateSuccessMessage" class="success-message" style="display: none;">
+                    <i class='bx bx-check-circle'></i>
+                    <p>Your club update request has been submitted successfully! The admin will review your changes and you'll receive a confirmation email once approved.</p>
+                </div>
+                
+                <div class="form-group">
+                    <label for="selectClubToUpdate" class="required">Select Club to Update</label>
+                    <select id="selectClubToUpdate" name="selectClubToUpdate" required>
+                        <option value="">Select your club</option>
+                        <!-- Clubs will be populated by JavaScript -->
+                    </select>
+                </div>
+                
+                <form id="clubUpdateForm" style="display: none;">
+                    <input type="hidden" id="updateClubId" name="updateClubId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="updateClubName" class="required">Club Name</label>
+                            <input type="text" id="updateClubName" name="updateClubName" required placeholder="Enter club name">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateClubCategory" class="required">Category</label>
+                            <select id="updateClubCategory" name="updateClubCategory" required>
+                                <option value="">Select a category</option>
+                                <option value="Technical">Technical</option>
+                                <option value="Cultural">Cultural</option>
+                                <option value="Sports">Sports</option>
+                                <option value="Social">Social Service</option>
+                                <option value="Entrepreneurship">Entrepreneurship</option>
+                                <option value="Arts">Arts</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="updateClubDescription" class="required">Description</label>
+                            <textarea id="updateClubDescription" name="updateClubDescription" required placeholder="Describe your club's purpose and activities"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="updateFacultyName" class="required">Faculty Coordinator Name</label>
+                            <input type="text" id="updateFacultyName" name="updateFacultyName" required placeholder="Enter faculty coordinator name">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateFacultyEmail" class="required">Faculty Coordinator Email</label>
+                            <input type="email" id="updateFacultyEmail" name="updateFacultyEmail" required placeholder="Enter faculty coordinator email">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="updateCoFacultyName">Co-Faculty Coordinator Name (Optional)</label>
+                            <input type="text" id="updateCoFacultyName" name="updateCoFacultyName" placeholder="Enter co-faculty coordinator name">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateCoFacultyEmail">Co-Faculty Coordinator Email (Optional)</label>
+                            <input type="email" id="updateCoFacultyEmail" name="updateCoFacultyEmail" placeholder="Enter co-faculty coordinator email">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="updateContactPerson" class="required">Contact Person</label>
+                            <input type="text" id="updateContactPerson" name="updateContactPerson" required placeholder="Enter contact person name">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateContactEmail" class="required">Contact Email</label>
+                            <input type="email" id="updateContactEmail" name="updateContactEmail" required placeholder="Enter contact email">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="updateClubMembers">Number of Members (Optional)</label>
+                            <input type="number" id="updateClubMembers" name="updateClubMembers" placeholder="Enter number of members">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateClubEvents">Events Organized (Optional)</label>
+                            <input type="number" id="updateClubEvents" name="updateClubEvents" placeholder="Enter number of events">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="updateClubLogo">Club Logo (Optional)</label>
+                            <div class="file-upload">
+                                <input type="file" id="updateClubLogo" name="updateClubLogo" accept="image/*">
+                                <div class="file-upload-label">
+                                    <i class='bx bx-cloud-upload'></i>
+                                    <span>Click to upload new logo (Max 2MB)</span>
+                                </div>
+                            </div>
+                            <div class="preview-container">
+                                <img id="updateLogoPreview" class="logo-preview" alt="Logo preview">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <i class='bx bx-refresh'></i> Submit Update Request
+                    </button>
+                </form>
+            </div>
+        </section>
+        
+        <!-- Admin Panel Section -->
+        <section class="tab-content" id="admin-tab">
+            <div class="admin-panel">
+                <h2 class="admin-title">
+                    <i class='bx bxs-shield'></i> Club Approval Panel
+                </h2>
+                <p>Review and approve pending club registrations and updates. Approved changes will appear in the public listing.</p>
+                
+                <div class="admin-tabs">
+                    <button class="admin-tab-btn active" data-admin-tab="pending-clubs">Pending Registrations</button>
+                    <button class="admin-tab-btn" data-admin-tab="pending-updates">Pending Updates</button>
+                </div>
+                
+                <div class="admin-tab-content active" id="pending-clubs-tab">
+                    <div class="pending-clubs" id="pendingClubs">
+                        <!-- Pending clubs will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="admin-tab-content" id="pending-updates-tab">
+                    <div class="pending-updates" id="pendingUpdates">
+                        <!-- Pending updates will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Toggle sidebar
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            mobileOverlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : 'auto';
+        });
+        
+        mobileOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            mobileOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+
+        // Tab functionality
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all buttons and contents
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked button
+                btn.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = btn.dataset.tab;
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
+        // Admin tab functionality
+        const adminTabBtns = document.querySelectorAll('.admin-tab-btn');
+        const adminTabContents = document.querySelectorAll('.admin-tab-content');
+        
+        adminTabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Remove active class from all admin buttons and contents
+                adminTabBtns.forEach(b => b.classList.remove('active'));
+                adminTabContents.forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked button
+                btn.classList.add('active');
+                
+                // Show corresponding content
+                const tabId = btn.dataset.adminTab;
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
+        // Helper function to read image file as data URL
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        // Logo preview for registration form
+        document.getElementById('clubLogo').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    const dataUrl = await readFileAsDataURL(file);
+                    const preview = document.getElementById('logoPreview');
+                    preview.src = dataUrl;
+                    preview.style.display = 'block';
+                } catch (error) {
+                    console.error('Error reading file:', error);
+                }
+            }
+        });
+        
+        // Logo preview for update form
+        document.getElementById('updateClubLogo').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                try {
+                    const dataUrl = await readFileAsDataURL(file);
+                    const preview = document.getElementById('updateLogoPreview');
+                    preview.src = dataUrl;
+                    preview.style.display = 'block';
+                } catch (error) {
+                    console.error('Error reading file:', error);
+                }
+            }
+        });
+        
+        // Sample club data
+        const clubs = [
+            {
+                id: 1,
+                name: "Code Warriors",
+                category: "Technical",
+                description: "A club for coding enthusiasts to collaborate on projects, participate in hackathons, and improve programming skills.",
+                contact: "codewarriors@vitb.edu",
+                contactPerson: "Rahul Sharma",
+                facultyCoordinator: "Dr. S. Kumar",
+                facultyEmail: "skumar@vitb.edu",
+                coFacultyCoordinator: "Dr. M. Sharma",
+                coFacultyEmail: "msharma@vitb.edu",
+                members: 85,
+                events: 12,
+                status: "approved",
+                logo: "bx bx-code-alt",
+                logoData: null
+            },
+            {
+                id: 2,
+                name: "Robotics Club",
+                category: "Technical",
+                description: "Designing, building, and programming robots for competitions and research projects.",
+                contact: "robotics@vitb.edu",
+                contactPerson: "Priya Patel",
+                facultyCoordinator: "Dr. R. Singh",
+                facultyEmail: "rsingh@vitb.edu",
+                members: 42,
+                events: 8,
+                status: "approved",
+                logo: "bx bxs-bot",
+                logoData: null
+            },
+            {
+                id: 3,
+                name: "Dramatics Society",
+                category: "Cultural",
+                description: "Exploring the art of theater through workshops, productions, and performances.",
+                contact: "dramatics@vitb.edu",
+                contactPerson: "Vikram Singh",
+                facultyCoordinator: "Dr. A. Reddy",
+                facultyEmail: "areddy@vitb.edu",
+                coFacultyCoordinator: "Dr. P. Verma",
+                coFacultyEmail: "pverma@vitb.edu",
+                members: 64,
+                events: 6,
+                status: "approved",
+                logo: "bx bxs-theater",
+                logoData: null
+            },
+            {
+                id: 4,
+                name: "Music Club",
+                category: "Cultural",
+                description: "Bringing together musicians and music lovers for jam sessions, concerts, and workshops.",
+                contact: "music@vitb.edu",
+                contactPerson: "Ananya Reddy",
+                facultyCoordinator: "Dr. K. Desai",
+                facultyEmail: "kdesai@vitb.edu",
+                members: 78,
+                events: 10,
+                status: "approved",
+                logo: "bx bxs-music",
+                logoData: null
+            }
+        ];
+
+        // Pending clubs for admin approval
+        const pendingClubs = [
+            {
+                id: 5,
+                name: "Photography Club",
+                category: "Arts",
+                description: "A community for photography enthusiasts to learn, share, and explore the art of photography.",
+                contact: "photography@vitb.edu",
+                contactPerson: "Amit Verma",
+                facultyCoordinator: "Dr. N. Kapoor",
+                facultyEmail: "nkapoor@vitb.edu",
+                members: 0,
+                events: 0,
+                status: "pending",
+                logo: "bx bxs-camera",
+                logoData: null
+            },
+            {
+                id: 6,
+                name: "AI Research Group",
+                category: "Technical",
+                description: "Exploring artificial intelligence through research projects, workshops, and competitions.",
+                contact: "ai-research@vitb.edu",
+                contactPerson: "Neha Kapoor",
+                facultyCoordinator: "Dr. S. Rao",
+                facultyEmail: "srao@vitb.edu",
+                members: 0,
+                events: 0,
+                status: "pending",
+                logo: "bx bxs-brain",
+                logoData: null
+            }
+        ];
+
+        // Pending update requests
+        const pendingUpdates = [
+            {
+                id: 1,
+                clubId: 2,
+                clubName: "Robotics Club",
+                changes: {
+                    description: {
+                        old: "Designing, building, and programming robots for competitions.",
+                        new: "Designing, building, and programming robots for competitions and research projects."
+                    },
+                    contactPerson: {
+                        old: "Priya Mehta",
+                        new: "Priya Patel"
+                    },
+                    coFacultyCoordinator: {
+                        old: "",
+                        new: "Dr. S. Mishra"
+                    },
+                    coFacultyEmail: {
+                        old: "",
+                        new: "smishra@vitb.edu"
+                    },
+                    members: {
+                        old: 35,
+                        new: 42
+                    },
+                    events: {
+                        old: 5,
+                        new: 8
+                    }
+                },
+                status: "pending",
+                submittedBy: "Priya Patel",
+                submittedOn: "2023-11-15",
+                logo: "bx bxs-bot",
+                logoData: null
+            },
+            {
+                id: 2,
+                clubId: 4,
+                clubName: "Music Club",
+                changes: {
+                    events: {
+                        old: 8,
+                        new: 10
+                    },
+                    description: {
+                        old: "Bringing together musicians for jam sessions and concerts.",
+                        new: "Bringing together musicians and music lovers for jam sessions, concerts, and workshops."
+                    },
+                    members: {
+                        old: 65,
+                        new: 78
+                    }
+                },
+                status: "pending",
+                submittedBy: "Ananya Reddy",
+                submittedOn: "2023-11-18",
+                logo: "bx bxs-music",
+                logoData: null
+            }
+        ];
+
+        // Render approved clubs
+        function renderClubs() {
+            const clubsGrid = document.getElementById('clubsGrid');
+            clubsGrid.innerHTML = '';
+            
+            clubs.forEach(club => {
+                if (club.status === 'approved') {
+                    const clubCard = document.createElement('div');
+                    clubCard.className = 'club-card';
+                    
+                    // Create logo element based on whether logoData exists
+                    let logoElement;
+                    if (club.logoData) {
+                        logoElement = `<img src="${club.logoData}" alt="${club.name} logo">`;
+                    } else {
+                        logoElement = `<i class='${club.logo}'></i>`;
+                    }
+                    
+                    clubCard.innerHTML = `
+                        <div class="club-image">
+                            ${logoElement}
+                        </div>
+                        <div class="club-info">
+                            <div class="club-header">
+                                <div>
+                                    <h3 class="club-title">${club.name}</h3>
+                                    <p class="club-category"><i class='bx bxs-category'></i> ${club.category}</p>
+                                </div>
+                            </div>
+                            
+                            <div class="club-meta">
+                                <div class="meta-item">
+                                    <i class='bx bxs-group'></i>
+                                    <span>${club.members} Members</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class='bx bxs-calendar-event'></i>
+                                    <span>${club.events} Events</span>
+                                </div>
+                            </div>
+                            
+                            <p class="club-description">
+                                ${club.description}
+                            </p>
+                            
+                            <div class="club-footer">
+                                <div>
+                                    <div class="meta-item">
+                                        <i class='bx bxs-user'></i>
+                                        <span>Contact: ${club.contactPerson}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class='bx bxs-envelope'></i>
+                                        <span>${club.contact}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <i class='bx bxs-user-circle'></i>
+                                        <span>Faculty: ${club.facultyCoordinator}</span>
+                                    </div>
+                                </div>
+                                <button class="update-btn" data-id="${club.id}">
+                                    <i class='bx bxs-edit-alt'></i> Update
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    clubsGrid.appendChild(clubCard);
+                }
+            });
+            
+            // Add event listeners to update buttons
+            document.querySelectorAll('.update-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const clubId = parseInt(btn.dataset.id);
+                    populateUpdateForm(clubId);
+                    document.querySelector('[data-tab="update"]').click();
+                });
+            });
+        }
+
+        // Render pending clubs for admin
+        function renderPendingClubs() {
+            const pendingClubsContainer = document.getElementById('pendingClubs');
+            pendingClubsContainer.innerHTML = '';
+            
+            if (pendingClubs.length === 0) {
+                pendingClubsContainer.innerHTML = '<p>No pending club registrations at this time.</p>';
+                return;
+            }
+            
+            pendingClubs.forEach(club => {
+                if (club.status === 'pending') {
+                    const pendingClub = document.createElement('div');
+                    pendingClub.className = 'pending-club';
+                    
+                    // Create logo element
+                    let logoElement;
+                    if (club.logoData) {
+                        logoElement = `<img src="${club.logoData}" alt="${club.name} logo">`;
+                    } else {
+                        logoElement = `<i class='${club.logo}'></i>`;
+                    }
+                    
+                    pendingClub.innerHTML = `
+                        <div class="pending-club-image">
+                            ${logoElement}
+                        </div>
+                        <div class="pending-club-details">
+                            <h3 class="pending-club-title">${club.name}</h3>
+                            <div class="pending-club-meta">
+                                <div class="club-category">
+                                    <i class='bx bxs-category'></i> ${club.category}
+                                </div>
+                                <div class="status-indicator status-pending">
+                                    <i class='bx bxs-time'></i> Pending Approval
+                                </div>
+                            </div>
+                            <p class="pending-club-description">${club.description}</p>
+                            <div class="meta-item">
+                                <i class='bx bxs-user'></i>
+                                <span>Contact: ${club.contactPerson}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class='bx bxs-envelope'></i>
+                                <span>${club.contact}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class='bx bxs-user-circle'></i>
+                                <span>Faculty: ${club.facultyCoordinator}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class='bx bxs-group'></i>
+                                <span>Members: ${club.members}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class='bx bxs-calendar-event'></i>
+                                <span>Events: ${club.events}</span>
+                            </div>
+                            <div class="pending-club-actions">
+                                <button class="action-btn approve-btn" data-id="${club.id}">
+                                    <i class='bx bx-check'></i> Approve
+                                </button>
+                                <button class="action-btn reject-btn" data-id="${club.id}">
+                                    <i class='bx bx-x'></i> Reject
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    pendingClubsContainer.appendChild(pendingClub);
+                }
+            });
+            
+            // Add event listeners to action buttons
+            document.querySelectorAll('.approve-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const clubId = parseInt(btn.dataset.id);
+                    approveClub(clubId);
+                });
+            });
+            
+            document.querySelectorAll('.reject-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const clubId = parseInt(btn.dataset.id);
+                    rejectClub(clubId);
+                });
+            });
+        }
+        
+        // Render pending updates for admin
+        function renderPendingUpdates() {
+            const pendingUpdatesContainer = document.getElementById('pendingUpdates');
+            pendingUpdatesContainer.innerHTML = '';
+            
+            if (pendingUpdates.length === 0) {
+                pendingUpdatesContainer.innerHTML = '<p>No pending club updates at this time.</p>';
+                return;
+            }
+            
+            pendingUpdates.forEach(update => {
+                if (update.status === 'pending') {
+                    const pendingUpdate = document.createElement('div');
+                    pendingUpdate.className = 'pending-update';
+                    
+                    // Create logo element
+                    let logoElement;
+                    if (update.logoData) {
+                        logoElement = `<img src="${update.logoData}" alt="${update.clubName} logo">`;
+                    } else {
+                        logoElement = `<i class='${update.logo}'></i>`;
+                    }
+                    
+                    pendingUpdate.innerHTML = `
+                        <div class="pending-update-image">
+                            ${logoElement}
+                        </div>
+                        <div class="pending-update-details">
+                            <h3 class="pending-update-title">${update.clubName} - Update Request</h3>
+                            <div class="pending-update-meta">
+                                <div class="status-indicator status-pending">
+                                    <i class='bx bxs-time'></i> Pending Approval
+                                </div>
+                                <div class="meta-item">
+                                    <i class='bx bxs-user'></i>
+                                    <span>Submitted by: ${update.submittedBy}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class='bx bxs-calendar'></i>
+                                    <span>${update.submittedOn}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="update-changes">
+                                <h4><i class='bx bx-revision'></i> Proposed Changes</h4>
+                                ${Object.entries(update.changes).map(([field, values]) => `
+                                    <div class="change-item">
+                                        <div class="change-field">${formatFieldName(field)}:</div>
+                                        <div class="change-old">${values.old || 'N/A'}</div>
+                                        <div class="change-new">${values.new || 'N/A'}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <div class="pending-update-actions">
+                                <button class="action-btn view-btn" data-id="${update.id}">
+                                    <i class='bx bx-show'></i> View Club
+                                </button>
+                                <button class="action-btn approve-btn" data-id="${update.id}">
+                                    <i class='bx bx-check'></i> Approve
+                                </button>
+                                <button class="action-btn reject-btn" data-id="${update.id}">
+                                    <i class='bx bx-x'></i> Reject
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    pendingUpdatesContainer.appendChild(pendingUpdate);
+                }
+            });
+            
+            // Add event listeners to action buttons
+            document.querySelectorAll('.pending-update .approve-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const updateId = parseInt(btn.dataset.id);
+                    approveUpdate(updateId);
+                });
+            });
+            
+            document.querySelectorAll('.pending-update .reject-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const updateId = parseInt(btn.dataset.id);
+                    rejectUpdate(updateId);
+                });
+            });
+        }
+        
+        // Format field names for display
+        function formatFieldName(field) {
+            const names = {
+                'description': 'Description',
+                'contactPerson': 'Contact Person',
+                'facultyCoordinator': 'Faculty Coordinator',
+                'facultyEmail': 'Faculty Email',
+                'coFacultyCoordinator': 'Co-Faculty Coordinator',
+                'coFacultyEmail': 'Co-Faculty Email',
+                'members': 'Number of Members',
+                'events': 'Number of Events'
+            };
+            return names[field] || field;
+        }
+
+        // Approve club
+        function approveClub(clubId) {
+            const pendingIndex = pendingClubs.findIndex(club => club.id === clubId);
+            if (pendingIndex !== -1) {
+                const approvedClub = pendingClubs[pendingIndex];
+                approvedClub.status = 'approved';
+                
+                // Set default values if not provided
+                if (!approvedClub.members) approvedClub.members = 25;
+                if (!approvedClub.events) approvedClub.events = 3;
+                
+                // Move to approved clubs
+                clubs.push(approvedClub);
+                
+                // Remove from pending
+                pendingClubs.splice(pendingIndex, 1);
+                
+                // Simulate sending approval email
+                sendApprovalEmail(approvedClub.contact, approvedClub.name);
+                
+                // Re-render both lists
+                renderClubs();
+                renderPendingClubs();
+                populateClubSelect();
+                
+                alert(`Club "${approvedClub.name}" has been approved and added to the public listing.`);
+            }
+        }
+
+        // Reject club
+        function rejectClub(clubId) {
+            const pendingIndex = pendingClubs.findIndex(club => club.id === clubId);
+            if (pendingIndex !== -1) {
+                const rejectedClub = pendingClubs[pendingIndex];
+                
+                // Simulate sending rejection email
+                sendRejectionEmail(rejectedClub.contact, rejectedClub.name);
+                
+                // Remove from pending
+                pendingClubs.splice(pendingIndex, 1);
+                
+                // Re-render pending list
+                renderPendingClubs();
+                
+                alert(`Club "${rejectedClub.name}" has been rejected.`);
+            }
+        }
+        
+        // Approve update
+        function approveUpdate(updateId) {
+            const updateIndex = pendingUpdates.findIndex(update => update.id === updateId);
+            if (updateIndex !== -1) {
+                const update = pendingUpdates[updateIndex];
+                const clubIndex = clubs.findIndex(club => club.id === update.clubId);
+                
+                if (clubIndex !== -1) {
+                    // Apply changes to the club
+                    const club = clubs[clubIndex];
+                    Object.entries(update.changes).forEach(([field, values]) => {
+                        club[field] = values.new;
+                    });
+                    
+                    // Apply logo update if exists
+                    if (update.logoData) {
+                        club.logoData = update.logoData;
+                    }
+                    
+                    // Simulate sending approval email
+                    sendUpdateApprovalEmail(club.contact, club.name);
+                    
+                    // Remove from pending updates
+                    pendingUpdates.splice(updateIndex, 1);
+                    
+                    // Re-render all lists
+                    renderClubs();
+                    renderPendingUpdates();
+                    populateClubSelect();
+                    
+                    alert(`Updates for "${club.name}" have been approved and applied.`);
+                }
+            }
+        }
+        
+        // Reject update
+        function rejectUpdate(updateId) {
+            const updateIndex = pendingUpdates.findIndex(update => update.id === updateId);
+            if (updateIndex !== -1) {
+                const update = pendingUpdates[updateIndex];
+                
+                // Simulate sending rejection email
+                sendUpdateRejectionEmail(update.submittedBy, update.clubName);
+                
+                // Remove from pending
+                pendingUpdates.splice(updateIndex, 1);
+                
+                // Re-render pending updates
+                renderPendingUpdates();
+                
+                alert(`Update request for "${update.clubName}" has been rejected.`);
+            }
+        }
+
+        // Simulate sending approval email
+        function sendApprovalEmail(email, clubName) {
+            console.log(`Sending approval email to ${email}`);
+            console.log(`Subject: Your Club "${clubName}" Has Been Approved!`);
+            console.log(`Body: Congratulations! Your club registration for "${clubName}" has been approved and is now listed on the Scholars Stack platform.`);
+        }
+
+        // Simulate sending rejection email
+        function sendRejectionEmail(email, clubName) {
+            console.log(`Sending rejection email to ${email}`);
+            console.log(`Subject: Your Club Registration for "${clubName}"`);
+            console.log(`Body: Thank you for your club registration. After review, we've decided not to approve "${clubName}" at this time. Please contact us for more information.`);
+        }
+        
+        // Simulate sending update approval email
+        function sendUpdateApprovalEmail(email, clubName) {
+            console.log(`Sending update approval email to ${email}`);
+            console.log(`Subject: Club Update Approved for "${clubName}"`);
+            console.log(`Body: Your requested updates for "${clubName}" have been approved and are now live on the Scholars Stack platform.`);
+        }
+        
+        // Simulate sending update rejection email
+        function sendUpdateRejectionEmail(email, clubName) {
+            console.log(`Sending update rejection email to ${email}`);
+            console.log(`Subject: Club Update Rejected for "${clubName}"`);
+            console.log(`Body: Your requested updates for "${clubName}" have been reviewed but not approved at this time. Please contact us for more information.`);
+        }
+
+        // Club registration form
+        const clubForm = document.getElementById('clubRegistrationForm');
+        const successMessage = document.getElementById('successMessage');
+        
+        clubForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            // Get form values
+            const clubName = document.getElementById('clubName').value;
+            const clubCategory = document.getElementById('clubCategory').value;
+            const clubDescription = document.getElementById('clubDescription').value;
+            const facultyName = document.getElementById('facultyName').value;
+            const facultyEmail = document.getElementById('facultyEmail').value;
+            const coFacultyName = document.getElementById('coFacultyName').value;
+            const coFacultyEmail = document.getElementById('coFacultyEmail').value;
+            const contactPerson = document.getElementById('contactPerson').value;
+            const contactEmail = document.getElementById('contactEmail').value;
+            const clubMembers = document.getElementById('clubMembers').value || 0;
+            const clubEvents = document.getElementById('clubEvents').value || 0;
+            const logoFile = document.getElementById('clubLogo').files[0];
+            
+            // Create new club object
+            const newClub = {
+                id: Date.now(), // Unique ID
+                name: clubName,
+                category: clubCategory,
+                description: clubDescription,
+                facultyCoordinator: facultyName,
+                facultyEmail: facultyEmail,
+                coFacultyCoordinator: coFacultyName || '',
+                coFacultyEmail: coFacultyEmail || '',
+                contact: contactEmail,
+                contactPerson: contactPerson,
+                members: parseInt(clubMembers),
+                events: parseInt(clubEvents),
+                status: "pending",
+                logo: "bx bxs-group" // Default logo
+            };
+            
+            // Handle logo upload if exists
+            if (logoFile) {
+                try {
+                    const dataUrl = await readFileAsDataURL(logoFile);
+                    newClub.logoData = dataUrl;
+                } catch (error) {
+                    console.error('Error reading file:', error);
+                }
+            }
+            
+            // Add to pending clubs
+            pendingClubs.push(newClub);
+            
+            // Simulate sending admin notification
+            sendAdminNotification(newClub);
+            
+            // Show success message
+            successMessage.style.display = 'flex';
+            
+            // Reset form
+            clubForm.reset();
+            document.getElementById('logoPreview').style.display = 'none';
+            
+            // Scroll to top
+            window.scrollTo(0, 0);
+            
+            // Switch to admin tab to see pending request
+            setTimeout(() => {
+                document.querySelector('[data-tab="admin"]').click();
+                renderPendingClubs();
+            }, 1000);
+        });
+        
+        // Populate club select for update form
+        function populateClubSelect() {
+            const clubSelect = document.getElementById('selectClubToUpdate');
+            clubSelect.innerHTML = '<option value="">Select your club</option>';
+            
+            clubs.forEach(club => {
+                if (club.status === 'approved') {
+                    const option = document.createElement('option');
+                    option.value = club.id;
+                    option.textContent = club.name;
+                    clubSelect.appendChild(option);
+                }
+            });
+        }
+        
+        // When club is selected for update
+        document.getElementById('selectClubToUpdate').addEventListener('change', function() {
+            const clubId = parseInt(this.value);
+            if (clubId) {
+                document.getElementById('clubUpdateForm').style.display = 'block';
+                populateUpdateForm(clubId);
+            } else {
+                document.getElementById('clubUpdateForm').style.display = 'none';
+            }
+        });
+        
+        // Populate update form with club data
+        function populateUpdateForm(clubId) {
+            const club = clubs.find(c => c.id === clubId);
+            if (club) {
+                document.getElementById('updateClubId').value = club.id;
+                document.getElementById('updateClubName').value = club.name;
+                document.getElementById('updateClubCategory').value = club.category;
+                document.getElementById('updateClubDescription').value = club.description;
+                document.getElementById('updateFacultyName').value = club.facultyCoordinator;
+                document.getElementById('updateFacultyEmail').value = club.facultyEmail;
+                document.getElementById('updateCoFacultyName').value = club.coFacultyCoordinator || '';
+                document.getElementById('updateCoFacultyEmail').value = club.coFacultyEmail || '';
+                document.getElementById('updateContactPerson').value = club.contactPerson;
+                document.getElementById('updateContactEmail').value = club.contact;
+                document.getElementById('updateClubMembers').value = club.members;
+                document.getElementById('updateClubEvents').value = club.events;
+                
+                // Show logo preview if exists
+                const preview = document.getElementById('updateLogoPreview');
+                if (club.logoData) {
+                    preview.src = club.logoData;
+                    preview.style.display = 'block';
+                } else {
+                    preview.style.display = 'none';
+                }
+                
+                // Select the club in the dropdown
+                document.getElementById('selectClubToUpdate').value = club.id;
+            }
+        }
+        
+        // Club update form
+        const updateForm = document.getElementById('clubUpdateForm');
+        const updateSuccessMessage = document.getElementById('updateSuccessMessage');
+        
+        updateForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const clubId = parseInt(document.getElementById('updateClubId').value);
+            const club = clubs.find(c => c.id === clubId);
+            
+            if (!club) return;
+            
+            // Get form values
+            const updatedName = document.getElementById('updateClubName').value;
+            const updatedCategory = document.getElementById('updateClubCategory').value;
+            const updatedDescription = document.getElementById('updateClubDescription').value;
+            const updatedFacultyName = document.getElementById('updateFacultyName').value;
+            const updatedFacultyEmail = document.getElementById('updateFacultyEmail').value;
+            const updatedCoFacultyName = document.getElementById('updateCoFacultyName').value;
+            const updatedCoFacultyEmail = document.getElementById('updateCoFacultyEmail').value;
+            const updatedContactPerson = document.getElementById('updateContactPerson').value;
+            const updatedContactEmail = document.getElementById('updateContactEmail').value;
+            const updatedMembers = document.getElementById('updateClubMembers').value || 0;
+            const updatedEvents = document.getElementById('updateClubEvents').value || 0;
+            const logoFile = document.getElementById('updateClubLogo').files[0];
+            
+            // Create update request object with changed fields only
+            const changes = {};
+            
+            if (club.name !== updatedName) changes.name = { old: club.name, new: updatedName };
+            if (club.category !== updatedCategory) changes.category = { old: club.category, new: updatedCategory };
+            if (club.description !== updatedDescription) changes.description = { old: club.description, new: updatedDescription };
+            if (club.facultyCoordinator !== updatedFacultyName) changes.facultyCoordinator = { old: club.facultyCoordinator, new: updatedFacultyName };
+            if (club.facultyEmail !== updatedFacultyEmail) changes.facultyEmail = { old: club.facultyEmail, new: updatedFacultyEmail };
+            if (club.coFacultyCoordinator !== updatedCoFacultyName) changes.coFacultyCoordinator = { old: club.coFacultyCoordinator, new: updatedCoFacultyName };
+            if (club.coFacultyEmail !== updatedCoFacultyEmail) changes.coFacultyEmail = { old: club.coFacultyEmail, new: updatedCoFacultyEmail };
+            if (club.contactPerson !== updatedContactPerson) changes.contactPerson = { old: club.contactPerson, new: updatedContactPerson };
+            if (club.contact !== updatedContactEmail) changes.contact = { old: club.contact, new: updatedContactEmail };
+            if (parseInt(club.members) !== parseInt(updatedMembers)) changes.members = { old: club.members, new: parseInt(updatedMembers) };
+            if (parseInt(club.events) !== parseInt(updatedEvents)) changes.events = { old: club.events, new: parseInt(updatedEvents) };
+            
+            // Only create update request if there are changes
+            if (Object.keys(changes).length > 0 || logoFile) {
+                const updateRequest = {
+                    id: Date.now(),
+                    clubId: clubId,
+                    clubName: club.name,
+                    changes: changes,
+                    status: "pending",
+                    submittedBy: "Admin User", // In real app, this would be the logged-in user
+                    submittedOn: new Date().toISOString().split('T')[0],
+                    logo: club.logo
+                };
+                
+                // Handle logo update if exists
+                if (logoFile) {
+                    try {
+                        const dataUrl = await readFileAsDataURL(logoFile);
+                        updateRequest.logoData = dataUrl;
+                    } catch (error) {
+                        console.error('Error reading file:', error);
+                    }
+                }
+                
+                // Add to pending updates
+                pendingUpdates.push(updateRequest);
+                
+                // Simulate sending admin notification
+                sendUpdateNotification(updateRequest);
+                
+                // Show success message
+                updateSuccessMessage.style.display = 'flex';
+                
+                // Reset form
+                updateForm.reset();
+                document.getElementById('clubUpdateForm').style.display = 'none';
+                document.getElementById('selectClubToUpdate').value = '';
+                document.getElementById('updateLogoPreview').style.display = 'none';
+                
+                // Scroll to top
+                window.scrollTo(0, 0);
+                
+                // Switch to admin tab to see pending request
+                setTimeout(() => {
+                    document.querySelector('[data-tab="admin"]').click();
+                    document.querySelector('[data-admin-tab="pending-updates"]').click();
+                    renderPendingUpdates();
+                }, 1000);
+            } else {
+                alert("No changes detected. Please make changes before submitting an update request.");
+            }
+        });
+
+        // Simulate sending admin notification
+        function sendAdminNotification(club) {
+            console.log(`Sending admin notification for new club: ${club.name}`);
+            console.log(`Subject: New Club Registration - ${club.name}`);
+            console.log(`Body: A new club "${club.name}" has been registered by ${club.contactPerson}. Please review it in the admin panel.`);
+        }
+        
+        // Simulate sending update notification
+        function sendUpdateNotification(update) {
+            console.log(`Sending admin notification for club update: ${update.clubName}`);
+            console.log(`Subject: Club Update Request - ${update.clubName}`);
+            console.log(`Body: An update request for "${update.clubName}" has been submitted. Please review it in the admin panel.`);
+        }
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            renderClubs();
+            renderPendingClubs();
+            renderPendingUpdates();
+            populateClubSelect();
+        });
+    </script>
+</body>
+</html>

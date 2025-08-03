@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholars Stack - Faculty Info</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="faculty.css">
+
+</head>
+<body>
+    <!-- Mobile Overlay -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
+    
+    <!-- Header with Menu Toggle -->
+    <header class="header">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="logo">
+            <img src="../images/logo.png" alt="Scholars Stack Logo">
+            <div class="logo-text">
+                <h1>Scholars Stack</h1>
+                <span>Faculty Info</span>
+            </div>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
+                    <span>S</span>
+                </div>
+                <div class="user-name">Student</div>
+            </div>
+            <a href="../maps/maps.html" class="map-access" title="Campus Map" aria-label="View Campus Map">
+                <i class='bx bxs-map'></i>
+            </a>
+        </div>
+    </header>
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Main Navigation</div>
+        <ul class="sidebar-menu">
+            <!-- <li><a href="#"><i class='bx bxs-dashboard'></i> Dashboard</a></li> -->
+            <li><a href="../profile/profile.html"><i class='bx bxs-user'></i> Profile</a></li>
+            <li><a href="../attendance/attedance.html" ><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+
+            <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+            <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Resources</div>
+        <ul class="sidebar-menu">
+            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+            <li><a href="../club/club.html" ><i class='bx bxs-group'></i> Club Info</a></li>
+
+            <li><a href="../faculty/faculty.html" class="active"><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+            <!-- <li><a href="#"><i class='bx bxs-book'></i> Study Materials</a></li> -->
+        </ul>
+        
+        <div class="sidebar-title">Quick Links</div>
+        <ul class="sidebar-menu">
+            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
+            <!-- <li><a href="#"><i class='bx bxs-file'></i> Assignments</a></li> -->
+            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Account</div>
+        <ul class="sidebar-menu">
+            <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li>
+            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+        </ul>
+    </nav>
+    
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">
+            <i class='bx bxs-group'></i> Faculty Info
+        </h1>
+        
+        <!-- Tabs Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="faculty">
+                <i class='bx bxs-group'></i> Browse Faculty
+            </button>
+            <button class="tab-btn" data-tab="register">
+                <i class='bx bxs-plus-circle'></i> Add Faculty
+            </button>
+            <button class="tab-btn" data-tab="update">
+                <i class='bx bxs-edit-alt'></i> Update Faculty
+            </button>
+            <button class="tab-btn" data-tab="admin" id="adminTab">
+                <i class='bx bxs-shield'></i> Admin Panel
+            </button>
+        </div>
+        
+        <!-- Browse Faculty Section -->
+        <section class="tab-content active" id="faculty-tab">
+            <div class="search-container">
+                <div class="search-group">
+                    <i class='bx bx-search search-icon'></i>
+                    <input type="text" id="browseSearch" class="search-input" placeholder="Search faculty by name...">
+                </div>
+                <div class="search-results" id="browseResults"></div>
+            </div>
+            
+            <div class="faculty-grid" id="facultyGrid">
+                <!-- Faculty will be populated by JavaScript -->
+            </div>
+        </section>
+        
+        <!-- Add Faculty Section -->
+        <section class="tab-content" id="register-tab">
+            <div class="faculty-registration">
+                <h2 class="form-title">
+                    <i class='bx bxs-plus-circle'></i> Add New Faculty
+                </h2>
+                
+                <div id="successMessage" class="success-message" style="display: none;">
+                    <i class='bx bx-check-circle'></i>
+                    <p>Your faculty addition has been submitted successfully! The admin will review your application and you'll receive a confirmation email once approved.</p>
+                </div>
+                
+                <form id="facultyRegistrationForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="facultyName" class="required">Faculty Name</label>
+                            <input type="text" id="facultyName" name="facultyName" required placeholder="Enter faculty name">
+                        </div>
+                        <div class="form-group">
+                            <label for="facultyEmail" class="required">Email</label>
+                            <input type="email" id="facultyEmail" name="facultyEmail" required placeholder="Enter faculty email">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        
+                        <div class="form-group">
+                            <label for="facultyCabin" class="required">Cabin Number</label>
+                            <input type="text" id="facultyCabin" name="facultyCabin" required placeholder="Enter faculty cabin number">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <i class='bx bx-send'></i> Submit Addition
+                    </button>
+                </form>
+            </div>
+        </section>
+        
+        <!-- Update Faculty Section -->
+        <section class="tab-content" id="update-tab">
+            <div class="faculty-registration">
+                <h2 class="form-title">
+                    <i class='bx bxs-edit-alt'></i> Update Faculty Information
+                </h2>
+                
+                <div id="updateSuccessMessage" class="success-message" style="display: none;">
+                    <i class='bx bx-check-circle'></i>
+                    <p>Your faculty update request has been submitted successfully! The admin will review your changes and you'll receive a confirmation email once approved.</p>
+                </div>
+                
+                <div class="search-container">
+                    <div class="search-group">
+                        <i class='bx bx-search search-icon'></i>
+                        <input type="text" id="updateSearch" class="search-input" placeholder="Search faculty to update...">
+                    </div>
+                    <div class="search-results" id="updateResults"></div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="selectFacultyToUpdate" class="required">Select Faculty to Update</label>
+                    <select id="selectFacultyToUpdate" name="selectFacultyToUpdate" required>
+                        <option value="">Select your faculty</option>
+                        <!-- Faculty will be populated by JavaScript -->
+                    </select>
+                </div>
+                
+                <form id="facultyUpdateForm" style="display: none;">
+                    <input type="hidden" id="updateFacultyId" name="updateFacultyId">
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="updateFacultyName" class="required">Faculty Name</label>
+                            <input type="text" id="updateFacultyName" name="updateFacultyName" required placeholder="Enter faculty name">
+                        </div>
+                        <div class="form-group">
+                            <label for="updateFacultyEmail" class="required">Email</label>
+                            <input type="email" id="updateFacultyEmail" name="updateFacultyEmail" required placeholder="Enter faculty email">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        
+                        <div class="form-group">
+                            <label for="updateFacultyCabin" class="required">Cabin Number</label>
+                            <input type="text" id="updateFacultyCabin" name="updateFacultyCabin" required placeholder="Enter faculty cabin number">
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="submit-btn">
+                        <i class='bx bx-refresh'></i> Submit Update Request
+                    </button>
+                </form>
+            </div>
+        </section>
+        
+        <!-- Admin Panel Section -->
+        <section class="tab-content" id="admin-tab">
+            <div class="admin-panel">
+                <h2 class="admin-title">
+                    <i class='bx bxs-shield'></i> Faculty Approval Panel
+                </h2>
+                <p>Review and approve pending faculty additions and updates. Approved changes will appear in the public listing.</p>
+                
+                <div class="admin-tabs">
+                    <button class="admin-tab-btn active" data-admin-tab="pending-additions">Pending Additions</button>
+                    <button class="admin-tab-btn" data-admin-tab="pending-updates">Pending Updates</button>
+                </div>
+                
+                <div class="admin-tab-content active" id="pending-additions-tab">
+                    <div class="pending-faculty" id="pendingFaculty">
+                        <!-- Pending faculty will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="admin-tab-content" id="pending-updates-tab">
+                    <div class="pending-updates" id="pendingUpdates">
+                        <!-- Pending updates will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Toggle sidebar
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+        
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+            mobileOverlay.classList.toggle('active');
+            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : 'auto';
+        });
+        
+        mobileOverlay.addEventListener('click', () => {
+            sidebar.classList.remove('active');
+            mobileOverlay.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        });
+
+        // Tab functionality
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                
+                const tabId = btn.dataset.tab;
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+        
+        // Admin tab functionality
+        const adminTabBtns = document.querySelectorAll('.admin-tab-btn');
+        const adminTabContents = document.querySelectorAll('.admin-tab-content');
+        
+        adminTabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                adminTabBtns.forEach(b => b.classList.remove('active'));
+                adminTabContents.forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                
+                const tabId = btn.dataset.adminTab;
+                document.getElementById(`${tabId}-tab`).classList.add('active');
+            });
+        });
+
+        // Sample faculty data
+        const faculty = [
+            {
+                id: 1,
+                name: "Dr. John Doe",
+                email: "john.doe@vitbhopal.ac.in",
+                phone: "1234567890",
+                cabin: "A101",
+                status: "approved"
+            },
+            {
+                id: 2,
+                name: "Prof. Jane Smith",
+                email: "jane.smith@vitbhopal.ac.in",
+                phone: "0987654321",
+                cabin: "B202",
+                status: "approved"
+            },
+            {
+                id: 3,
+                name: "Dr. Robert Johnson",
+                email: "robert.j@vitbhopal.ac.in",
+                phone: "5566778899",
+                cabin: "C303",
+                status: "approved"
+            },
+            {
+                id: 4,
+                name: "Prof. Sarah Williams",
+                email: "sarah.w@vitbhopal.ac.in",
+                phone: "1122334455",
+                cabin: "D404",
+                status: "approved"
+            },
+            {
+                id: 5,
+                name: "Dr. Michael Brown",
+                email: "michael.b@vitbhopal.ac.in",
+                phone: "6677889900",
+                cabin: "E505",
+                status: "approved"
+            },
+            {
+                id: 6,
+                name: "Prof. Emily Davis",
+                email: "emily.d@vitbhopal.ac.in",
+                phone: "2233445566",
+                cabin: "F606",
+                status: "approved"
+            }
+        ];
+
+        // Pending faculty for admin approval
+        const pendingFaculty = [
+            {
+                id: 7,
+                name: "Dr. Alice Johnson",
+                email: "alice.johnson@vitbhopal.ac.in",
+                phone: "1122334455",
+                cabin: "C303",
+                status: "pending"
+            }
+        ];
+
+        // Pending update requests
+        const pendingUpdates = [
+            {
+                id: 1,
+                facultyId: 2,
+                facultyName: "Prof. Jane Smith",
+                changes: {
+                    phone: {
+                        old: "0987654321",
+                        new: "1122334455"
+                    },
+                    cabin: {
+                        old: "B202",
+                        new: "D404"
+                    }
+                },
+                status: "pending",
+                submittedBy: "Admin User",
+                submittedOn: "2023-11-15"
+            }
+        ];
+
+        // Render approved faculty
+        function renderFaculty() {
+            const facultyGrid = document.getElementById('facultyGrid');
+            facultyGrid.innerHTML = '';
+            
+            faculty.forEach(f => {
+                if (f.status === 'approved') {
+                    const facultyCard = document.createElement('div');
+                    facultyCard.className = 'faculty-card';
+                    facultyCard.dataset.name = f.name.toLowerCase();
+                    
+                    facultyCard.innerHTML = `
+                        <div class="faculty-info">
+                            <div class="faculty-header">
+                                <div>
+                                    <h3 class="faculty-title">${f.name}</h3>
+                                </div>
+                            </div>
+                            
+                            <div class="faculty-meta">
+                                <div class="meta-item">
+                                    <i class='bx bxs-envelope'></i>
+                                    <span>${f.email}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class='bx bxs-phone'></i>
+                                    <span>${f.phone}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class='bx bxs-building'></i>
+                                    <span>${f.cabin}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="faculty-footer">
+                                <button class="update-btn" data-id="${f.id}">
+                                    <i class='bx bxs-edit-alt'></i> Update
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    facultyGrid.appendChild(facultyCard);
+                }
+            });
+            
+            // Add event listeners to update buttons
+            document.querySelectorAll('.update-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const facultyId = parseInt(btn.dataset.id);
+                    populateUpdateForm(facultyId);
+                    document.querySelector('[data-tab="update"]').click();
+                });
+            });
+        }
+
+        // Render pending faculty for admin
+        function renderPendingFaculty() {
+            const pendingFacultyContainer = document.getElementById('pendingFaculty');
+            pendingFacultyContainer.innerHTML = '';
+            
+            if (pendingFaculty.length === 0) {
+                pendingFacultyContainer.innerHTML = '<p>No pending faculty additions at this time.</p>';
+                return;
+            }
+            
+            pendingFaculty.forEach(f => {
+                if (f.status === 'pending') {
+                    const pendingFacultyCard = document.createElement('div');
+                    pendingFacultyCard.className = 'pending-faculty-card';
+                    
+                    pendingFacultyCard.innerHTML = `
+                        <div class="pending-faculty-details">
+                            <h3 class="pending-faculty-title">${f.name}</h3>
+                            <div class="pending-faculty-meta">
+                                <div class="status-indicator status-pending">
+                                    <i class='bx bxs-time'></i> Pending Approval
+                                </div>
+                            </div>
+                            <div class="meta-item">
+                                <i class='bx bxs-envelope'></i>
+                                <span>${f.email}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class='bx bxs-phone'></i>
+                                <span>${f.phone}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class='bx bxs-building'></i>
+                                <span>${f.cabin}</span>
+                            </div>
+                            <div class="pending-faculty-actions">
+                                <button class="action-btn approve-btn" data-id="${f.id}">
+                                    <i class='bx bx-check'></i> Approve
+                                </button>
+                                <button class="action-btn reject-btn" data-id="${f.id}">
+                                    <i class='bx bx-x'></i> Reject
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    pendingFacultyContainer.appendChild(pendingFacultyCard);
+                }
+            });
+            
+            // Add event listeners to action buttons
+            document.querySelectorAll('.approve-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const facultyId = parseInt(btn.dataset.id);
+                    approveFaculty(facultyId);
+                });
+            });
+            
+            document.querySelectorAll('.reject-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const facultyId = parseInt(btn.dataset.id);
+                    rejectFaculty(facultyId);
+                });
+            });
+        }
+        
+        // Render pending updates for admin
+        function renderPendingUpdates() {
+            const pendingUpdatesContainer = document.getElementById('pendingUpdates');
+            pendingUpdatesContainer.innerHTML = '';
+            
+            if (pendingUpdates.length === 0) {
+                pendingUpdatesContainer.innerHTML = '<p>No pending faculty updates at this time.</p>';
+                return;
+            }
+            
+            pendingUpdates.forEach(update => {
+                if (update.status === 'pending') {
+                    const pendingUpdateCard = document.createElement('div');
+                    pendingUpdateCard.className = 'pending-update-card';
+                    
+                    pendingUpdateCard.innerHTML = `
+                        <div class="pending-update-details">
+                            <h3 class="pending-update-title">${update.facultyName} - Update Request</h3>
+                            <div class="pending-update-meta">
+                                <div class="status-indicator status-pending">
+                                    <i class='bx bxs-time'></i> Pending Approval
+                                </div>
+                                <div class="meta-item">
+                                    <i class='bx bxs-user'></i>
+                                    <span>Submitted by: ${update.submittedBy}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <i class='bx bxs-calendar'></i>
+                                    <span>${update.submittedOn}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="update-changes">
+                                <h4><i class='bx bx-revision'></i> Proposed Changes</h4>
+                                ${Object.entries(update.changes).map(([field, values]) => `
+                                    <div class="change-item">
+                                        <div class="change-field">${formatFieldName(field)}:</div>
+                                        <div class="change-old">${values.old || 'N/A'}</div>
+                                        <div class="change-new">${values.new || 'N/A'}</div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                            
+                            <div class="pending-update-actions">
+                                <button class="action-btn view-btn" data-id="${update.id}">
+                                    <i class='bx bx-show'></i> View Faculty
+                                </button>
+                                <button class="action-btn approve-btn" data-id="${update.id}">
+                                    <i class='bx bx-check'></i> Approve
+                                </button>
+                                <button class="action-btn reject-btn" data-id="${update.id}">
+                                    <i class='bx bx-x'></i> Reject
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                    pendingUpdatesContainer.appendChild(pendingUpdateCard);
+                }
+            });
+            
+            // Add event listeners to action buttons
+            document.querySelectorAll('.pending-update .approve-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const updateId = parseInt(btn.dataset.id);
+                    approveUpdate(updateId);
+                });
+            });
+            
+            document.querySelectorAll('.pending-update .reject-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const updateId = parseInt(btn.dataset.id);
+                    rejectUpdate(updateId);
+                });
+            });
+        }
+        
+        // Format field names for display
+        function formatFieldName(field) {
+            const names = {
+                'name': 'Name',
+                'email': 'Email',
+                'phone': 'Phone Number',
+                'cabin': 'Cabin Number'
+            };
+            return names[field] || field;
+        }
+
+        // Approve faculty
+        function approveFaculty(facultyId) {
+            const pendingIndex = pendingFaculty.findIndex(f => f.id === facultyId);
+            if (pendingIndex !== -1) {
+                const approvedFaculty = pendingFaculty[pendingIndex];
+                approvedFaculty.status = 'approved';
+                
+                faculty.push(approvedFaculty);
+                
+                pendingFaculty.splice(pendingIndex, 1);
+                
+                sendApprovalEmail(approvedFaculty.email, approvedFaculty.name);
+                
+                renderFaculty();
+                renderPendingFaculty();
+                populateFacultySelect();
+                
+                alert(`Faculty "${approvedFaculty.name}" has been approved and added to the public listing.`);
+            }
+        }
+
+        // Reject faculty
+        function rejectFaculty(facultyId) {
+            const pendingIndex = pendingFaculty.findIndex(f => f.id === facultyId);
+            if (pendingIndex !== -1) {
+                const rejectedFaculty = pendingFaculty[pendingIndex];
+                
+                sendRejectionEmail(rejectedFaculty.email, rejectedFaculty.name);
+                
+                pendingFaculty.splice(pendingIndex, 1);
+                
+                renderPendingFaculty();
+                
+                alert(`Faculty "${rejectedFaculty.name}" has been rejected.`);
+            }
+        }
+        
+        // Approve update
+        function approveUpdate(updateId) {
+            const updateIndex = pendingUpdates.findIndex(update => update.id === updateId);
+            if (updateIndex !== -1) {
+                const update = pendingUpdates[updateIndex];
+                const facultyIndex = faculty.findIndex(f => f.id === update.facultyId);
+                
+                if (facultyIndex !== -1) {
+                    const f = faculty[facultyIndex];
+                    Object.entries(update.changes).forEach(([field, values]) => {
+                        f[field] = values.new;
+                    });
+                    
+                    sendUpdateApprovalEmail(f.email, f.name);
+                    
+                    pendingUpdates.splice(updateIndex, 1);
+                    
+                    renderFaculty();
+                    renderPendingUpdates();
+                    populateFacultySelect();
+                    
+                    alert(`Updates for "${f.name}" have been approved and applied.`);
+                }
+            }
+        }
+        
+        // Reject update
+        function rejectUpdate(updateId) {
+            const updateIndex = pendingUpdates.findIndex(update => update.id === updateId);
+            if (updateIndex !== -1) {
+                const update = pendingUpdates[updateIndex];
+                
+                sendUpdateRejectionEmail(update.submittedBy, update.facultyName);
+                
+                pendingUpdates.splice(updateIndex, 1);
+                
+                renderPendingUpdates();
+                
+                alert(`Update request for "${update.facultyName}" has been rejected.`);
+            }
+        }
+
+        // Simulate sending approval email
+        function sendApprovalEmail(email, facultyName) {
+            console.log(`Sending approval email to ${email}`);
+            console.log(`Subject: Your Faculty Addition for "${facultyName}" Has Been Approved!`);
+            console.log(`Body: Congratulations! Your faculty addition for "${facultyName}" has been approved and is now listed on the Scholars Stack platform.`);
+        }
+
+        // Simulate sending rejection email
+        function sendRejectionEmail(email, facultyName) {
+            console.log(`Sending rejection email to ${email}`);
+            console.log(`Subject: Your Faculty Addition for "${facultyName}"`);
+            console.log(`Body: Thank you for your faculty addition. After review, we've decided not to approve "${facultyName}" at this time. Please contact us for more information.`);
+        }
+        
+        // Simulate sending update approval email
+        function sendUpdateApprovalEmail(email, facultyName) {
+            console.log(`Sending update approval email to ${email}`);
+            console.log(`Subject: Faculty Update Approved for "${facultyName}"`);
+            console.log(`Body: Your requested updates for "${facultyName}" have been approved and are now live on the Scholars Stack platform.`);
+        }
+        
+        // Simulate sending update rejection email
+        function sendUpdateRejectionEmail(email, facultyName) {
+            console.log(`Sending update rejection email to ${email}`);
+            console.log(`Subject: Faculty Update Rejected for "${facultyName}"`);
+            console.log(`Body: Your requested updates for "${facultyName}" have been reviewed but not approved at this time. Please contact us for more information.`);
+        }
+
+        // Faculty addition form
+        const facultyForm = document.getElementById('facultyRegistrationForm');
+        const successMessage = document.getElementById('successMessage');
+        
+        facultyForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const facultyName = document.getElementById('facultyName').value;
+            const facultyEmail = document.getElementById('facultyEmail').value;
+            const facultyCabin = document.getElementById('facultyCabin').value;
+            
+            const newFaculty = {
+                id: Date.now(),
+                name: facultyName,
+                email: facultyEmail,
+                cabin: facultyCabin,
+                status: "pending"
+            };
+            
+            pendingFaculty.push(newFaculty);
+            
+            sendAdminNotification(newFaculty);
+            
+            successMessage.style.display = 'flex';
+            
+            facultyForm.reset();
+            
+            window.scrollTo(0, 0);
+            
+            setTimeout(() => {
+                document.querySelector('[data-tab="admin"]').click();
+                renderPendingFaculty();
+            }, 1000);
+        });
+        
+        // Populate faculty select for update form
+        function populateFacultySelect() {
+            const facultySelect = document.getElementById('selectFacultyToUpdate');
+            facultySelect.innerHTML = '<option value="">Select your faculty</option>';
+            
+            faculty.forEach(f => {
+                if (f.status === 'approved') {
+                    const option = document.createElement('option');
+                    option.value = f.id;
+                    option.textContent = f.name;
+                    option.dataset.name = f.name.toLowerCase();
+                    facultySelect.appendChild(option);
+                }
+            });
+        }
+        
+        // When faculty is selected for update
+        document.getElementById('selectFacultyToUpdate').addEventListener('change', function() {
+            const facultyId = parseInt(this.value);
+            if (facultyId) {
+                document.getElementById('facultyUpdateForm').style.display = 'block';
+                populateUpdateForm(facultyId);
+            } else {
+                document.getElementById('facultyUpdateForm').style.display = 'none';
+            }
+        });
+        
+        // Populate update form with faculty data
+        function populateUpdateForm(facultyId) {
+            const f = faculty.find(f => f.id === facultyId);
+            if (f) {
+                document.getElementById('updateFacultyId').value = f.id;
+                document.getElementById('updateFacultyName').value = f.name;
+                document.getElementById('updateFacultyEmail').value = f.email;
+                document.getElementById('updateFacultyCabin').value = f.cabin;
+                
+                document.getElementById('selectFacultyToUpdate').value = f.id;
+            }
+        }
+        
+        // Faculty update form
+        const updateForm = document.getElementById('facultyUpdateForm');
+        const updateSuccessMessage = document.getElementById('updateSuccessMessage');
+        
+        updateForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const facultyId = parseInt(document.getElementById('updateFacultyId').value);
+            const f = faculty.find(f => f.id === facultyId);
+            
+            if (!f) return;
+            
+            const updatedName = document.getElementById('updateFacultyName').value;
+            const updatedEmail = document.getElementById('updateFacultyEmail').value;
+            const updatedCabin = document.getElementById('updateFacultyCabin').value;
+            
+            const changes = {};
+            
+            if (f.name !== updatedName) changes.name = { old: f.name, new: updatedName };
+            if (f.email !== updatedEmail) changes.email = { old: f.email, new: updatedEmail };
+            if (f.phone !== updatedPhone) changes.phone = { old: f.phone, new: updatedPhone };
+            if (f.cabin !== updatedCabin) changes.cabin = { old: f.cabin, new: updatedCabin };
+            
+            if (Object.keys(changes).length > 0) {
+                const updateRequest = {
+                    id: Date.now(),
+                    facultyId: facultyId,
+                    facultyName: f.name,
+                    changes: changes,
+                    status: "pending",
+                    submittedBy: "Admin User",
+                    submittedOn: new Date().toISOString().split('T')[0]
+                };
+                
+                pendingUpdates.push(updateRequest);
+                
+                sendUpdateNotification(updateRequest);
+                
+                updateSuccessMessage.style.display = 'flex';
+                
+                updateForm.reset();
+                document.getElementById('facultyUpdateForm').style.display = 'none';
+                document.getElementById('selectFacultyToUpdate').value = '';
+                
+                window.scrollTo(0, 0);
+                
+                setTimeout(() => {
+                    document.querySelector('[data-tab="admin"]').click();
+                    document.querySelector('[data-admin-tab="pending-updates"]').click();
+                    renderPendingUpdates();
+                }, 1000);
+            } else {
+                alert("No changes detected. Please make changes before submitting an update request.");
+            }
+        });
+
+        // Simulate sending admin notification
+        function sendAdminNotification(faculty) {
+            console.log(`Sending admin notification for new faculty: ${faculty.name}`);
+            console.log(`Subject: New Faculty Addition - ${faculty.name}`);
+            console.log(`Body: A new faculty "${faculty.name}" has been added by ${faculty.submittedBy}. Please review it in the admin panel.`);
+        }
+        
+        // Simulate sending update notification
+        function sendUpdateNotification(update) {
+            console.log(`Sending admin notification for faculty update: ${update.facultyName}`);
+            console.log(`Subject: Faculty Update Request - ${update.facultyName}`);
+            console.log(`Body: An update request for "${update.facultyName}" has been submitted. Please review it in the admin panel.`);
+        }
+        
+        // Search functionality for Browse Faculty
+        const browseSearch = document.getElementById('browseSearch');
+        const browseResults = document.getElementById('browseResults');
+        
+        browseSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const facultyCards = document.querySelectorAll('.faculty-card');
+            let visibleCount = 0;
+            
+            facultyCards.forEach(card => {
+                const facultyName = card.dataset.name;
+                if (facultyName.includes(searchTerm)) {
+                    card.style.display = 'flex';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            browseResults.textContent = `Showing ${visibleCount} of ${facultyCards.length} faculty members`;
+        });
+        
+        // Search functionality for Update Faculty dropdown
+        const updateSearch = document.getElementById('updateSearch');
+        const updateResults = document.getElementById('updateResults');
+        
+        updateSearch.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            const select = document.getElementById('selectFacultyToUpdate');
+            const options = select.querySelectorAll('option');
+            let visibleCount = 0;
+            
+            options.forEach(option => {
+                if (option.value === "") {
+                    // Keep the "Select" option visible
+                    option.style.display = '';
+                    return;
+                }
+                
+                const facultyName = option.dataset.name;
+                if (facultyName.includes(searchTerm)) {
+                    option.style.display = '';
+                    visibleCount++;
+                } else {
+                    option.style.display = 'none';
+                }
+            });
+            
+            updateResults.textContent = `Found ${visibleCount} matching faculty members`;
+        });
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            renderFaculty();
+            renderPendingFaculty();
+            renderPendingUpdates();
+            populateFacultySelect();
+            
+            // Initialize result counters
+            browseResults.textContent = `Showing ${faculty.length} faculty members`;
+            updateResults.textContent = `Found ${faculty.length} faculty members`;
+        });
+    </script>
+</body>
+</html>
