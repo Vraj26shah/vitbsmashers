@@ -1,15 +1,9 @@
 import User from '../models/user.model.js';
-import jwt from 'jsonwebtoken';
 import AppError from '../utils/appError.js';
 import sendEmail from '../utils/email.js';
+import { signToken } from '../service/authService.js';
 
 
-
-const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
-  });
-};
 
 // Signup Controller
 export const signup = async (req, res, next) => {
@@ -36,27 +30,52 @@ export const signup = async (req, res, next) => {
     const message = `Your OTP for verification is: ${otp}\nThis OTP is valid for 10 minutes.`;
 
     try {
-      await sendEmail({
-        email: newUser.email,
-        subject: 'VIT Bhopal Account Verification OTP',
-        message
-      });
+      // In development mode, you can skip email sending for testing
+      if (process.env.NODE_ENV === 'development' && process.env.SKIP_EMAIL === 'true') {
+        console.log('🔐 DEVELOPMENT MODE - Skipping email sending');
+        console.log('📧 Email would be sent to:', newUser.email);
+        console.log('🔢 OTP for testing:', otp);
+        
+        res.status(201).json({
+          status: 'success',
+          message: 'OTP sent to your VIT email! (Development mode - email skipped)',
+          development: {
+            otp: otp,
+            email: newUser.email
+          }
+        });
+      } else {
+        // Send actual email
+        await sendEmail({
+          email: newUser.email,
+          subject: 'VIT Bhopal Account Verification OTP',
+          message
+        });
 
-      res.status(201).json({
-        status: 'success',
-        message: 'OTP sent to your VIT email!'
-      });
+        res.status(201).json({
+          status: 'success',
+          message: 'OTP sent to your VIT email!'
+        });
+        
+        // Development: Log OTP to console for testing
+        if (process.env.NODE_ENV === 'development') {
+          console.log('🔐 DEVELOPMENT MODE - OTP for testing:', otp);
+          console.log('📧 Email would be sent to:', newUser.email);
+        }
+      }
     } catch (err) {
       newUser.otp = undefined;
       newUser.otpExpires = undefined;
       await newUser.save({ validateBeforeSave: false });
 
-      return next(new AppError('There was an error sending the OTP email. Try again later!', 500));
+      console.error('Email error details:', err);
+      return next(new AppError(`Email sending failed: ${err.message}`, 500));
     }
   } catch (err) {
     next(err);
   }
 };
+
 
 
 
@@ -77,6 +96,7 @@ export const verifyOTP = async (req, res, next) => {
     }
 
     // 3) Mark user as verified and clear OTP
+
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpires = undefined;
@@ -134,6 +154,8 @@ export const login = async (req, res, next) => {
     next(err);
   }
 };
+
+
 
 // Export all functions as named exports
 export default {

@@ -1,0 +1,30 @@
+# Copy this to .env file and fill in your values
+
+# Server Configuration
+PORT=4000
+NODE_ENV=development
+
+# MongoDB Configuration
+MONGO_URL=mongodb://localhost:27017/vitbsmasher
+
+# JWT Configuration
+JWT_SECRET=your-super-secret-jwt-key-here-make-it-long-and-random
+JWT_EXPIRES_IN=90d
+
+# Email Configuration (for OTP verification)
+# For Gmail, you need to use App Password, not your regular password
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USERNAME=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password-from-gmail
+EMAIL_FROM=noreply@vitbhopal.ac.in
+
+# For testing without email, you can use a fake SMTP service like Mailtrap
+# EMAIL_HOST=sandbox.smtp.mailtrap.io
+# EMAIL_PORT=2525
+# EMAIL_USERNAME=your-mailtrap-username
+# EMAIL_PASSWORD=your-mailtrap-password
+
+# Development Options
+# Set to 'true' to skip email sending and return OTP in response (for testing)
+# SKIP_EMAIL=true

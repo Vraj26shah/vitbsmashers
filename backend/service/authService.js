@@ -1,5 +1,5 @@
-import User from '../models/User.js';
-
+import User from '../models/user.model.js';
+import jwt from 'jsonwebtoken'
 export const registerUser = async (username, email, password) => {
   const existingUser = await User.findOne({ $or: [{ username }, { email }] });
   if (existingUser) {
@@ -36,6 +36,7 @@ export const loginUser = async (username, password) => {
   }
 
   const isMatch = await user.correctPassword(password);
+
   if (!isMatch) {
     throw new Error('Incorrect password');
   }
@@ -47,9 +48,15 @@ export const loginUser = async (username, password) => {
   return user;
 };
 
+ export const signToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN
+  });
+};
 // Optionally export all services as an object
 export default {
   registerUser,
   verifyUserOTP,
-  loginUser
+  loginUser,
+  signToken
 };

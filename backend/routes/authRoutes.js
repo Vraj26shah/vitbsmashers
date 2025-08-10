@@ -3,6 +3,8 @@ import { signup, verifyOTP, login } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
+
+
 // Authentication routes
 router.post('/signup', signup);
 router.post('/verify-otp', verifyOTP);

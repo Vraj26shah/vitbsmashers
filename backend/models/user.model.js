@@ -42,6 +42,9 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  passwordChangedAt: {
+    type: Date
+  },
   createdAt: {
     type: Date,
     default: Date.now
@@ -52,6 +55,7 @@ const userSchema = new mongoose.Schema({
 userSchema.pre('save', async function(next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 10);
+  this.passwordChangedAt = Date.now() - 1000; // Subtract 1 second to ensure token was issued before password change
   next();
 });
 
@@ -70,6 +74,17 @@ userSchema.methods.generateOTP = function() {
   return otp;
 };
 
+// Method to check if password was changed after token was issued
+userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
+  if (this.passwordChangedAt) {
+    const changedTimestamp = parseInt(
+      this.passwordChangedAt.getTime() / 1000,
+      10
+    );
+    return JWTTimestamp < changedTimestamp;
+  }
+  return false;
+};
 
 const User = mongoose.model('User', userSchema);
 
