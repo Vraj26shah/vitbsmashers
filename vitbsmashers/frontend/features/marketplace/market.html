@@ -6,6 +6,7 @@
     <title>Scholars Stack - Premium Marketplace</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../../shared-admin-auth.js"></script>
     <style>
         /* === GLOBAL STYLES === */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -1994,11 +1995,11 @@
         }
 
         // Mock user profile for simulation
-        const userProfile = {
-            name: 'Student',
-            email: 'student@example.com',
-            phone: '' // Empty to simulate incomplete profile
-        };
+        // const userProfile = {
+        //     name: 'Student',
+        //     email: 'student@example.com',
+        //     phone: '' // Empty to simulate incomplete profile
+        // };
 
         function isProfileComplete() {
             return userProfile.name && userProfile.email && userProfile.phone;
@@ -2422,11 +2423,220 @@
                 card.style.display = (matchesFilter && matchesSearch) ? 'block' : 'none';
             });
         }
+// Enroll now with profile check
+enrollNowButton.addEventListener('click', async () => {
+  if (selectedCourse) {
+    if (isProfileComplete()) {
+      try {
+        const response = await fetch('http://localhost:4000/api/payments/create-checkout-session', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure token exists
+          },
+          body: JSON.stringify({ 
+            courseId: selectedCourse.id,
+            amount: parseInt(selectedCourse.price.replace('₹', '')) * 100 // Convert to cents
+          }),
+        });
+        const data = await response.json();
+        if (data.sessionUrl) {
+          window.location.href = data.sessionUrl;
+        } else {
+          alert('Payment initiation failed: ' + (data.error || 'Unknown error'));
+        }
+      } catch (err) {
+        alert('Payment initiation failed: ' + err.message);
+      }
+    } else {
+      window.location.href = 'profile.html';
+    }
+    courseModal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+});
+
+// Checkout with profile check
+checkoutButton.addEventListener('click', async () => {
+  if (cart.length === 0) {
+    alert('Your cart is empty');
+    return;
+  }
+  if (isProfileComplete()) {
+    try {
+      const items = cart.map(item => ({
+        courseId: item.id,
+        subject: item.title,
+        amount: item.price * 100 // Convert to cents
+      }));
+      const response = await fetch('http://localhost:4000/api/payments/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify({ items }),
+      });
+      const data = await response.json();
+      if (data.sessionUrl) {
+        window.location.href = data.sessionUrl;
+      } else {
+        alert('Checkout failed: ' + (data.error || 'Unknown error'));
+      }
+    } catch (err) {
+      alert('Checkout failed: ' + err.message);
+    }
+  } else {
+    window.location.href = 'profile.html';
+  }
+  cartPreview.classList.remove('active');
+});
+const accessBtns = document.querySelectorAll('.access-btn');
+accessBtns.forEach(btn => {
+  btn.addEventListener('click', async (e) => {
+    e.preventDefault();
+    const courseId = btn.closest('.course-card').dataset.course;
+    
+    try {
+      const response = await fetch('/api/payments/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}` // Assuming JWT auth
+        },
+        body: JSON.stringify({ courseId }),
+      });
+      const data = await response.json();
+      window.location.href = data.sessionUrl;
+    } catch (err) {
+      alert('Payment initiation failed');
+    }
+  });
+});
+function isAuthenticated() {
+  const token = localStorage.getItem('token');
+  if (!token) {
+    alert('Please log in to proceed with payment.');
+    window.location.href = 'login.html'; // Adjust to your login page
+    return false;
+  }
+  return true;
+}
+
+// Update enrollNowButton and checkoutButton to include this check
+enrollNowButton.addEventListener('click', async () => {
+  if (selectedCourse) {
+    if (!isAuthenticated()) return;
+    if (isProfileComplete()) {
+      // ... (rest of the existing code)
+    } else {
+      window.location.href = 'profile.html';
+    }
+    courseModal.classList.remove('active');
+    document.body.style.overflow = 'auto';
+  }
+});
+
+checkoutButton.addEventListener('click', async () => {
+  if (cart.length === 0) {
+    alert('Your cart is empty');
+    return;
+  }
+  if (!isAuthenticated()) return;
+  if (isProfileComplete()) {
+    // ... (rest of the existing code)
+  } else {
+    window.location.href = 'profile.html';
+  }
+  cartPreview.classList.remove('active');
+});
+async function fetchUserProfile() {
+  try {
+    const response = await fetch('http://localhost:4000/api/auth/profile', { // Adjust endpoint
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      }
+    });
+    const data = await response.json();
+    return data;
+  } catch (err) {
+    console.error('Failed to fetch profile:', err);
+    return null;
+  }
+}
+
+let userProfile = await fetchUserProfile() || { name: '', email: '', phone: '' };
+
+function isProfileComplete() {
+  return userProfile.name && userProfile.email && userProfile.phone;
+}
+        // Handle payment success/failure from URL parameters
+        function handlePaymentStatus() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const paymentStatus = urlParams.get('payment');
+            
+            if (paymentStatus === 'success') {
+                // Clear cart on successful payment
+                cart = [];
+                updateCart();
+                
+                // Show success message
+                showNotification('Payment successful! You now have access to your courses.', 'success');
+                
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else if (paymentStatus === 'cancelled') {
+                showNotification('Payment was cancelled. You can try again anytime.', 'warning');
+                window.history.replaceState({}, document.title, window.location.pathname);
+            }
+        }
+
+        // Show notification
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'var(--success-color)' : type === 'warning' ? 'var(--warning-color)' : 'var(--accent-blue)'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 400px;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // Add CSS for notification animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
 
         // Initialize
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
             updateCart();
+            handlePaymentStatus();
         });
     </script>
 </body>

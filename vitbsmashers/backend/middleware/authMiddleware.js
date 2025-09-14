@@ -87,11 +87,23 @@ export const protect = async (req, res, next) => {
   }
 };
 
+const authMiddleware = (req, res, next) => {
+  try {
+    const token = req.headers.authorization?.split(' ')[1]; // Bearer token
+    if (!token) throw new Error('No token provided');
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.user = { _id: decoded.id }; // Adjust based on your JWT payload
+    next();
+  } catch (err) {
+    res.status(401).json({ error: 'Unauthorized: ' + err.message });
+  }
+};
 
 // Export all middlewares
 export default {
   errorHandler,
   notFound,
   protect,
-  
+  authMiddleware,
 };

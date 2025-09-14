@@ -5,18 +5,32 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import authRouter from './routes/authRoutes.js';
 import { errorHandler, notFound } from './middleware/authMiddleware.js';
-const app = express();
-import connect from './db/db.js'
-connect()
 
-app.use(express.json());
-app.use(cookieParser());
+import connect from './db/db.js'
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import paymentRoutes from './routes/paymentRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+
+connect()
+dotenv.config();
+const app = express();
 
 // Enable CORS for browser clients
 app.use(cors({ origin: true, credentials: true }));
+
+// Parse JSON bodies (except for webhook)
+app.use(express.json());
+
+// Webhook route must be before express.json() middleware for Stripe webhooks
+app.use('/api/payments/webhook', express.raw({ type: 'application/json' }), paymentRoutes);
+
+app.use(cookieParser());
+
 // Routes backend
 app.use('/api/v1/auth', authRouter);
-
+app.use('/api/auth', authRoutes);
+app.use('/api/payments', paymentRoutes);
 
 
 
@@ -36,6 +50,10 @@ app.get('/profile.html', (req, res) => {
 app.use(express.static(frontendDir));
 
 
+mongoose.connect(process.env.MONGO_URL)
+  .then(() => console.log('DB connected'))
+  .catch(err => console.error('DB connection error:', err));
+
 
 
 
@@ -45,9 +63,9 @@ app.use(express.static(frontendDir));
 // });
 
 
-//mainPage route byy ai
+// Serve the main index page
 app.get('/', (req, res) => {
-  res.sendFile(path.join(frontendDir, 'mainPage.html'));
+  res.sendFile(path.join(frontendDir, 'index.html'));
 });
 
 

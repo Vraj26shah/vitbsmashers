@@ -14,7 +14,8 @@
     "check-email": "node check-email-config.js",
     "check-users": "node check-users.js",
     "clear-db": "node clear-db.js",
-    "test-verify": "node test-verify-otp.js"
+    "test-verify": "node test-verify-otp.js",
+    "test-payment": "node test-payment.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
@@ -28,6 +29,7 @@
     "node-fetch": "^3.3.2",
     "nodemailer": "^7.0.5",
     "nodemon": "^3.1.10",
+    "stripe": "^17.2.0",
     "validator": "^13.15.15"
   }
 }
