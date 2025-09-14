@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholars Stack - Attendance Calculator</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="attendance.css">
+</head>
+<body>
+    <!-- Background particles -->
+    <div class="bg-particles" id="bgParticles"></div>
+    
+    <!-- Header with Menu Toggle -->
+    <header class="header">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="logo">
+            <a href="../../index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="../../features/images/logo1.png" alt="Scholars Stack Logo">
+                <div class="logo-text">
+                    <h1>Scholars Stack</h1>
+                    <span>Attendance Calculator</span>
+                </div>
+            </a>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
+                    <span>S</span>
+                </div>
+                <div class="user-name">Student</div>
+            </div>
+            <a href="#" class="map-access" title="Campus Map" aria-label="View Campus Map">
+                <i class='bx bxs-map'></i>
+            </a>
+        </div>
+    </header>
+    
+        <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Main Navigation</div>
+        <ul class="sidebar-menu">
+             <!-- <li><a href="#"><i class='bx bxs-dashboard'></i> Dashboard</a></li> -->
+             <li><a href="../profile/profile.html"><i class='bx bxs-user'></i> Profile</a></li>
+            <li><a href="../attendance/attendance.html"class="active"><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+            <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+            <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Resources</div>
+        <ul class="sidebar-menu">
+            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+            <li><a href="#" ><i class='bx bxs-group'></i> Club Info</a></li>
+            <li><a href="../faculty/faculty.html" ><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Quick Links</div>
+        <ul class="sidebar-menu">
+            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
+            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Account</div>
+        <ul class="sidebar-menu">
+            <!-- <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li> -->
+            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+        </ul>
+    </nav>    
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">
+            <i class='bx bxs-calculator'></i> Attendance Calculator
+        </h1>
+        
+        <div class="attendance-container">
+            <div class="input-section">
+                <h2 class="section-title">
+                    <i class='bx bxs-edit-alt'></i> Enter Attendance Details
+                </h2>
+                
+                <div class="form-group">
+                    <label>Subject Name (Optional)</label>
+                    <input type="text" class="form-control" id="subjectName" placeholder="e.g. Data Structures & Algorithms">
+                    <small style="display: block; margin-top: 8px; color: #aaa;">Leave blank for default naming</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>Total Classes Held</label>
+                    <input type="number" class="form-control" id="totalClasses" min="1" placeholder="Enter total classes">
+                </div>
+                
+                <div class="form-group">
+                    <label>Classes Attended</label>
+                    <input type="number" class="form-control" id="attendedClasses" min="0" placeholder="Enter classes attended">
+                </div>
+                
+                <div class="actions">
+                    <button class="btn btn-warning" id="calculateBtn">
+                        <i class='bx bx-calculator'></i> Calculate
+                    </button>
+                    <button class="btn btn-primary" id="saveSubject">
+                        <i class='bx bx-save'></i> Save Subject
+                    </button>
+                    <button class="btn btn-outline" id="resetForm">
+                        <i class='bx bx-reset'></i> Reset Form
+                    </button>
+                </div>
+                
+                <div class="marks-indicator">
+                    <h3 class="marks-title">
+                        <i class='bx bx-award'></i> Marks Based on Attendance
+                    </h3>
+                    <div class="marks-value" id="marksValue">0 marks</div>
+                    
+                    <div class="marks-grid">
+                        <div class="mark-item" id="mark1">1</div>
+                        <div class="mark-item" id="mark2">2</div>
+                        <div class="mark-item" id="mark3">3</div>
+                        <div class="mark-item" id="mark4">4</div>
+                        <div class="mark-item" id="mark5">5</div>
+                    </div>
+                
+                    
+                    <div class="marks-explanation">
+                        <p><strong>How marks are calculated:</strong></p>
+                        <ul style="padding-left: 20px; margin-top: 8px;">
+                            <li>75% attendance > 1 mark</li>
+                            <li>80% attendance > 2 marks</li>
+                            <li>85% attendance > 3 marks</li>
+                            <li>90% attendance > 4 marks</li>
+                            <li>95% attendance > 5 marks</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="marks-disclaimer">
+                        *Note: This is an approximate calculation. Actual marks may vary based on faculty discretion.
+                    </div>
+                </div>
+
+            </div>
+            
+            <div class="results-section">
+                <h2 class="section-title">
+                    <i class='bx bxs-calendar-check'></i> Attendance Results
+                </h2>
+                
+                <div class="attendance-result" id="attendanceResult">
+                    <div class="result-title">Current Calculation</div>
+                    <div class="attendance-percentage" id="attendancePercentage">0%</div>
+                    <div class="attendance-status" id="attendanceStatus">Enter values to calculate</div>
+                    
+                    <div class="result-details">
+                        <div class="detail-card">
+                            <div>Required for 75%</div>
+                            <div class="detail-value" id="requiredClasses">0</div>
+                            <div>Classes to attend</div>
+                        </div>
+                        <div class="detail-card">
+                            <div>Can Miss</div>
+                            <div class="detail-value" id="allowedAbsences">0</div>
+                            <div>Classes safely</div>
+                        </div>
+                        <div class="detail-card">
+                            <div>Marks Awarded</div>
+                            <div class="detail-value" id="marksAwarded">0</div>
+                            <div>Out of 5</div>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <h3 class="section-title">
+                    <i class='bx bxs-book'></i> Saved Subjects
+                    <span class="subject-count" id="subjectCount">0</span>
+                </h3>
+                
+                <div class="subject-list" id="subjectList">
+                    <div class="empty-state">
+                        <i class='bx bx-bookmark-alt'></i>
+                        <p>No subjects saved yet</p>
+                        <p>Add your first subject to track attendance</p>
+                    </div>
+                </div>
+                
+                <div class="actions">
+                    <button class="btn btn-outline" id="clearAll">
+                        <i class='bx bx-trash'></i> Clear All Subjects
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="calculator-tips">
+            <h3 class="tips-title">
+                <i class='bx bxs-bulb'></i> Attendance Tips for VIT Students
+            </h3>
+            <ul class="tips-list">
+                <li>VIT requires a minimum of 75% attendance in each subject to be eligible for exams</li>
+                <li>Aim for 80% attendance to have a buffer for unexpected absences</li>
+                <li>Track your attendance regularly - it contributes to 5 marks of your internals</li>
+                <li>Communicate with professors if you need to miss classes for valid reasons</li>
+                <li>Prioritize attendance in subjects with strict faculty policies</li>
+                <li>Use this calculator to plan your attendance strategy effectively</li>
+            </ul>
+        </div>
+    </main>
+
+    <script>
+        // Function to calculate max safe misses with rounding
+// Function to calculate max safe misses with rounding
+function maxSafeMisses(attended, total, minEffectiveP = 76) {
+    console.log('maxSafeMisses input:', { attended, total, minEffectiveP });
+    let low = 0;
+    let high = 10000;
+    let ans = 0;
+    while (low <= high) {
+        let mid = Math.floor((low + high) / 2);
+        let newTotal = total + mid;
+        let rawP = (attended / newTotal) * 100;
+        let effectiveP = getEffectivePercentage(rawP);
+        console.log('maxSafeMisses iteration:', { low, high, mid, rawP, effectiveP });
+        if (effectiveP >= minEffectiveP) {
+            ans = mid;
+            low = mid + 1;
+        } else {
+            high = mid - 1;
+        }
+    }
+    console.log('maxSafeMisses result:', ans);
+    return ans;
+}
+
+// Function to calculate min required attend with rounding
+function minRequiredAttend(attended, total, minEffectiveP = 76) {
+    console.log('minRequiredAttend input:', { attended, total, minEffectiveP });
+    let low = 0;
+    let high = 10000;
+    let ans = high;
+    while (low <= high) {
+        let mid = Math.floor((low + high) / 2);
+        let newTotal = total + mid;
+        let newAttended = attended + mid;
+        let rawP = (newAttended / newTotal) * 100;
+        let effectiveP = getEffectivePercentage(rawP);
+        console.log('minRequiredAttend iteration:', { low, high, mid, rawP, effectiveP });
+        if (effectiveP >= minEffectiveP) {
+            ans = mid;
+            high = mid - 1;
+        } else {
+            low = mid + 1;
+        }
+    }
+    console.log('minRequiredAttend result:', ans);
+    return ans;
+}
+
+// Function to get effective percentage for calculations
+function getEffectivePercentage(rawPercentage) {
+    return Math.ceil(rawPercentage);
+}
+
+// Function to get display percentage
+function getDisplayPercentage(rawPercentage) {
+    const effectiveP = getEffectivePercentage(rawPercentage);
+    return effectiveP + '%';
+}
+
+// Calculate marks based on ranges
+function calculateMarks(effectivePercentage) {
+    console.log('calculateMarks input:', effectivePercentage);
+    if (effectivePercentage < 76) return 0;
+    if (effectivePercentage >= 96) return 5;
+    if (effectivePercentage >= 91) return 4;
+    if (effectivePercentage >= 86) return 3;
+    if (effectivePercentage >= 81) return 2;
+    if (effectivePercentage >= 76) return 1;
+    return 0;
+}
+
+// Update marks visualization
+function updateMarksVisualization(marks) {
+    console.log('updateMarksVisualization:', marks);
+    for (let i = 1; i <= 5; i++) {
+        const markElement = document.getElementById(`mark${i}`);
+        if (markElement) {
+            markElement.classList.remove('active');
+        }
+    }
+    for (let i = 1; i <= marks; i++) {
+        const markElement = document.getElementById(`mark${i}`);
+        if (markElement) {
+            markElement.classList.add('active');
+        }
+    }
+}
+
+// Calculate attendance
+function calculateAttendance({
+    subjectNameInput,
+    totalClassesInput,
+    attendedClassesInput,
+    attendancePercentage,
+    attendanceStatus,
+    requiredClasses,
+    allowedAbsences,
+    marksAwarded,
+    marksValue
+}) {
+    console.log('calculateAttendance started');
+    const totalClasses = parseInt(totalClassesInput.value);
+    const attendedClasses = parseInt(attendedClassesInput.value);
+
+    // Input validation
+    if (isNaN(totalClasses) || totalClasses <= 0) {
+        alert('Please enter a valid number for total classes');
+        totalClassesInput.focus();
+        return null;
+    }
+    if (isNaN(attendedClasses) || attendedClasses < 0) {
+        alert('Please enter a valid number for classes attended');
+        attendedClassesInput.focus();
+        return null;
+    }
+    if (attendedClasses > totalClasses) {
+        alert('Attended classes cannot be more than total classes');
+        attendedClassesInput.value = totalClasses;
+        return null;
+    }
+
+    // Calculate raw percentage
+    const rawP = (attendedClasses / totalClasses) * 100;
+    const effectiveP = getEffectivePercentage(rawP);
+    attendancePercentage.textContent = getDisplayPercentage(rawP);
+
+    // Calculate marks
+    const marks = calculateMarks(effectiveP);
+    marksAwarded.textContent = marks;
+    marksValue.textContent = `${marks} mark${marks !== 1 ? 's' : ''}`;
+    updateMarksVisualization(marks);
+
+    // Animation effect
+    attendancePercentage.style.transform = 'scale(1.1)';
+    setTimeout(() => {
+        attendancePercentage.style.transform = 'scale(1)';
+    }, 300);
+
+    // Update status
+    if (effectiveP > 75) {
+        attendanceStatus.textContent = 'Good Standing';
+        attendanceStatus.className = 'attendance-status status-safe';
+    } else if (effectiveP > 65) {
+        attendanceStatus.textContent = 'Warning - Close to Minimum';
+        attendanceStatus.className = 'attendance-status status-warning';
+    } else {
+        attendanceStatus.textContent = 'Danger - Below Requirement';
+        attendanceStatus.className = 'attendance-status status-danger';
+    }
+
+    // Calculate required classes and allowed absences
+    const required = minRequiredAttend(attendedClasses, totalClasses);
+    const allowed = maxSafeMisses(attendedClasses, totalClasses);
+    requiredClasses.textContent = required;
+    allowedAbsences.textContent = allowed;
+
+    console.log('calculateAttendance result:', {
+        totalClasses,
+        attendedClasses,
+        rawP: rawP.toFixed(2),
+        effectiveP,
+        required,
+        allowed,
+        marks
+    });
+
+    return {
+        total: totalClasses,
+        attended: attendedClasses,
+        percentage: rawP.toFixed(10),
+        marks,
+        allowedAbsences: allowed
+    };
+}
+
+// Load subjects from localStorage
+let subjects = [];
+function loadSubjects() {
+    try {
+        const saved = localStorage.getItem('attendanceSubjects');
+        if (saved) {
+            subjects = JSON.parse(saved);
+            console.log('Subjects loaded:', subjects);
+        }
+    } catch (error) {
+        console.error('Error loading subjects from localStorage:', error);
+        subjects = [];
+    }
+}
+
+// Save subjects to localStorage
+function saveSubjects() {
+    try {
+        localStorage.setItem('attendanceSubjects', JSON.stringify(subjects));
+        console.log('Subjects saved:', subjects);
+    } catch (error) {
+        console.error('Error saving subjects to localStorage:', error);
+    }
+}
+
+// Render subjects
+function renderSubjects({ subjectList, subjectCount }) {
+    console.log('renderSubjects called with subjects:', subjects);
+    subjectList.innerHTML = '';
+    subjectCount.textContent = subjects.length;
+
+    if (subjects.length === 0) {
+        subjectList.innerHTML = `
+            <div class="empty-state">
+                <i class='bx bx-bookmark-alt'></i>
+                <p>No subjects saved yet</p>
+                <p>Add your first subject to track attendance</p>
+            </div>
+        `;
+        return;
+    }
+
+    subjects.forEach((subject, index) => {
+        const item = document.createElement('div');
+        item.className = 'subject-item';
+
+        let statusColor = '';
+        const effectiveP = getEffectivePercentage(parseFloat(subject.percentage));
+        if (effectiveP > 75) {
+            statusColor = 'color: var(--success-color);';
+        } else if (effectiveP > 65) {
+            statusColor = 'color: var(--warning-color);';
+        } else {
+            statusColor = 'color: var(--danger-color);';
+        }
+
+        item.innerHTML = `
+            <div class="subject-info">
+                <div class="subject-name">${subject.name}</div>
+                <div class="subject-stats">
+                    <span>${subject.attended} / ${subject.total} classes</span>
+                    <span style="${statusColor}">${effectiveP}%</span>
+                    <span style="color: var(--accent-blue);">${subject.marks} marks</span>
+                    <span style="color: var(--accent-teal);">${subject.allowedAbsences} classes</span>
+                </div>
+            </div>
+            <div class="subject-actions">
+                <button class="action-btn edit-btn" data-index="${index}">
+                    <i class='bx bx-edit'></i>
+                </button>
+                <button class="action-btn delete-btn" data-index="${index}">
+                    <i class='bx bx-trash'></i>
+                </button>
+            </div>
+        `;
+        subjectList.appendChild(item);
+    });
+
+    document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const index = parseInt(this.getAttribute('data-index'));
+            editSubject(index);
+        });
+    });
+
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            const index = parseInt(this.getAttribute('data-index'));
+            deleteSubject(index);
+        });
+    });
+}
+
+// Edit subject
+function editSubject(index, elements) {
+    console.log('editSubject:', index);
+    const subject = subjects[index];
+    elements.subjectNameInput.value = subject.name;
+    elements.totalClassesInput.value = subject.total;
+    elements.attendedClassesInput.value = subject.attended;
+
+    calculateAttendance(elements);
+    subjects.splice(index, 1);
+    saveSubjects();
+    renderSubjects(elements);
+}
+
+// Delete subject
+function deleteSubject(index, elements) {
+    console.log('deleteSubject:', index);
+    if (confirm('Are you sure you want to delete this subject?')) {
+        subjects.splice(index, 1);
+        saveSubjects();
+        renderSubjects(elements);
+    }
+}
+
+// Save subject
+function saveSubject(e, elements) {
+    console.log('saveSubject called');
+    e.preventDefault();
+    const subjectData = calculateAttendance(elements);
+    if (!subjectData) return;
+
+    let subjectName = elements.subjectNameInput.value.trim();
+    if (!subjectName) {
+        const subjectCount = subjects.length + 1;
+        subjectName = `Subject ${subjectCount}`;
+    }
+
+    if (subjects.some(sub => sub.name === subjectName)) {
+        alert('A subject with this name already exists. Please use a different name.');
+        return;
+    }
+
+    subjects.push({
+        name: subjectName,
+        total: subjectData.total,
+        attended: subjectData.attended,
+        percentage: subjectData.percentage,
+        marks: subjectData.marks,
+        allowedAbsences: subjectData.allowedAbsences
+    });
+
+    saveSubjects();
+    renderSubjects(elements);
+    resetForm(elements);
+
+    elements.attendanceStatus.textContent = 'Subject saved successfully!';
+    elements.attendanceStatus.className = 'attendance-status status-safe';
+    setTimeout(() => {
+        elements.attendanceStatus.textContent = 'Enter values to calculate';
+        elements.attendanceStatus.className = 'attendance-status';
+    }, 2000);
+}
+
+// Reset form
+function resetForm(elements) {
+    console.log('resetForm called');
+    elements.subjectNameInput.value = '';
+    elements.totalClassesInput.value = '';
+    elements.attendedClassesInput.value = '';
+    elements.attendancePercentage.textContent = '0%';
+    elements.requiredClasses.textContent = '0';
+    elements.allowedAbsences.textContent = '0';
+    elements.marksAwarded.textContent = '0';
+    elements.marksValue.textContent = '0 marks';
+    elements.attendanceStatus.textContent = 'Enter values to calculate';
+    elements.attendanceStatus.className = 'attendance-status';
+    updateMarksVisualization(0);
+}
+
+// Clear all subjects
+function clearAllSubjects(e, elements) {
+    console.log('clearAllSubjects called');
+    e.preventDefault();
+    if (subjects.length === 0) return;
+
+    if (confirm('Are you sure you want to delete all saved subjects?')) {
+        subjects = [];
+        saveSubjects();
+        renderSubjects(elements);
+    }
+}
+
+// Create background particles
+function createParticles(bgParticles) {
+    console.log('createParticles called');
+    const particleCount = 8;
+
+    for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.classList.add('particle');
+
+        const size = Math.random() * 60 + 20;
+        particle.style.width = `${size}px`;
+        particle.style.height = `${size}px`;
+
+        particle.style.top = `${Math.random() * 100}%`;
+        particle.style.left = `${Math.random() * 100}%`;
+
+        particle.style.animationDelay = `${Math.random() * 10}s`;
+
+        bgParticles.appendChild(particle);
+    }
+}
+
+// Initialize application
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOM fully loaded');
+
+    // DOM elements
+    const elements = {
+        menuToggle: document.getElementById('menuToggle'),
+        sidebar: document.getElementById('sidebar'),
+        bgParticles: document.getElementById('bgParticles'),
+        subjectNameInput: document.getElementById('subjectName'),
+        totalClassesInput: document.getElementById('totalClasses'),
+        attendedClassesInput: document.getElementById('attendedClasses'),
+        calculateBtn: document.getElementById('calculateBtn'),
+        saveSubjectBtn: document.getElementById('saveSubject'),
+        resetFormBtn: document.getElementById('resetForm'),
+        clearAllBtn: document.getElementById('clearAll'),
+        attendancePercentage: document.getElementById('attendancePercentage'),
+        attendanceStatus: document.getElementById('attendanceStatus'),
+        requiredClasses: document.getElementById('requiredClasses'),
+        allowedAbsences: document.getElementById('allowedAbsences'),
+        marksAwarded: document.getElementById('marksAwarded'),
+        marksValue: document.getElementById('marksValue'),
+        subjectList: document.getElementById('subjectList'),
+        subjectCount: document.getElementById('subjectCount')
+    };
+
+    // Check for missing DOM elements
+    for (const [key, value] of Object.entries(elements)) {
+        if (!value) {
+            console.error(`DOM element "${key}" not found. Check your HTML structure.`);
+            return;
+        }
+    }
+
+    // Toggle sidebar
+    elements.menuToggle.addEventListener('click', (e) => {
+        console.log('menuToggle clicked');
+        e.preventDefault();
+        elements.sidebar.classList.toggle('active');
+    });
+
+    document.addEventListener('click', (e) => {
+        if (elements.sidebar.classList.contains('active') &&
+            !elements.sidebar.contains(e.target) &&
+            !elements.menuToggle.contains(e.target)) {
+            console.log('Closing sidebar');
+            elements.sidebar.classList.remove('active');
+        }
+    });
+
+    // Input sanitization
+    elements.totalClassesInput.addEventListener('input', function () {
+        if (this.value < 0) this.value = 0;
+    });
+
+    elements.attendedClassesInput.addEventListener('input', function () {
+        if (this.value < 0) this.value = 0;
+        const total = parseInt(elements.totalClassesInput.value);
+        if (total && parseInt(this.value) > total) {
+            this.value = total;
+        }
+    });
+
+    // Event listeners
+    elements.calculateBtn.addEventListener('click', (e) => {
+        console.log('calculateBtn clicked');
+        e.preventDefault();
+        calculateAttendance(elements);
+    });
+
+    elements.saveSubjectBtn.addEventListener('click', (e) => {
+        console.log('saveSubjectBtn clicked');
+        saveSubject(e, elements);
+    });
+
+    elements.resetFormBtn.addEventListener('click', (e) => {
+        console.log('resetFormBtn clicked');
+        e.preventDefault();
+        resetForm(elements);
+    });
+
+    elements.clearAllBtn.addEventListener('click', (e) => {
+        console.log('clearAllBtn clicked');
+        clearAllSubjects(e, elements);
+    });
+
+    // Initial setup
+    console.log('Initializing app');
+    loadSubjects();
+    createParticles(elements.bgParticles);
+    updateMarksVisualization(0);
+    renderSubjects(elements);
+});   </script>
+</body>
+</html>

@@ -1,0 +1,1070 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholars Stack - My Courses</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* === GLOBAL STYLES === */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
+
+        :root {
+            --primary-dark: #0f1a2a;
+            --primary-blue: #1e3a5f;
+            --accent-blue: #3498db;
+            --accent-teal: #2ecc71;
+            --light-color: #ecf0f1;
+            --light-color1: #d6d6d6;
+            --dark-color: #2c3e50;
+            --glass-bg: rgba(15, 26, 42, 0.85);
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --premium-color: #9b59b6;
+            --sidebar-width: 280px;
+            --header-height: 90px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a1423 0%, var(--primary-dark) 100%);
+            color: var(--light-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            font-size: 16px;
+        }
+
+        /* Background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(52, 152, 219, 0.2);
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); }
+            25% { transform: translateY(-20px) translateX(20px) rotate(90deg); }
+            50% { transform: translateY(0) translateX(40px) rotate(180deg); }
+            75% { transform: translateY(20px) translateX(20px) rotate(270deg); }
+            100% { transform: translateY(0) translateX(0) rotate(360deg); }
+        }
+
+        /* Header styles */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            background: transparent;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            z-index: 1000;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.4);
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        .menu-toggle {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin-right: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 30px;
+            height: 4px;
+            background: var(--light-color);
+            margin: 3px 0;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 60px;
+            width: auto;
+            margin-right: 20px;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-text h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--light-color);
+        }
+
+        .logo-text span {
+            font-size: 16px;
+            color: var(--accent-teal);
+        }
+
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 6px 18px;
+            border-radius: 30px;
+            background: rgba(52, 152, 219, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .user-profile:hover {
+            background: var(--accent-blue);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            margin-right: 12px;
+            border: 2px solid var(--light-color);
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 18px;
+        }
+
+        .map-access {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: rgba(52, 152, 219, 0.2);
+            color: var(--light-color);
+            font-size: 24px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            z-index: 1002;
+        }
+
+        .map-access:hover {
+            background: var(--accent-blue);
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            position: fixed;
+            top: var(--header-height);
+            left: calc(-1 * var(--sidebar-width));
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            background: transparent;
+            backdrop-filter: blur(10px);
+            z-index: 900;
+            transition: all 0.3s ease;
+            border-right: 2px solid var(--accent-blue);
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.4);
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-title {
+            padding: 18px 20px 8px;
+            font-size: 15px;
+            color: var(--accent-blue);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: var(--light-color);
+            text-decoration: none;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .sidebar-menu i {
+            font-size: 20px;
+            margin-right: 12px;
+            width: 22px;
+            text-align: center;
+            color: var(--accent-blue);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            padding: calc(var(--header-height) + 30px) 40px 40px;
+            transition: margin-left 0.3s ease;
+            margin: 0 auto;
+            max-width: 1500px;
+        }
+
+        .sidebar.active + .main-content {
+            margin-left: var(--sidebar-width);
+        }
+
+        .page-title {
+            font-size: 40px;
+            margin-bottom: 25px;
+            color: var(--light-color);
+            position: relative;
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-title i {
+            color: var(--accent-teal);
+            font-size: 1.2em;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100px;
+            height: 5px;
+            background: var(--accent-blue);
+            border-radius: 3px;
+        }
+
+        /* Course Grid Styles */
+        .course-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 30px;
+            margin-bottom: 50px;
+        }
+
+        .course-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--accent-blue);
+            transition: all 0.4s ease;
+            position: relative;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .course-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .course-image {
+            height: 200px;
+            width: 100%;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+
+        .course-info {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .course-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .course-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--light-color);
+            line-height: 1.3;
+            flex: 1;
+            margin-right: 10px;
+        }
+
+        .expand-btn {
+            display: flex;
+            align-items: center;
+            background: transparent;
+            border: none;
+            color: var(--accent-blue);
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            z-index: 10;
+            min-width: 40px;
+        }
+
+        .expand-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .expand-btn i {
+            font-size: 24px;
+            transition: transform 0.3s ease;
+        }
+
+        .expand-btn.expanded i {
+            transform: rotate(180deg);
+        }
+
+        .subject-count {
+            font-size: 14px;
+            margin-left: 5px;
+            color: var(--accent-teal);
+            font-weight: 600;
+        }
+
+        .course-subjects {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease, margin-top 0.3s ease;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 10px;
+            margin-top: 0;
+        }
+
+        .course-subjects.expanded {
+            max-height: 1000px;
+            margin-top: 20px;
+        }
+
+        .subject-item {
+            padding: 15px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .subject-item:hover {
+            background: rgba(52, 152, 219, 0.15);
+        }
+
+        .subject-item:last-child {
+            border-bottom: none;
+        }
+
+        .subject-item i {
+            color: var(--accent-teal);
+            margin-right: 12px;
+            font-size: 20px;
+        }
+
+        .subject-name {
+            flex: 1;
+            font-size: 15px;
+        }
+
+        .access-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-size: 14px;
+            text-decoration: none;
+            margin-top: 20px;
+            z-index: 10;
+        }
+
+        .access-btn:hover {
+            background: #1e7ab3;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.6);
+        }
+
+        .subject-access-btn {
+            background: var(--accent-teal);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+            min-width: 70px;
+        }
+
+        .subject-access-btn:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(46, 204, 113, 0.4);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1200px) {
+            .main-content {
+                max-width: 1000px;
+                margin: 0 auto;
+            }
+
+            .course-grid {
+                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                gap: 25px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 240px;
+                left: -240px;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .course-grid {
+                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --header-height: 60px;
+                --sidebar-width: 100%;
+            }
+
+            .header {
+                padding: 0 12px;
+            }
+
+            .menu-toggle {
+                width: 34px;
+                height: 34px;
+                margin-right: 10px;
+            }
+
+            .menu-toggle span {
+                width: 22px;
+                height: 2.5px;
+                margin: 2px 0;
+            }
+
+            .logo img {
+                height: 40px;
+                margin-right: 10px;
+            }
+
+            .logo-text h1 {
+                font-size: 18px;
+            }
+
+            .logo-text span {
+                font-size: 12px;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .user-profile {
+                padding: 4px;
+            }
+
+            .user-avatar {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+                margin-right: 0;
+                border-width: 1px;
+            }
+
+            .map-access {
+                width: 34px;
+                height: 34px;
+                font-size: 16px;
+            }
+
+            .sidebar {
+                top: var(--header-height);
+                left: -100%;
+                width: var(--sidebar-width);
+                height: calc(100vh - var(--header-height));
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main-content {
+                padding: calc(var(--header-height) + 15px) 15px 20px;
+                margin: 0 auto;
+                max-width: 100%;
+            }
+
+            .sidebar.active + .main-content {
+                margin-left: 0;
+            }
+
+            .page-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+
+            .course-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .course-image {
+                height: 180px;
+            }
+
+            .course-title {
+                font-size: 20px;
+            }
+
+            .expand-btn {
+                font-size: 20px;
+                min-width: 36px;
+            }
+
+            .expand-btn i {
+                font-size: 20px;
+            }
+
+            .access-btn {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            .subject-access-btn {
+                padding: 6px 12px;
+                font-size: 11px;
+                min-width: 60px;
+            }
+        }
+
+        @media (max-width: 576px) {
+            :root {
+                --header-height: 65px;
+            }
+
+            .header {
+                padding: 0 15px;
+            }
+
+            .menu-toggle {
+                width: 36px;
+                height: 36px;
+                margin-right: 12px;
+            }
+
+            .menu-toggle span {
+                width: 24px;
+                height: 3px;
+            }
+
+            .logo img {
+                height: 42px;
+                margin-right: 12px;
+            }
+
+            .logo-text h1 {
+                font-size: 18px;
+            }
+
+            .logo-text span {
+                font-size: 12px;
+            }
+
+            .user-avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 15px;
+            }
+
+            .map-access {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+
+            .main-content {
+                padding: calc(var(--header-height) + 12px) 12px 15px;
+                margin: 0 auto;
+                max-width: 100%;
+            }
+
+            .page-title {
+                font-size: 22px;
+                padding-bottom: 10px;
+            }
+
+            .course-info {
+                padding: 20px;
+            }
+
+            .subject-item {
+                padding: 12px;
+            }
+
+            .subject-name {
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 20px;
+            }
+
+            .course-title {
+                font-size: 18px;
+            }
+
+            .subject-item {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+            }
+
+            .subject-access-btn {
+                align-self: flex-end;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .logo-text h1 {
+                font-size: 14px;
+            }
+
+            .logo-text span {
+                font-size: 10px;
+            }
+
+            .page-title {
+                font-size: 18px;
+            }
+
+            .map-access {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            :root {
+                --header-height: 90px;
+                --sidebar-width: 280px;
+            }
+
+            .sidebar {
+                left: calc(-1 * var(--sidebar-width));
+                width: var(--sidebar-width);
+                transition: all 0.3s ease;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main-content {
+                margin: 0 auto;
+                max-width: 1500px;
+            }
+
+            .logo img {
+                height: 60px;
+            }
+
+            .logo-text h1 {
+                font-size: 28px;
+            }
+
+            .logo-text span {
+                font-size: 16px;
+            }
+
+            .user-name {
+                display: block;
+            }
+
+            .user-avatar {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                margin-right: 12px;
+                border-width: 2px;
+            }
+
+            .map-access {
+                width: 48px;
+                height: 48px;
+                font-size: 24px;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .header {
+                padding: 0 30px;
+            }
+
+            .logo img {
+                height: 70px;
+            }
+
+            .logo-text h1 {
+                font-size: 28px;
+            }
+
+            .logo-text span {
+                font-size: 16px;
+            }
+
+            .user-name {
+                font-size: 18px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .main-content {
+                padding: calc(var(--header-height) + 40px) 40px 40px;
+                margin: 0 auto;
+                max-width: 1500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-particles" id="bgParticles"></div>
+    
+    <header class="header">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="logo">
+            <a href="../../index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="../../features/images/logo1.png" alt="Scholars Stack Logo">
+                <div class="logo-text">
+                    <h1>Scholars Stack</h1>
+                    <span>My Courses</span>
+                </div>
+            </a>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
+                    <span>S</span>
+                </div>
+                <div class="user-name">Student</div>
+            </div>
+            <a href="#" class="map-access" title="Campus Map" aria-label="View Campus Map">
+                <i class='bx bxs-map'></i>
+            </a>
+        </div>
+    </header>
+    
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Main Navigation</div>
+        <ul class="sidebar-menu">
+            <li><a href="../profile/profile.html"><i class='bx bxs-user'></i> Profile</a></li>
+            <li><a href="../attendance/attendance.html"><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+            <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+            <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Resources</div>
+        <ul class="sidebar-menu">
+            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+            <li><a href="#"><i class='bx bxs-group'></i> Club Info</a></li>
+            <li><a href="../faculty/faculty.html"><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Quick Links</div>
+        <ul class="sidebar-menu">
+            <li><a href="../mycourses/mycourses.html" class="active"><i class='bx bxs-graduation'></i> My Courses</a></li>
+            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Account</div>
+        <ul class="sidebar-menu">
+            <!-- <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li> -->
+            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+        </ul>
+    </nav>
+    
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">
+            <i class='bx bxs-graduation'></i> My Courses
+        </h1>
+        
+        <div class="course-grid" id="myCoursesGrid">
+        </div>
+    </main>
+
+    <script>
+        // Create background particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('bgParticles');
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random size
+                const size = Math.random() * 60 + 20;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.left = `${Math.random() * 100}%`;
+                
+                // Random animation delay
+                particle.style.animationDelay = `${Math.random() * 10}s`;
+                
+                // Random opacity
+                particle.style.opacity = Math.random() * 0.5 + 0.3;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        const courses = [
+            {
+                id: "dsa",
+                title: "Data Structures & Algorithms",
+                image: "https://images.unsplash.com/photo-1550439062-609e1531270e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                directLink: "#",
+                subjects: [
+                    "Introduction to Data Structures",
+                    "Arrays and Linked Lists",
+                    "Stacks and Queues",
+                    "Trees and Binary Search Trees",
+                    "Graphs and Graph Algorithms",
+                    "Sorting and Searching Algorithms",
+                    "Data Compression and Encryption"
+                ]
+            },
+            {
+                id: "dbms",
+                title: "Database Management Systems",
+                image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                directLink: "#",
+                subjects: [
+                    "Database Fundamentals",
+                    "Relational Model and SQL",
+                    "Database Design and Normalization",
+                    "Transaction Management",
+                    "Indexing and Query Optimization",
+                    "NoSQL Databases"
+                ]
+            },
+            {
+                id: "webdev",
+                title: "Web Development",
+                image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+                directLink: "#",
+                subjects: [
+                    "HTML5 and CSS3",
+                    "JavaScript Fundamentals",
+                    "React.js Components",
+                    "Node.js and Express",
+                    "MongoDB Integration",
+                    "Cloud Deployment"
+                ]
+            }
+        ];
+
+        // Setup menu toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        const courseGrid = document.getElementById('myCoursesGrid');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (sidebar.classList.contains('active') && 
+                !sidebar.contains(e.target) && 
+                !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+
+        // Sidebar link active state and close on mobile after navigation
+        document.querySelectorAll('.sidebar-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                if (window.matchMedia('(max-width: 768px)').matches) {
+                    sidebar.classList.remove('active');
+                }
+            });
+        });
+
+        function loadCourses() {
+            courseGrid.innerHTML = '';
+            courses.forEach(course => {
+                const courseCard = document.createElement('div');
+                courseCard.className = 'course-card';
+                courseCard.dataset.course = course.id;
+
+                let subjectsHTML = '';
+                course.subjects.forEach(subject => {
+                    subjectsHTML += `
+                        <div class="subject-item">
+                            <i class='bx bx-book'></i>
+                            <div class="subject-name">${subject}</div>
+                            <button class="subject-access-btn" data-subject="${subject}">Access</button>
+                        </div>
+                    `;
+                });
+
+                courseCard.innerHTML = `
+                    <div class="course-image" style="background-image: url('${course.image}');"></div>
+                    <div class="course-info">
+                        <div class="course-header">
+                            <h3 class="course-title">${course.title}</h3>
+                            <button class="expand-btn">
+                                <i class='bx bx-chevron-down'></i>
+                                <span class="subject-count">${course.subjects.length} subjects</span>
+                            </button>
+                        </div>
+                        <div class="course-subjects">
+                            ${subjectsHTML}
+                        </div>
+                        <a href="${course.directLink}" class="access-btn">Access Full Course</a>
+                    </div>
+                `;
+                courseGrid.appendChild(courseCard);
+
+                const expandBtn = courseCard.querySelector('.expand-btn');
+                const subjectsSection = courseCard.querySelector('.course-subjects');
+
+                function toggleSubjects(e) {
+                    if (e.target.classList.contains('subject-access-btn') || 
+                        e.target.parentElement.classList.contains('subject-access-btn')) {
+                        return;
+                    }
+                    expandBtn.classList.toggle('expanded');
+                    subjectsSection.classList.toggle('expanded');
+                }
+
+                courseCard.addEventListener('click', toggleSubjects);
+                expandBtn.addEventListener('click', toggleSubjects);
+
+                const subjectAccessBtns = courseCard.querySelectorAll('.subject-access-btn');
+                subjectAccessBtns.forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const subject = btn.dataset.subject;
+                        alert(`Accessing subject: ${subject}`);
+                    });
+                });
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+            loadCourses();
+        });
+    </script>
+</body>
+</html>

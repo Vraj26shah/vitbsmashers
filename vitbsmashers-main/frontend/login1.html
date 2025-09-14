@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholars Stack - Login</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a1423 0%, #0f1a2a 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            padding: 20px;
+        }
+
+        :root {
+            --primary-color: #2c3e50;
+            --secondary-color: #e74c3c;
+            --accent-color: #3498db;
+            --light-color: #ecf0f1;
+            --dark-color: #2c3e50;
+            --success-color: #2ecc71;
+            --primary-dark: #0f1a2a;
+        }
+        
+        /* Background particles to match site */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(52, 152, 219, 0.2);
+            animation: float 15s infinite linear;
+        }
+
+        .particle:nth-child(1) { width: 100px; height: 100px; top: 20%; left: 10%; animation-delay: 0s; }
+        .particle:nth-child(2) { width: 150px; height: 150px; top: 60%; left: 80%; animation-delay: 2s; }
+        .particle:nth-child(3) { width: 80px; height: 80px; top: 40%; left: 40%; animation-delay: 4s; }
+        .particle:nth-child(4) { width: 120px; height: 120px; top: 70%; left: 30%; animation-delay: 6s; }
+        .particle:nth-child(5) { width: 90px; height: 90px; top: 30%; left: 70%; animation-delay: 8s; }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); }
+            25% { transform: translateY(-20px) translateX(20px) rotate(90deg); }
+            50% { transform: translateY(0) translateX(40px) rotate(180deg); }
+            75% { transform: translateY(20px) translateX(20px) rotate(270deg); }
+            100% { transform: translateY(0) translateX(0) rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .particle { width: 60px !important; height: 60px !important; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .particle { animation: none; }
+        }
+
+        /* Back to Home button */
+        .back-btn {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--light-color);
+            text-decoration: none;
+            background: rgba(52, 152, 219, 0.15);
+            border: 1px solid var(--accent-color);
+            padding: 8px 12px;
+            border-radius: 999px;
+            z-index: 1100;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+        }
+
+        .back-btn:hover {
+            background: var(--accent-color);
+            color: #fff;
+            transform: translateY(-1px);
+        }
+
+        .wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 850px;
+            height: auto;
+            min-height: 580px;
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 25px var(--accent-color);
+            overflow: hidden;
+            transition: all 0.5s ease;
+            border-radius: 10px;
+            margin: 20px auto;
+        }
+
+        .wrapper .form-box {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            padding: 20px;
+        }
+
+        .wrapper .form-box.login {
+            left: 0;
+            padding: 0 40px 0 30px;
+        }
+
+        .wrapper .form-box.login .animation {
+            transform: translateX(0);
+            opacity: 1;
+            filter: blur(0); 
+            transition: transform 0.45s ease, opacity 0.45s ease, filter 0.45s ease;
+            transition-delay: calc(0.04s * var(--j));
+        }
+
+        .wrapper.active .form-box.login .animation {
+            transform: translateX(-120%);
+            opacity: 0;
+            filter: blur(10px);
+            transition-delay: calc(0.04s * var(--i));
+        }
+
+        .wrapper .form-box.register {
+            right: 0;
+            padding: 0 30px 0 40px;
+            margin-top: 0;
+        }
+
+        .wrapper .form-box.register .animation {
+            transform: translateX(120%);
+            opacity: 0;
+            filter: blur(10px);
+            transition: transform 0.45s ease, opacity 0.45s ease, filter 0.45s ease;
+            transition-delay: calc(0.04s * var(--j));
+        }
+
+        .wrapper.active .form-box.register .animation {
+            transform: translateX(0);
+            opacity: 1;
+            filter: blur(0); 
+            transition-delay: calc(0.04s * var(--i));
+        }
+
+        .form-box h2 {
+            color: var(--light-color);
+            font-size: clamp(1.5rem, 2.5vw, 2rem);
+            text-align: center;
+            transition: color 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .form-box .input-box {
+            width: 100%;
+            height: 50px;
+            margin: 12px 0;
+            position: relative;
+            transition: border-color 0.3s ease, background 0.3s ease;
+        }
+
+        .input-box input {
+            width: 100%;
+            height: 100%;
+            background: transparent;
+            padding-right: 23px;
+            border: none;
+            outline: none;
+            border-bottom: 2px solid var(--light-color);
+            color: var(--light-color);
+            font-size: clamp(0.9rem, 1.1vw, 1rem);
+            font-weight: 500;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .input-box input:focus,
+        .input-box input:valid { 
+            border-bottom-color: var(--accent-color);
+        }
+
+        .input-box label {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            font-size: clamp(0.9rem, 1.1vw, 1rem);
+            color: var(--light-color);
+            pointer-events: none;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .input-box input:focus ~ label,
+        .input-box input:not(:placeholder-shown) ~ label {
+            top: -5px; 
+            color: var(--accent-color);
+        }
+
+        .input-box i {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            font-size: clamp(1rem, 1.2vw, 1.125rem);
+            color: var(--light-color);
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .input-box input:focus ~ i,
+        .input-box input:not(:placeholder-shown) ~ i {
+            color: var(--accent-color);
+        }
+
+        .btn {
+            position: relative;
+            width: 100%;
+            height: 45px;
+            background: transparent;
+            border: 2px solid var(--accent-color);
+            outline: none;
+            border-radius: 40px;
+            cursor: pointer;
+            font-size: clamp(0.9rem, 1.1vw, 1rem);
+            color: var(--light-color);
+            font-weight: 600;
+            z-index: 1;
+            overflow: hidden;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            margin-top: 8px;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: -100%;
+            left: 0;
+            width: 100%;
+            height: 300%;
+            background: linear-gradient(var(--primary-color), var(--accent-color), var(--primary-color), var(--accent-color));
+            z-index: -1;
+            transition: all 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        .btn:hover::before {
+            top: 0;
+        }
+
+        .form-box .logreg-link {
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            color: var(--light-color);
+            text-align: center;
+            margin: 15px 0 10px;
+            transition: all 0.5s ease;
+        }
+
+        .logreg-link p a { 
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .logreg-link p a:hover {
+            text-decoration: underline;
+        }
+
+        .wrapper .info-text {
+            position: absolute;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            transition: all 0.7s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            padding: 20px;
+        }
+
+        .wrapper .info-text.login {
+            right: 0;
+            text-align: right;
+            padding: 0 20px 40px 100px;
+        }
+
+        .wrapper .info-text.login .animation {
+            transform: translateX(0);
+            opacity: 1;
+            filter: blur(0); 
+            transition: transform 0.45s ease, opacity 0.45s ease, filter 0.45s ease;
+            transition-delay: calc(0.04s * var(--j));
+        }
+
+        .wrapper.active .info-text.login .animation {
+            transform: translateX(120%);
+            opacity: 0;
+            filter: blur(10px);
+            transition-delay: calc(0.04s * var(--i));
+        }
+
+        .wrapper .info-text.register {
+            left: 0;
+            text-align: left;
+            padding: 0 100px 40px 20px;
+            pointer-events: none;
+        }
+
+        .wrapper .info-text.register .animation {
+            transform: translateX(-120%);
+            opacity: 0;
+            filter: blur(10px);
+            transition: transform 0.45s ease, opacity 0.45s ease, filter 0.45s ease;
+            transition-delay: calc(0.04s * var(--j));
+        } 
+
+        .wrapper.active .info-text.register .animation {
+            transform: translateX(0);
+            opacity: 1;
+            filter: blur(0);
+            transition-delay: calc(0.04s * var(--i));
+        }
+
+        .info-text h2 {
+            color: var(--light-color);
+            font-size: clamp(1.5rem, 2.5vw, 2.25rem);
+            line-height: 1.3;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+
+        .info-text p {
+            color: var(--light-color);
+            font-size: clamp(0.85rem, 1.1vw, 1rem);
+            transition: color 0.3s ease;
+            margin: 5px 0;
+        }
+
+        /* Disable shifting background shapes to keep background stable */
+        .wrapper .bg-animate {
+            display: none;
+        }
+
+        .wrapper.active .bg-animate { display: none; }
+
+        .wrapper .bg-animate2 { display: none; }
+
+        .wrapper.active .bg-animate2 { display: none; }
+
+        /* Improve smoothness */
+        .wrapper .form-box, .wrapper .info-text {
+            will-change: transform, opacity;
+        }
+
+        /* Google Sign-in Button */
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            color: #5f6368;
+            border-radius: 40px;
+            padding: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 15px;
+            font-weight: 500;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid #ddd;
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+        }
+
+        .google-btn:hover {
+            background: #f8f8f8;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* OR Divider */
+        .or-divider {
+            display: flex;
+            align-items: center;
+            margin: 15px 0;
+        }
+
+        .or-divider span {
+            padding: 0 10px;
+            color: var(--light-color);
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            text-transform: uppercase;
+            font-weight: 500;
+        }
+
+        .or-divider::before,
+        .or-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* OTP container */
+        .otp-container {
+            display: flex;
+            justify-content: center;
+            margin: 15px 0;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .otp-input {
+            width: 45px;
+            height: 45px;
+            text-align: center;
+            font-size: 18px;
+            border: 2px solid var(--light-color);
+            background: transparent;
+            border-radius: 8px;
+            color: var(--light-color);
+            transition: all 0.3s ease;
+        }
+
+        .otp-input:focus {
+            border-color: var(--accent-color);
+            outline: none;
+            transform: scale(1.05);
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
+        }
+
+        .otp-input.filled {
+            border-color: var(--success-color);
+            box-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+        }
+
+        .verify-otp-btn {
+            margin-top: 10px;
+        }
+
+        .otp-note {
+            font-size: clamp(0.7rem, 0.9vw, 0.8rem);
+            color: #3498db;
+            margin-top: 5px;
+            margin-bottom: 5px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        /* Modal for OTP verification */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            backdrop-filter: blur(5px);
+        }
+
+        .modal-content {
+            background: #2c3e50;
+            padding: 20px;
+            border-radius: 10px;
+            max-width: 500px;
+            width: 90%;
+            border: 2px solid var(--accent-color);
+            box-shadow: 0 0 25px var(--accent-color);
+            text-align: center;
+            animation: modalAppear 0.4s forwards;
+        }
+
+        @keyframes modalAppear {
+            from { transform: scale(0.9); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-icon {
+            font-size: 50px;
+            color: var(--accent-color);
+            margin-bottom: 15px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .modal-content h2 {
+            color: var(--light-color);
+            margin-bottom: 15px;
+            font-size: clamp(1.25rem, 2vw, 1.5rem);
+        }
+
+        .modal-content p {
+            color: var(--light-color);
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: clamp(0.85rem, 1.1vw, 1rem);
+        }
+
+        .user-email {
+            font-size: clamp(0.9rem, 1.2vw, 1.1rem);
+            color: var(--accent-color);
+            margin: 10px 0;
+            word-break: break-all;
+            padding: 10px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 8px;
+        }
+
+        .note {
+            font-size: clamp(0.75rem, 0.9vw, 0.85rem);
+            margin-top: 15px;
+            color: rgba(236, 240, 241, 0.7);
+        }
+
+        .resend-section {
+            margin: 20px 0;
+        }
+
+        .resend-section p {
+            margin-bottom: 5px;
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+        }
+
+        .resend-section a {
+            color: var(--accent-color);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .resend-section a:hover {
+            text-decoration: underline;
+        }
+
+        #countdown {
+            color: rgba(236, 240, 241, 0.5);
+            font-size: clamp(0.7rem, 0.9vw, 0.8rem);
+            display: none;
+        }
+
+        .modal-content .btn {
+            width: auto;
+            padding: 10px 25px;
+            margin: 10px auto 0;
+            display: block;
+            font-size: clamp(0.85rem, 1.1vw, 1rem);
+        }
+
+        /* Success animation */
+        @keyframes successAnimation {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .success-animation {
+            animation: successAnimation 0.5s 2;
+            color: var(--success-color);
+        }
+        
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: var(--light-color);
+            animation: spin 1s ease-in-out infinite;
+            display: inline-block;
+            margin-right: 10px;
+            vertical-align: middle;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Success icon */
+        .success-icon {
+            color: var(--success-color);
+            font-size: 50px;
+            margin-bottom: 15px;
+        }
+        
+        /* Error message */
+        .error-message {
+            color: var(--secondary-color);
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            margin-top: 5px;
+            text-align: center;
+            display: none;
+        }
+        
+        /* Disabled button */
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* Disabled link */
+        .disabled-link {
+            color: rgba(236, 240, 241, 0.5) !important;
+            pointer-events: none;
+            text-decoration: none;
+        }
+        
+        /* Toast notification */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(44, 62, 80, 0.9);
+            color: var(--light-color);
+            padding: 12px 25px;
+            border-radius: 8px;
+            border-left: 4px solid var(--accent-color);
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: clamp(0.8rem, 1vw, 0.9rem);
+            max-width: 90%;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
+        .toast i {
+            margin-right: 10px;
+            font-size: 18px;
+        }
+        
+        .toast.success i {
+            color: var(--success-color);
+        }
+        
+        .toast.error i {
+            color: var(--secondary-color);
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .wrapper {
+                min-height: auto;
+                height: auto;
+                padding: 15px;
+            }
+            
+            .wrapper .form-box,
+            .wrapper .info-text {
+                position: relative;
+                width: 100%;
+                height: auto;
+                padding: 20px !important;
+                text-align: center;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .wrapper .form-box.login,
+            .wrapper .form-box.register {
+                position: relative;
+                left: 0;
+                right: 0;
+                padding: 20px !important;
+                margin-top: 50px;
+            }
+            
+            .wrapper .info-text.login,
+            .wrapper .info-text.register {
+                position: relative;
+                text-align: center;
+                padding: 20px !important;
+                height: auto;
+                margin-top: 20px;
+            }
+            
+            .wrapper.active .form-box.login,
+            .wrapper .form-box.register {
+                display: none;
+            }
+            
+            .wrapper .form-box.login,
+            .wrapper.active .form-box.register {
+                display: flex;
+            }
+            
+            .wrapper.active .info-text.login {
+                display: none;
+            }
+            
+            .wrapper .info-text.register {
+                display: none;
+            }
+            
+            .wrapper.active .info-text.register {
+                display: flex;
+            }
+            
+            .info-text h2 {
+                font-size: clamp(1.5rem, 5vw, 1.8rem);
+                margin-bottom: 10px;
+            }
+            
+            .info-text p {
+                font-size: clamp(0.9rem, 3.5vw, 1rem);
+            }
+            
+            .form-box h2 {
+                font-size: clamp(1.5rem, 5vw, 1.8rem);
+            }
+            
+            .input-box {
+                height: 45px;
+                margin: 12px 0;
+                max-width: 100%;
+            }
+            
+            .btn {
+                height: 45px;
+                font-size: clamp(1rem, 3.5vw, 1.1rem);
+            }
+            
+            .google-btn {
+                padding: 10px;
+                font-size: clamp(0.9rem, 3.5vw, 1rem);
+                max-width: 100%;
+            }
+            
+            .logreg-link p {
+                font-size: clamp(0.9rem, 3.5vw, 1rem);
+            }
+            
+            .wrapper .bg-animate,
+            .wrapper .bg-animate2 {
+                display: none;
+            }
+            
+            .otp-input {
+                width: 40px;
+                height: 40px;
+                font-size: 18px;
+            }
+            
+            .modal-content {
+                padding: 15px;
+            }
+            
+            .user-email {
+                font-size: clamp(0.85rem, 3.5vw, 1rem);
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            
+            .wrapper {
+                min-height: auto;
+                padding: 10px;
+            }
+            
+            .form-box.login,
+            .form-box.register {
+                padding: 15px !important;
+            }
+
+            .info-text.login,
+            .info-text.register {
+                padding: 15px !important;
+            }
+            
+            .input-box {
+                margin: 10px 0;
+                height: 42px;
+            }
+            
+            .btn {
+                height: 42px;
+                font-size: clamp(0.95rem, 4vw, 1rem);
+            }
+            
+            .google-btn {
+                padding: 8px 10px;
+                font-size: clamp(0.9rem, 4vw, 0.95rem);
+            }
+            
+            .or-divider {
+                margin: 12px 0;
+            }
+            
+            .logreg-link {
+                margin: 12px 0 8px;
+            }
+            
+            .otp-container {
+                gap: 6px;
+            }
+            
+            .otp-input {
+                width: 38px;
+                height: 38px;
+                font-size: 16px;
+            }
+            
+            .user-email {
+                font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+            }
+            
+            .toast {
+                width: 90%;
+                padding: 10px 15px;
+            }
+        } 
+        
+        /* Mobile navigation */
+        .mobile-nav-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: var(--accent-color);
+            color: white;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            cursor: pointer;
+        }
+        
+        .mobile-nav-toggle i {
+            font-size: 24px;
+        }
+        
+        @media (max-width: 768px) {
+            .mobile-nav-toggle {
+                display: flex;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+    <a class="back-btn" href="index.html" aria-label="Back to home">
+        <i class='bx bx-arrow-back'></i>
+        <span>Home</span>
+    </a>
+    <div class="mobile-nav-toggle">
+        <i class='bx bx-menu'></i>
+    </div>
+    
+    <div class="wrapper">
+        <span class="bg-animate"></span>
+        <span class="bg-animate2"></span>
+
+        <div class="form-box login">
+            <h2 class="animation" style="--i:0; --j:21;">Login</h2>
+            <form id="loginForm">   
+                <div class="input-box animation" style="--i:1; --j:22;" >
+                    <input type="text" id="loginUsername" placeholder=" " required>
+                    <label>Username</label>
+                    <i class='bx bxs-user'></i>
+                </div>
+                <div class="input-box animation" style="--i:2; --j:23;"> 
+                    <input type="password" id="loginPassword" placeholder=" " required>
+                    <label>Password</label>
+                    <i class='bx bxs-lock-alt'></i>
+                </div>
+                <button type="submit" class="btn animation" style="--i:3; --j:24;">Login</button>
+                
+                <div class="or-divider animation" style="--i:4; --j:25;">
+                    <span>or</span>
+                </div>
+                
+                <div class="google-btn animation" style="--i:5; --j:26;">
+                    <div class="google-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
+                            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                            <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                        </svg>
+                    </div>
+                    Login with Google
+                </div>
+                
+                <div class="logreg-link animation" style="--i:6; --j:27;">
+                    <p>Don't have an account? <a href="#" class="register-link">Sign Up</a></p>
+                </div>
+            </form>
+        </div>
+        
+        <div class="info-text login">
+            <h2 class="animation" style="--i:0; --j:20;">Welcome Back!</h2>
+            <p class="animation" style="--i:1; --j:21;">Login to your account to continue.</p>
+            <p class="animation" style="--i:2; --j:22;">Access your dashboard </p>
+        </div>
+        
+                <div class="form-box register" style="margin-top: 20px;">
+ 
+            <h2 class="animation" style="--i:17; --j:0;" >Sign Up</h2>
+            <form id="registerForm">   
+                <div class="input-box animation" style="--i:18; --j:1;">
+                    <input type="text" id="registerUsername" placeholder=" " required>
+                    <label>Username</label>
+                    <i class='bx bxs-user'></i>
+                </div>
+                <div class="input-box animation" style="--i:19; --j:2;">
+                    <input type="email" id="registerEmail" placeholder=" " required>
+                    <label>VIT Email</label>
+                    <i class='bx bxs-envelope'></i>
+                </div>
+                <p class="otp-note animation" style="--i:20; --j:3;">Verification OTP will be sent to your VIT email</p>
+                
+                <div class="input-box animation" style="--i:21; --j:4;"> 
+                    <input type="password" id="registerPassword" placeholder=" " required>
+                    <label>Password</label>
+                    <i class='bx bxs-lock-alt'></i>
+                </div>
+                <button type="submit" class="btn animation" style="--i:22; --j:5;">Send OTP</button>
+                
+                <div class="or-divider animation" style="--i:23; --j:6;">
+                    <span>or</span>
+                </div>
+                
+                <div class="google-btn animation" style="--i:24; --j:7;">
+                    <div class="google-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
+                            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                            <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                        </svg>
+                    </div>
+                    Sign Up with Google
+                </div>
+                
+                <div class="logreg-link animation" style="--i:25; --j:8;">
+                    <p>Already have an account? <a href="#" class="login-link">Login</a></p>
+                </div>
+            </form>
+        </div>
+        
+        <div class="info-text register">
+            <h2 class="animation" style="--i:17; --j:0;">Hello There!</h2>
+            <p class="animation" style="--i:18; --j:1;">Sign Up to continue.</p>
+            <p class="animation" style="--i:19; --j:2;">Use your VIT email for verification</p>
+            <p class="animation" style="--i:20; --j:3;">OTP will be sent to your email</p>
+        </div>
+    </div>
+    
+    <!-- OTP Verification Modal -->
+    <div id="otpModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-icon">
+                <i class='bx bx-key'></i>
+            </div>
+            <h2>OTP Verification</h2>
+            <p>We've sent a 6-digit OTP to your email:</p>
+            <p class="user-email"><strong id="otpEmail"></strong></p>
+            
+            <div class="otp-container">
+                <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 1)">
+                <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 2)">
+                <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 3)">
+                <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 4)">
+                <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 5)">
+                <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 6)">
+            </div>
+            
+            <p class="otp-note">Enter the 6-digit code sent to your email</p>
+            
+            <button class="btn verify-otp-btn" id="verifyOtpBtn">Verify OTP</button>
+            
+            <div class="resend-section">
+                <p>Didn't receive the OTP? <a href="#" id="resendOtpBtn">Resend</a></p>
+                <p id="otpCountdown">Resend available in <span id="countdownSeconds">30</span> seconds</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="toast" id="toast">
+        <i class='bx bx-info-circle'></i>
+        <span id="toast-message">Notification message</span>
+    </div>
+    
+    <script>
+        // DOM elements
+        const wrapper = document.querySelector('.wrapper');
+        const registerLink = document.querySelector('.register-link');
+        const loginLink = document.querySelector('.login-link');
+        const otpModal = document.getElementById('otpModal');
+        const otpEmail = document.getElementById('otpEmail');
+        const registerForm = document.getElementById('registerForm');
+        const registerEmail = document.getElementById('registerEmail');
+        const loginForm = document.getElementById('loginForm');
+        const resendOtpBtn = document.getElementById('resendOtpBtn');
+        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
+        const otpCountdown = document.getElementById('otpCountdown');
+        const countdownSeconds = document.getElementById('countdownSeconds');
+        const googleBtns = document.querySelectorAll('.google-btn');
+        const otpInputs = document.querySelectorAll('.otp-input');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toast-message');
+        const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
+        
+        // Mobile navigation toggle
+        mobileNavToggle.addEventListener('click', function() {
+            wrapper.classList.toggle('active');
+            if(wrapper.classList.contains('active')) {
+                showToast('Switched to registration', 'success');
+            } else {
+                showToast('Switched to login', 'success');
+            }
+        });
+        
+        // Form validation and toggling
+        registerLink.onclick = (e) => {
+            e.preventDefault();
+            wrapper.classList.add('active');
+            showToast('Switched to registration form', 'success');
+        }
+        
+        loginLink.onclick = (e) => {
+            e.preventDefault();
+            wrapper.classList.remove('active');
+            showToast('Switched to login form', 'success');
+        }
+
+        // Google authentication
+        googleBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                this.innerHTML = '<div class="spinner"></div> Authenticating...';
+                
+                // Simulate Google auth process
+                setTimeout(() => {
+                    const googleEmail = prompt("Enter your VIT email for Google signup:", "example@vitbhopal.ac.in");
+                    
+                    if (!googleEmail || !googleEmail.endsWith('@vitbhopal.ac.in')) {
+                        showToast('Please use your VIT Bhopal email address', 'error');
+                        this.innerHTML = '<div class="google-icon">' + 
+                            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">' +
+                            '<path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>' +
+                            '<path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>' +
+                            '<path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>' +
+                            '<path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>' +
+                            '</svg>' +
+                            '</div>' + (this.textContent.includes('Login') ? 'Login with Google' : 'Sign Up with Google');
+                        return;
+                    }
+                    
+                    // Show OTP modal
+                    otpEmail.textContent = googleEmail;
+                    otpModal.style.display = 'flex';
+                    startOtpCountdown();
+                    showToast('OTP sent to your email', 'success');
+                    
+                    // Reset button content
+                    this.innerHTML = '<div class="google-icon">' + 
+                        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">' +
+                        '<path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>' +
+                        '<path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>' +
+                        '<path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>' +
+                        '<path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>' +
+                        '</svg>' +
+                        '</div>' + (this.textContent.includes('Login') ? 'Login with Google' : 'Sign Up with Google');
+                }, 1500);
+            });
+        });
+
+        // Email verification for registration
+        registerForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const email = registerEmail.value;
+            const username = document.getElementById('registerUsername').value;
+            const password = document.getElementById('registerPassword').value;
+            
+            if (!email.includes('@vitbhopal.ac.in')) {
+                showToast('Please use your VIT Bhopal email address', 'error');
+                return;
+            }
+            
+            if (username.length < 3) {
+                showToast('Username must be at least 3 characters', 'error');
+                return;
+            }
+            
+            if (password.length < 6) {
+                showToast('Password must be at least 6 characters', 'error');
+                return;
+            }
+            
+            otpEmail.textContent = email;
+            otpModal.style.display = 'flex';
+            startOtpCountdown();
+            showToast('OTP sent to your email', 'success');
+        });
+
+        // Login form submission
+        loginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (username === '' || password === '') {
+                showToast('Please fill in all fields', 'error');
+                return;
+            }
+            
+            // Simulate login process
+            const btn = this.querySelector('.btn');
+            btn.innerHTML = '<div class="spinner"></div> Logging in...';
+            btn.disabled = true;
+            
+            setTimeout(() => {
+                btn.textContent = 'Login';
+                btn.disabled = false;
+                showToast('Login successful! Redirecting...', 'success');
+                // Redirect to profile
+                setTimeout(() => {
+                    window.location.href = 'features/profile/profile.html';
+                }, 1500);
+            }, 1500);
+        });
+
+        // Verify OTP
+        verifyOtpBtn.addEventListener('click', function() {
+            const otp = Array.from(otpInputs).map(input => input.value).join('');
+            
+            if (otp.length !== 6) {
+                showToast('Please enter a 6-digit OTP code', 'error');
+                return;
+            }
+            
+            // Simulate OTP verification
+            this.innerHTML = '<div class="spinner"></div> Verifying...';
+            this.disabled = true;
+            
+            setTimeout(() => {
+                // Success
+                this.textContent = 'Verify OTP';
+                this.disabled = false;
+                this.classList.add('success-animation');
+                showToast('OTP verified successfully!', 'success');
+                
+                setTimeout(() => {
+                    otpModal.style.display = 'none';
+                    showToast('Account created! Redirecting...', 'success');
+                    // Redirect to profile
+                    setTimeout(() => {
+                        window.location.href = 'features/profile/profile.html';
+                    }, 1500);
+                }, 1000);
+            }, 1500);
+        });
+
+        // Resend OTP
+        resendOtpBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            startOtpCountdown();
+            showToast('OTP has been resent to your email', 'success');
+        });
+
+        // Start countdown for OTP resend
+        function startOtpCountdown() {
+            let seconds = 30;
+            otpCountdown.style.display = 'block';
+            resendOtpBtn.classList.add('disabled');
+            countdownSeconds.textContent = seconds;
+            
+            const countdownInterval = setInterval(() => {
+                seconds--;
+                countdownSeconds.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    otpCountdown.style.display = 'none';
+                    resendOtpBtn.classList.remove('disabled');
+                }
+            }, 1000);
+        }
+
+        // Move to next OTP input
+        function moveToNext(current, nextIndex) {
+            if (current.value.length === 1) {
+                if (nextIndex <= 6) {
+                    otpInputs[nextIndex - 1].focus();
+                }
+                
+                // Add filled class for styling
+                current.classList.add('filled');
+            } else {
+                current.classList.remove('filled');
+            }
+        }
+
+        // Show toast notification
+        function showToast(message, type) {
+            toastMessage.textContent = message;
+            toast.className = 'toast';
+            toast.classList.add(type);
+            toast.classList.add('show');
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+
+        // Close modal if clicked outside
+        window.addEventListener('click', function(event) {
+            if (event.target === otpModal) {
+                otpModal.style.display = 'none';
+            }
+        });
+
+        // Focus first OTP input when modal opens
+        otpModal.addEventListener('shown', function() {
+            otpInputs[0].focus();
+        });
+        
+        // Initialize OTP inputs
+        otpInputs.forEach((input, index) => {
+            input.addEventListener('input', () => {
+                if (input.value.length === 1 && index < 5) {
+                    otpInputs[index + 1].focus();
+                }
+                input.classList.add('filled');
+            });
+        });
+
+        // Support URL mode toggling (?mode=login|register)
+        function applyModeFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const mode = (params.get('mode') || 'login').toLowerCase();
+            if (mode === 'register') {
+                wrapper.classList.add('active');
+            } else {
+                wrapper.classList.remove('active');
+            }
+        }
+
+        // Update URL when switching via links
+        function setModeInUrl(mode) {
+            const url = new URL(window.location.href);
+            url.searchParams.set('mode', mode);
+            window.history.replaceState({}, '', url);
+        }
+
+        // Hook into existing switches to sync URL and announce
+        registerLink.addEventListener('click', () => setModeInUrl('register'));
+        loginLink.addEventListener('click', () => setModeInUrl('login'));
+        mobileNavToggle.addEventListener('click', () => {
+            const isRegister = wrapper.classList.contains('active');
+            setModeInUrl(isRegister ? 'register' : 'login');
+        });
+
+        // Autofocus first input based on mode
+        function focusInitialField() {
+            const isRegister = wrapper.classList.contains('active');
+            const target = isRegister ? document.getElementById('registerUsername') : document.getElementById('loginUsername');
+            if (target) target.focus();
+        }
+
+        // Initialize on load
+        applyModeFromUrl();
+        focusInitialField();
+    </script>
+</body>
+</html>

@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholars Stack - Student Profile</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* === GLOBAL STYLES === */
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
+
+        :root {
+            --primary-dark: #0f1a2a;
+            --primary-blue: #1e3a5f;
+            --accent-blue: #3498db;
+            --accent-teal: #2ecc71;
+            --light-color: #ecf0f1;
+            --light-color1: #d6d6d6;
+            --dark-color: #2c3e50;
+            --glass-bg: rgba(15, 26, 42, 0.7); /* Increased transparency */
+            --success-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --premium-color: #9b59b6;
+            --sidebar-width: 280px;
+            --header-height: 90px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a1423 0%, var(--primary-dark) 100%);
+            color: var(--light-color);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+            font-size: 16px;
+        }
+
+        /* Background particles */
+        .bg-particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(52, 152, 219, 0.2);
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0) translateX(0) rotate(0deg); }
+            25% { transform: translateY(-20px) translateX(20px) rotate(90deg); }
+            50% { transform: translateY(0) translateX(40px) rotate(180deg); }
+            75% { transform: translateY(20px) translateX(20px) rotate(270deg); }
+            100% { transform: translateY(0) translateX(0) rotate(360deg); }
+        }
+
+        /* Header styles */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: var(--header-height);
+            background: transparent;
+            backdrop-filter: blur(10px);
+            display: flex;
+            align-items: center;
+            padding: 0 25px;
+            z-index: 1000;
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.4);
+            border-bottom: 2px solid var(--accent-blue);
+        }
+
+        .menu-toggle {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            margin-right: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .menu-toggle span {
+            display: block;
+            width: 30px;
+            height: 4px;
+            background: var(--light-color);
+            margin: 3px 0;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+        }
+
+        .logo img {
+            height: 60px;
+            width: auto;
+            margin-right: 20px;
+        }
+
+        .logo-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .logo-text h1 {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--light-color);
+        }
+
+        .logo-text span {
+            font-size: 16px;
+            color: var(--accent-teal);
+        }
+
+        .header-actions {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 6px 18px;
+            border-radius: 30px;
+            background: rgba(52, 152, 219, 0.2);
+            transition: all 0.3s ease;
+        }
+
+        .user-profile:hover {
+            background: var(--accent-blue);
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 20px;
+            margin-right: 12px;
+            border: 2px solid var(--light-color);
+            overflow: hidden;
+        }
+
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .user-name {
+            font-weight: 500;
+            font-size: 18px;
+        }
+
+        .map-access {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background-color: rgba(52, 152, 219, 0.2);
+            color: var(--light-color);
+            font-size: 24px;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            z-index: 1002;
+        }
+
+        .map-access:hover {
+            background: var(--accent-blue);
+        }
+
+        /* Sidebar styles */
+        .sidebar {
+            position: fixed;
+            top: var(--header-height);
+            left: calc(-1 * var(--sidebar-width));
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            background: transparent;
+            backdrop-filter: blur(10px);
+            z-index: 900;
+            transition: all 0.3s ease;
+            border-right: 2px solid var(--accent-blue);
+            box-shadow: 5px 0 30px rgba(0, 0, 0, 0.4);
+            overflow-y: auto;
+            padding: 20px 0;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .sidebar-title {
+            padding: 18px 20px 8px;
+            font-size: 15px;
+            color: var(--accent-blue);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-menu {
+            list-style: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 5px;
+        }
+
+        .sidebar-menu a {
+            display: flex;
+            align-items: center;
+            padding: 14px 20px;
+            color: var(--light-color);
+            text-decoration: none;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            border-left: 3px solid transparent;
+        }
+
+        .sidebar-menu a:hover,
+        .sidebar-menu a.active {
+            background: rgba(52, 152, 219, 0.2);
+            border-left: 3px solid var(--accent-blue);
+        }
+
+        .sidebar-menu i {
+            font-size: 20px;
+            margin-right: 12px;
+            width: 22px;
+            text-align: center;
+            color: var(--accent-blue);
+        }
+
+        /* Main content */
+        .main-content {
+            flex: 1;
+            padding: calc(var(--header-height) + 30px) 40px 40px;
+            transition: margin-left 0.3s ease;
+            margin: 0 auto;
+            max-width: 1500px;
+        }
+
+        .sidebar.active + .main-content {
+            margin-left: var(--sidebar-width);
+        }
+
+        .page-title {
+            font-size: 40px;
+            margin-bottom: 25px;
+            color: var(--light-color);
+            position: relative;
+            padding-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .page-title i {
+            color: var(--accent-teal);
+            font-size: 1.2em;
+        }
+
+        .page-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100px;
+            height: 5px;
+            background: var(--accent-blue);
+            border-radius: 3px;
+        }
+
+        /* Mobile overlay */
+        .mobile-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 800;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .mobile-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Profile specific styles */
+        .profile-section {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .profile-section.active {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .profile-card {
+            background: var(--glass-bg); /* More transparent */
+            backdrop-filter: blur(10px);
+            border-radius: 14px;
+            padding: 25px;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--accent-blue);
+            transition: all 0.4s ease;
+            margin-bottom: 30px;
+        }
+
+        .profile-header {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .profile-avatar {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            background: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 40px;
+            margin-bottom: 20px;
+            border: 4px solid var(--light-color);
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-edit {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            text-align: center;
+            padding: 8px;
+            font-size: 12px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .profile-avatar:hover .avatar-edit {
+            opacity: 1;
+        }
+
+        .profile-info h2 {
+            font-size: 28px;
+            margin-bottom: 8px;
+            color: var(--light-color);
+        }
+
+        .profile-info p {
+            font-size: 16px;
+            color: var(--accent-teal);
+            margin-bottom: 15px;
+        }
+
+        .profile-stats {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .stat-item {
+            text-align: center;
+            background: rgba(52, 152, 219, 0.2);
+            padding: 12px 15px;
+            border-radius: 12px;
+            min-width: 110px;
+            flex: 1;
+            max-width: 140px;
+            transition: all 0.3s ease;
+        }
+
+        .stat-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .stat-value {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--accent-teal);
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: var(--light-color);
+        }
+
+        .profile-details {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .detail-card {
+            background: rgba(44, 62, 80, 0.5); /* More transparent */
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid var(--accent-blue);
+            transition: all 0.4s ease;
+        }
+
+        .detail-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .detail-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(236, 240, 241, 0.2);
+            padding-bottom: 12px;
+        }
+
+        .detail-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: var(--accent-teal);
+        }
+
+        .edit-btn {
+            background: rgba(52, 152, 219, 0.2);
+            border: none;
+            color: var(--accent-blue);
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+        }
+
+        .edit-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+            transform: rotate(15deg);
+        }
+
+        .detail-content {
+            line-height: 1.6;
+        }
+
+        .detail-item {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px dashed rgba(236, 240, 241, 0.1);
+        }
+
+        .detail-label {
+            font-weight: 500;
+            color: var(--light-color);
+            font-size: 14px;
+            margin-bottom: 4px;
+        }
+
+        .detail-value {
+            color: #ddd;
+            font-size: 14px;
+        }
+
+        .fixed-field {
+            color: var(--accent-teal);
+            font-weight: 600;
+            font-size: 14px;
+            position: relative;
+        }
+
+        .fixed-field::after {
+            content: '🔒';
+            font-size: 10px;
+            margin-left: 5px;
+            opacity: 0.7;
+        }
+
+        .edit-form {
+            display: none;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px dashed rgba(236, 240, 241, 0.2);
+        }
+
+        .time-schedule {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px dashed rgba(236, 240, 241, 0.2);
+        }
+
+        .schedule-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .schedule-item {
+            background: rgba(44, 62, 80, 0.6);
+            border-radius: 8px;
+            padding: 15px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .schedule-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .schedule-item .delete-btn {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background: rgba(231, 76, 60, 0.3);
+            color: white;
+            border: none;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .schedule-item .delete-btn:hover {
+            background: var(--danger-color);
+        }
+
+        .schedule-time {
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+
+        .schedule-subject {
+            font-size: 16px;
+            color: var(--light-color);
+        }
+
+        .purchased-courses-section {
+            margin-top: 30px;
+        }
+
+        .purchased-courses-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .refresh-btn {
+            background: rgba(52, 152, 219, 0.2);
+            color: var(--accent-blue);
+            border: none;
+            padding: 8px 12px;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 14px;
+        }
+
+        .refresh-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .purchased-courses-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 20px;
+        }
+
+        .purchased-course-card {
+            background: rgba(44, 62, 80, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            transition: all 0.4s ease;
+        }
+
+        .purchased-course-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--accent-blue);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
+        }
+
+        .purchased-course-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .purchased-course-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+        }
+
+        .expand-btn {
+            display: flex;
+            align-items: center;
+            background: transparent;
+            border: none;
+            color: var(--accent-blue);
+            font-size: 24px;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .expand-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .expand-btn.expanded {
+            transform: rotate(180deg);
+        }
+
+        .purchased-course-info {
+            font-size: 14px;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+
+        .course-subjects {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease;
+        }
+
+        .course-subjects.expanded {
+            max-height: 400px;
+        }
+
+        .subject-item {
+            padding: 10px 12px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .subject-item:last-child {
+            border-bottom: none;
+        }
+
+        .subject-item i {
+            color: var(--accent-blue);
+            margin-right: 8px;
+            font-size: 16px;
+        }
+
+        .subject-name {
+            flex: 1;
+        }
+
+        .access-btn {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 12px;
+        }
+
+        .access-btn:hover {
+            background: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+
+        .purchased-course-link {
+            display: inline-block;
+            padding: 10px 20px;
+            background: rgba(52, 152, 219, 0.2);
+            color: var(--accent-blue);
+            border-radius: 6px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            text-align: center;
+            margin-top: 12px;
+            font-size: 14px;
+        }
+
+        .purchased-course-link:hover {
+            background: var(--accent-blue);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .setup-form {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 14px;
+            padding: 25px;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--warning-color);
+            margin-bottom: 30px;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .form-title {
+            font-size: 22px;
+            color: var(--warning-color);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .form-subtitle {
+            color: #ddd;
+            text-align: center;
+            margin-bottom: 20px;
+            font-size: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--light-color);
+            font-size: 14px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 14px 15px;
+            background: rgba(44, 62, 80, 0.8);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            border-radius: 10px;
+            color: var(--light-color);
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-teal);
+            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.3);
+        }
+
+        .form-note {
+            color: var(--warning-color);
+            font-size: 12px;
+            margin-top: 6px;
+            font-style: italic;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 16px 25px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1e7ab3;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(52, 152, 219, 0.6);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 2px solid var(--accent-blue);
+            color: var(--accent-blue);
+        }
+
+        .btn-outline:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .success-animation {
+            text-align: center;
+            padding: 30px;
+            display: none;
+        }
+
+        .success-animation i {
+            font-size: 60px;
+            color: var(--success-color);
+            margin-bottom: 15px;
+            animation: bounce 1s ease infinite;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-20px);}
+            60% {transform: translateY(-10px);}
+        }
+
+        .success-animation h2 {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .query-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 14px;
+            padding: 25px;
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+            border: 2px solid var(--accent-blue);
+            margin-top: 40px;
+        }
+
+        .query-form .form-group {
+            margin-bottom: 20px;
+        }
+
+        textarea.form-control {
+            min-height: 150px;
+            resize: vertical;
+        }
+
+        .success-message {
+            background: rgba(46, 204, 113, 0.2);
+            border: 2px solid var(--success-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .success-message i {
+            font-size: 42px;
+            color: var(--success-color);
+            margin-bottom: 15px;
+        }
+
+        .success-message h3 {
+            font-size: 20px;
+            color: var(--light-color);
+            margin-bottom: 10px;
+        }
+
+        .success-message p {
+            color: #ddd;
+            font-size: 14px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        /* Responsive Design */
+        @media (min-width: 576px) {
+            .profile-header {
+                flex-direction: row;
+                text-align: left;
+                align-items: flex-start;
+            }
+
+            .profile-avatar {
+                margin-right: 25px;
+                margin-bottom: 0;
+            }
+
+            .profile-stats {
+                justify-content: flex-start;
+            }
+
+            .detail-item {
+                flex-direction: row;
+            }
+
+            .detail-label {
+                min-width: 140px;
+                margin-bottom: 0;
+            }
+
+            .form-row {
+                flex-direction: row;
+            }
+        }
+
+        @media (min-width: 768px) {
+            .profile-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .purchased-courses-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (min-width: 992px) {
+            .profile-details {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .purchased-courses-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                max-width: 1000px;
+                margin: 0 auto;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .sidebar {
+                width: 240px;
+                left: -240px;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .logo img {
+                height: 70px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            :root {
+                --header-height: 60px;
+                --sidebar-width: 100%;
+            }
+
+            .header {
+                padding: 0 12px;
+            }
+
+            .menu-toggle {
+                width: 34px;
+                height: 34px;
+                margin-right: 10px;
+            }
+
+            .menu-toggle span {
+                width: 22px;
+                height: 2.5px;
+                margin: 2px 0;
+            }
+
+            .logo img {
+                height: 40px;
+                margin-right: 10px;
+            }
+
+            .logo-text h1 {
+                font-size: 18px;
+            }
+
+            .logo-text span {
+                font-size: 12px;
+            }
+
+            .user-name {
+                display: none;
+            }
+
+            .user-profile {
+                padding: 4px;
+            }
+
+            .user-avatar {
+                width: 34px;
+                height: 34px;
+                font-size: 14px;
+                margin-right: 0;
+                border-width: 1px;
+            }
+
+            .map-access {
+                width: 34px;
+                height: 34px;
+                font-size: 16px;
+            }
+
+            .sidebar {
+                top: var(--header-height);
+                left: -100%;
+                width: var(--sidebar-width);
+                height: calc(100vh - var(--header-height));
+                transition: left 0.3s ease;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main-content {
+                padding: calc(var(--header-height) + 15px) 15px 20px;
+                margin: 0 auto;
+                max-width: 100%;
+            }
+
+            .sidebar.active + .main-content {
+                margin-left: 0;
+            }
+
+            .page-title {
+                font-size: 20px;
+                margin-bottom: 15px;
+            }
+
+            .profile-card {
+                padding: 15px;
+            }
+
+            .detail-card {
+                padding: 15px;
+            }
+
+            .purchased-course-card {
+                padding: 15px;
+            }
+
+            .profile-avatar {
+                width: 100px;
+                height: 100px;
+                font-size: 30px;
+            }
+
+            .profile-info h2 {
+                font-size: 22px;
+            }
+
+            .stat-value {
+                font-size: 18px;
+            }
+
+            .stat-label {
+                font-size: 12px;
+            }
+
+            .detail-title {
+                font-size: 16px;
+            }
+
+            .detail-label, .detail-value {
+                font-size: 12px;
+            }
+
+            .btn {
+                padding: 8px 15px;
+                font-size: 12px;
+            }
+
+            .setup-form {
+                padding: 15px;
+            }
+
+            .form-title {
+                font-size: 18px;
+            }
+
+            .form-subtitle {
+                font-size: 14px;
+            }
+
+            input, select, .form-control {
+                padding: 10px;
+                font-size: 14px;
+            }
+
+            .purchased-courses-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 576px) {
+            :root {
+                --header-height: 65px;
+            }
+
+            .header {
+                padding: 0 15px;
+            }
+
+            .menu-toggle {
+                width: 36px;
+                height: 36px;
+                margin-right: 12px;
+            }
+
+            .menu-toggle span {
+                width: 24px;
+                height: 3px;
+            }
+
+            .logo img {
+                height: 42px;
+                margin-right: 12px;
+            }
+
+            .logo-text h1 {
+                font-size: 18px;
+            }
+
+            .logo-text span {
+                font-size: 12px;
+            }
+
+            .user-avatar {
+                width: 36px;
+                height: 36px;
+                font-size: 15px;
+            }
+
+            .map-access {
+                width: 36px;
+                height: 36px;
+                font-size: 18px;
+            }
+
+            .main-content {
+                padding: calc(var(--header-height) + 12px) 12px 15px;
+                margin: 0 auto;
+                max-width: 100%;
+            }
+
+            .page-title {
+                font-size: 22px;
+                padding-bottom: 10px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .page-title {
+                font-size: 18px;
+            }
+
+            .detail-title {
+                font-size: 16px;
+            }
+
+            .profile-avatar {
+                width: 80px;
+                height: 80px;
+                font-size: 24px;
+            }
+
+            .profile-info h2 {
+                font-size: 18px;
+            }
+
+            .stat-item {
+                min-width: 80px;
+                padding: 8px 10px;
+            }
+
+            .stat-value {
+                font-size: 16px;
+            }
+
+            .stat-label {
+                font-size: 10px;
+            }
+
+            .detail-item {
+                flex-direction: column;
+            }
+
+            .detail-label {
+                min-width: auto;
+                margin-bottom: 4px;
+            }
+
+            .form-row {
+                flex-direction: column;
+            }
+
+            .btn {
+                padding: 8px 15px;
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .logo-text h1 {
+                font-size: 14px;
+            }
+
+            .logo-text span {
+                font-size: 10px;
+            }
+
+            .page-title {
+                font-size: 20px;
+            }
+
+            .map-access {
+                width: 30px;
+                height: 30px;
+                font-size: 14px;
+            }
+        }
+
+        @media (min-width: 769px) {
+            :root {
+                --header-height: 90px;
+                --sidebar-width: 280px;
+            }
+
+            .sidebar {
+                left: calc(-1 * var(--sidebar-width));
+                width: var(--sidebar-width);
+                transition: all 0.3s ease;
+            }
+
+            .sidebar.active {
+                left: 0;
+            }
+
+            .main-content {
+                margin: 0 auto;
+                max-width: 1500px;
+            }
+
+            .logo img {
+                height: 60px;
+            }
+
+            .logo-text h1 {
+                font-size: 28px;
+            }
+
+            .logo-text span {
+                font-size: 16px;
+            }
+
+            .user-name {
+                display: block;
+            }
+
+            .user-avatar {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                margin-right: 12px;
+                border-width: 2px;
+            }
+
+            .map-access {
+                width: 48px;
+                height: 48px;
+                font-size: 24px;
+            }
+
+            .menu-toggle {
+                display: flex;
+            }
+        }
+
+        @media (min-width: 992px) {
+            .header {
+                padding: 0 30px;
+            }
+
+            .logo img {
+                height: 70px;
+            }
+
+            .logo-text h1 {
+                font-size: 28px;
+            }
+
+            .logo-text span {
+                font-size: 16px;
+            }
+
+            .user-name {
+                font-size: 18px;
+            }
+        }
+
+        @media (min-width: 1200px) {
+            .main-content {
+                padding: calc(var(--header-height) + 40px) 40px 40px;
+                margin: 0 auto;
+                max-width: 1500px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Background Particles -->
+    <div class="bg-particles" id="bgParticles"></div>
+    
+    <!-- Header with Menu Toggle -->
+    <header class="header">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+        
+        <div class="logo">
+            <a href="../../index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="../../features/images/logo1.png" alt="Scholars Stack Logo">
+                <div class="logo-text">
+                    <h1>Scholars Stack</h1>
+                    <span>Student Profile</span>
+                </div>
+            </a>
+        </div>
+        
+        <div class="header-actions">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <span>S</span>
+                </div>
+                <div class="user-name">Student</div>
+            </div>
+            <a href="#" class="map-access" title="Campus Map" aria-label="View Campus Map">
+                <i class='bx bxs-map'></i>
+            </a>
+        </div>
+    </header>
+    
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Main Navigation</div>
+        <ul class="sidebar-menu">
+             <!-- <li><a href="#"><i class='bx bxs-dashboard'></i> Dashboard</a></li> -->
+             <li><a href="../profile/profile.html"class="active"><i class='bx bxs-user'></i> Profile</a></li>
+            <li><a href="../attendance/attendance.html"><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+            <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+            <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Resources</div>
+        <ul class="sidebar-menu">
+            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+            <li><a href="#" ><i class='bx bxs-group'></i> Club Info</a></li>
+            <li><a href="../faculty/faculty.html" ><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Quick Links</div>
+        <ul class="sidebar-menu">
+            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
+            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+        </ul>
+        
+        <div class="sidebar-title">Account</div>
+        <ul class="sidebar-menu">
+            <!-- <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li> -->
+            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+        </ul>
+    </nav>       
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+        <div class="setup-form" id="setupForm">
+            <h2 class="form-title">Complete Your Profile Setup</h2>
+            <p class="form-subtitle">Please fill in these mandatory fields to access your Scholars Stack profile</p>
+            
+            <div class="form-group">
+                <label>VIT Email ID</label>
+                <input type="email" class="form-control" id="vitEmail" placeholder="e.g. john.smith@vitbhopal.ac.in" required>
+                <p class="form-note">This can only be set once and cannot be changed later</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" class="form-control" id="phoneNumber" placeholder="e.g. +91 9876543210" required>
+                <p class="form-note">This can only be set once and cannot be changed later</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Program</label>
+                <select class="form-control" id="programSelect" required>
+                    <option value="">Select your program</option>
+                    <option>B.Tech Computer Science</option>
+                    <option>B.Tech Electronics</option>
+                    <option>B.Tech Mechanical</option>
+                    <option>B.Tech Civil</option>
+                    <option>B.Arch</option>
+                    <option>BBA</option>
+                    <option>B.Com</option>
+                    <option>M.Tech</option>
+                    <option>MBA</option>
+                </select>
+                <p class="form-note">This can only be set once and cannot be changed later</p>
+            </div>
+            
+            <div class="form-group">
+                <label>Registration Number</label>
+                <input type="text" class="form-control" id="regNumber" placeholder="e.g. 23BCE0001" required>
+                <p class="form-note">This can only be set once and cannot be changed later</p>
+            </div>
+            
+            <div class="form-actions">
+                <button class="btn btn-primary" id="saveSetup">Complete Profile</button>
+            </div>
+        </div>
+        
+        <div class="success-animation" id="successAnimation">
+            <i class='bx bxs-check-circle'></i>
+            <h2>Profile Setup Complete!</h2>
+            <p>Redirecting to your profile...</p>
+        </div>
+        
+        <div class="profile-section" id="profileSection">
+            <h1 class="page-title">
+                <i class='bx bxs-user'></i> Student Profile
+            </h1>
+            
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profileAvatar">
+                        <img src="" alt="Profile" id="avatarImage">
+                        <div class="avatar-edit">Change Photo</div>
+                    </div>
+                    
+                    <div class="profile-info">
+                        <h2 id="userFullName">Student</h2>
+                        <p id="userProgram">Program not specified</p>
+                        <p id="userReg">Registration: Not specified</p>
+                        
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="headerCGPA">0.00</div>
+                                <div class="stat-label">CGPA</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="headerSemester">1</div>
+                                <div class="stat-label">Semester</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="profile-details">
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <h3 class="detail-title">Personal Information</h3>
+                            <button class="edit-btn" data-target="personalForm">
+                                <i class='bx bxs-edit'></i>
+                            </button>
+                        </div>
+                        
+                        <div class="detail-content">
+                            <div class="detail-item">
+                                <div class="detail-label">Full Name:</div>
+                                <div class="detail-value" id="editableName">Not specified</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Email:</div>
+                                <div class="detail-value fixed-field" id="userEmail">Not specified</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Phone:</div>
+                                <div class="detail-value fixed-field" id="userPhone">Not specified</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Date of Birth:</div>
+                                <div class="detail-value" id="userDOB">Not specified</div>
+                            </div>
+                        </div>
+                        
+                        <div class="edit-form" id="personalForm">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" class="form-control" id="nameInput" placeholder="Enter your full name">
+                            </div>
+                            <div class="form-group">
+                                <label>Date of Birth</label>
+                                <input type="date" class="form-control" id="dobInput">
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="savePersonal">Save</button>
+                                <button class="btn btn-outline" id="cancelPersonal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <h3 class="detail-title">Academic Information</h3>
+                            <button class="edit-btn" data-target="academicForm">
+                                <i class='bx bxs-edit'></i>
+                            </button>
+                        </div>
+                        
+                        <div class="detail-content">
+                            <div class="detail-item">
+                                <div class="detail-label">Program:</div>
+                                <div class="detail-value fixed-field" id="userProgramText">Not specified</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Registration ID:</div>
+                                <div class="detail-value fixed-field" id="userRegText">Not specified</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Current Semester:</div>
+                                <div class="detail-value" id="userSemester">Not specified</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">CGPA:</div>
+                                <div class="detail-value" id="userCGPA">Not specified</div>
+                            </div>
+                        </div>
+                        
+                        <div class="edit-form" id="academicForm">
+                            <div class="form-group">
+                                <label>Current Semester</label>
+                                <select class="form-control" id="semesterInput">
+                                    <option value="">Select semester</option>
+                                    <option>1st Semester</option>
+                                    <option>2nd Semester</option>
+                                    <option>3rd Semester</option>
+                                    <option>4th Semester</option>
+                                    <option>5th Semester</option>
+                                    <option>6th Semester</option>
+                                    <option>7th Semester</option>
+                                    <option>8th Semester</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>CGPA</label>
+                                <input type="number" step="0.01" min="0" max="10" class="form-control" id="cgpaInput" placeholder="Enter your CGPA">
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="saveAcademic">Save</button>
+                                <button class="btn btn-outline" id="cancelAcademic">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <h3 class="detail-title">Time Schedule</h3>
+                            <button class="edit-btn" data-target="scheduleForm">
+                                <i class='bx bxs-edit'></i>
+                            </button>
+                        </div>
+                        
+                        <div class="detail-content">
+                            <div class="time-schedule">
+                                <h4>Weekly Study Plan</h4>
+                                <div class="schedule-grid" id="scheduleContainer">
+                                    <!-- Schedule items will be added here dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="edit-form" id="scheduleForm">
+                            <div class="form-group">
+                                <label>Day of Week</label>
+                                <select class="form-control" id="scheduleDay">
+                                    <option value="">Select day</option>
+                                    <option>Monday</option>
+                                    <option>Tuesday</option>
+                                    <option>Wednesday</option>
+                                    <option>Thursday</option>
+                                    <option>Friday</option>
+                                    <option>Saturday</option>
+                                    <option>Sunday</option>
+                                </select>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Start Time</label>
+                                    <input type="time" class="form-control" id="scheduleStart">
+                                </div>
+                                <div class="form-group">
+                                    <label>End Time</label>
+                                    <input type="time" class="form-control" id="scheduleEnd">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Subject</label>
+                                <input type="text" class="form-control" id="scheduleSubject" placeholder="Enter subject name">
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="addSchedule">Add to Schedule</button>
+                                <button class="btn btn-outline" id="cancelSchedule">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="purchased-courses-section" id="purchased-courses">
+                <div class="purchased-courses-header">
+                    <h3 class="detail-title">My Purchased Courses</h3>
+                    <button class="refresh-btn" id="refreshCourses">
+                        <i class='bx bx-refresh'></i> Refresh
+                    </button>
+                </div>
+                
+                <div class="purchased-courses-grid" id="coursesContainer">
+                    <!-- Courses will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+        
+        <div class="query-section">
+            <h2 class="section-title">Submit a Query</h2>
+            <p style="margin-bottom: 25px; color: #ddd;">Have questions or need assistance? Submit your query below and our team will get back to you.</p>
+            
+            <form class="query-form" id="queryForm">
+                <div class="form-group">
+                    <label>Subject</label>
+                    <input type="text" class="form-control" placeholder="Enter query subject" required>
+                </div>
+                
+                <div class="form-group">
+                    <label>Category</label>
+                    <select class="form-control" required>
+                        <option value="">Select category</option>
+                        <option>Academic</option>
+                        <option>Administrative</option>
+                        <option>Technical Support</option>
+                        <option>Payment</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label>Your Message</label>
+                    <textarea class="form-control" placeholder="Describe your query in detail" required minlength="20"></textarea>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Submit Query</button>
+                    <button type="reset" class="btn btn-outline">Clear Form</button>
+                </div>
+            </form>
+            
+            <div class="success-message" id="successMessage">
+                <i class='bx bxs-check-circle'></i>
+                <h3>Query Submitted Successfully!</h3>
+                <p>Our support team will review your query and get back to you within 24 hours.</p>
+            </div>
+        </div>
+    </main>
+
+    <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+
+    <script>
+        // Create background particles
+        function createParticles() {
+            const particlesContainer = document.getElementById('bgParticles');
+            const particleCount = 20;
+            
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                
+                // Random size
+                const size = Math.random() * 60 + 20;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                
+                // Random position
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.left = `${Math.random() * 100}%`;
+                
+                // Random animation delay
+                particle.style.animationDelay = `${Math.random() * 10}s`;
+                
+                // Random opacity
+                particle.style.opacity = Math.random() * 0.5 + 0.3;
+                
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // Mock course data
+        const backendCourses = [
+            {
+                id: "cs101",
+                title: "Data Structures & Algorithms",
+                modules: 12,
+                link: "#",
+                subjects: [
+                    "Introduction to Data Structures",
+                    "Arrays and Linked Lists",
+                    "Stacks and Queues",
+                    "Trees and Binary Search Trees",
+                    "Graphs and Graph Algorithms",
+                    "Sorting and Searching Algorithms"
+                ]
+            },
+            {
+                id: "cs202",
+                title: "Database Management Systems",
+                modules: 10,
+                link: "#",
+                subjects: [
+                    "Database Fundamentals",
+                    "Relational Model and SQL",
+                    "Database Design and Normalization",
+                    "Transaction Management",
+                    "Indexing and Query Optimization",
+                    "NoSQL Databases"
+                ]
+            },
+            {
+                id: "cs305",
+                title: "Machine Learning Fundamentals",
+                modules: 15,
+                link: "#",
+                subjects: [
+                    "Introduction to Machine Learning",
+                    "Linear Regression",
+                    "Logistic Regression",
+                    "Decision Trees and Random Forests",
+                    "Support Vector Machines",
+                    "Neural Networks and Deep Learning"
+                ]
+            }
+        ];
+
+        // Setup menu toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+        
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+        
+        document.addEventListener('click', (e) => {
+            if (sidebar.classList.contains('active') && 
+                !sidebar.contains(e.target) && 
+                !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+        
+        // Check if profile is already completed
+        const profileCompleted = localStorage.getItem('profileCompleted');
+        
+        if (profileCompleted) {
+            document.getElementById('setupForm').style.display = 'none';
+            document.getElementById('profileSection').style.display = 'block';
+            document.getElementById('profileSection').classList.add('active');
+            
+            // Load saved data
+            const savedData = JSON.parse(localStorage.getItem('profileData'));
+            if (savedData) {
+                document.getElementById('userEmail').textContent = savedData.email;
+                document.getElementById('userPhone').textContent = savedData.phone;
+                document.getElementById('userProgram').textContent = savedData.program;
+                document.getElementById('userReg').textContent = `Registration: ${savedData.regNumber}`;
+                document.getElementById('userProgramText').textContent = savedData.program;
+                document.getElementById('userRegText').textContent = savedData.regNumber;
+                
+                document.getElementById('userFullName').textContent = savedData.fullName || 'Student';
+                document.getElementById('editableName').textContent = savedData.fullName || 'Student';
+                document.getElementById('userDOB').textContent = savedData.dob || 'Not specified';
+                document.getElementById('userSemester').textContent = savedData.semester || 'Not specified';
+                document.getElementById('userCGPA').textContent = savedData.cgpa || 'Not specified';
+                
+                document.getElementById('headerCGPA').textContent = savedData.cgpa || '0.00';
+                document.getElementById('headerSemester').textContent = savedData.semester ? savedData.semester.split(' ')[0] : '1';
+                
+                // Set avatar if available
+                if (savedData.avatar) {
+                    document.getElementById('avatarImage').src = savedData.avatar;
+                } else {
+                    const defaultAvatar = "https://ui-avatars.com/api/?name=" + 
+                        encodeURIComponent(savedData.fullName || "Student") + 
+                        "&background=3498db&color=fff&size=200";
+                    document.getElementById('avatarImage').src = defaultAvatar;
+                }
+                
+                // Load schedule if available
+                if (savedData.schedule && savedData.schedule.length > 0) {
+                    savedData.schedule.forEach(item => {
+                        addScheduleToUI(item);
+                    });
+                }
+            }
+            
+            // Load purchased courses
+            loadPurchasedCourses();
+        }
+        
+        // Load purchased courses
+        function loadPurchasedCourses() {
+            const coursesContainer = document.getElementById('coursesContainer');
+            coursesContainer.innerHTML = '';
+            
+            backendCourses.forEach(course => {
+                const courseCard = document.createElement('div');
+                courseCard.className = 'purchased-course-card';
+                
+                let subjectsHTML = '';
+                course.subjects.forEach(subject => {
+                    subjectsHTML += `
+                        <div class="subject-item">
+                            <i class='bx bx-book'></i>
+                            <div class="subject-name">${subject}</div>
+                            <button class="access-btn">Access</button>
+                        </div>
+                    `;
+                });
+                
+                courseCard.innerHTML = `
+                    <div class="purchased-course-header">
+                        <h3 class="purchased-course-title">${course.title}</h3>
+                        <button class="expand-btn">
+                            <i class='bx bx-chevron-down'></i>
+                        </button>
+                    </div>
+                    <div class="purchased-course-info">
+                        <span>${course.modules} Modules</span>
+                    </div>
+                    
+                    <div class="course-subjects">
+                        ${subjectsHTML}
+                    </div>
+                    <a href="${course.link}" class="purchased-course-link">Access Full Course</a>
+                `;
+                coursesContainer.appendChild(courseCard);
+                
+                // Add expand functionality
+                const expandBtn = courseCard.querySelector('.expand-btn');
+                const subjectsSection = courseCard.querySelector('.course-subjects');
+                
+                expandBtn.addEventListener('click', () => {
+                    expandBtn.classList.toggle('expanded');
+                    subjectsSection.classList.toggle('expanded');
+                });
+            });
+        }
+        
+        // Refresh courses button
+        document.getElementById('refreshCourses').addEventListener('click', function() {
+            const refreshBtn = this;
+            const originalText = refreshBtn.innerHTML;
+            refreshBtn.innerHTML = '<i class="bx bx-loader bx-spin"></i> Loading...';
+            
+            setTimeout(() => {
+                refreshBtn.innerHTML = originalText;
+                loadPurchasedCourses();
+            }, 1000);
+        });
+        
+        // Save profile setup
+        document.getElementById('saveSetup').addEventListener('click', function() {
+            const vitEmail = document.getElementById('vitEmail').value;
+            const phone = document.getElementById('phoneNumber').value;
+            const program = document.getElementById('programSelect').value;
+            const regNumber = document.getElementById('regNumber').value;
+            
+            if (!vitEmail || !phone || !program || !regNumber) {
+                alert('Please fill in all mandatory fields!');
+                return;
+            }
+            
+            if (!vitEmail.endsWith('@vitbhopal.ac.in')) {
+                alert('Please enter a valid VIT Bhopal email address');
+                return;
+            }
+            
+            if (!/^\d{2}[A-Z]{3}\d{5}$/.test(regNumber)) {
+                alert('Please enter a valid registration number (e.g. 23BCE0001)');
+                return;
+            }
+            
+            const profileData = {
+                email: vitEmail,
+                phone: phone,
+                program: program,
+                regNumber: regNumber,
+                schedule: []
+            };
+            
+            localStorage.setItem('profileData', JSON.stringify(profileData));
+            localStorage.setItem('profileCompleted', 'true');
+            
+            document.getElementById('setupForm').style.display = 'none';
+            document.getElementById('successAnimation').style.display = 'block';
+            
+            setTimeout(() => {
+                document.getElementById('successAnimation').style.display = 'none';
+                document.getElementById('profileSection').style.display = 'block';
+                
+                setTimeout(() => {
+                    document.getElementById('profileSection').classList.add('active');
+                    
+                    // Update profile with saved data
+                    document.getElementById('userEmail').textContent = vitEmail;
+                    document.getElementById('userPhone').textContent = phone;
+                    document.getElementById('userProgram').textContent = program;
+                    document.getElementById('userReg').textContent = `Registration: ${regNumber}`;
+                    document.getElementById('userProgramText').textContent = program;
+                    document.getElementById('userRegText').textContent = regNumber;
+                    
+                    // Set default avatar
+                    const defaultAvatar = "https://ui-avatars.com/api/?name=Student&background=3498db&color=fff&size=200";
+                    document.getElementById('avatarImage').src = defaultAvatar;
+                    
+                    // Load purchased courses
+                    loadPurchasedCourses();
+                }, 100);
+            }, 2000);
+        });
+        
+        // Edit personal information
+        document.getElementById('savePersonal').addEventListener('click', function(e) {
+            e.preventDefault();
+            const fullName = document.getElementById('nameInput').value;
+            const dob = document.getElementById('dobInput').value;
+            
+            if (!fullName && !dob) {
+                alert('Please fill in at least one field');
+                return;
+            }
+            
+            let formattedDOB = '';
+            if (dob) {
+                const dobDate = new Date(dob);
+                formattedDOB = dobDate.toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                });
+            }
+            
+            if (fullName) {
+                document.getElementById('userFullName').textContent = fullName;
+                document.getElementById('editableName').textContent = fullName;
+            }
+            
+            if (dob) {
+                document.getElementById('userDOB').textContent = formattedDOB;
+            }
+            
+            document.getElementById('personalForm').style.display = 'none';
+            
+            // Save to localStorage
+            const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+            if (fullName) profileData.fullName = fullName;
+            if (dob) profileData.dob = formattedDOB;
+            localStorage.setItem('profileData', JSON.stringify(profileData));
+            
+            // Update avatar if name changed
+            if (fullName) {
+                const defaultAvatar = "https://ui-avatars.com/api/?name=" + 
+                    encodeURIComponent(fullName) + 
+                    "&background=3498db&color=fff&size=200";
+                document.getElementById('avatarImage').src = defaultAvatar;
+                profileData.avatar = defaultAvatar;
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+            }
+        });
+        
+        document.getElementById('cancelPersonal').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('personalForm').style.display = 'none';
+        });
+        
+        // Edit academic information
+        document.getElementById('saveAcademic').addEventListener('click', function(e) {
+            e.preventDefault();
+            const semester = document.getElementById('semesterInput').value;
+            const cgpa = document.getElementById('cgpaInput').value;
+            
+            if (!semester && !cgpa) {
+                alert('Please fill in at least one field');
+                return;
+            }
+            
+            if (semester) {
+                document.getElementById('userSemester').textContent = semester;
+                document.getElementById('headerSemester').textContent = semester.split(' ')[0];
+            }
+            
+            if (cgpa) {
+                document.getElementById('userCGPA').textContent = cgpa;
+                document.getElementById('headerCGPA').textContent = cgpa;
+            }
+            
+            document.getElementById('academicForm').style.display = 'none';
+            
+            // Save to localStorage
+            const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+            if (semester) profileData.semester = semester;
+            if (cgpa) profileData.cgpa = cgpa;
+            localStorage.setItem('profileData', JSON.stringify(profileData));
+        });
+        
+        document.getElementById('cancelAcademic').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('academicForm').style.display = 'none';
+        });
+        
+        // Add schedule item
+        document.getElementById('addSchedule').addEventListener('click', function(e) {
+            e.preventDefault();
+            const day = document.getElementById('scheduleDay').value;
+            const start = document.getElementById('scheduleStart').value;
+            const end = document.getElementById('scheduleEnd').value;
+            const subject = document.getElementById('scheduleSubject').value;
+            
+            if (!day || !start || !end || !subject) {
+                alert('Please fill in all schedule fields');
+                return;
+            }
+            
+            const formattedStart = formatTime(start);
+            const formattedEnd = formatTime(end);
+            
+            const scheduleItem = {
+                day: day,
+                start: start,
+                end: end,
+                subject: subject,
+                display: `${day}, ${formattedStart} - ${formattedEnd}`
+            };
+            
+            addScheduleToUI(scheduleItem);
+            
+            // Save to localStorage
+            const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+            if (!profileData.schedule) profileData.schedule = [];
+            profileData.schedule.push(scheduleItem);
+            localStorage.setItem('profileData', JSON.stringify(profileData));
+            
+            // Clear form
+            document.getElementById('scheduleDay').value = '';
+            document.getElementById('scheduleStart').value = '';
+            document.getElementById('scheduleEnd').value = '';
+            document.getElementById('scheduleSubject').value = '';
+        });
+        
+        // Add schedule item to UI
+        function addScheduleToUI(item) {
+            const scheduleContainer = document.getElementById('scheduleContainer');
+            const scheduleItem = document.createElement('div');
+            scheduleItem.className = 'schedule-item';
+            scheduleItem.innerHTML = `
+                <button class="delete-btn" data-id="${item.display}">×</button>
+                <div class="schedule-time">${item.display}</div>
+                <div class="schedule-subject">${item.subject}</div>
+            `;
+            scheduleContainer.appendChild(scheduleItem);
+            
+            // Add delete functionality
+            scheduleItem.querySelector('.delete-btn').addEventListener('click', function() {
+                scheduleItem.remove();
+                
+                // Remove from localStorage
+                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                if (profileData.schedule) {
+                    profileData.schedule = profileData.schedule.filter(s => s.display !== this.dataset.id);
+                    localStorage.setItem('profileData', JSON.stringify(profileData));
+                }
+            });
+        }
+        
+        // Format time to 12-hour format
+        function formatTime(timeString) {
+            const [hours, minutes] = timeString.split(':');
+            let period = 'AM';
+            let hour = parseInt(hours);
+            
+            if (hour >= 12) {
+                period = 'PM';
+                if (hour > 12) hour -= 12;
+            }
+            
+            if (hour === 0) hour = 12;
+            
+            return `${hour}:${minutes} ${period}`;
+        }
+        
+        document.getElementById('cancelSchedule').addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('scheduleForm').style.display = 'none';
+        });
+        
+        // Query form submission
+        const queryForm = document.getElementById('queryForm');
+        queryForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            document.getElementById('successMessage').style.display = 'block';
+            
+            setTimeout(() => {
+                queryForm.reset();
+                setTimeout(() => {
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 5000);
+            }, 1000);
+        });
+        
+        // Avatar upload functionality
+        const avatarUpload = document.getElementById('avatarUpload');
+        const profileAvatar = document.getElementById('profileAvatar');
+        
+        profileAvatar.addEventListener('click', function() {
+            avatarUpload.click();
+        });
+        
+        avatarUpload.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('avatarImage').src = event.target.result;
+                    
+                    // Save to localStorage
+                    const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                    profileData.avatar = event.target.result;
+                    localStorage.setItem('profileData', JSON.stringify(profileData));
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+        
+        // Edit button functionality
+        const editButtons = document.querySelectorAll('.edit-btn');
+        editButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const targetId = button.getAttribute('data-target');
+                const editForm = document.getElementById(targetId);
+                
+                if (editForm) {
+                    editForm.style.display = editForm.style.display === 'block' ? 'none' : 'block';
+                    
+                    if (editForm.style.display === 'block') {
+                        button.style.transform = 'rotate(45deg)';
+                        button.style.background = 'var(--accent-blue)';
+                        button.style.color = 'white';
+                    } else {
+                        button.style.transform = 'rotate(0)';
+                        button.style.background = '';
+                        button.style.color = '';
+                    }
+                }
+            });
+        });
+        
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            createParticles();
+        });
+    </script>
+</body>
+</html>
