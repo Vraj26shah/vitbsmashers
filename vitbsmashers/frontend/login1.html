@@ -1035,6 +1035,9 @@
     </div>
     
     <script>
+        // API Configuration
+        const API_BASE = '/api/v1/auth';
+        
         // DOM elements
         const wrapper = document.querySelector('.wrapper');
         const registerLink = document.querySelector('.register-link');
@@ -1119,98 +1122,136 @@
         });
 
         // Email verification for registration
-        registerForm.addEventListener('submit', function(e) {
+        registerForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const email = registerEmail.value;
-            const username = document.getElementById('registerUsername').value;
+            const email = registerEmail.value.trim();
+            const username = document.getElementById('registerUsername').value.trim();
             const password = document.getElementById('registerPassword').value;
-            
-            if (!email.includes('@vitbhopal.ac.in')) {
+
+            if (!email.endsWith('@vitbhopal.ac.in')) {
                 showToast('Please use your VIT Bhopal email address', 'error');
                 return;
             }
-            
             if (username.length < 3) {
                 showToast('Username must be at least 3 characters', 'error');
                 return;
             }
-            
             if (password.length < 6) {
                 showToast('Password must be at least 6 characters', 'error');
                 return;
             }
-            
-            otpEmail.textContent = email;
-            otpModal.style.display = 'flex';
-            startOtpCountdown();
-            showToast('OTP sent to your email', 'success');
-        });
 
+            try {
+                const res = await fetch(`${API_BASE}/signup`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, email, password })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Signup failed');
+
+                otpEmail.textContent = email;
+                otpModal.style.display = 'flex';
+                startOtpCountdown();
+                if (data.development && data.development.otp) {
+                    showToast(`Dev OTP: ${data.development.otp}`, 'success');
+                }
+                showToast(data.message || 'OTP sent to your email', 'success');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        });
         // Login form submission
-        loginForm.addEventListener('submit', function(e) {
+        loginForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const username = document.getElementById('loginUsername').value;
+            const username = document.getElementById('loginUsername').value.trim();
             const password = document.getElementById('loginPassword').value;
-            
-            if (username === '' || password === '') {
+
+            if (!username || !password) {
                 showToast('Please fill in all fields', 'error');
                 return;
             }
-            
-            // Simulate login process
+
             const btn = this.querySelector('.btn');
             btn.innerHTML = '<div class="spinner"></div> Logging in...';
             btn.disabled = true;
-            
-            setTimeout(() => {
+
+            try {
+                const res = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Login failed');
+
+                localStorage.setItem('token', data.token);
+                showToast('Login successful! Redirecting...', 'success');
+                setTimeout(() => { window.location.href = '/profile.html'; }, 1200);
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
                 btn.textContent = 'Login';
                 btn.disabled = false;
-                showToast('Login successful! Redirecting...', 'success');
-                // Redirect to profile
-                setTimeout(() => {
-                    window.location.href = 'features/profile/profile.html';
-                }, 1500);
-            }, 1500);
+            }
         });
 
         // Verify OTP
-        verifyOtpBtn.addEventListener('click', function() {
+        verifyOtpBtn.addEventListener('click', async function() {
             const otp = Array.from(otpInputs).map(input => input.value).join('');
-            
+            const email = otpEmail.textContent.trim();
             if (otp.length !== 6) {
                 showToast('Please enter a 6-digit OTP code', 'error');
                 return;
             }
-            
-            // Simulate OTP verification
-            this.innerHTML = '<div class="spinner"></div> Verifying...';
-            this.disabled = true;
-            
-            setTimeout(() => {
-                // Success
-                this.textContent = 'Verify OTP';
-                this.disabled = false;
-                this.classList.add('success-animation');
+
+            try {
+                verifyOtpBtn.innerHTML = '<div class="spinner"></div> Verifying...';
+                verifyOtpBtn.disabled = true;
+
+                const res = await fetch(`${API_BASE}/verify-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, otp })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'OTP verification failed');
+
+                localStorage.setItem('token', data.token);
                 showToast('OTP verified successfully!', 'success');
-                
                 setTimeout(() => {
                     otpModal.style.display = 'none';
                     showToast('Account created! Redirecting...', 'success');
-                    // Redirect to profile
-                    setTimeout(() => {
-                        window.location.href = 'features/profile/profile.html';
-                    }, 1500);
-                }, 1000);
-            }, 1500);
+                    setTimeout(() => { window.location.href = '/profile.html'; }, 1200);
+                }, 800);
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                verifyOtpBtn.textContent = 'Verify OTP';
+                verifyOtpBtn.disabled = false;
+            }
         });
 
         // Resend OTP
-        resendOtpBtn.addEventListener('click', function(e) {
+        resendOtpBtn.addEventListener('click', async function(e) {
             e.preventDefault();
-            startOtpCountdown();
-            showToast('OTP has been resent to your email', 'success');
+            const email = otpEmail.textContent.trim();
+            try {
+                const res = await fetch(`${API_BASE}/resend-otp`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message || 'Failed to resend OTP');
+                startOtpCountdown();
+                if (data.development && data.development.otp) {
+                    showToast(`Dev OTP: ${data.development.otp}`, 'success');
+                }
+                showToast(data.message || 'OTP has been resent to your email', 'success');
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
         });
 
         // Start countdown for OTP resend
@@ -1225,6 +1266,7 @@
                 countdownSeconds.textContent = seconds;
                 
                 if (seconds <= 0) {
+                    
                     clearInterval(countdownInterval);
                     otpCountdown.style.display = 'none';
                     resendOtpBtn.classList.remove('disabled');
