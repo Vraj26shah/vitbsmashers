@@ -6,7 +6,8 @@
     <title>Scholars Stack - Student Profile</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="../../shared-admin-auth.js"></script>
+    <!-- <script src="../../shared-admin-auth.js"></script>
+    <script src="../../admin-panel-manager.js"></script> -->
     <style>
         /* === GLOBAL STYLES === */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -998,6 +999,97 @@
             }
         }
 
+        /* Admin Panel Styles */
+        .admin-section {
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--glass-bg);
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .admin-panel {
+            background: rgba(15, 26, 42, 0.8);
+            border-radius: 10px;
+            padding: 25px;
+            border: 1px solid var(--accent-blue);
+        }
+
+        .admin-title {
+            color: var(--accent-blue);
+            font-size: 24px;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .admin-subtitle {
+            color: var(--light-color1);
+            margin-bottom: 20px;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .admin-tab-btn {
+            background: rgba(52, 152, 219, 0.1);
+            border: 1px solid var(--accent-blue);
+            color: var(--accent-blue);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-tab-btn:hover {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .admin-tab-btn.active {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .admin-content {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 8px;
+            padding: 20px;
+            min-height: 200px;
+        }
+
+        .admin-tab-content h3 {
+            color: var(--accent-blue);
+            margin-bottom: 10px;
+        }
+
+        .admin-tab-content p {
+            color: var(--light-color1);
+            margin-bottom: 15px;
+        }
+
+        .access-denied-message {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .status-card {
+            background: var(--glass-bg);
+            border-radius: 15px;
+            padding: 30px;
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--danger-color);
+        }
+
         @media (max-width: 1200px) {
             .main-content {
                 max-width: 1000px;
@@ -1740,6 +1832,50 @@
                 <p>Our support team will review your query and get back to you within 24 hours.</p>
             </div>
         </div>
+
+        <!-- Admin Panel Section (Only visible to admins) -->
+        <div class="admin-section" data-admin-only style="display: none;">
+            <div class="admin-panel">
+                <h2 class="admin-title">
+                    <i class='bx bxs-shield'></i> Admin Control Panel
+                </h2>
+                <p class="admin-subtitle">Manage system settings and user data</p>
+                
+                <div class="admin-tabs">
+                    <button class="admin-tab-btn active" onclick="showAdminTab('users')">
+                        <i class='bx bxs-user'></i> User Management
+                    </button>
+                    <button class="admin-tab-btn" onclick="showAdminTab('content')">
+                        <i class='bx bxs-file'></i> Content Management
+                    </button>
+                    <button class="admin-tab-btn" onclick="showAdminTab('settings')">
+                        <i class='bx bxs-cog'></i> System Settings
+                    </button>
+                    <button class="admin-tab-btn" onclick="showAdminTab('analytics')">
+                        <i class='bx bxs-bar-chart'></i> Analytics
+                    </button>
+                </div>
+                
+                <div class="admin-content" id="adminContent">
+                    <div class="admin-tab-content" id="usersTab">
+                        <h3>User Management</h3>
+                        <p>Manage user accounts and permissions</p>
+                        <button class="btn btn-primary" onclick="loadUsers()">Load Users</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Access Denied Message (Only visible to non-admins) -->
+        <div class="access-denied-message" data-admin-access-denied style="display: none;">
+            <div class="status-card">
+                <h3 style="color: var(--danger-color); margin-bottom: 15px;">
+                    <i class='bx bxs-shield-x'></i> Admin Access Required
+                </h3>
+                <p>This section is only accessible to authorized administrators.</p>
+                <p>Contact system administrator for access.</p>
+            </div>
+        </div>
     </main>
 
     <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
@@ -2240,9 +2376,110 @@
             });
         });
         
+        // Admin Panel Functions
+        function showAdminTab(tabName) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+            
+            // Show corresponding content
+            const content = document.getElementById('adminContent');
+            let contentHtml = '';
+            
+            switch(tabName) {
+                case 'users':
+                    contentHtml = `
+                        <div class="admin-tab-content">
+                            <h3><i class='bx bxs-user'></i> User Management</h3>
+                            <p>Manage user accounts and permissions</p>
+                            <button class="btn btn-primary" onclick="loadUsers()">Load Users</button>
+                            <div id="usersList" class="mt-3"></div>
+                        </div>
+                    `;
+                    break;
+                case 'content':
+                    contentHtml = `
+                        <div class="admin-tab-content">
+                            <h3><i class='bx bxs-file'></i> Content Management</h3>
+                            <p>Manage system content and resources</p>
+                            <button class="btn btn-primary" onclick="loadContent()">Load Content</button>
+                        </div>
+                    `;
+                    break;
+                case 'settings':
+                    contentHtml = `
+                        <div class="admin-tab-content">
+                            <h3><i class='bx bxs-cog'></i> System Settings</h3>
+                            <p>Configure system parameters</p>
+                            <button class="btn btn-primary" onclick="loadSettings()">Load Settings</button>
+                        </div>
+                    `;
+                    break;
+                case 'analytics':
+                    contentHtml = `
+                        <div class="admin-tab-content">
+                            <h3><i class='bx bxs-bar-chart'></i> Analytics & Reports</h3>
+                            <p>View system usage and performance metrics</p>
+                            <button class="btn btn-primary" onclick="loadAnalytics()">Load Analytics</button>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            content.innerHTML = contentHtml;
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/v1/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('usersList').innerHTML = `
+                        <div class="alert alert-success">
+                            <i class='bx bxs-check-circle'></i> Users loaded successfully!
+                        </div>
+                    `;
+                } else {
+                    throw new Error('Failed to load users');
+                }
+            } catch (error) {
+                document.getElementById('usersList').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class='bx bxs-error'></i> Error loading users: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function loadContent() {
+            alert('Content management feature coming soon!');
+        }
+
+        function loadSettings() {
+            alert('System settings feature coming soon!');
+        }
+
+        function loadAnalytics() {
+            alert('Analytics feature coming soon!');
+        }
+
         // Initialize page
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();
+            
+            // Initialize admin panel manager
+            if (window.adminPanelManager) {
+                window.adminPanelManager.init();
+            }
         });
     </script>
 </body>

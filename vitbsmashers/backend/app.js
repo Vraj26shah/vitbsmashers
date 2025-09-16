@@ -1,3 +1,6 @@
+import dotenv from 'dotenv';
+dotenv.config();
+
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
@@ -16,35 +19,20 @@ import profileRouter from './routes/profileRoutes.js';
 import marketplaceRouter from './routes/marketplaceRoutes.js';
 import paymentRouter from './routes/paymentRoutes.js';
 import eventRouter from './routes/eventRoutes.js';
+import adminRouter from './routes/adminRoutes.js';
 import { errorHandler, notFound } from './middleware/authMiddleware.js';
+import connect from './db/db.js';
 
-import connect from './db/db.js'
-import dotenv from 'dotenv';
-import mongoose from 'mongoose';
-import paymentRoutes from './routes/paymentRoutes.js';
-import authRoutes from './routes/authRoutes.js';
-
-connect()
-dotenv.config();
 const app = express();
+connect();
+
+// Middleware
+app.use(express.json());
+app.use(cookieParser());
 
 // Enable CORS for browser clients
 app.use(cors({ origin: true, credentials: true }));
 
-<<<<<<< HEAD
-// Parse JSON bodies (except for webhook)
-app.use(express.json());
-
-// Webhook route must be before express.json() middleware for Stripe webhooks
-app.use('/api/payments/webhook', express.raw({ type: 'application/json' }), paymentRoutes);
-
-app.use(cookieParser());
-
-// Routes backend
-app.use('/api/v1/auth', authRouter);
-app.use('/api/auth', authRoutes);
-app.use('/api/payments', paymentRoutes);
-=======
 // API Routes
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/attendance', attendanceRouter);
@@ -59,8 +47,8 @@ app.use('/api/v1/profile', profileRouter);
 app.use('/api/v1/marketplace', marketplaceRouter);
 app.use('/api/v1/payment', paymentRouter);
 app.use('/api/v1/events', eventRouter);
+app.use('/api/v1/admin', adminRouter);
 
->>>>>>> fdd6e78948f8e4305d27bae3121f890b1b7be85a
 
 
 
@@ -84,24 +72,7 @@ app.get('/profile.html', (req, res) => {
 app.use(express.static(frontendDir));
 
 
-<<<<<<< HEAD
-mongoose.connect(process.env.MONGO_URL)
-  .then(() => console.log('DB connected'))
-  .catch(err => console.error('DB connection error:', err));
-
-
-
-
-// // Test route
-// app.get('/', (req, res) => {
-//   res.send('VIT Bhopal Authentication Service');
-// });
-
-
-// Serve the main index page
-=======
 //mainPage route by ai
->>>>>>> fdd6e78948f8e4305d27bae3121f890b1b7be85a
 app.get('/', (req, res) => {
   res.sendFile(path.join(frontendDir, 'index.html'));
 });

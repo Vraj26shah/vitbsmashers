@@ -39,7 +39,7 @@ class AdminAuth {
             }
 
             // First try to get admin status
-            const adminResponse = await fetch('http://localhost:4000/api/auth/admin-status', {
+            const adminResponse = await fetch('/api/v1/auth/admin-status', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,

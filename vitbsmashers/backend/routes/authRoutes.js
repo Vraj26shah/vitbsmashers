@@ -25,31 +25,31 @@ router.get('/dashboard', (req, res) => {
     }
   });
 });
-router.get('/profile', authMiddlewareModule.authMiddleware, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).select('name email phone');
-    if (!user) return res.status(404).json({ error: 'User not found' });
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+// router.get('/profile', authMiddlewareModule.authMiddleware, async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user._id).select('name email phone');
+//     if (!user) return res.status(404).json({ error: 'User not found' });
+//     res.json(user);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 
-// Admin verification endpoint
-router.get('/admin-status', authMiddlewareModule.authMiddleware, async (req, res) => {
-  try {
-    const user = await User.findById(req.user._id).select('email');
-    if (!user) return res.status(404).json({ error: 'User not found' });
+// // Admin verification endpoint
+// router.get('/admin-status', authMiddlewareModule.authMiddleware, async (req, res) => {
+//   try {
+//     const user = await User.findById(req.user._id).select('email');
+//     if (!user) return res.status(404).json({ error: 'User not found' });
     
-    const isAdmin = user.email === 'vitbsmashers@gmail.com';
+//     const isAdmin = user.email === 'vitbsmashers@gmail.com';
     
-    res.json({
-      isAdmin: isAdmin,
-      email: user.email,
-      adminEmail: 'vitbsmashers@gmail.com'
-    });
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+//     res.json({
+//       isAdmin: isAdmin,
+//       email: user.email,
+//       adminEmail: 'vitbsmashers@gmail.com'
+//     });
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 export default router;

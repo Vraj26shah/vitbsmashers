@@ -9,7 +9,7 @@ import { signToken } from '../service/authService.js';
 export const signup = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
-
+    console.log(username, email, password);
     // 1) Check if user already exists by Findone user (optimized with timeout)
     const existingUser = await User.findOne({ $or: [{ username }, { email }] })
       .maxTimeMS(5000) // 5 second timeout
