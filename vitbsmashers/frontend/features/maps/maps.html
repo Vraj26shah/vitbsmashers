@@ -7,7 +7,8 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="maps.css">
-</head>
+    <script src="../shared-logout.js"></script>
+    </head>
 <body>
     <!-- Background particles -->
     <div class="bg-particles" id="bgParticles"></div>
@@ -2988,7 +2989,21 @@
 </div>
 </div> <!-- Closing the main content div -->
 <script>
+    // Check URL parameters for sidebar activation
+    function checkSidebarActivation() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('sidebar') === 'active') {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.add('active');
+            }
+        }
+    }
+
 document.addEventListener('DOMContentLoaded', function() {
+    // Check for sidebar activation from URL
+    checkSidebarActivation();
+
     // Create background particles
     function createParticles() {
         const particlesContainer = document.getElementById('bgParticles');

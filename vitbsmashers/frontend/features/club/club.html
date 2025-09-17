@@ -1258,8 +1258,22 @@
             console.log(`Body: An update request for "${update.clubName}" has been submitted. Please review it in the admin panel.`);
         }
 
+        // Check URL parameters for sidebar activation
+        function checkSidebarActivation() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('sidebar') === 'active') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.classList.add('active');
+                }
+            }
+        }
+
         // Initialize the page
         document.addEventListener('DOMContentLoaded', function() {
+            // Check for sidebar activation from URL
+            checkSidebarActivation();
+
             renderClubs();
             renderPendingClubs();
             renderPendingUpdates();

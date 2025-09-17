@@ -899,79 +899,122 @@
     </main>
 
     <script>
+        // Check authentication on page load
+        function checkAuthentication() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                // Show login required message
+                showLoginRequired();
+                return false;
+            }
+            return true;
+        }
+
+        // Show login required message
+        function showLoginRequired() {
+            document.body.innerHTML = `
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                    background: linear-gradient(135deg, #0a1423 0%, #0f1a2a 100%);
+                    color: #ecf0f1;
+                    text-align: center;
+                    padding: 20px;
+                ">
+                    <div style="
+                        background: rgba(15, 26, 42, 0.85);
+                        backdrop-filter: blur(10px);
+                        border-radius: 20px;
+                        padding: 40px;
+                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                        border: 2px solid #3498db;
+                        max-width: 500px;
+                        width: 100%;
+                    ">
+                        <i class='bx bx-lock-alt' style="
+                            font-size: 60px;
+                            color: #3498db;
+                            margin-bottom: 20px;
+                        "></i>
+                        <h1 style="
+                            font-size: 28px;
+                            margin-bottom: 15px;
+                            color: #ecf0f1;
+                        ">Access Restricted</h1>
+                        <p style="
+                            font-size: 16px;
+                            margin-bottom: 30px;
+                            color: #ddd;
+                            line-height: 1.6;
+                        ">
+                            You need to log in to access your courses page. Please sign in to view and access your purchased courses.
+                        </p>
+                        <div style="display: flex; gap: 15px; justify-content: center;">
+                            <a href="../../login1.html" style="
+                                background: #3498db;
+                                color: white;
+                                padding: 12px 24px;
+                                border-radius: 10px;
+                                text-decoration: none;
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 8px;
+                            " onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">
+                                <i class='bx bx-log-in'></i> Login Now
+                            </a>
+                            <a href="../../index.html" style="
+                                background: transparent;
+                                color: #3498db;
+                                padding: 12px 24px;
+                                border-radius: 10px;
+                                text-decoration: none;
+                                font-weight: 600;
+                                border: 2px solid #3498db;
+                                transition: all 0.3s ease;
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 8px;
+                            " onmouseover="this.style.background='#3498db'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='#3498db'">
+                                <i class='bx bx-home'></i> Go Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         // Create background particles
         function createParticles() {
             const particlesContainer = document.getElementById('bgParticles');
             const particleCount = 20;
-            
+
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.classList.add('particle');
-                
+
                 // Random size
                 const size = Math.random() * 60 + 20;
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
-                
+
                 // Random position
                 particle.style.top = `${Math.random() * 100}%`;
                 particle.style.left = `${Math.random() * 100}%`;
-                
+
                 // Random animation delay
                 particle.style.animationDelay = `${Math.random() * 10}s`;
-                
+
                 // Random opacity
                 particle.style.opacity = Math.random() * 0.5 + 0.3;
-                
+
                 particlesContainer.appendChild(particle);
             }
         }
-
-        const courses = [
-            {
-                id: "dsa",
-                title: "Data Structures & Algorithms",
-                image: "https://images.unsplash.com/photo-1550439062-609e1531270e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                directLink: "#",
-                subjects: [
-                    "Introduction to Data Structures",
-                    "Arrays and Linked Lists",
-                    "Stacks and Queues",
-                    "Trees and Binary Search Trees",
-                    "Graphs and Graph Algorithms",
-                    "Sorting and Searching Algorithms",
-                    "Data Compression and Encryption"
-                ]
-            },
-            {
-                id: "dbms",
-                title: "Database Management Systems",
-                image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                directLink: "#",
-                subjects: [
-                    "Database Fundamentals",
-                    "Relational Model and SQL",
-                    "Database Design and Normalization",
-                    "Transaction Management",
-                    "Indexing and Query Optimization",
-                    "NoSQL Databases"
-                ]
-            },
-            {
-                id: "webdev",
-                title: "Web Development",
-                image: "https://images.unsplash.com/photo-1542831371-29b0f74f9713?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                directLink: "#",
-                subjects: [
-                    "HTML5 and CSS3",
-                    "JavaScript Fundamentals",
-                    "React.js Components",
-                    "Node.js and Express",
-                    "MongoDB Integration",
-                    "Cloud Deployment"
-                ]
-            }
-        ];
 
         // Setup menu toggle
         const menuToggle = document.getElementById('menuToggle');
@@ -1006,72 +1049,59 @@
             });
         });
 
-        function loadCourses() {
-            courseGrid.innerHTML = '';
-            courses.forEach(course => {
-                const courseCard = document.createElement('div');
-                courseCard.className = 'course-card';
-                courseCard.dataset.course = course.id;
+        // Load courses from backend
+        async function loadCourses() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
 
-                let subjectsHTML = '';
-                course.subjects.forEach(subject => {
-                    subjectsHTML += `
-                        <div class="subject-item">
-                            <i class='bx bx-book'></i>
-                            <div class="subject-name">${subject}</div>
-                            <button class="subject-access-btn" data-subject="${subject}">Access</button>
-                        </div>
-                    `;
-                });
-
-                courseCard.innerHTML = `
-                    <div class="course-image" style="background-image: url('${course.image}');"></div>
-                    <div class="course-info">
-                        <div class="course-header">
-                            <h3 class="course-title">${course.title}</h3>
-                            <button class="expand-btn">
-                                <i class='bx bx-chevron-down'></i>
-                                <span class="subject-count">${course.subjects.length} subjects</span>
-                            </button>
-                        </div>
-                        <div class="course-subjects">
-                            ${subjectsHTML}
-                        </div>
-                        <a href="${course.directLink}" class="access-btn">Access Full Course</a>
+                // For now, show placeholder message - will be implemented with backend
+                courseGrid.innerHTML = `
+                    <div style="
+                        text-align: center;
+                        padding: 60px 20px;
+                        color: #666;
+                        background: rgba(44, 62, 80, 0.5);
+                        border-radius: 16px;
+                        border: 2px solid rgba(52, 152, 219, 0.3);
+                        max-width: 600px;
+                        margin: 0 auto;
+                    ">
+                        <i class='bx bx-book' style="font-size: 64px; color: #3498db; margin-bottom: 20px;"></i>
+                        <h2 style="color: #ecf0f1; margin-bottom: 15px; font-size: 24px;">Your Purchased Courses</h2>
+                        <p style="color: #ddd; margin-bottom: 10px; font-size: 16px;">Courses will be loaded from your account data.</p>
+                        <p style="color: #aaa; font-size: 14px;">This feature will be fully implemented with backend integration.</p>
+                        <p style="color: #888; font-size: 12px; margin-top: 15px;">No courses purchased yet? Visit the <a href="../marketplace/market.html" style="color: #3498db; text-decoration: none;">Marketplace</a> to explore available courses.</p>
                     </div>
                 `;
-                courseGrid.appendChild(courseCard);
-
-                const expandBtn = courseCard.querySelector('.expand-btn');
-                const subjectsSection = courseCard.querySelector('.course-subjects');
-
-                function toggleSubjects(e) {
-                    if (e.target.classList.contains('subject-access-btn') || 
-                        e.target.parentElement.classList.contains('subject-access-btn')) {
-                        return;
-                    }
-                    expandBtn.classList.toggle('expanded');
-                    subjectsSection.classList.toggle('expanded');
-                }
-
-                courseCard.addEventListener('click', toggleSubjects);
-                expandBtn.addEventListener('click', toggleSubjects);
-
-                const subjectAccessBtns = courseCard.querySelectorAll('.subject-access-btn');
-                subjectAccessBtns.forEach(btn => {
-                    btn.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const subject = btn.dataset.subject;
-                        alert(`Accessing subject: ${subject}`);
-                    });
-                });
-            });
+            } catch (error) {
+                console.error('Failed to load courses:', error);
+                courseGrid.innerHTML = `
+                    <div style="
+                        text-align: center;
+                        padding: 40px 20px;
+                        color: #e74c3c;
+                        background: rgba(231, 76, 60, 0.1);
+                        border-radius: 12px;
+                        border: 1px solid rgba(231, 76, 60, 0.3);
+                    ">
+                        <i class='bx bx-error' style="font-size: 48px; margin-bottom: 15px;"></i>
+                        <h3 style="color: #ecf0f1; margin-bottom: 10px;">Failed to Load Courses</h3>
+                        <p style="color: #ddd;">Please try refreshing the page or contact support if the problem persists.</p>
+                    </div>
+                `;
+            }
         }
 
 
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check authentication first
+            if (!checkAuthentication()) {
+                return; // Stop initialization if not authenticated
+            }
+
             createParticles();
-            loadCourses();
+            await loadCourses();
         });
     </script>
 </body>

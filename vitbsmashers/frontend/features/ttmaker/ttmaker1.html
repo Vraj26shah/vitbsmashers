@@ -399,6 +399,23 @@
 
     </div>
 
+<script>
+    // Check URL parameters for sidebar activation
+    function checkSidebarActivation() {
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('sidebar') === 'active') {
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.add('active');
+            }
+        }
+    }
+
+    // Initialize sidebar activation on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        checkSidebarActivation();
+    });
+</script>
 <script src="ttmaker1.js"></script>
 </body>
 </html>

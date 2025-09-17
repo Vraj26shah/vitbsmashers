@@ -7,6 +7,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="../../shared-admin-auth.js"></script>
+    <script src="../../shared-logout.js"></script>
     <style>
         /* === GLOBAL STYLES === */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -1170,7 +1171,7 @@
         <div class="sidebar-title">Account</div>
         <ul class="sidebar-menu">
             <!-- <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li> -->
-            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+            <li><a href="#" class="logout-link"><i class='bx bxs-log-out'></i> Logout</a></li>
         </ul>
     </nav>    
     
@@ -2291,18 +2292,32 @@
         }
 
         // Initialize the page
+        // Check URL parameters for sidebar activation
+        function checkSidebarActivation() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('sidebar') === 'active') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.classList.add('active');
+                }
+            }
+        }
+    
         document.addEventListener('DOMContentLoaded', async function() {
             createParticles();
             await renderFaculty();
             await renderPendingFaculty();
             await renderPendingUpdates();
             await populateFacultySelect();
-
+    
             // Hide admin and update tabs if not logged in
-
+    
             // Initialize result counters
             browseResults.textContent = `Showing ${faculty.length} faculty members`;
             updateResults.textContent = `Found ${faculty.length} faculty members`;
+    
+            // Check for sidebar activation from URL
+            checkSidebarActivation();
         });
     </script>
 </body>

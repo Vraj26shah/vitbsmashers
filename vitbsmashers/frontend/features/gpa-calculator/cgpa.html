@@ -1096,6 +1096,7 @@ button:active {
     }
 }
     </style>
+    <script src="../../shared-logout.js"></script>
 </head>
 <body>
     <!-- Background Particles -->
@@ -1236,31 +1237,45 @@ button:active {
             'C': 7, 'D': 6, 'E': 5, 'F': 0
         };
 
+        // Check URL parameters for sidebar activation
+        function checkSidebarActivation() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('sidebar') === 'active') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.classList.add('active');
+                }
+            }
+        }
+
         // Initialize with 4 subjects
         document.addEventListener('DOMContentLoaded', function() {
+            // Check for sidebar activation from URL
+            checkSidebarActivation();
+
             createParticles();
-            
+
             for (let i = 0; i < 4; i++) {
                 addSubjectRow();
             }
             setDemoValues();
-            
+
             // Setup menu toggle
             const menuToggle = document.getElementById('menuToggle');
             const sidebar = document.getElementById('sidebar');
-            
+
             menuToggle.addEventListener('click', () => {
                 sidebar.classList.toggle('active');
             });
-            
+
             document.addEventListener('click', (e) => {
-                if (sidebar.classList.contains('active') && 
-                    !sidebar.contains(e.target) && 
+                if (sidebar.classList.contains('active') &&
+                    !sidebar.contains(e.target) &&
                     !menuToggle.contains(e.target)) {
                     sidebar.classList.remove('active');
                 }
             });
-            
+
             // Add subject button
             document.getElementById('addSubject').addEventListener('click', addSubjectRow);
 

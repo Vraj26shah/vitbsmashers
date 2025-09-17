@@ -6,6 +6,7 @@
     <title>Smart Mess Menu | Scholars Stack</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../shared-logout.js"></script>
     <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
@@ -2208,7 +2209,7 @@ body {
         <div class="sidebar-title">Account</div>
         <ul class="sidebar-menu">
             <!-- <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li> -->
-            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+            <li><a href="#" class="logout-link"><i class='bx bxs-log-out'></i> Logout</a></li>
         </ul>
     </nav>    
    
@@ -4067,13 +4068,27 @@ function getNextMealFromSchedule(mess) {
             // Implementation if needed
         }
 
+        // Check URL parameters for sidebar activation
+        function checkSidebarActivation() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('sidebar') === 'active') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.classList.add('active');
+                }
+            }
+        }
+
         // Initialize the app
         window.addEventListener('DOMContentLoaded', () => {
+            // Check for sidebar activation from URL
+            checkSidebarActivation();
+
             if (!searchInput || !searchResults) {
                 console.error('Required DOM elements not found. Mess menu system cannot initialize.');
                 return;
             }
-            
+
             try {
                 createParticles();
                 init();

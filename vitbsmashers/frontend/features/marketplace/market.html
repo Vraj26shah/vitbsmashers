@@ -3235,11 +3235,25 @@ function isProfileComplete() {
         document.head.appendChild(notificationStyle);
 
         // Initialize
+        // Check URL parameters for sidebar activation
+        function checkSidebarActivation() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('sidebar') === 'active') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.classList.add('active');
+                }
+            }
+        }
+    
         document.addEventListener('DOMContentLoaded', async function() {
             createParticles();
             await loadUserProfile(); // Load user profile first
             updateCart();
             handlePaymentStatus();
+    
+            // Check for sidebar activation from URL
+            checkSidebarActivation();
         });
     </script>
 </body>

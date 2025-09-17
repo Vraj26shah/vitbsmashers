@@ -4,7 +4,7 @@ async function handleLogout() {
         const token = localStorage.getItem('token');
         if (token) {
             // Call logout API endpoint
-            const response = await fetch('http://localhost:4000/api/v1/auth/logout', {
+            const response = await fetch('/api/v1/auth/logout', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -40,9 +40,9 @@ async function handleLogout() {
     // Show logout message
     showNotification('Logged out successfully', 'success');
 
-    // Redirect to main page after a short delay
+    // Redirect to login page after a short delay
     setTimeout(() => {
-        window.location.href = '/';
+        window.location.href = '/login1.html';
     }, 1000);
 }
 
@@ -88,6 +88,30 @@ document.head.appendChild(style);
 
 // Initialize logout functionality when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
+    // Use MutationObserver to wait for sidebar to be loaded
+    const observer = new MutationObserver(() => {
+        const sidebar = document.getElementById('sidebar');
+        if (sidebar) {
+            observer.disconnect();
+            // Check login status and hide/show Account section
+            const token = localStorage.getItem('token');
+            if (!token) {
+                const titles = sidebar.querySelectorAll('.sidebar-title');
+                if (titles.length > 0) {
+                    const accountTitle = titles[titles.length - 1];
+                    const nextUl = accountTitle.nextElementSibling;
+                    if (nextUl && nextUl.tagName === 'UL') {
+                        nextUl.remove();
+                    }
+                    accountTitle.remove();
+                }
+            }
+            // If logged in, Account section remains visible
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+
     // Add event listeners to all logout links
     document.querySelectorAll('.logout-link').forEach(link => {
         link.addEventListener('click', function(e) {

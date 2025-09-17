@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+Account
+Logout<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -8,6 +9,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- <script src="../../shared-admin-auth.js"></script>
     <script src="../../admin-panel-manager.js"></script> -->
+    <script src="../../shared-logout.js"></script>
     <style>
         /* === GLOBAL STYLES === */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -1881,192 +1883,242 @@
     <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
 
     <script>
+        // Check authentication on page load
+        function checkAuthentication() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                // Show login required message
+                showLoginRequired();
+                return false;
+            }
+            return true;
+        }
+
+        // Show login required message
+        function showLoginRequired() {
+            document.body.innerHTML = `
+                <div style="
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    min-height: 100vh;
+                    background: linear-gradient(135deg, #0a1423 0%, #0f1a2a 100%);
+                    color: #ecf0f1;
+                    text-align: center;
+                    padding: 20px;
+                ">
+                    <div style="
+                        background: rgba(15, 26, 42, 0.85);
+                        backdrop-filter: blur(10px);
+                        border-radius: 20px;
+                        padding: 40px;
+                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                        border: 2px solid #3498db;
+                        max-width: 500px;
+                        width: 100%;
+                    ">
+                        <i class='bx bx-lock-alt' style="
+                            font-size: 60px;
+                            color: #3498db;
+                            margin-bottom: 20px;
+                        "></i>
+                        <h1 style="
+                            font-size: 28px;
+                            margin-bottom: 15px;
+                            color: #ecf0f1;
+                        ">Access Restricted</h1>
+                        <p style="
+                            font-size: 16px;
+                            margin-bottom: 30px;
+                            color: #ddd;
+                            line-height: 1.6;
+                        ">
+                            You need to log in to access your profile page. Please sign in to view and manage your account information.
+                        </p>
+                        <div style="display: flex; gap: 15px; justify-content: center;">
+                            <a href="../../login1.html" style="
+                                background: #3498db;
+                                color: white;
+                                padding: 12px 24px;
+                                border-radius: 10px;
+                                text-decoration: none;
+                                font-weight: 600;
+                                transition: all 0.3s ease;
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 8px;
+                            " onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">
+                                <i class='bx bx-log-in'></i> Login Now
+                            </a>
+                            <a href="../../index.html" style="
+                                background: transparent;
+                                color: #3498db;
+                                padding: 12px 24px;
+                                border-radius: 10px;
+                                text-decoration: none;
+                                font-weight: 600;
+                                border: 2px solid #3498db;
+                                transition: all 0.3s ease;
+                                display: inline-flex;
+                                align-items: center;
+                                gap: 8px;
+                            " onmouseover="this.style.background='#3498db'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='#3498db'">
+                                <i class='bx bx-home'></i> Go Home
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
         // Create background particles
         function createParticles() {
             const particlesContainer = document.getElementById('bgParticles');
             const particleCount = 20;
-            
+
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.classList.add('particle');
-                
+
                 // Random size
                 const size = Math.random() * 60 + 20;
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
-                
+
                 // Random position
                 particle.style.top = `${Math.random() * 100}%`;
                 particle.style.left = `${Math.random() * 100}%`;
-                
+
                 // Random animation delay
                 particle.style.animationDelay = `${Math.random() * 10}s`;
-                
+
                 // Random opacity
                 particle.style.opacity = Math.random() * 0.5 + 0.3;
-                
+
                 particlesContainer.appendChild(particle);
             }
         }
 
-        // Mock course data
-        const backendCourses = [
-            {
-                id: "cs101",
-                title: "Data Structures & Algorithms",
-                modules: 12,
-                link: "#",
-                subjects: [
-                    "Introduction to Data Structures",
-                    "Arrays and Linked Lists",
-                    "Stacks and Queues",
-                    "Trees and Binary Search Trees",
-                    "Graphs and Graph Algorithms",
-                    "Sorting and Searching Algorithms"
-                ]
-            },
-            {
-                id: "cs202",
-                title: "Database Management Systems",
-                modules: 10,
-                link: "#",
-                subjects: [
-                    "Database Fundamentals",
-                    "Relational Model and SQL",
-                    "Database Design and Normalization",
-                    "Transaction Management",
-                    "Indexing and Query Optimization",
-                    "NoSQL Databases"
-                ]
-            },
-            {
-                id: "cs305",
-                title: "Machine Learning Fundamentals",
-                modules: 15,
-                link: "#",
-                subjects: [
-                    "Introduction to Machine Learning",
-                    "Linear Regression",
-                    "Logistic Regression",
-                    "Decision Trees and Random Forests",
-                    "Support Vector Machines",
-                    "Neural Networks and Deep Learning"
-                ]
-            }
-        ];
-
         // Setup menu toggle
         const menuToggle = document.getElementById('menuToggle');
         const sidebar = document.getElementById('sidebar');
-        
+
         menuToggle.addEventListener('click', () => {
             sidebar.classList.toggle('active');
         });
-        
+
         document.addEventListener('click', (e) => {
-            if (sidebar.classList.contains('active') && 
-                !sidebar.contains(e.target) && 
+            if (sidebar.classList.contains('active') &&
+                !sidebar.contains(e.target) &&
                 !menuToggle.contains(e.target)) {
                 sidebar.classList.remove('active');
             }
         });
-        
-        // Check if profile is already completed
-        const profileCompleted = localStorage.getItem('profileCompleted');
-        
-        if (profileCompleted) {
-            document.getElementById('setupForm').style.display = 'none';
-            document.getElementById('profileSection').style.display = 'block';
-            document.getElementById('profileSection').classList.add('active');
-            
-            // Load saved data
-            const savedData = JSON.parse(localStorage.getItem('profileData'));
-            if (savedData) {
-                document.getElementById('userEmail').textContent = savedData.email;
-                document.getElementById('userPhone').textContent = savedData.phone;
-                document.getElementById('userProgram').textContent = savedData.program;
-                document.getElementById('userReg').textContent = `Registration: ${savedData.regNumber}`;
-                document.getElementById('userProgramText').textContent = savedData.program;
-                document.getElementById('userRegText').textContent = savedData.regNumber;
-                
-                document.getElementById('userFullName').textContent = savedData.fullName || 'Student';
-                document.getElementById('editableName').textContent = savedData.fullName || 'Student';
-                document.getElementById('userDOB').textContent = savedData.dob || 'Not specified';
-                document.getElementById('userSemester').textContent = savedData.semester || 'Not specified';
-                document.getElementById('userCGPA').textContent = savedData.cgpa || 'Not specified';
-                
-                document.getElementById('headerCGPA').textContent = savedData.cgpa || '0.00';
-                document.getElementById('headerSemester').textContent = savedData.semester ? savedData.semester.split(' ')[0] : '1';
-                
-                // Set avatar if available
-                if (savedData.avatar) {
-                    document.getElementById('avatarImage').src = savedData.avatar;
-                } else {
-                    const defaultAvatar = "https://ui-avatars.com/api/?name=" + 
-                        encodeURIComponent(savedData.fullName || "Student") + 
-                        "&background=3498db&color=fff&size=200";
-                    document.getElementById('avatarImage').src = defaultAvatar;
+
+        // Load user profile from backend
+        async function loadUserProfile() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return null;
+
+                const response = await fetch('http://localhost:4000/api/v1/profile/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.data || data;
                 }
-                
-                // Load schedule if available
-                if (savedData.schedule && savedData.schedule.length > 0) {
-                    savedData.schedule.forEach(item => {
-                        addScheduleToUI(item);
-                    });
-                }
+                return null;
+            } catch (error) {
+                console.error('Failed to load profile:', error);
+                return null;
             }
-            
-            // Load purchased courses
-            loadPurchasedCourses();
+        }
+
+        // Load purchased courses from backend
+        async function loadPurchasedCourses() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
+
+                // For now, we'll show a message that courses will be loaded from backend
+                const coursesContainer = document.getElementById('coursesContainer');
+                coursesContainer.innerHTML = `
+                    <div style="
+                        text-align: center;
+                        padding: 40px;
+                        color: #666;
+                        background: rgba(44, 62, 80, 0.5);
+                        border-radius: 12px;
+                        border: 1px solid rgba(52, 152, 219, 0.3);
+                    ">
+                        <i class='bx bx-book' style="font-size: 48px; color: #3498db; margin-bottom: 15px;"></i>
+                        <h3 style="color: #ecf0f1; margin-bottom: 10px;">Your Purchased Courses</h3>
+                        <p style="color: #ddd;">Courses will be loaded from your account data.</p>
+                        <p style="color: #aaa; font-size: 14px;">This feature will be fully implemented with backend integration.</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load courses:', error);
+            }
+        }
+
+        // Initialize profile page
+        async function initializeProfile() {
+            const profileData = await loadUserProfile();
+
+            if (profileData) {
+                // Profile exists in backend
+                document.getElementById('setupForm').style.display = 'none';
+                document.getElementById('profileSection').style.display = 'block';
+                document.getElementById('profileSection').classList.add('active');
+
+                // Populate profile data
+                document.getElementById('userEmail').textContent = profileData.email || 'Not specified';
+                document.getElementById('userPhone').textContent = profileData.phone || 'Not specified';
+                document.getElementById('userProgram').textContent = profileData.branch || 'Not specified';
+                document.getElementById('userReg').textContent = `Registration: ${profileData.registrationNumber || 'Not specified'}`;
+                document.getElementById('userProgramText').textContent = profileData.branch || 'Not specified';
+                document.getElementById('userRegText').textContent = profileData.registrationNumber || 'Not specified';
+
+                document.getElementById('userFullName').textContent = profileData.fullName || profileData.username || 'Student';
+                document.getElementById('editableName').textContent = profileData.fullName || profileData.username || 'Student';
+
+                // Set avatar
+                const avatarUrl = profileData.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.fullName || profileData.username || 'Student')}&background=3498db&color=fff&size=200`;
+                document.getElementById('avatarImage').src = avatarUrl;
+
+                // Load purchased courses
+                loadPurchasedCourses();
+            } else {
+                // Profile not completed, show setup form
+                document.getElementById('setupForm').style.display = 'block';
+                document.getElementById('profileSection').style.display = 'none';
+            }
         }
         
-        // Load purchased courses
+        // Load purchased courses (placeholder - will be implemented with backend)
         function loadPurchasedCourses() {
             const coursesContainer = document.getElementById('coursesContainer');
-            coursesContainer.innerHTML = '';
-            
-            backendCourses.forEach(course => {
-                const courseCard = document.createElement('div');
-                courseCard.className = 'purchased-course-card';
-                
-                let subjectsHTML = '';
-                course.subjects.forEach(subject => {
-                    subjectsHTML += `
-                        <div class="subject-item">
-                            <i class='bx bx-book'></i>
-                            <div class="subject-name">${subject}</div>
-                            <button class="access-btn">Access</button>
-                        </div>
-                    `;
-                });
-                
-                courseCard.innerHTML = `
-                    <div class="purchased-course-header">
-                        <h3 class="purchased-course-title">${course.title}</h3>
-                        <button class="expand-btn">
-                            <i class='bx bx-chevron-down'></i>
-                        </button>
-                    </div>
-                    <div class="purchased-course-info">
-                        <span>${course.modules} Modules</span>
-                    </div>
-                    
-                    <div class="course-subjects">
-                        ${subjectsHTML}
-                    </div>
-                    <a href="${course.link}" class="purchased-course-link">Access Full Course</a>
-                `;
-                coursesContainer.appendChild(courseCard);
-                
-                // Add expand functionality
-                const expandBtn = courseCard.querySelector('.expand-btn');
-                const subjectsSection = courseCard.querySelector('.course-subjects');
-                
-                expandBtn.addEventListener('click', () => {
-                    expandBtn.classList.toggle('expanded');
-                    subjectsSection.classList.toggle('expanded');
-                });
-            });
+            coursesContainer.innerHTML = `
+                <div style="
+                    text-align: center;
+                    padding: 40px;
+                    color: #666;
+                    background: rgba(44, 62, 80, 0.5);
+                    border-radius: 12px;
+                    border: 1px solid rgba(52, 152, 219, 0.3);
+                ">
+                    <i class='bx bx-book' style="font-size: 48px; color: #3498db; margin-bottom: 15px;"></i>
+                    <h3 style="color: #ecf0f1; margin-bottom: 10px;">Your Purchased Courses</h3>
+                    <p style="color: #ddd;">Courses will be loaded from your account data.</p>
+                    <p style="color: #aaa; font-size: 14px;">This feature will be fully implemented with backend integration.</p>
+                </div>
+            `;
         }
         
         // Refresh courses button
@@ -2520,9 +2572,17 @@
         }
 
         // Initialize page
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Check authentication first
+            if (!checkAuthentication()) {
+                return; // Stop initialization if not authenticated
+            }
+
             createParticles();
-            
+
+            // Initialize profile
+            await initializeProfile();
+
             // Initialize admin panel manager
             if (window.adminPanelManager) {
                 window.adminPanelManager.init();
