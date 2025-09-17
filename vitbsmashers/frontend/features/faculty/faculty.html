@@ -1119,7 +1119,7 @@
         </div>
         
         <div class="logo">
-            <a href="../../index.html" style="text-decoration: none; display: flex; align-items: center;">
+            <a href="/index.html" style="text-decoration: none; display: flex; align-items: center;">
                 <img src="../images/logo1.png" alt="Scholars Stack Logo">
                 <div class="logo-text">
                     <h1>Scholars Stack</h1>
@@ -1146,26 +1146,26 @@
        <nav class="sidebar" id="sidebar">
         <div class="sidebar-title">Main Navigation</div>
         <ul class="sidebar-menu">
-             <!-- <li><a href="#"><i class='bx bxs-dashboard'></i> Dashboard</a></li> -->
-             <li><a href="../profile/profile.html"><i class='bx bxs-user'></i> Profile</a></li>
-            <li><a href="../attendance/attendance.html"><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
-            <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
-            <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
-        </ul>
-        
-        <div class="sidebar-title">Resources</div>
-        <ul class="sidebar-menu">
-            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
-            <li><a href="#" ><i class='bx bxs-group'></i> Club Info</a></li>
-            <li><a href="../faculty/faculty.html" class="active"><i class='bx bxs-group'></i> Faculty Info</a></li>
-            <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
-        </ul>
-        
-        <div class="sidebar-title">Quick Links</div>
-        <ul class="sidebar-menu">
-            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
-            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
-        </ul>
+              <!-- <li><a href="#"><i class='bx bxs-dashboard'></i> Dashboard</a></li> -->
+              <li><a href="../profile/profile.html"><i class='bx bxs-user'></i> Profile</a></li>
+             <li><a href="../attendance/attendance.html"><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+             <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+             <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+         </ul>
+
+         <div class="sidebar-title">Resources</div>
+         <ul class="sidebar-menu">
+             <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+             <li><a href="#" ><i class='bx bxs-group'></i> Club Info</a></li>
+             <li><a href="../faculty/faculty.html" class="active"><i class='bx bxs-group'></i> Faculty Info</a></li>
+             <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+         </ul>
+
+         <div class="sidebar-title">Quick Links</div>
+         <ul class="sidebar-menu">
+             <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
+             <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+         </ul>
         
         <div class="sidebar-title">Account</div>
         <ul class="sidebar-menu">
@@ -1423,143 +1423,152 @@
             });
         });
 
-        // Sample faculty data
-        const faculty = [
-            {
-                id: 1,
-                name: "Dr. John Doe",
-                email: "john.doe@vitbhopal.ac.in",
-                cabin: "A101",
-                status: "approved"
-            },
-            {
-                id: 2,
-                name: "Prof. Jane Smith",
-                email: "jane.smith@vitbhopal.ac.in",
-                cabin: "B202",
-                status: "approved"
-            },
-            {
-                id: 3,
-                name: "Dr. Robert Johnson",
-                email: "robert.j@vitbhopal.ac.in",
-                cabin: "C303",
-                status: "approved"
-            },
-            {
-                id: 4,
-                name: "Prof. Sarah Williams",
-                email: "sarah.w@vitbhopal.ac.in",
-                cabin: "D404",
-                status: "approved"
-            },
-            {
-                id: 5,
-                name: "Dr. Michael Brown",
-                email: "michael.b@vitbhopal.ac.in",
-                cabin: "E505",
-                status: "approved"
-            },
-            {
-                id: 6,
-                name: "Prof. Emily Davis",
-                email: "emily.d@vitbhopal.ac.in",
-                cabin: "F606",
-                status: "approved"
-            }
-        ];
+        // Faculty data from API
+        let faculty = [];
 
-        // Pending faculty for admin approval
-        const pendingFaculty = [
-            {
-                id: 7,
-                name: "Dr. Alice Johnson",
-                email: "alice.johnson@vitbhopal.ac.in",
-                cabin: "C303",
-                status: "pending"
+        async function fetchFaculty() {
+            try {
+                const response = await fetch('http://localhost:4000/api/v1/faculty');
+                const data = await response.json();
+                if (response.ok) {
+                    faculty = data.data.faculty;
+                } else {
+                    console.error('Failed to fetch faculty:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching faculty:', error);
             }
-        ];
+        }
 
-        // Pending update requests
-        const pendingUpdates = [
-            {
-                id: 1,
-                facultyId: 2,
-                facultyName: "Prof. Jane Smith",
-                changes: {
-                    phone: {
-                        old: "0987654321",
-                        new: "1122334455"
-                    },
-                    cabin: {
-                        old: "B202",
-                        new: "D404"
+        // Pending faculty data from API
+        let pendingFaculty = [];
+        let pendingUpdates = [];
+
+        async function fetchPendingFaculty() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('http://localhost:4000/api/v1/faculty/pending-additions', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
                     }
-                },
-                status: "pending",
-                submittedBy: "Admin User",
-                submittedOn: "2023-11-15"
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    pendingFaculty = data.data.pendingAdditions;
+                } else {
+                    console.error('Failed to fetch pending faculty:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching pending faculty:', error);
             }
-        ];
+        }
+
+        async function fetchPendingUpdates() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch('http://localhost:4000/api/v1/faculty/pending-updates', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    pendingUpdates = data.data.pendingUpdates;
+                } else {
+                    console.error('Failed to fetch pending updates:', data.message);
+                }
+            } catch (error) {
+                console.error('Error fetching pending updates:', error);
+            }
+        }
 
         // Render approved faculty
-        function renderFaculty() {
+        async function renderFaculty() {
+            await fetchFaculty();
             const facultyGrid = document.getElementById('facultyGrid');
             facultyGrid.innerHTML = '';
-            
+
             faculty.forEach(f => {
-                if (f.status === 'approved') {
-                    const facultyCard = document.createElement('div');
-                    facultyCard.className = 'faculty-card';
-                    facultyCard.dataset.name = f.name.toLowerCase();
-                    
-                    facultyCard.innerHTML = `
-                        <div class="faculty-info">
-                            <div class="faculty-header">
-                                <div>
-                                    <h3 class="faculty-title">${f.name}</h3>
-                                </div>
-                            </div>
-                            
-                            <div class="faculty-meta">
-                                <div class="meta-item">
-                                    <i class='bx bxs-envelope'></i>
-                                    <span>${f.email}</span>
-                                </div>
-                                <div class="meta-item">
-                                    <i class='bx bxs-building'></i>
-                                    <span>${f.cabin}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="faculty-footer">
-                                <button class="contact-btn email-btn" data-email="${f.email}">
-                                    <i class='bx bxs-envelope'></i> Email
-                                </button>
-                                <button class="update-btn" data-id="${f.id}">
-                                    <i class='bx bxs-edit-alt'></i> Update
-                                </button>
+                const facultyCard = document.createElement('div');
+                facultyCard.className = 'faculty-card';
+                facultyCard.dataset.name = f.name.toLowerCase();
+
+                facultyCard.innerHTML = `
+                    <div class="faculty-info">
+                        <div class="faculty-header">
+                            <div>
+                                <h3 class="faculty-title">${f.name}</h3>
                             </div>
                         </div>
-                    `;
-                    facultyGrid.appendChild(facultyCard);
-                }
+
+                        <div class="faculty-meta">
+                            <div class="meta-item">
+                                <i class='bx bxs-envelope'></i>
+                                <span>${f.email}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class='bx bxs-building'></i>
+                                <span>${f.office || f.cabin}</span>
+                            </div>
+                        </div>
+
+                        <div class="faculty-footer">
+                            <button class="contact-btn email-btn" data-email="${f.email}">
+                                <i class='bx bxs-envelope'></i> Email
+                            </button>
+                            <button class="update-btn" data-id="${f._id || f.id}">
+                                <i class='bx bxs-edit-alt'></i> Update
+                            </button>
+                        </div>
+                    </div>
+                `;
+                facultyGrid.appendChild(facultyCard);
             });
             
             // Add event listeners to update buttons
             document.querySelectorAll('.update-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+                btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
-                    const facultyId = parseInt(btn.dataset.id);
-                    populateUpdateForm(facultyId);
-                    document.querySelector('[data-tab="update"]').click();
-                    // Smooth scroll to update form on mobile for better UX
-                    setTimeout(() => {
-                        const formEl = document.getElementById('facultyUpdateForm');
-                        if (formEl) {
-                            formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    // Check if user is logged in
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        // Show login required message
+                        showLoginRequiredMessage();
+                        return;
+                    }
+
+                    // Verify token is valid by making a test request
+                    try {
+                        const response = await fetch('/api/v1/auth/dashboard', {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            // Token is invalid, show login required message
+                            showLoginRequiredMessage();
+                            return;
                         }
-                    }, 50);
+
+                        // User is logged in, proceed with update
+                        const facultyId = parseInt(btn.dataset.id);
+                        populateUpdateForm(facultyId);
+                        document.querySelector('[data-tab="update"]').click();
+                        // Smooth scroll to update form on mobile for better UX
+                        setTimeout(() => {
+                            const formEl = document.getElementById('facultyUpdateForm');
+                            if (formEl) {
+                                formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                        }, 50);
+                    } catch (error) {
+                        console.error('Auth check failed:', error);
+                        showLoginRequiredMessage();
+                    }
                 });
             });
             // Email button
@@ -1577,139 +1586,231 @@
         }
 
         // Render pending faculty for admin
-        function renderPendingFaculty() {
+        async function renderPendingFaculty() {
+            await fetchPendingFaculty();
             const pendingFacultyContainer = document.getElementById('pendingFaculty');
             pendingFacultyContainer.innerHTML = '';
-            
+
             if (pendingFaculty.length === 0) {
                 pendingFacultyContainer.innerHTML = '<p>No pending faculty additions at this time.</p>';
                 return;
             }
-            
+
             pendingFaculty.forEach(f => {
-                if (f.status === 'pending') {
-                    const pendingFacultyCard = document.createElement('div');
-                    pendingFacultyCard.className = 'pending-faculty-card';
-                    
-                    pendingFacultyCard.innerHTML = `
-                        <div class="pending-faculty-details">
-                            <h3 class="pending-faculty-title">${f.name}</h3>
-                            <div class="pending-faculty-meta">
-                                <div class="status-indicator status-pending">
-                                    <i class='bx bxs-time'></i> Pending Approval
-                                </div>
-                            </div>
-                            <div class="meta-item">
-                                <i class='bx bxs-envelope'></i>
-                                <span>${f.email}</span>
-                            </div>
-                            
-                            <div class="meta-item">
-                                <i class='bx bxs-building'></i>
-                                <span>${f.cabin}</span>
-                            </div>
-                            <div class="pending-faculty-actions">
-                                <button class="action-btn approve-btn" data-id="${f.id}">
-                                    <i class='bx bx-check'></i> Approve
-                                </button>
-                                <button class="action-btn reject-btn" data-id="${f.id}">
-                                    <i class='bx bx-x'></i> Reject
-                                </button>
+                const pendingFacultyCard = document.createElement('div');
+                pendingFacultyCard.className = 'pending-faculty-card';
+
+                pendingFacultyCard.innerHTML = `
+                    <div class="pending-faculty-details">
+                        <h3 class="pending-faculty-title">${f.changes.name.new}</h3>
+                        <div class="pending-faculty-meta">
+                            <div class="status-indicator status-pending">
+                                <i class='bx bxs-time'></i> Pending Approval
                             </div>
                         </div>
-                    `;
-                    pendingFacultyContainer.appendChild(pendingFacultyCard);
-                }
+                        <div class="meta-item">
+                            <i class='bx bxs-envelope'></i>
+                            <span>${f.changes.email.new}</span>
+                        </div>
+
+                        <div class="meta-item">
+                            <i class='bx bxs-building'></i>
+                            <span>${f.changes.cabin.new}</span>
+                        </div>
+                        <div class="pending-faculty-actions">
+                            <button class="action-btn approve-btn" data-id="${f._id}">
+                                <i class='bx bx-check'></i> Approve
+                            </button>
+                            <button class="action-btn reject-btn" data-id="${f._id}">
+                                <i class='bx bx-x'></i> Reject
+                            </button>
+                        </div>
+                    </div>
+                `;
+                pendingFacultyContainer.appendChild(pendingFacultyCard);
             });
             
             // Add event listeners to action buttons
             document.querySelectorAll('.approve-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const facultyId = parseInt(btn.dataset.id);
-                    approveFaculty(facultyId);
+                btn.addEventListener('click', async () => {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        showLoginRequiredMessage();
+                        return;
+                    }
+                    const pendingUpdateId = btn.dataset.id;
+                    try {
+                        const response = await fetch('http://localhost:4000/api/v1/faculty/approve-addition', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ pendingUpdateId })
+                        });
+                        const data = await response.json();
+                        if (response.ok) {
+                            alert('Faculty addition approved');
+                            renderPendingFaculty();
+                            renderFaculty(); // Refresh faculty list
+                        } else {
+                            alert('Failed to approve: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Approve error:', error);
+                    }
                 });
             });
-            
+
             document.querySelectorAll('.reject-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const facultyId = parseInt(btn.dataset.id);
-                    rejectFaculty(facultyId);
+                btn.addEventListener('click', async () => {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        showLoginRequiredMessage();
+                        return;
+                    }
+                    const pendingUpdateId = btn.dataset.id;
+                    try {
+                        const response = await fetch('http://localhost:4000/api/v1/faculty/reject-addition', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ pendingUpdateId })
+                        });
+                        const data = await response.json();
+                        if (response.ok) {
+                            alert('Faculty addition rejected');
+                            renderPendingFaculty();
+                        } else {
+                            alert('Failed to reject: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Reject error:', error);
+                    }
                 });
             });
         }
         
         // Render pending updates for admin
-        function renderPendingUpdates() {
+        async function renderPendingUpdates() {
+            await fetchPendingUpdates();
             const pendingUpdatesContainer = document.getElementById('pendingUpdates');
             pendingUpdatesContainer.innerHTML = '';
-            
+
             if (pendingUpdates.length === 0) {
                 pendingUpdatesContainer.innerHTML = '<p>No pending faculty updates at this time.</p>';
                 return;
             }
-            
+
             pendingUpdates.forEach(update => {
-                if (update.status === 'pending') {
-                    const pendingUpdateCard = document.createElement('div');
-                    pendingUpdateCard.className = 'pending-update-card';
-                    
-                    pendingUpdateCard.innerHTML = `
-                        <div class="pending-update-details">
-                            <h3 class="pending-update-title">${update.facultyName} - Update Request</h3>
-                            <div class="pending-update-meta">
-                                <div class="status-indicator status-pending">
-                                    <i class='bx bxs-time'></i> Pending Approval
-                                </div>
-                                <div class="meta-item">
-                                    <i class='bx bxs-user'></i>
-                                    <span>Submitted by: ${update.submittedBy}</span>
-                                </div>
-                                <div class="meta-item">
-                                    <i class='bx bxs-calendar'></i>
-                                    <span>${update.submittedOn}</span>
-                                </div>
+                const pendingUpdateCard = document.createElement('div');
+                pendingUpdateCard.className = 'pending-update-card';
+
+                pendingUpdateCard.innerHTML = `
+                    <div class="pending-update-details">
+                        <h3 class="pending-update-title">${update.originalFacultyId.name || 'Faculty'} - Update Request</h3>
+                        <div class="pending-update-meta">
+                            <div class="status-indicator status-pending">
+                                <i class='bx bxs-time'></i> Pending Approval
                             </div>
-                            
-                            <div class="update-changes">
-                                <h4><i class='bx bx-revision'></i> Proposed Changes</h4>
-                                ${Object.entries(update.changes).map(([field, values]) => `
-                                    <div class="change-item">
-                                        <div class="change-field">${formatFieldName(field)}:</div>
-                                        <div class="change-old">${values.old || 'N/A'}</div>
-                                        <div class="change-new">${values.new || 'N/A'}</div>
-                                    </div>
-                                `).join('')}
+                            <div class="meta-item">
+                                <i class='bx bxs-user'></i>
+                                <span>Submitted by: ${update.submittedBy.username || 'User'}</span>
                             </div>
-                            
-                            <div class="pending-update-actions">
-                                <button class="action-btn view-btn" data-id="${update.id}">
-                                    <i class='bx bx-show'></i> View Faculty
-                                </button>
-                                <button class="action-btn approve-btn" data-id="${update.id}">
-                                    <i class='bx bx-check'></i> Approve
-                                </button>
-                                <button class="action-btn reject-btn" data-id="${update.id}">
-                                    <i class='bx bx-x'></i> Reject
-                                </button>
+                            <div class="meta-item">
+                                <i class='bx bxs-calendar'></i>
+                                <span>${new Date(update.submittedAt).toLocaleDateString()}</span>
                             </div>
                         </div>
-                    `;
-                    pendingUpdatesContainer.appendChild(pendingUpdateCard);
-                }
+
+                        <div class="update-changes">
+                            <h4><i class='bx bx-revision'></i> Proposed Changes</h4>
+                            ${Object.entries(update.changes).map(([field, values]) => `
+                                <div class="change-item">
+                                    <div class="change-field">${formatFieldName(field)}:</div>
+                                    <div class="change-old">${values.old || 'N/A'}</div>
+                                    <div class="change-new">${values.new || 'N/A'}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+
+                        <div class="pending-update-actions">
+                            <button class="action-btn view-btn" data-id="${update._id}">
+                                <i class='bx bx-show'></i> View Faculty
+                            </button>
+                            <button class="action-btn approve-btn" data-id="${update._id}">
+                                <i class='bx bx-check'></i> Approve
+                            </button>
+                            <button class="action-btn reject-btn" data-id="${update._id}">
+                                <i class='bx bx-x'></i> Reject
+                            </button>
+                        </div>
+                    </div>
+                `;
+                pendingUpdatesContainer.appendChild(pendingUpdateCard);
             });
             
             // Add event listeners to action buttons
             document.querySelectorAll('.pending-update .approve-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const updateId = parseInt(btn.dataset.id);
-                    approveUpdate(updateId);
+                btn.addEventListener('click', async () => {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        showLoginRequiredMessage();
+                        return;
+                    }
+                    const pendingUpdateId = btn.dataset.id;
+                    try {
+                        const response = await fetch('http://localhost:4000/api/v1/faculty/approve-update', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ pendingUpdateId })
+                        });
+                        const data = await response.json();
+                        if (response.ok) {
+                            alert('Faculty update approved');
+                            renderPendingUpdates();
+                            renderFaculty(); // Refresh faculty list
+                        } else {
+                            alert('Failed to approve: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Approve error:', error);
+                    }
                 });
             });
-            
+
             document.querySelectorAll('.pending-update .reject-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const updateId = parseInt(btn.dataset.id);
-                    rejectUpdate(updateId);
+                btn.addEventListener('click', async () => {
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        showLoginRequiredMessage();
+                        return;
+                    }
+                    const pendingUpdateId = btn.dataset.id;
+                    try {
+                        const response = await fetch('http://localhost:4000/api/v1/faculty/reject-update', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify({ pendingUpdateId })
+                        });
+                        const data = await response.json();
+                        if (response.ok) {
+                            alert('Faculty update rejected');
+                            renderPendingUpdates();
+                        } else {
+                            alert('Failed to reject: ' + data.message);
+                        }
+                    } catch (error) {
+                        console.error('Reject error:', error);
+                    }
                 });
             });
         }
@@ -1836,52 +1937,70 @@
         const facultyForm = document.getElementById('facultyRegistrationForm');
         const successMessage = document.getElementById('successMessage');
         
-        facultyForm.addEventListener('submit', function(e) {
+        facultyForm.addEventListener('submit', async function(e) {
             e.preventDefault();
+            
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showLoginRequiredMessage();
+                return;
+            }
             
             const facultyName = document.getElementById('facultyName').value;
             const facultyEmail = document.getElementById('facultyEmail').value;
-            const facultyPhone = '';
             const facultyCabin = document.getElementById('facultyCabin').value;
             
-            const newFaculty = {
-                id: Date.now(),
-                name: facultyName,
-                email: facultyEmail,
-                phone: undefined,
-                cabin: facultyCabin,
-                status: "pending"
-            };
-            
-            pendingFaculty.push(newFaculty);
-            
-            sendAdminNotification(newFaculty);
-            
-            successMessage.style.display = 'flex';
-            
-            facultyForm.reset();
-            
-            window.scrollTo(0, 0);
-            
-            setTimeout(() => {
-                document.querySelector('[data-tab="admin"]').click();
-                renderPendingFaculty();
-            }, 1000);
+            try {
+                const response = await fetch('http://localhost:4000/api/v1/faculty/submit-addition', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        name: facultyName,
+                        email: facultyEmail,
+                        cabin: facultyCabin
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (response.ok) {
+                    successMessage.style.display = 'flex';
+                    facultyForm.reset();
+                    window.scrollTo(0, 0);
+                    
+                    // Show success notification
+                    showNotification('Faculty addition submitted successfully!', 'success');
+                } else {
+                    if (response.status === 401) {
+                        showLoginRequiredMessage();
+                    } else if (response.status === 429) {
+                        showNotification('Rate limit exceeded. You can only make 5 updates per day.', 'warning');
+                    } else {
+                        showNotification(result.message || 'Failed to submit faculty addition', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Faculty addition error:', error);
+                showNotification('Failed to submit faculty addition', 'error');
+            }
         });
         
         // Populate faculty select for update form
-        function populateFacultySelect() {
+        async function populateFacultySelect() {
+            await fetchFaculty();
             const facultySelect = document.getElementById('selectFacultyToUpdate');
             facultySelect.innerHTML = '<option value="">Select your faculty</option>';
-            
+
             faculty.forEach(f => {
-                if (f.status === 'approved') {
-                    const option = document.createElement('option');
-                    option.value = f.id;
-                    option.textContent = f.name;
-                    option.dataset.name = f.name.toLowerCase();
-                    facultySelect.appendChild(option);
-                }
+                const option = document.createElement('option');
+                option.value = f._id || f.id;
+                option.textContent = f.name;
+                option.dataset.name = f.name.toLowerCase();
+                facultySelect.appendChild(option);
             });
         }
         
@@ -1921,56 +2040,59 @@
         const updateForm = document.getElementById('facultyUpdateForm');
         const updateSuccessMessage = document.getElementById('updateSuccessMessage');
         
-        updateForm.addEventListener('submit', function(e) {
+        updateForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
-            const facultyId = parseInt(document.getElementById('updateFacultyId').value);
-            const f = faculty.find(f => f.id === facultyId);
+            // Check if user is logged in
+            const token = localStorage.getItem('token');
+            if (!token) {
+                showLoginRequiredMessage();
+                return;
+            }
             
-            if (!f) return;
-            
+            const facultyId = document.getElementById('updateFacultyId').value;
             const updatedName = document.getElementById('updateFacultyName').value;
             const updatedEmail = document.getElementById('updateFacultyEmail').value;
-            const updatedPhone = '';
             const updatedCabin = document.getElementById('updateFacultyCabin').value;
             
-            const changes = {};
-            
-            if (f.name !== updatedName) changes.name = { old: f.name, new: updatedName };
-            if (f.email !== updatedEmail) changes.email = { old: f.email, new: updatedEmail };
-            // Phone removed from updates
-            if (f.cabin !== updatedCabin) changes.cabin = { old: f.cabin, new: updatedCabin };
-            
-            if (Object.keys(changes).length > 0) {
-                const updateRequest = {
-                    id: Date.now(),
-                    facultyId: facultyId,
-                    facultyName: f.name,
-                    changes: changes,
-                    status: "pending",
-                    submittedBy: "Admin User",
-                    submittedOn: new Date().toISOString().split('T')[0]
-                };
+            try {
+                const response = await fetch('http://localhost:4000/api/v1/faculty/submit-update', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        facultyId: facultyId,
+                        name: updatedName,
+                        email: updatedEmail,
+                        cabin: updatedCabin
+                    })
+                });
+
+                const result = await response.json();
                 
-                pendingUpdates.push(updateRequest);
-                
-                sendUpdateNotification(updateRequest);
-                
-                updateSuccessMessage.style.display = 'flex';
-                
-                updateForm.reset();
-                document.getElementById('facultyUpdateForm').style.display = 'none';
-                document.getElementById('selectFacultyToUpdate').value = '';
-                
-                window.scrollTo(0, 0);
-                
-                setTimeout(() => {
-                    document.querySelector('[data-tab="admin"]').click();
-                    document.querySelector('[data-admin-tab="pending-updates"]').click();
-                    renderPendingUpdates();
-                }, 1000);
-            } else {
-                alert("No changes detected. Please make changes before submitting an update request.");
+                if (response.ok) {
+                    updateSuccessMessage.style.display = 'flex';
+                    updateForm.reset();
+                    document.getElementById('facultyUpdateForm').style.display = 'none';
+                    document.getElementById('selectFacultyToUpdate').value = '';
+                    window.scrollTo(0, 0);
+                    
+                    // Show success notification
+                    showNotification('Faculty update submitted successfully!', 'success');
+                } else {
+                    if (response.status === 401) {
+                        showLoginRequiredMessage();
+                    } else if (response.status === 429) {
+                        showNotification('Rate limit exceeded. You can only make 5 updates per day.', 'warning');
+                    } else {
+                        showNotification(result.message || 'Failed to submit faculty update', 'error');
+                    }
+                }
+            } catch (error) {
+                console.error('Faculty update error:', error);
+                showNotification('Failed to submit faculty update', 'error');
             }
         });
 
@@ -2039,14 +2161,145 @@
             updateResults.textContent = `Found ${visibleCount} matching faculty members`;
         });
 
+        // Show login required message
+        function showLoginRequiredMessage() {
+            // Remove existing messages
+            const existingMessages = document.querySelectorAll('.login-required-message');
+            existingMessages.forEach(msg => msg.remove());
+
+            // Create login required message
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'login-required-message';
+            messageDiv.innerHTML = `
+                <div class="login-message-content">
+                    <div class="login-message-icon">
+                        <i class='bx bxs-lock'></i>
+                    </div>
+                    <h3>Login Required</h3>
+                    <p>You need to login first to update faculty information.</p>
+                    <div class="login-message-actions">
+                        <button onclick="window.location.href='../login1.html'" class="btn-login">
+                            <i class='bx bxs-log-in'></i> Login Now
+                        </button>
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" class="btn-close">
+                            <i class='bx bx-x'></i> Close
+                        </button>
+                    </div>
+                </div>
+            `;
+
+            // Add styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .login-required-message {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    backdrop-filter: blur(10px);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10000;
+                    animation: fadeIn 0.3s ease;
+                }
+
+                .login-message-content {
+                    background: var(--glass-bg, rgba(15, 26, 42, 0.95));
+                    backdrop-filter: blur(20px);
+                    border-radius: 20px;
+                    padding: 40px;
+                    text-align: center;
+                    max-width: 450px;
+                    width: 90%;
+                    border: 2px solid var(--accent-blue, #3498db);
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+                }
+
+                .login-message-icon {
+                    font-size: 60px;
+                    color: var(--accent-blue, #3498db);
+                    margin-bottom: 20px;
+                }
+
+                .login-message-content h3 {
+                    font-size: 28px;
+                    color: var(--light-color, #ecf0f1);
+                    margin-bottom: 15px;
+                    font-weight: 700;
+                }
+
+                .login-message-content p {
+                    color: #ddd;
+                    margin-bottom: 30px;
+                    line-height: 1.6;
+                    font-size: 16px;
+                }
+
+                .login-message-actions {
+                    display: flex;
+                    gap: 15px;
+                    justify-content: center;
+                    flex-wrap: wrap;
+                }
+
+                .login-message-actions button {
+                    padding: 12px 24px;
+                    border-radius: 10px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    font-size: 14px;
+                    border: none;
+                }
+
+                .btn-login {
+                    background: var(--accent-blue, #3498db);
+                    color: white;
+                }
+
+                .btn-login:hover {
+                    background: var(--primary-blue, #1e3a5f);
+                    transform: translateY(-2px);
+                }
+
+                .btn-close {
+                    background: transparent;
+                    color: var(--accent-blue, #3498db);
+                    border: 2px solid var(--accent-blue, #3498db);
+                }
+
+                .btn-close:hover {
+                    background: var(--accent-blue, #3498db);
+                    color: white;
+                    transform: translateY(-2px);
+                }
+
+                @keyframes fadeIn {
+                    from { opacity: 0; }
+                    to { opacity: 1; }
+                }
+            `;
+
+            document.head.appendChild(style);
+            document.body.appendChild(messageDiv);
+        }
+
         // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             createParticles();
-            renderFaculty();
-            renderPendingFaculty();
-            renderPendingUpdates();
-            populateFacultySelect();
-            
+            await renderFaculty();
+            await renderPendingFaculty();
+            await renderPendingUpdates();
+            await populateFacultySelect();
+
+            // Hide admin and update tabs if not logged in
+
             // Initialize result counters
             browseResults.textContent = `Showing ${faculty.length} faculty members`;
             updateResults.textContent = `Found ${faculty.length} faculty members`;

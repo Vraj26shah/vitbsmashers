@@ -50,6 +50,23 @@ const orderSchema = new mongoose.Schema({
   stripeSessionId: {
     type: String,
   },
+  // Gateway-specific order IDs
+  razorpayOrderId: {
+    type: String,
+  },
+  phonepeOrderId: {
+    type: String,
+  },
+  mockOrderId: {
+    type: String,
+  },
+  // Payment verification details
+  razorpayPaymentId: {
+    type: String,
+  },
+  mockPaymentId: {
+    type: String,
+  },
   // For single course orders
   modules: [{
     title: String,

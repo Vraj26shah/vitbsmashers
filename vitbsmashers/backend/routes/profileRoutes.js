@@ -14,6 +14,7 @@ const router = express.Router();
 router.use(protect);
 
 // Profile routes
+router.get('/me', getProfile); // Get current user's profile
 router.get('/:userId', getProfile);
 router.put('/update', updateProfile);
 router.post('/upload-avatar', uploadAvatar);

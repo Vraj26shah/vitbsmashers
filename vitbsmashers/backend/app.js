@@ -6,22 +6,26 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+// import authRouter from './routes/authRoutes.js';
 import authRouter from './routes/authRoutes.js';
-import attendanceRouter from './routes/attendanceRoutes.js';
-import gpaRouter from './routes/gpaRoutes.js';
-import timetableRouter from './routes/timetableRoutes.js';
-import courseRouter from './routes/courseRoutes.js';
-import messRouter from './routes/messRoutes.js';
-import mapRouter from './routes/mapRoutes.js';
+// import attendanceRouter from './routes/attendanceRoutes.js';
+// import gpaRouter from './routes/gpaRoutes.js';
+// import timetableRouter from './routes/timetableRoutes.js';
+// import courseRouter from './routes/courseRoutes.js';
+// import messRouter from './routes/messRoutes.js';
+// import mapRouter from './routes/mapRoutes.js';
 import facultyRouter from './routes/facultyRoutes.js';
-import clubRouter from './routes/clubRoutes.js';
+// import clubRouter from './routes/clubRoutes.js';
+// import profileRouter from './routes/profileRoutes.js';
 import profileRouter from './routes/profileRoutes.js';
-import marketplaceRouter from './routes/marketplaceRoutes.js';
+// import marketplaceRouter from './routes/marketplaceRoutes.js';
+// import paymentRouter from './routes/paymentRoutes.js';
 import paymentRouter from './routes/paymentRoutes.js';
 import eventRouter from './routes/eventRoutes.js';
-import adminRouter from './routes/adminRoutes.js';
+// import adminRouter from './routes/adminRoutes.js';
 import { errorHandler, notFound } from './middleware/authMiddleware.js';
 import connect from './db/db.js';
+import fs from 'fs';
 
 const app = express();
 connect();
@@ -34,20 +38,24 @@ app.use(cookieParser());
 app.use(cors({ origin: true, credentials: true }));
 
 // API Routes
+// app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/auth', authRouter);
-app.use('/api/v1/attendance', attendanceRouter);
-app.use('/api/v1/gpa', gpaRouter);
-app.use('/api/v1/timetable', timetableRouter);
-app.use('/api/v1/courses', courseRouter);//you want to focus no course section only
-app.use('/api/v1/mess', messRouter);
-app.use('/api/v1/map', mapRouter);
+// app.use('/api/v1/attendance', attendanceRouter);
+// app.use('/api/v1/gpa', gpaRouter);
+// app.use('/api/v1/timetable', timetableRouter);
+// app.use('/api/v1/courses', courseRouter);//you want to focus no course section only
+// app.use('/api/v1/mess', messRouter);
+// app.use('/api/v1/map', mapRouter);
 app.use('/api/v1/faculty', facultyRouter);
-app.use('/api/v1/clubs', clubRouter);
+// app.use('/api/v1/clubs', clubRouter);
 app.use('/api/v1/profile', profileRouter);
-app.use('/api/v1/marketplace', marketplaceRouter);
+// app.use('/api/v1/marketplace', marketplaceRouter);
 app.use('/api/v1/payment', paymentRouter);
 app.use('/api/v1/events', eventRouter);
-app.use('/api/v1/admin', adminRouter);
+// app.use('/api/v1/admin', adminRouter);
+
+// Frontend compatibility routes (frontend calls different paths)
+app.use('/api/payments', paymentRouter); // Frontend calls /api/payments/create-checkout-session
 
 
 
@@ -62,15 +70,59 @@ const frontendDir = path.resolve(__dirname, '../frontend');
 
 
 
-// Map legacy /profile.html to new location BEFORE static middleware
-app.get('/profile.html', (req, res) => {
-  res.sendFile(path.join(frontendDir, 'features/profile/profile.html'));
+// Map frontend feature pages to their correct locations BEFORE static middleware
+app.get('/features/profile/profile.html', (req, res) => {
+  res.sendFile(path.resolve(frontendDir, 'features/profile/profile.html'));
+});
+
+app.get('/features/attendance/attendance.html', (req, res) => {
+  res.sendFile(path.resolve(frontendDir, 'features/attendance/attendance.html'));
+});
+
+app.get('/features/gpa-calculator/cgpa.html', (req, res) => {
+  res.sendFile(path.resolve(frontendDir, 'features/gpa-calculator/cgpa.html'));
+});
+
+app.get('/features/ttmaker/ttmaker1.html', (req, res) => {
+  res.sendFile(path.resolve(frontendDir, 'features/ttmaker/ttmaker1.html'));
+});
+
+app.get('/features/marketplace/market.html', (req, res) => {
+  res.sendFile(path.resolve(frontendDir, 'features/marketplace/market.html'));
+});
+
+app.get('/features/faculty/faculty.html', (req, res) => {
+  res.sendFile(path.resolve(frontendDir, 'features/faculty/faculty.html'));
+});
+
+app.get('/features/mess-menu/mess.html', (req, res) => {
+  res.sendFile(path.resolve(frontendDir, 'features/mess-menu/mess.html'));
+});
+
+app.get('/features/event/event.html', (req, res) => {
+  res.sendFile(path.resolve(frontendDir, 'features/event/event.html'));
+});
+
+app.get('/features/mycourses/mycourses.html', (req, res) => {
+  res.sendFile(path.resolve(frontendDir, 'features/mycourses/mycourses.html'));
+});
+
+app.get('/features/club/club.html', (req, res) => {
+  res.sendFile(path.resolve(frontendDir, 'features/club/club.html'));
 });
 
 
 // Serve frontend statically so pages are available at http://localhost:PORT
-app.use(express.static(frontendDir));
+app.use('/features', express.static(path.join(frontendDir, 'features')));
 
+
+// Serve login page
+app.get('/login1.html', (req, res) => {
+  res.sendFile(path.resolve(frontendDir, 'login1.html'));
+});
+
+// Serve frontend files
+app.use(express.static(frontendDir));
 
 //mainPage route by ai
 app.get('/', (req, res) => {

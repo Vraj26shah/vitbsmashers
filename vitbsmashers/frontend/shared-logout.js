@@ -1,0 +1,108 @@
+// Shared logout functionality for all pages
+async function handleLogout() {
+    try {
+        const token = localStorage.getItem('token');
+        if (token) {
+            // Call logout API endpoint
+            const response = await fetch('http://localhost:4000/api/v1/auth/logout', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+
+            // If unauthorized, redirect to login
+            if (response.status === 401) {
+                showNotification('Please log in to continue', 'warning');
+                setTimeout(() => {
+                    window.location.href = '/login1.html';
+                }, 1000);
+                return;
+            }
+        } else {
+            // No token found, redirect to login
+            showNotification('Please log in to continue', 'warning');
+            setTimeout(() => {
+                window.location.href = '/login1.html';
+            }, 1000);
+            return;
+        }
+    } catch (error) {
+        console.error('Logout API error:', error);
+        // Continue with logout even if API call fails
+    }
+
+    // Clear all user data from localStorage
+    localStorage.removeItem('token');
+    localStorage.removeItem('cart');
+    localStorage.removeItem('userProfile');
+
+    // Show logout message
+    showNotification('Logged out successfully', 'success');
+
+    // Redirect to main page after a short delay
+    setTimeout(() => {
+        window.location.href = '/';
+    }, 1000);
+}
+
+// Show notification
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#2ecc71' : type === 'warning' ? '#f39c12' : '#3498db'};
+        color: white;
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        z-index: 10000;
+        font-weight: 500;
+        max-width: 400px;
+        animation: slideIn 0.3s ease;
+    `;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 4000);
+}
+
+// Add CSS for notification animations
+const style = document.createElement('style');
+style.textContent = `
+    @keyframes slideIn {
+        from { transform: translateX(100%); opacity: 0; }
+        to { transform: translateX(0); opacity: 1; }
+    }
+    @keyframes slideOut {
+        from { transform: translateX(0); opacity: 1; }
+        to { transform: translateX(100%); opacity: 0; }
+    }
+`;
+document.head.appendChild(style);
+
+// Initialize logout functionality when DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to all logout links
+    document.querySelectorAll('.logout-link').forEach(link => {
+        link.addEventListener('click', function(e) {
+            e.preventDefault();
+            handleLogout();
+        });
+    });
+
+    // Also handle sidebar menu clicks for logout
+    document.querySelectorAll('.sidebar-menu a').forEach(link => {
+        if (link.classList.contains('logout-link') || link.textContent.includes('Logout')) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                handleLogout();
+            });
+        }
+    });
+});

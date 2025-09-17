@@ -47,6 +47,45 @@ const userSchema = new mongoose.Schema({
   passwordChangedAt: {
     type: Date
   },
+  // Rate limiting for updates
+  updateCount: {
+    type: Number,
+    default: 0
+  },
+  lastUpdateDate: {
+    type: Date,
+    default: Date.now
+  },
+  // Profile completion fields for purchases
+  profileCompleted: {
+    type: Boolean,
+    default: false
+  },
+  phone: {
+    type: String,
+    required: false
+  },
+  fullName: {
+    type: String,
+    required: false
+  },
+  registrationNumber: {
+    type: String,
+    required: false
+  },
+  branch: {
+    type: String,
+    required: false
+  },
+  year: {
+    type: String,
+    required: false
+  },
+  // Purchased courses for marketplace
+  purchasedCourses: [{
+    type: String, // Course IDs
+    default: []
+  }],
   createdAt: {
     type: Date,
     default: Date.now
@@ -86,6 +125,49 @@ userSchema.methods.changedPasswordAfter = function(JWTTimestamp) {
     return JWTTimestamp < changedTimestamp;
   }
   return false;
+};
+
+// Method to check and increment update count (rate limiting)
+userSchema.methods.canUpdateToday = function() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const lastUpdate = new Date(this.lastUpdateDate);
+  lastUpdate.setHours(0, 0, 0, 0);
+
+  // Reset count if it's a new day
+  if (today > lastUpdate) {
+    this.updateCount = 0;
+    this.lastUpdateDate = new Date();
+    return true;
+  }
+
+  // Check if under limit (5 updates per day)
+  return this.updateCount < 5;
+};
+
+userSchema.methods.incrementUpdateCount = function() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const lastUpdate = new Date(this.lastUpdateDate);
+  lastUpdate.setHours(0, 0, 0, 0);
+
+  // Reset count if it's a new day
+  if (today > lastUpdate) {
+    this.updateCount = 1;
+  } else {
+    this.updateCount += 1;
+  }
+
+  this.lastUpdateDate = new Date();
+};
+
+// Method to check if profile is complete for purchases
+userSchema.methods.isProfileComplete = function() {
+  return !!(this.phone &&
+            this.registrationNumber &&
+            this.branch);
 };
 
 // Add compound indexes for better query performance

@@ -1,12 +1,146 @@
-import Stripe from 'stripe';
+// Payment Gateway Factory
+import crypto from 'crypto';
 import Order from '../models/orderModel.js';
 import User from '../models/user.model.js'; // For updating purchased courses
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
+// Mock Payment Gateway for Free Testing
+class MockPaymentGateway {
+  async createOrder(amount, currency = 'INR', receipt, notes) {
+    const orderId = `mock_order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    const mockOrder = {
+      id: orderId,
+      amount: amount,
+      currency: currency,
+      receipt: receipt,
+      status: 'created',
+      notes: notes,
+      created_at: Date.now()
+    };
+
+    return mockOrder;
+  }
+
+  async verifyPayment(orderId, paymentId, signature) {
+    // Mock verification - always return true for testing
+    return true;
+  }
+}
+
+// Razorpay Payment Gateway
+class RazorpayPaymentGateway {
+  constructor() {
+    // Dynamic import to avoid errors when not using Razorpay
+    this.Razorpay = null;
+    this.stripe = null;
+  }
+
+  async initialize() {
+    if (!this.Razorpay) {
+      const { default: Razorpay } = await import('razorpay');
+      this.Razorpay = Razorpay;
+      this.razorpay = new this.Razorpay({
+        key_id: process.env.RAZORPAY_KEY_ID,
+        key_secret: process.env.RAZORPAY_KEY_SECRET,
+      });
+    }
+  }
+
+  async createOrder(amount, currency = 'INR', receipt, notes) {
+    await this.initialize();
+    return await this.razorpay.orders.create({
+      amount: amount,
+      currency: currency,
+      receipt: receipt,
+      notes: notes
+    });
+  }
+
+  async verifyPayment(orderId, paymentId, signature) {
+    const sign = orderId + '|' + paymentId;
+    const expectedSign = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(sign.toString())
+      .digest('hex');
+
+    return expectedSign === signature;
+  }
+}
+
+// PhonePe Payment Gateway
+class PhonePePaymentGateway {
+  constructor() {
+    this.merchantId = process.env.PHONEPE_MERCHANT_ID;
+    this.saltKey = process.env.PHONEPE_SALT_KEY;
+    this.saltIndex = process.env.PHONEPE_SALT_INDEX || 1;
+  }
+
+  async createOrder(amount, currency = 'INR', receipt, notes) {
+    const orderId = `phonepe_order_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+    // PhonePe order creation payload
+    const payload = {
+      merchantId: this.merchantId,
+      merchantTransactionId: orderId,
+      merchantUserId: notes.orderId || 'user_' + Date.now(),
+      amount: amount,
+      redirectUrl: `${process.env.FRONTEND_URL}/payment/success`,
+      redirectMode: 'REDIRECT',
+      callbackUrl: `${process.env.FRONTEND_URL}/api/payments/phonepe/callback`,
+      mobileNumber: notes.phone || '',
+      paymentInstrument: {
+        type: 'PAY_PAGE'
+      }
+    };
+
+    // Create base64 encoded payload
+    const base64Payload = Buffer.from(JSON.stringify(payload)).toString('base64');
+
+    // Create checksum
+    const checksumString = base64Payload + '/pg/v1/pay' + this.saltKey;
+    const checksum = crypto.createHash('sha256').update(checksumString).digest('hex') + '###' + this.saltIndex;
+
+    // PhonePe API call would go here in production
+    // For now, return mock response
+    return {
+      id: orderId,
+      amount: amount,
+      currency: currency,
+      status: 'created',
+      paymentUrl: `https://api.phonepe.com/apis/hermes/pg/v1/pay?checksum=${checksum}`,
+      checksum: checksum,
+      payload: base64Payload
+    };
+  }
+
+  async verifyPayment(orderId, paymentId, signature) {
+    // PhonePe verification logic would go here
+    // For now, return true for testing
+    return true;
+  }
+}
+
+// Payment Gateway Factory
+class PaymentGatewayFactory {
+  constructor() {
+    this.gateways = {
+      mock: new MockPaymentGateway(),
+      razorpay: new RazorpayPaymentGateway(),
+      phonepe: new PhonePePaymentGateway()
+    };
+  }
+
+  getGateway() {
+    const gatewayType = process.env.PAYMENT_GATEWAY || 'mock';
+    return this.gateways[gatewayType];
+  }
+}
+
+const gatewayFactory = new PaymentGatewayFactory();
 
 class PaymentService {
-  async createSingleCourseSession(userId, courseId, subject, amount) {
+  async createSingleCourseOrder(userId, courseId, subject, amount) {
     try {
+      // Create order record first
       const order = await Order.create({
         user: userId,
         courseId: courseId,
@@ -15,107 +149,190 @@ class PaymentService {
         status: 'pending',
       });
 
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: [{
-          price_data: {
-            currency: 'inr',
-            product_data: {
-              name: subject ? `${courseId} - ${subject}` : courseId,
-            },
-            unit_amount: amount, // Amount is already in cents
-          },
-          quantity: 1,
-        }],
-        mode: 'payment',
-        success_url: `${process.env.FRONTEND_URL}/features/marketplace/market.html?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.FRONTEND_URL}/features/marketplace/market.html?payment=cancelled`,
-        client_reference_id: order._id.toString(),
-      });
+      // Get the configured payment gateway
+      const gateway = gatewayFactory.getGateway();
+      const gatewayType = process.env.PAYMENT_GATEWAY || 'mock';
 
-      order.stripeSessionId = session.id;
+      // Create payment order using the selected gateway
+      const paymentOrder = await gateway.createOrder(
+        amount, // Amount in paisa (₹1 = 100 paisa)
+        'INR',
+        `order_${order._id}`,
+        {
+          courseId: courseId,
+          subject: subject || courseId,
+          orderId: order._id.toString(),
+          type: 'single_course'
+        }
+      );
+
+      // Update order with gateway-specific order ID
+      if (gatewayType === 'mock') {
+        order.mockOrderId = paymentOrder.id;
+      } else if (gatewayType === 'razorpay') {
+        order.razorpayOrderId = paymentOrder.id;
+      } else if (gatewayType === 'phonepe') {
+        order.phonepeOrderId = paymentOrder.id;
+      }
       await order.save();
 
-      return session;
+      return {
+        orderId: paymentOrder.id,
+        amount: paymentOrder.amount,
+        currency: paymentOrder.currency,
+        key: gatewayType === 'razorpay' ? process.env.RAZORPAY_KEY_ID : 'mock_payment_key',
+        order_id: order._id.toString(),
+        gateway: gatewayType,
+        paymentUrl: paymentOrder.paymentUrl || null // For PhonePe redirect
+      };
     } catch (err) {
-      throw new Error(`Failed to create single course session: ${err.message}`);
+      throw new Error(`Failed to create single course order: ${err.message}`);
     }
   }
 
-  async createCheckoutSession(userId, items) {
+  async createCartOrder(userId, items) {
     try {
-      // Create a single order for the entire cart
+      // Calculate total amount
       const totalAmount = items.reduce((sum, item) => sum + item.amount, 0);
+
+      // Create order record
       const order = await Order.create({
         user: userId,
         items: items.map(item => ({
           courseId: item.courseId,
-          title: item.subject || item.title, // Use subject if provided, otherwise title
+          title: item.subject || item.title,
           amount: item.amount,
-          modules: item.modules || [], // Include modules if provided
+          modules: item.modules || [],
         })),
         amount: totalAmount,
         status: 'pending',
       });
 
-      const lineItems = items.map(item => ({
-        price_data: {
-          currency: 'inr', // Changed to INR to match ₹ symbol
-          product_data: {
-            name: item.subject ? `${item.courseId} - ${item.subject}` : item.title,
-          },
-          unit_amount: item.amount, // Amount is already in cents
-        },
-        quantity: 1,
-      }));
+      // Get the configured payment gateway
+      const gateway = gatewayFactory.getGateway();
+      const gatewayType = process.env.PAYMENT_GATEWAY || 'mock';
 
-      const session = await stripe.checkout.sessions.create({
-        payment_method_types: ['card'],
-        line_items: lineItems,
-        mode: 'payment',
-        success_url: `${process.env.FRONTEND_URL}/features/marketplace/market.html?payment=success&session_id={CHECKOUT_SESSION_ID}`,
-        cancel_url: `${process.env.FRONTEND_URL}/features/marketplace/market.html?payment=cancelled`,
-        client_reference_id: order._id.toString(),
-      });
+      // Create payment order using the selected gateway
+      const paymentOrder = await gateway.createOrder(
+        totalAmount, // Amount in paisa
+        'INR',
+        `cart_order_${order._id}`,
+        {
+          orderType: 'cart',
+          itemCount: items.length,
+          orderId: order._id.toString(),
+          type: 'cart'
+        }
+      );
 
-      order.stripeSessionId = session.id;
+      // Update order with gateway-specific order ID
+      if (gatewayType === 'mock') {
+        order.mockOrderId = paymentOrder.id;
+      } else if (gatewayType === 'razorpay') {
+        order.razorpayOrderId = paymentOrder.id;
+      } else if (gatewayType === 'phonepe') {
+        order.phonepeOrderId = paymentOrder.id;
+      }
       await order.save();
 
-      return session;
+      return {
+        orderId: paymentOrder.id,
+        amount: paymentOrder.amount,
+        currency: paymentOrder.currency,
+        key: gatewayType === 'razorpay' ? process.env.RAZORPAY_KEY_ID : 'mock_payment_key',
+        order_id: order._id.toString(),
+        gateway: gatewayType,
+        paymentUrl: paymentOrder.paymentUrl || null // For PhonePe redirect
+      };
     } catch (err) {
-      throw new Error(`Failed to create checkout session: ${err.message}`);
+      throw new Error(`Failed to create cart order: ${err.message}`);
     }
   }
 
   async handleWebhook(event) {
-    if (event.type === 'checkout.session.completed') {
-      const session = event.data.object;
-      const order = await Order.findById(session.client_reference_id);
-      if (order) {
+    try {
+      // Mock webhook - simulate payment completion
+      if (event.type === 'mock_payment_success') {
+        const orderId = event.orderId;
+
+        // Find order by mock order ID
+        const order = await Order.findOne({ mockOrderId: orderId });
+        if (order && order.status !== 'completed') {
+          order.status = 'completed';
+          order.mockPaymentId = `mock_payment_${Date.now()}`;
+          await order.save();
+
+          // Grant access to all purchased courses in the order
+          const user = await User.findById(order.user);
+          if (user) {
+            let courseIds = [];
+
+            // Handle both single course and cart-based orders
+            if (order.items && order.items.length > 0) {
+              // Cart-based order
+              courseIds = order.items.map(item => item.courseId);
+            } else if (order.courseId) {
+              // Single course order
+              courseIds = [order.courseId];
+            }
+
+            const newCourses = courseIds.filter(courseId => !user.purchasedCourses.includes(courseId));
+            if (newCourses.length > 0) {
+              user.purchasedCourses.push(...newCourses);
+              await user.save();
+            }
+          }
+        }
+      }
+    } catch (error) {
+      console.error('Webhook processing error:', error);
+      throw error;
+    }
+  }
+
+  // Method to verify payment using configured gateway
+  async verifyPayment(orderId, paymentId, signature) {
+    try {
+      const gateway = gatewayFactory.getGateway();
+      return await gateway.verifyPayment(orderId, paymentId, signature);
+    } catch (error) {
+      console.error('Payment verification error:', error);
+      return false;
+    }
+  }
+
+  // Method to simulate payment completion for testing
+  async simulatePaymentSuccess(orderId) {
+    try {
+      const order = await Order.findById(orderId);
+      if (order && order.status !== 'completed') {
         order.status = 'completed';
+        order.mockPaymentId = `mock_payment_${Date.now()}`;
         await order.save();
 
-        // Grant access to all purchased courses in the order
+        // Grant course access
         const user = await User.findById(order.user);
         if (user) {
           let courseIds = [];
-          
-          // Handle both single course and cart-based orders
           if (order.items && order.items.length > 0) {
-            // Cart-based order
             courseIds = order.items.map(item => item.courseId);
           } else if (order.courseId) {
-            // Single course order
             courseIds = [order.courseId];
           }
-          
+
           const newCourses = courseIds.filter(courseId => !user.purchasedCourses.includes(courseId));
           if (newCourses.length > 0) {
             user.purchasedCourses.push(...newCourses);
             await user.save();
           }
         }
+
+        return { success: true, message: 'Payment completed successfully' };
       }
+      return { success: false, message: 'Order not found or already completed' };
+    } catch (error) {
+      console.error('Payment simulation error:', error);
+      return { success: false, message: 'Payment simulation failed' };
     }
   }
 }

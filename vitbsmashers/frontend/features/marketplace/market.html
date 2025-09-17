@@ -7,6 +7,406 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="../../shared-admin-auth.js"></script>
+    <script src="../../shared-logout.js"></script>
+    <!-- Razorpay SDK (loaded conditionally) -->
+    <script>
+        // Load Razorpay SDK only when needed
+        function loadRazorpaySDK() {
+            return new Promise((resolve, reject) => {
+                if (window.Razorpay) {
+                    resolve();
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                script.onload = resolve;
+                script.onerror = reject;
+                document.head.appendChild(script);
+            });
+        }
+    </script>
+    <!-- Dynamic Payment Gateway Script -->
+    <script>
+        // Payment Gateway Factory
+        class PaymentGatewayFactory {
+            constructor() {
+                this.gateways = {};
+                this.currentGateway = null;
+            }
+
+            // Initialize the appropriate gateway based on backend response
+            async initializeGateway(gatewayType, orderData) {
+                if (gatewayType === 'mock') {
+                    this.currentGateway = new MockPaymentGateway();
+                } else if (gatewayType === 'razorpay') {
+                    this.currentGateway = new RazorpayPaymentGateway();
+                } else if (gatewayType === 'phonepe') {
+                    this.currentGateway = new PhonePePaymentGateway();
+                }
+                return this.currentGateway;
+            }
+
+            async processPayment(orderData, description) {
+                if (!this.currentGateway) {
+                    throw new Error('Payment gateway not initialized');
+                }
+                return await this.currentGateway.processPayment(orderData, description);
+            }
+        }
+
+        // Mock Payment Gateway Class
+        class MockPaymentGateway {
+            constructor() {
+                this.modal = null;
+                this.currentOrder = null;
+                this.createModal();
+            }
+
+            createModal() {
+                // Create modal HTML
+                const modalHTML = `
+                    <div id="mockPaymentModal" class="mock-payment-modal" style="display: none;">
+                        <div class="mock-modal-content">
+                            <div class="mock-modal-header">
+                                <h3>Mock Payment Gateway</h3>
+                                <span class="mock-close">&times;</span>
+                            </div>
+                            <div class="mock-modal-body">
+                                <div class="payment-details">
+                                    <h4>Payment Details</h4>
+                                    <p><strong>Order ID:</strong> <span id="mockOrderId"></span></p>
+                                    <p><strong>Amount:</strong> ₹<span id="mockAmount"></span></p>
+                                    <p><strong>Description:</strong> <span id="mockDescription"></span></p>
+                                </div>
+                                <div class="payment-form">
+                                    <h4>Enter Payment Details (Mock)</h4>
+                                    <div class="form-group">
+                                        <label>Card Number:</label>
+                                        <input type="text" id="mockCardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                                    </div>
+                                    <div class="form-row">
+                                        <div class="form-group">
+                                            <label>Expiry:</label>
+                                            <input type="text" id="mockExpiry" placeholder="MM/YY" maxlength="5">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>CVV:</label>
+                                            <input type="text" id="mockCvv" placeholder="123" maxlength="3">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Card Holder Name:</label>
+                                        <input type="text" id="mockCardHolder" placeholder="John Doe">
+                                    </div>
+                                </div>
+                                <div class="payment-actions">
+                                    <button id="mockPaySuccess" class="mock-btn success">Pay Successfully</button>
+                                    <button id="mockPayFailure" class="mock-btn failure">Simulate Failure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Add modal styles
+                const modalStyles = `
+                    <style>
+                        .mock-payment-modal {
+                            position: fixed;
+                            top: 0;
+                            left: 0;
+                            width: 100%;
+                            height: 100%;
+                            background: rgba(0, 0, 0, 0.8);
+                            z-index: 10000;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
+
+                        .mock-modal-content {
+                            background: var(--glass-bg);
+                            backdrop-filter: blur(10px);
+                            border-radius: 16px;
+                            width: 90%;
+                            max-width: 500px;
+                            max-height: 90vh;
+                            overflow-y: auto;
+                            border: 2px solid var(--accent-blue);
+                            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+                        }
+
+                        .mock-modal-header {
+                            display: flex;
+                            justify-content: space-between;
+                            align-items: center;
+                            padding: 20px;
+                            border-bottom: 2px solid var(--accent-blue);
+                        }
+
+                        .mock-modal-header h3 {
+                            color: var(--light-color);
+                            margin: 0;
+                            font-size: 24px;
+                        }
+
+                        .mock-close {
+                            font-size: 28px;
+                            color: var(--light-color);
+                            cursor: pointer;
+                            transition: color 0.3s ease;
+                        }
+
+                        .mock-close:hover {
+                            color: var(--danger-color);
+                        }
+
+                        .mock-modal-body {
+                            padding: 20px;
+                        }
+
+                        .payment-details {
+                            background: rgba(52, 152, 219, 0.1);
+                            padding: 15px;
+                            border-radius: 8px;
+                            margin-bottom: 20px;
+                            border: 1px solid var(--accent-blue);
+                        }
+
+                        .payment-details h4 {
+                            color: var(--accent-blue);
+                            margin: 0 0 10px 0;
+                        }
+
+                        .payment-details p {
+                            margin: 5px 0;
+                            color: var(--light-color);
+                        }
+
+                        .payment-form h4 {
+                            color: var(--light-color);
+                            margin-bottom: 15px;
+                        }
+
+                        .form-group {
+                            margin-bottom: 15px;
+                        }
+
+                        .form-row {
+                            display: flex;
+                            gap: 10px;
+                        }
+
+                        .form-row .form-group {
+                            flex: 1;
+                        }
+
+                        .form-group label {
+                            display: block;
+                            color: var(--light-color);
+                            margin-bottom: 5px;
+                            font-weight: 500;
+                        }
+
+                        .form-group input {
+                            width: 100%;
+                            padding: 10px;
+                            background: rgba(26, 37, 47, 0.9);
+                            border: 2px solid var(--accent-blue);
+                            border-radius: 6px;
+                            color: var(--light-color);
+                            font-size: 14px;
+                        }
+
+                        .form-group input:focus {
+                            outline: none;
+                            border-color: var(--accent-teal);
+                            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.3);
+                        }
+
+                        .payment-actions {
+                            display: flex;
+                            gap: 15px;
+                            margin-top: 25px;
+                        }
+
+                        .mock-btn {
+                            flex: 1;
+                            padding: 12px 20px;
+                            border: none;
+                            border-radius: 8px;
+                            font-weight: 600;
+                            font-size: 16px;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                        }
+
+                        .mock-btn.success {
+                            background: var(--success-color);
+                            color: white;
+                        }
+
+                        .mock-btn.success:hover {
+                            background: #27ae60;
+                            transform: translateY(-2px);
+                        }
+
+                        .mock-btn.failure {
+                            background: var(--danger-color);
+                            color: white;
+                        }
+
+                        .mock-btn.failure:hover {
+                            background: #c0392b;
+                            transform: translateY(-2px);
+                        }
+                    </style>
+                `;
+
+                // Add to DOM
+                document.head.insertAdjacentHTML('beforeend', modalStyles);
+                document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+                this.modal = document.getElementById('mockPaymentModal');
+                this.setupEventListeners();
+            }
+
+            setupEventListeners() {
+                // Close modal
+                this.modal.querySelector('.mock-close').addEventListener('click', () => {
+                    this.close();
+                });
+
+                this.modal.addEventListener('click', (e) => {
+                    if (e.target === this.modal) {
+                        this.close();
+                    }
+                });
+
+                // Payment buttons
+                document.getElementById('mockPaySuccess').addEventListener('click', () => {
+                    this.processPayment(true);
+                });
+
+                document.getElementById('mockPayFailure').addEventListener('click', () => {
+                    this.processPayment(false);
+                });
+            }
+
+            open(orderData, description) {
+                this.currentOrder = orderData;
+                document.getElementById('mockOrderId').textContent = orderData.orderId;
+                document.getElementById('mockAmount').textContent = (orderData.amount / 100).toFixed(2);
+                document.getElementById('mockDescription').textContent = description;
+                this.modal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            }
+
+            close() {
+                this.modal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+                this.currentOrder = null;
+            }
+
+            async processPayment(success) {
+                if (!this.currentOrder) return;
+
+                try {
+                    if (success) {
+                        // Simulate successful payment
+                        const response = await fetch('http://localhost:4000/api/v1/payment/verify', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem('token')}`
+                            },
+                            body: JSON.stringify({
+                                order_id: this.currentOrder.order_id,
+                                payment_id: `mock_payment_${Date.now()}`,
+                                signature: 'mock_signature'
+                            })
+                        });
+
+                        const result = await response.json();
+                        if (result.success) {
+                            showNotification('Payment successful! Courses unlocked.', 'success');
+                            setTimeout(() => {
+                                window.location.href = 'payment.html?payment=success&order_id=' + orderId;
+                            }, 2000);
+                        } else {
+                            showNotification('Payment verification failed', 'danger');
+                        }
+                    } else {
+                        // Simulate failed payment
+                        showNotification('Payment failed. Please try again.', 'danger');
+                    }
+                } catch (error) {
+                    console.error('Mock payment error:', error);
+                    showNotification('Payment processing failed', 'danger');
+                }
+
+                this.close();
+            }
+        }
+
+        // Razorpay Payment Gateway Class
+        class RazorpayPaymentGateway {
+            async processPayment(orderData, description) {
+                // Load Razorpay SDK if not already loaded
+                await loadRazorpaySDK();
+
+                return new Promise((resolve, reject) => {
+                    const options = {
+                        key: orderData.key,
+                        amount: orderData.amount,
+                        currency: orderData.currency,
+                        order_id: orderData.orderId,
+                        name: 'Scholars Stack',
+                        description: description,
+                        image: '/features/images/logo1.png',
+                        handler: function (response) {
+                            // Payment successful
+                            verifyPayment(response, orderData.order_id).then(resolve).catch(reject);
+                        },
+                        prefill: {
+                            name: userProfile.fullName || userProfile.name || '',
+                            email: userProfile.email || '',
+                            contact: userProfile.phone || ''
+                        },
+                        theme: {
+                            color: '#2ecc71'
+                        },
+                        modal: {
+                            ondismiss: function() {
+                                showNotification('Payment cancelled', 'warning');
+                                resolve({ success: false, cancelled: true });
+                            }
+                        }
+                    };
+
+                    const rzp = new Razorpay(options);
+                    rzp.open();
+                });
+            }
+        }
+
+        // PhonePe Payment Gateway Class
+        class PhonePePaymentGateway {
+            async processPayment(orderData, description) {
+                // For PhonePe, redirect to payment URL
+                if (orderData.paymentUrl) {
+                    window.location.href = orderData.paymentUrl;
+                    return { success: true, redirect: true };
+                } else {
+                    throw new Error('PhonePe payment URL not available');
+                }
+            }
+        }
+
+        // Initialize payment gateway factory
+        const paymentGatewayFactory = new PaymentGatewayFactory();
+    </script>
     <style>
         /* === GLOBAL STYLES === */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -1006,6 +1406,56 @@
             flex-wrap: wrap;
         }
 
+        /* Enhanced Enroll Now Button */
+        .enroll-now {
+            background: linear-gradient(135deg, var(--success-color), #27ae60) !important;
+            color: white !important;
+            border: none !important;
+            padding: 14px 28px !important;
+            border-radius: 12px !important;
+            font-weight: 700 !important;
+            font-size: 16px !important;
+            cursor: pointer !important;
+            transition: all 0.3s ease !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 10px !important;
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4) !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            position: relative !important;
+            overflow: hidden !important;
+        }
+
+        .enroll-now::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .enroll-now:hover::before {
+            left: 100%;
+        }
+
+        .enroll-now:hover {
+            background: linear-gradient(135deg, #27ae60, var(--success-color)) !important;
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.6) !important;
+        }
+
+        .enroll-now:active {
+            transform: translateY(-1px) !important;
+        }
+
+        .enroll-now i {
+            font-size: 18px !important;
+        }
+
         /* Responsive Design */
         @media (max-width: 1200px) {
             .main-content {
@@ -1448,8 +1898,8 @@
         </div>
         
         <div class="logo">
-            <a href="../../index.html" style="text-decoration: none; display: flex; align-items: center;">
-                <img src="../../features/images/logo1.png" alt="Scholars Stack Logo">
+            <a href="/" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="/features/images/logo1.png" alt="Scholars Stack Logo">
                 <div class="logo-text">
                     <h1>Scholars Stack</h1>
                     <span>Premium Academic Resources</span>
@@ -1498,7 +1948,7 @@
         <div class="sidebar-title">Account</div>
         <ul class="sidebar-menu">
             <!-- <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li> -->
-            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+            <li><a href="#" class="logout-link"><i class='bx bxs-log-out'></i> Logout</a></li>
         </ul>
     </nav>
     
@@ -1937,8 +2387,8 @@
                     <button class="add-to-cart" id="modalAddToCart">
                         <i class='bx bx-cart'></i> Add to Cart
                     </button>
-                    <button class="enroll-now" id="enrollNow" style="background: var(--premium-color);">
-                        <i class='bx bxs-lock-open'></i> Enroll Now
+                    <button class="enroll-now" id="enrollNow">
+                        <i class='bx bxs-graduation'></i> Enroll Now - Secure Payment
                     </button>
                 </div>
             </div>
@@ -1994,12 +2444,8 @@
             }
         }
 
-        // Mock user profile for simulation
-        // const userProfile = {
-        //     name: 'Student',
-        //     email: 'student@example.com',
-        //     phone: '' // Empty to simulate incomplete profile
-        // };
+        // Initialize user profile
+        let userProfile = { name: '', email: '', phone: '', fullName: '', registrationNumber: '', branch: '', year: '' };
 
         function isProfileComplete() {
             return userProfile.name && userProfile.email && userProfile.phone;
@@ -2151,7 +2597,7 @@
         };
 
         // Cart functionality
-        let cart = [];
+        let cart = JSON.parse(localStorage.getItem('cart')) || [];
         let selectedCourse = null;
         let activeFilter = "all";
 
@@ -2188,6 +2634,9 @@
                 cartItems.innerHTML = '<p>Your cart is empty</p>';
             }
 
+            // Save cart to localStorage
+            localStorage.setItem('cart', JSON.stringify(cart));
+
             // Add remove item listeners
             document.querySelectorAll('.remove-item').forEach(button => {
                 button.addEventListener('click', () => {
@@ -2216,7 +2665,12 @@
 
         // Sidebar link active state and close on mobile after navigation
         document.querySelectorAll('.sidebar-menu a').forEach(link => {
-            link.addEventListener('click', () => {
+            link.addEventListener('click', (e) => {
+                // Skip logout links - handled by shared-logout.js
+                if (link.classList.contains('logout-link')) {
+                    return;
+                }
+
                 document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
                 if (window.matchMedia('(max-width: 768px)').matches) {
@@ -2242,7 +2696,9 @@
         // Open modal
         courseCards.forEach(card => {
             card.addEventListener('click', (e) => {
-                if (e.target.classList.contains('add-to-cart')) return;
+                // Prevent modal opening if clicking on add to cart button
+                if (e.target.closest('.add-to-cart')) return;
+
                 const courseId = card.dataset.course;
                 selectedCourse = courses[courseId];
                 if (selectedCourse) {
@@ -2252,7 +2708,7 @@
                         <div class="course-overview">
                             <div class="course-image-large" style="background-image: url('${selectedCourse.image}')"></div>
                             <div class="course-details">
-                                
+
                                 <p class="detailed-description">${selectedCourse.description}</p>
                                 <div class="course-stats">
                                     <div class="stat-card">
@@ -2285,7 +2741,7 @@
                                 `).join('')}
                             </div>
                         </div>
-                        
+
                     `;
                     courseModal.classList.add('active');
                     document.body.style.overflow = 'hidden';
@@ -2310,21 +2766,30 @@
         const addToCartButtons = document.querySelectorAll('.course-card .add-to-cart');
         addToCartButtons.forEach(button => {
             button.addEventListener('click', (e) => {
+                e.preventDefault();
                 e.stopPropagation();
+
                 const id = button.dataset.id;
                 const title = button.dataset.title;
                 const price = parseInt(button.dataset.price);
                 const image = button.dataset.image;
+
+                console.log('Add to cart clicked:', { id, title, price, image });
+
                 const existingItem = cart.find(item => item.id === id);
                 if (existingItem) {
                     existingItem.quantity += 1;
                 } else {
                     cart.push({ id, title, price, image, quantity: 1 });
                 }
+
                 updateCart();
                 button.innerHTML = '<i class="bx bx-check"></i> Added!';
+                button.style.background = 'var(--success-color)';
+
                 setTimeout(() => {
                     button.innerHTML = '<i class="bx bx-cart"></i> Add to Cart';
+                    button.style.background = '';
                 }, 2000);
             });
         });
@@ -2334,31 +2799,25 @@
             if (selectedCourse) {
                 const id = selectedCourse.id;
                 const title = selectedCourse.title;
-                const price = parseInt(selectedCourse.price.replace('₹', ''));
+                const price = parseInt(selectedCourse.price.replace('₹', '').replace(',', ''));
                 const image = selectedCourse.image;
+
+                console.log('Modal add to cart clicked:', { id, title, price, image });
+
                 const existingItem = cart.find(item => item.id === id);
                 if (existingItem) {
                     existingItem.quantity += 1;
                 } else {
                     cart.push({ id, title, price, image, quantity: 1 });
                 }
+
                 updateCart();
+                showNotification('Course added to cart!', 'success');
                 courseModal.classList.remove('active');
                 document.body.style.overflow = 'auto';
             }
         });
 
-        // Enroll now with profile check
-        enrollNowButton.addEventListener('click', () => {
-            if (isProfileComplete()) {
-                alert('Proceeding to payment for ' + selectedCourse.title);
-                // window.location.href = 'payment.html'; // Uncomment when payment.html is ready
-            } else {
-                window.location.href = 'profile.html';
-            }
-            courseModal.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        });
 
         // Cart toggle
         cartIcon.addEventListener('click', () => {
@@ -2369,20 +2828,13 @@
             cartPreview.classList.remove('active');
         });
 
-        // Checkout with profile check
-        checkoutButton.addEventListener('click', () => {
-            if (cart.length === 0) {
-                alert('Your cart is empty');
-                return;
+        // Close cart when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!cartIcon.contains(e.target) && !cartPreview.contains(e.target)) {
+                cartPreview.classList.remove('active');
             }
-            if (isProfileComplete()) {
-                alert('Proceeding to payment for cart items');
-                // window.location.href = 'payment.html'; // Uncomment when payment.html is ready
-            } else {
-                window.location.href = 'profile.html';
-            }
-            cartPreview.classList.remove('active');
         });
+
 
         // Filter functionality
         const filterButtons = document.querySelectorAll('.filter-btn');
@@ -2423,72 +2875,221 @@
                 card.style.display = (matchesFilter && matchesSearch) ? 'block' : 'none';
             });
         }
-// Enroll now with profile check
+// Dynamic payment handler
+async function initializePayment(orderData, courseTitle) {
+  try {
+    // Initialize the appropriate gateway based on backend response
+    const gateway = await paymentGatewayFactory.initializeGateway(orderData.gateway, orderData);
+
+    // Handle PhonePe redirect
+    if (orderData.gateway === 'phonepe' && orderData.paymentUrl) {
+      window.location.href = orderData.paymentUrl;
+      return;
+    }
+
+    // Process payment with the selected gateway
+    await gateway.processPayment(orderData, courseTitle);
+  } catch (error) {
+    console.error('Payment initialization error:', error);
+    showNotification('Payment initialization failed', 'danger');
+  }
+}
+
+// Verify payment with backend
+async function verifyPayment(razorpayResponse, orderId) {
+  try {
+    const response = await fetch('http://localhost:4000/api/v1/payment/verify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({
+        order_id: orderId,
+        payment_id: razorpayResponse.razorpay_payment_id,
+        signature: razorpayResponse.razorpay_signature
+      })
+    });
+
+    const result = await response.json();
+    if (result.success) {
+      showNotification('Payment successful! Access granted to your course.', 'success');
+      // Redirect to success page or refresh
+      setTimeout(() => {
+        window.location.href = '/features/marketplace/payment.html?payment=success&order_id=' + orderId;
+      }, 2000);
+    } else {
+      showNotification('Payment verification failed', 'danger');
+    }
+  } catch (error) {
+    console.error('Verification error:', error);
+    showNotification('Payment verification failed', 'danger');
+  }
+}
+
+// Enroll now - let backend handle all validation
 enrollNowButton.addEventListener('click', async () => {
   if (selectedCourse) {
-    if (isProfileComplete()) {
-      try {
-        const response = await fetch('http://localhost:4000/api/payments/create-checkout-session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token')}` // Ensure token exists
-          },
-          body: JSON.stringify({ 
-            courseId: selectedCourse.id,
-            amount: parseInt(selectedCourse.price.replace('₹', '')) * 100 // Convert to cents
-          }),
-        });
-        const data = await response.json();
-        if (data.sessionUrl) {
-          window.location.href = data.sessionUrl;
-        } else {
-          alert('Payment initiation failed: ' + (data.error || 'Unknown error'));
-        }
-      } catch (err) {
-        alert('Payment initiation failed: ' + err.message);
-      }
-    } else {
-      window.location.href = 'profile.html';
-    }
-    courseModal.classList.remove('active');
-    document.body.style.overflow = 'auto';
-  }
-});
+    console.log('Enroll now clicked for course:', selectedCourse.title);
 
-// Checkout with profile check
-checkoutButton.addEventListener('click', async () => {
-  if (cart.length === 0) {
-    alert('Your cart is empty');
-    return;
-  }
-  if (isProfileComplete()) {
+    if (!isAuthenticated()) {
+      console.log('User not authenticated, redirecting to login');
+      return;
+    }
+
     try {
-      const items = cart.map(item => ({
-        courseId: item.id,
-        subject: item.title,
-        amount: item.price * 100 // Convert to cents
-      }));
-      const response = await fetch('http://localhost:4000/api/payments/create-checkout-session', {
+      const amount = parseInt(selectedCourse.price.replace('₹', '').replace(',', '')) * 100;
+      console.log('Creating checkout session with amount:', amount);
+
+      const response = await fetch('http://localhost:4000/api/v1/payment/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ items }),
+        body: JSON.stringify({
+          courseId: selectedCourse.id,
+          subject: selectedCourse.title,
+          amount: amount
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Payment error response:', errorData);
+
+        if (response.status === 401) {
+          // Not authenticated - redirect to login
+          showNotification('Please log in to proceed with payment.', 'warning');
+          setTimeout(() => {
+            window.location.href = '/login1.html';
+          }, 1000);
+          return;
+        } else if (response.status === 403) {
+          if (errorData.error === 'profile_incomplete') {
+            // Profile incomplete - redirect to profile page
+            showNotification('Please complete your profile before purchasing courses.', 'warning');
+            setTimeout(() => {
+              window.location.href = '/features/profile/profile.html';
+            }, 1000);
+            return;
+          } else if (errorData.error === 'not_verified') {
+            // Email not verified
+            showNotification('Please verify your email before making purchases.', 'warning');
+            setTimeout(() => {
+              window.location.href = '/verify-email';
+            }, 1000);
+            return;
+          } else {
+            // Other 403 errors
+            showNotification(errorData.message || 'Access denied.', 'danger');
+            return;
+          }
+        }
+
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-      if (data.sessionUrl) {
-        window.location.href = data.sessionUrl;
+      console.log('Payment data received:', data);
+
+      if (data.orderId) {
+        initializePayment(data, selectedCourse.title);
       } else {
-        alert('Checkout failed: ' + (data.error || 'Unknown error'));
+        showNotification('Payment initiation failed: ' + (data.error || 'Unknown error'), 'danger');
       }
     } catch (err) {
-      alert('Checkout failed: ' + err.message);
+      console.error('Payment error:', err);
+      showNotification('Payment initiation failed: ' + err.message, 'danger');
     }
-  } else {
-    window.location.href = 'profile.html';
+
+    courseModal.classList.remove('active');
+    document.body.style.overflow = 'auto';
   }
+});
+
+// Checkout - let backend handle all validation
+checkoutButton.addEventListener('click', async () => {
+  console.log('Checkout button clicked');
+
+  if (cart.length === 0) {
+    showNotification('Your cart is empty', 'warning');
+    return;
+  }
+
+  if (!isAuthenticated()) {
+    console.log('User not authenticated for checkout');
+    return;
+  }
+
+  try {
+    const items = cart.map(item => ({
+      courseId: item.id,
+      subject: item.title,
+      amount: item.price * 100 // Convert to paisa
+    }));
+
+    console.log('Checkout items:', items);
+
+    const response = await fetch('http://localhost:4000/api/v1/payment/create-checkout-session', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ items }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Checkout error response:', errorData);
+
+      if (response.status === 401) {
+        // Not authenticated - redirect to login
+        showNotification('Please log in to proceed with payment.', 'warning');
+        setTimeout(() => {
+          window.location.href = '/login1.html';
+        }, 1000);
+        return;
+      } else if (response.status === 403) {
+        if (errorData.error === 'profile_incomplete') {
+          // Profile incomplete - redirect to profile page
+          showNotification('Please complete your profile before purchasing courses.', 'warning');
+          setTimeout(() => {
+            window.location.href = '/features/profile/profile.html';
+          }, 1000);
+          return;
+        } else if (errorData.error === 'not_verified') {
+          // Email not verified
+          showNotification('Please verify your email before making purchases.', 'warning');
+          setTimeout(() => {
+            window.location.href = '/verify-email';
+          }, 1000);
+          return;
+        } else {
+          // Other 403 errors
+          showNotification(errorData.message || 'Access denied.', 'danger');
+          return;
+        }
+      }
+
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('Checkout data received:', data);
+
+    if (data.orderId) {
+      const courseTitles = cart.map(item => item.title).join(', ');
+      initializePayment(data, `Cart Purchase: ${courseTitles}`);
+    } else {
+      showNotification('Checkout failed: ' + (data.error || 'Unknown error'), 'danger');
+    }
+  } catch (err) {
+    console.error('Checkout error:', err);
+    showNotification('Checkout failed: ' + err.message, 'danger');
+  }
+
   cartPreview.classList.remove('active');
 });
 const accessBtns = document.querySelectorAll('.access-btn');
@@ -2498,7 +3099,7 @@ accessBtns.forEach(btn => {
     const courseId = btn.closest('.course-card').dataset.course;
     
     try {
-      const response = await fetch('/api/payments/create-checkout-session', {
+      const response = await fetch('/api/v1/payment/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2517,73 +3118,74 @@ function isAuthenticated() {
   const token = localStorage.getItem('token');
   if (!token) {
     alert('Please log in to proceed with payment.');
-    window.location.href = 'login.html'; // Adjust to your login page
+    window.location.href = '/login1.html'; // Correct path to login page
     return false;
   }
   return true;
 }
 
-// Update enrollNowButton and checkoutButton to include this check
-enrollNowButton.addEventListener('click', async () => {
-  if (selectedCourse) {
-    if (!isAuthenticated()) return;
-    if (isProfileComplete()) {
-      // ... (rest of the existing code)
-    } else {
-      window.location.href = 'profile.html';
-    }
-    courseModal.classList.remove('active');
-    document.body.style.overflow = 'auto';
-  }
-});
 
-checkoutButton.addEventListener('click', async () => {
-  if (cart.length === 0) {
-    alert('Your cart is empty');
-    return;
-  }
-  if (!isAuthenticated()) return;
-  if (isProfileComplete()) {
-    // ... (rest of the existing code)
-  } else {
-    window.location.href = 'profile.html';
-  }
-  cartPreview.classList.remove('active');
-});
 async function fetchUserProfile() {
   try {
-    const response = await fetch('http://localhost:4000/api/auth/profile', { // Adjust endpoint
+    const token = localStorage.getItem('token');
+    if (!token) return null;
+
+    const response = await fetch('http://localhost:4000/api/v1/profile/me', {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`
+        'Authorization': `Bearer ${token}`
       }
     });
-    const data = await response.json();
-    return data;
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.data || data;
+    }
+    return null;
   } catch (err) {
     console.error('Failed to fetch profile:', err);
     return null;
   }
 }
 
-let userProfile = await fetchUserProfile() || { name: '', email: '', phone: '' };
+let isUserProfileComplete = false;
+
+// Load user profile on page load
+async function loadUserProfile() {
+  const profileData = await fetchUserProfile();
+  if (profileData) {
+      const profile = profileData.user;
+      userProfile = {
+        name: profile.username || profile.name || '',
+        email: profile.email || '',
+        phone: profile.phone || '',
+        fullName: profile.fullName || '',
+        registrationNumber: profile.registrationNumber || '',
+        branch: profile.branch || '',
+        year: profile.year || ''
+      };
+      // Use the backend's profile completion status from the response
+      isUserProfileComplete = profileData.profileComplete || false;
+  }
+}
 
 function isProfileComplete() {
-  return userProfile.name && userProfile.email && userProfile.phone;
+  return isUserProfileComplete;
 }
         // Handle payment success/failure from URL parameters
         function handlePaymentStatus() {
             const urlParams = new URLSearchParams(window.location.search);
             const paymentStatus = urlParams.get('payment');
-            
+
             if (paymentStatus === 'success') {
                 // Clear cart on successful payment
                 cart = [];
+                localStorage.removeItem('cart'); // Clear from localStorage too
                 updateCart();
-                
+
                 // Show success message
                 showNotification('Payment successful! You now have access to your courses.', 'success');
-                
+
                 // Clean URL
                 window.history.replaceState({}, document.title, window.location.pathname);
             } else if (paymentStatus === 'cancelled') {
@@ -2592,7 +3194,7 @@ function isProfileComplete() {
             }
         }
 
-        // Show notification
+        // Show notification function (moved to top for availability)
         function showNotification(message, type = 'info') {
             const notification = document.createElement('div');
             notification.style.cssText = `
@@ -2611,7 +3213,7 @@ function isProfileComplete() {
             `;
             notification.textContent = message;
             document.body.appendChild(notification);
-            
+
             setTimeout(() => {
                 notification.style.animation = 'slideOut 0.3s ease';
                 setTimeout(() => notification.remove(), 300);
@@ -2619,8 +3221,8 @@ function isProfileComplete() {
         }
 
         // Add CSS for notification animations
-        const style = document.createElement('style');
-        style.textContent = `
+        const notificationStyle = document.createElement('style');
+        notificationStyle.textContent = `
             @keyframes slideIn {
                 from { transform: translateX(100%); opacity: 0; }
                 to { transform: translateX(0); opacity: 1; }
@@ -2630,11 +3232,12 @@ function isProfileComplete() {
                 to { transform: translateX(100%); opacity: 0; }
             }
         `;
-        document.head.appendChild(style);
+        document.head.appendChild(notificationStyle);
 
         // Initialize
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             createParticles();
+            await loadUserProfile(); // Load user profile first
             updateCart();
             handlePaymentStatus();
         });

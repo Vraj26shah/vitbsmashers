@@ -3,6 +3,35 @@
  * Restricts admin panel access to authorized email: vitbsmashers@gmail.com
  */
 
+// Add CSS to hide admin elements by default
+if (document.head) {
+  const style = document.createElement('style');
+  document.head.appendChild(style);
+  style.textContent = `
+    #adminTab, [data-tab="admin"], #admin-tab, .admin-panel, .admin-panel-demo {
+      display: none !important;
+    }
+    [data-tab="register"], [data-tab="update"] {
+      display: none !important;
+    }
+    .admin-only {
+      display: flex !important;
+    }
+    .admin-only#admin-tab {
+      display: block !important;
+    }
+    .admin-only.admin-panel {
+      display: block !important;
+    }
+    .admin-only.admin-panel-demo {
+      display: block !important;
+    }
+    .logged-in [data-tab="register"], .logged-in [data-tab="update"] {
+      display: flex !important;
+    }
+  `;
+}
+
 class AdminAuth {
     constructor() {
         this.adminEmail = 'vitbsmashers@gmail.com';
@@ -15,13 +44,18 @@ class AdminAuth {
         try {
             // Check if user is logged in and get their email
             await this.checkUserAuth();
-            
+
             // Check if current user is admin
             this.isAdmin = this.checkAdminStatus();
-            
+
+            // Add logged-in class if user is authenticated
+            if (this.userEmail) {
+                document.body.classList.add('logged-in');
+            }
+
             // Apply admin restrictions
             this.applyAdminRestrictions();
-            
+
         } catch (error) {
             console.error('Admin auth initialization error:', error);
             this.isAdmin = false;
@@ -54,8 +88,8 @@ class AdminAuth {
                 return;
             }
 
-            // Fallback to profile endpoint
-            const response = await fetch('http://localhost:4000/api/auth/profile', {
+            // Fallback to profile endpoint (backend mounts at /api/v1/auth)
+            const response = await fetch('/api/v1/auth/profile', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -65,7 +99,7 @@ class AdminAuth {
 
             if (response.ok) {
                 const userData = await response.json();
-                this.userEmail = userData.email;
+                this.userEmail = userData?.user?.email || userData.email || null;
             } else {
                 this.userEmail = null;
             }
@@ -93,13 +127,14 @@ class AdminAuth {
     }
 
     hideAdminElements() {
-        // Common admin elements to hide
+        // Common admin elements to show/hide
         const adminElements = [
             '#adminTab',
             '.admin-tab',
             '[data-tab="admin"]',
             '#admin-tab',
             '.admin-panel',
+            '.admin-panel-demo',
             '.admin-section'
         ];
 
@@ -107,31 +142,37 @@ class AdminAuth {
             const elements = document.querySelectorAll(selector);
             elements.forEach(element => {
                 if (element) {
-                    element.style.display = this.isAdmin ? 'block' : 'none';
-                    
-                    // Add visual indicator for admin elements
                     if (this.isAdmin) {
+                        // Add admin-only class to show for admin users
                         element.classList.add('admin-only');
+                    } else {
+                        // Remove admin-only class for non-admin users (CSS hides by default)
+                        element.classList.remove('admin-only');
                     }
                 }
             });
         });
 
-        // Hide admin buttons in tab navigation
+        // Handle admin buttons
         const adminButtons = document.querySelectorAll('button[data-tab="admin"], #adminTab');
         adminButtons.forEach(button => {
             if (button) {
-                button.style.display = this.isAdmin ? 'flex' : 'none';
+                if (this.isAdmin) {
+                    button.classList.add('admin-only');
+                } else {
+                    button.classList.remove('admin-only');
+                }
             }
         });
     }
 
     showAccessDeniedMessage() {
-        // Remove existing access denied messages
-        const existingMessages = document.querySelectorAll('.admin-access-denied');
-        existingMessages.forEach(msg => msg.remove());
-
-        if (!this.isAdmin) {
+        // Only show overlay on dedicated admin pages (URLs containing 'admin')
+        if (!this.isAdmin && window.location.pathname.includes('/admin')) {
+            // Remove existing access denied messages
+            const existingMessages = document.querySelectorAll('.admin-access-denied');
+            existingMessages.forEach(msg => msg.remove());
+    
             // Create access denied message
             const accessDeniedDiv = document.createElement('div');
             accessDeniedDiv.className = 'admin-access-denied';
@@ -153,7 +194,7 @@ class AdminAuth {
                     </div>
                 </div>
             `;
-
+    
             // Add styles
             const style = document.createElement('style');
             style.textContent = `
@@ -331,10 +372,14 @@ class AdminAuth {
     }
 }
 
-// Initialize admin authentication when DOM is loaded
-document.addEventListener('DOMContentLoaded', function() {
+// Initialize admin authentication
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', function() {
+        window.adminAuth = new AdminAuth();
+    });
+} else {
     window.adminAuth = new AdminAuth();
-});
+}
 
 // Export for use in other scripts
 if (typeof module !== 'undefined' && module.exports) {

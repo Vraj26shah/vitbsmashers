@@ -7,6 +7,7 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="../../shared-admin-auth.js"></script>
+    <script src="../../shared-logout.js"></script>
     <style>
         /* === GLOBAL STYLES === */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -836,7 +837,7 @@
         
         <div class="logo">
             <a href="../../index.html" style="text-decoration: none; display: flex; align-items: center;">
-                <img src="../../features/images/logo1.png" alt="Scholars Stack Logo">
+                <img src="../images/logo1.png" alt="Scholars Stack Logo">
                 <div class="logo-text">
                     <h1>Scholars Stack</h1>
                     <span>My Courses</span>
@@ -884,7 +885,7 @@
         <div class="sidebar-title">Account</div>
         <ul class="sidebar-menu">
             <!-- <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li> -->
-            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+            <li><a href="#" class="logout-link"><i class='bx bxs-log-out'></i> Logout</a></li>
         </ul>
     </nav>
     
@@ -991,7 +992,12 @@
 
         // Sidebar link active state and close on mobile after navigation
         document.querySelectorAll('.sidebar-menu a').forEach(link => {
-            link.addEventListener('click', () => {
+            link.addEventListener('click', (e) => {
+                // Skip logout links - handled by shared-logout.js
+                if (link.classList.contains('logout-link')) {
+                    return;
+                }
+
                 document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
                 link.classList.add('active');
                 if (window.matchMedia('(max-width: 768px)').matches) {
@@ -1061,6 +1067,7 @@
                 });
             });
         }
+
 
         document.addEventListener('DOMContentLoaded', function() {
             createParticles();

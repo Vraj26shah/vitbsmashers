@@ -1187,7 +1187,7 @@
 
                 localStorage.setItem('token', data.token);
                 showToast('Login successful! Redirecting...', 'success');
-                setTimeout(() => { window.location.href = '/profile.html'; }, 1200);
+                setTimeout(() => { window.location.href = '/features/profile/profile.html'; }, 1200);
             } catch (err) {
                 showToast(err.message, 'error');
             } finally {
@@ -1222,7 +1222,7 @@
                 setTimeout(() => {
                     otpModal.style.display = 'none';
                     showToast('Account created! Redirecting...', 'success');
-                    setTimeout(() => { window.location.href = '/profile.html'; }, 1200);
+                    setTimeout(() => { window.location.href = '/features/profile/profile.html'; }, 1200);
                 }, 800);
             } catch (err) {
                 showToast(err.message, 'error');

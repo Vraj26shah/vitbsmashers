@@ -276,7 +276,7 @@
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const paymentStatus = urlParams.get('payment');
-        const sessionId = urlParams.get('session_id');
+        const orderId = urlParams.get('order_id');
 
         // Show appropriate state based on payment status
         function showPaymentState() {
@@ -290,8 +290,8 @@
 
             if (paymentStatus === 'success') {
                 successState.classList.remove('hidden');
-                if (sessionId) {
-                    fetchPaymentDetails(sessionId);
+                if (orderId) {
+                    fetchPaymentDetails(orderId);
                 }
             } else if (paymentStatus === 'cancelled') {
                 cancelledState.classList.remove('hidden');
@@ -301,14 +301,14 @@
         }
 
         // Fetch payment details from backend
-        async function fetchPaymentDetails(sessionId) {
+        async function fetchPaymentDetails(orderId) {
             try {
-                const response = await fetch(`http://localhost:4000/api/payments/session/${sessionId}`, {
+                const response = await fetch(`http://localhost:4000/api/v1/payment/session/${orderId}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
                     }
                 });
-                
+
                 if (response.ok) {
                     const data = await response.json();
                     populateSuccessDetails(data);

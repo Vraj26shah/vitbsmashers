@@ -56,9 +56,11 @@ export const protect = async (req, res, next) => {
     }
 
     if (!token) {
-      return next(
-        new AppError('You are not logged in! Please log in to get access.', 401)
-      );
+      return res.status(401).json({
+        error: 'Authentication required',
+        message: 'You are not logged in! Please log in to get access.',
+        redirect: '/login' // Frontend should handle this redirect
+      });
     }
 
     // 2) Verify token
@@ -67,22 +69,40 @@ export const protect = async (req, res, next) => {
     // 3) Check if user still exists
     const currentUser = await User.findById(decoded.id);
     if (!currentUser) {
-      return next(
-        new AppError('The user belonging to this token no longer exists.', 401)
-      );
+      return res.status(401).json({
+        error: 'User not found',
+        message: 'The user belonging to this token no longer exists.',
+        redirect: '/login'
+      });
     }
 
     // 4) Check if user changed password after token was issued
     if (currentUser.changedPasswordAfter(decoded.iat)) {
-      return next(
-        new AppError('User recently changed password! Please log in again.', 401)
-      );
+      return res.status(401).json({
+        error: 'Password changed',
+        message: 'User recently changed password! Please log in again.',
+        redirect: '/login'
+      });
     }
 
     // Grant access to protected route
     req.user = currentUser;
     next();
   } catch (err) {
+    if (err.name === 'JsonWebTokenError') {
+      return res.status(401).json({
+        error: 'Invalid token',
+        message: 'Invalid authentication token.',
+        redirect: '/login'
+      });
+    }
+    if (err.name === 'TokenExpiredError') {
+      return res.status(401).json({
+        error: 'Token expired',
+        message: 'Authentication token has expired.',
+        redirect: '/login'
+      });
+    }
     next(err);
   }
 };
@@ -100,10 +120,67 @@ const authMiddleware = (req, res, next) => {
   }
 };
 
+// Rate limiting middleware for updates (5 per day)
+export const rateLimitUpdates = async (req, res, next) => {
+  try {
+    const User = (await import('../models/user.model.js')).default;
+    const user = await User.findById(req.user._id);
+
+    if (!user.canUpdateToday()) {
+      return res.status(429).json({
+        error: 'Rate limit exceeded',
+        message: 'Update limit exceeded. You can only make 5 updates per day.',
+        limit: 5,
+        resetTime: new Date(user.lastUpdateDate.getTime() + 24 * 60 * 60 * 1000).toISOString()
+      });
+    }
+
+    // Increment the count
+    user.incrementUpdateCount();
+    await user.save({ validateBeforeSave: false });
+
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
+// Profile completion check middleware for purchases
+// Admin only middleware
+export const adminOnly = (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return next(new AppError('Access denied. Admin only.', 403));
+  }
+  next();
+};
+
+export const requireCompleteProfile = async (req, res, next) => {
+  try {
+    const User = (await import('../models/user.model.js')).default;
+    const user = await User.findById(req.user._id);
+
+    if (!user.isProfileComplete()) {
+      return res.status(403).json({
+        error: 'profile_incomplete',
+        message: 'Please complete your profile before purchasing courses',
+        redirect: '/features/profile/profile.html',
+        requiredFields: ['phone', 'registrationNumber', 'branch']
+      });
+    }
+
+    next();
+  } catch (err) {
+    next(err);
+  }
+};
+
 // Export all middlewares
 export default {
   errorHandler,
   notFound,
   protect,
   authMiddleware,
+  rateLimitUpdates,
+  requireCompleteProfile,
+  adminOnly,
 };
