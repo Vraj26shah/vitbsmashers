@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Access Test - Scholars Stack</title>
+    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="shared-admin-auth.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+        :root {
+            --primary-dark: #0f1a2a;
+            --primary-blue: #1e3a5f;
+            --accent-blue: #3498db;
+            --accent-teal: #2ecc71;
+            --light-color: #ecf0f1;
+            --success-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --warning-color: #f39c12;
+            --glass-bg: rgba(15, 26, 42, 0.85);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0a1423 0%, var(--primary-dark) 100%);
+            color: var(--light-color);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            margin-bottom: 10px;
+            color: var(--light-color);
+        }
+
+        .header p {
+            font-size: 18px;
+            color: #ddd;
+        }
+
+        .test-section {
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border: 2px solid var(--accent-blue);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .test-section h2 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            color: var(--accent-blue);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-card {
+            background: rgba(26, 37, 47, 0.7);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--accent-teal);
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-item:last-child {
+            border-bottom: none;
+        }
+
+        .status-label {
+            font-weight: 500;
+            color: #ddd;
+        }
+
+        .status-value {
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .status-true {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .status-false {
+            background: var(--danger-color);
+            color: white;
+        }
+
+        .admin-panel-demo {
+            background: rgba(46, 204, 113, 0.1);
+            border: 2px solid var(--accent-teal);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .admin-panel-demo h3 {
+            color: var(--accent-teal);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .admin-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .admin-tab-btn {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--accent-teal);
+            border: 1px solid var(--accent-teal);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .admin-tab-btn:hover,
+        .admin-tab-btn.active {
+            background: var(--accent-teal);
+            color: white;
+        }
+
+        .admin-content {
+            background: rgba(26, 37, 47, 0.5);
+            border-radius: 8px;
+            padding: 15px;
+            min-height: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #aaa;
+        }
+
+        .test-buttons {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            text-decoration: none;
+            border: none;
+        }
+
+        .btn-primary {
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: var(--accent-blue);
+            border: 2px solid var(--accent-blue);
+        }
+
+        .btn-secondary:hover {
+            background: var(--accent-blue);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #27ae60;
+            transform: translateY(-2px);
+        }
+
+        .instructions {
+            background: rgba(243, 156, 18, 0.1);
+            border: 2px solid var(--warning-color);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .instructions h3 {
+            color: var(--warning-color);
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            line-height: 1.8;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+            color: #ddd;
+        }
+
+        .instructions code {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            color: var(--accent-teal);
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+
+            .test-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1><i class='bx bxs-shield'></i> Admin Access Test</h1>
+            <p>Test the admin authentication system for Scholars Stack</p>
+        </div>
+
+        <div class="instructions">
+            <h3><i class='bx bxs-info-circle'></i> Testing Instructions</h3>
+            <ol>
+                <li>Make sure you're logged in to the system</li>
+                <li>Check your current admin status below</li>
+                <li>Only users with email <code>vitbsmashers@gmail.com</code> can access admin panels</li>
+                <li>Test the admin panels in Club, Event, and Faculty management sections</li>
+                <li>Non-admin users will see access denied messages</li>
+            </ol>
+        </div>
+
+        <div class="test-section">
+            <h2><i class='bx bxs-user-check'></i> Current User Status</h2>
+            <div class="status-card">
+                <div class="status-item">
+                    <span class="status-label">User Email:</span>
+                    <span class="status-value" id="userEmail">Loading...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Admin Status:</span>
+                    <span class="status-value" id="adminStatus">Loading...</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Admin Email Required:</span>
+                    <span class="status-value status-true">vitbsmashers@gmail.com</span>
+                </div>
+                <div class="status-item">
+                    <span class="status-label">Authentication Token:</span>
+                    <span class="status-value" id="tokenStatus">Loading...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2><i class='bx bxs-shield'></i> Admin Panel Demo</h2>
+            <p>This section simulates an admin panel. It will only be visible to admin users.</p>
+            
+            <div class="admin-panel-demo" id="adminPanelDemo" style="display: none;">
+                <h3><i class='bx bxs-shield-check'></i> Admin Control Panel</h3>
+                <div class="admin-tabs">
+                    <button class="admin-tab-btn active" onclick="showAdminTab('users')">User Management</button>
+                    <button class="admin-tab-btn" onclick="showAdminTab('settings')">System Settings</button>
+                    <button class="admin-tab-btn" onclick="showAdminTab('reports')">Reports</button>
+                </div>
+                <div class="admin-content" id="adminContent">
+                    <div>
+                        <i class='bx bxs-user'></i>
+                        <p>User Management Panel</p>
+                        <small>Manage user accounts and permissions</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="nonAdminMessage" style="display: none;">
+                <div class="status-card">
+                    <h3 style="color: var(--danger-color); margin-bottom: 15px;">
+                        <i class='bx bxs-shield-x'></i> Access Restricted
+                    </h3>
+                    <p>This admin panel is only visible to authorized administrators.</p>
+                    <p>Current user does not have admin privileges.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2><i class='bx bxs-navigation'></i> Test Admin Panels</h2>
+            <p>Navigate to different sections to test admin access control:</p>
+            
+            <div class="test-buttons">
+                <a href="features/club/club.html" class="btn btn-primary">
+                    <i class='bx bxs-group'></i> Club Management
+                </a>
+                <a href="features/event/event.html" class="btn btn-primary">
+                    <i class='bx bxs-calendar-event'></i> Event Management
+                </a>
+                <a href="features/faculty/faculty.html" class="btn btn-primary">
+                    <i class='bx bxs-group'></i> Faculty Management
+                </a>
+                <a href="features/marketplace/market.html" class="btn btn-secondary">
+                    <i class='bx bxs-store'></i> Marketplace
+                </a>
+                <a href="features/profile/profile.html" class="btn btn-secondary">
+                    <i class='bx bxs-user'></i> Profile
+                </a>
+                <button onclick="refreshAdminStatus()" class="btn btn-success">
+                    <i class='bx bx-refresh'></i> Refresh Status
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Update status display
+        function updateStatusDisplay() {
+            const userEmail = document.getElementById('userEmail');
+            const adminStatus = document.getElementById('adminStatus');
+            const tokenStatus = document.getElementById('tokenStatus');
+            const adminPanelDemo = document.getElementById('adminPanelDemo');
+            const nonAdminMessage = document.getElementById('nonAdminMessage');
+
+            // Check if admin auth is available
+            if (window.adminAuth) {
+                const email = window.adminAuth.getCurrentUserEmail();
+                const isAdmin = window.adminAuth.isUserAdmin();
+                const hasToken = localStorage.getItem('token') ? true : false;
+
+                userEmail.textContent = email || 'Not logged in';
+                userEmail.className = `status-value ${email ? 'status-true' : 'status-false'}`;
+
+                adminStatus.textContent = isAdmin ? 'Admin' : 'Regular User';
+                adminStatus.className = `status-value ${isAdmin ? 'status-true' : 'status-false'}`;
+
+                tokenStatus.textContent = hasToken ? 'Present' : 'Missing';
+                tokenStatus.className = `status-value ${hasToken ? 'status-true' : 'status-false'}`;
+
+                // Show/hide admin panel demo
+                if (isAdmin) {
+                    adminPanelDemo.style.display = 'block';
+                    nonAdminMessage.style.display = 'none';
+                } else {
+                    adminPanelDemo.style.display = 'none';
+                    nonAdminMessage.style.display = 'block';
+                }
+            } else {
+                userEmail.textContent = 'Admin auth not loaded';
+                userEmail.className = 'status-value status-false';
+                adminStatus.textContent = 'Unknown';
+                adminStatus.className = 'status-value status-false';
+                tokenStatus.textContent = 'Unknown';
+                tokenStatus.className = 'status-value status-false';
+            }
+        }
+
+        // Show admin tab content
+        function showAdminTab(tab) {
+            const buttons = document.querySelectorAll('.admin-tab-btn');
+            const content = document.getElementById('adminContent');
+
+            buttons.forEach(btn => btn.classList.remove('active'));
+
+            let contentHtml = '';
+            switch(tab) {
+                case 'users':
+                    contentHtml = `
+                        <div>
+                            <i class='bx bxs-user'></i>
+                            <p>User Management Panel</p>
+                            <small>Manage user accounts and permissions</small>
+                        </div>
+                    `;
+                    break;
+                case 'settings':
+                    contentHtml = `
+                        <div>
+                            <i class='bx bxs-cog'></i>
+                            <p>System Settings</p>
+                            <small>Configure system parameters and preferences</small>
+                        </div>
+                    `;
+                    break;
+                case 'reports':
+                    contentHtml = `
+                        <div>
+                            <i class='bx bxs-bar-chart'></i>
+                            <p>Reports & Analytics</p>
+                            <small>View system usage and performance metrics</small>
+                        </div>
+                    `;
+                    break;
+            }
+
+            content.innerHTML = contentHtml;
+            event.target.classList.add('active');
+        }
+
+        // Refresh admin status
+        function refreshAdminStatus() {
+            if (window.adminAuth) {
+                window.adminAuth.refreshAdminStatus().then(() => {
+                    updateStatusDisplay();
+                });
+            } else {
+                updateStatusDisplay();
+            }
+        }
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait a bit for admin auth to initialize
+            setTimeout(() => {
+                updateStatusDisplay();
+            }, 1000);
+        });
+
+        // Update status every 5 seconds
+        setInterval(updateStatusDisplay, 5000);
+    </script>
+</body>
+</html>
