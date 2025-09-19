@@ -6,9 +6,9 @@
     <title>Scholars Stack - Premium Academic Resources</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
-    <!-- <link rel="stylesheet" href="shared.css"> -->
+    <meta name="google-signin-client_id" content="686446558105-bl2q9t63tcnei5u4ugck952tanccrpdu.apps.googleusercontent.com">
     <link rel="stylesheet" href="style.css">
-    <!-- <script src="shared-admin-auth.js"></script> -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <!-- Animated Background -->
@@ -74,12 +74,14 @@
                     </div>
                     
                     <div class="hero-btns">
-                        <a href="login1.html?mode=register" class="btn btn-primary">
-                            <i class="fas fa-user-plus"></i> Register Now
-                        </a>
-                        <a href="login1.html?mode=login" class="btn btn-secondary">
-                            <i class="fas fa-sign-in-alt"></i> Login
-                        </a>
+                        <div class="auth-section">
+                            <div id="googleSignInContainer"></div>
+                            <p class="auth-note vit-note">
+                                <i class="fas fa-university"></i>
+                                <span><strong>Exclusive for VIT Bhopal University students</strong><br>Please use your <strong>@vitbhopal.ac.in</strong> Google account to sign in</span>
+                            </p>
+                        </div>
+
                     </div>
                 </div>
                 
@@ -376,6 +378,218 @@
         </div>
     </footer>
 
+    <script>
+        // API Configuration - Point to backend server
+        const API_BASE = 'http://localhost:4000/api/v1/auth';
+
+        // Google Sign-In implementation with both inner and outer button support
+        function initGoogleSignIn() {
+            console.log('🚀 Initializing Google Sign-In...');
+
+            // Initialize Google Identity Services
+            google.accounts.id.initialize({
+                client_id: '686446558105-bl2q9t63tcnei5u4ugck952tanccrpdu.apps.googleusercontent.com',
+                callback: handleGoogleSignIn,
+                auto_select: false,
+                cancel_on_tap_outside: true
+            });
+
+            // Render the Google Sign-In button (creates inner button)
+            google.accounts.id.renderButton(
+                document.getElementById('googleSignInContainer'),
+                {
+                    theme: 'filled_blue',
+                    size: 'large',
+                    text: 'signin_with',
+                    shape: 'rectangular',
+                    logo_alignment: 'left',
+                    width: '300'
+                }
+            );
+
+            // Proper site integration for Google button
+            setTimeout(() => {
+                const container = document.getElementById('googleSignInContainer');
+                if (container) {
+                    // Remove any duplicate Google buttons
+                    const allGoogleButtons = container.querySelectorAll('[role="button"], .google-signin-btn, [data-google-button]');
+                    if (allGoogleButtons.length > 1) {
+                        console.log('🧹 Removing duplicate Google buttons...');
+                        // Keep only the first button, remove others
+                        for (let i = 1; i < allGoogleButtons.length; i++) {
+                            allGoogleButtons[i].remove();
+                        }
+                    }
+
+                    const googleButton = container.querySelector('[role="button"]');
+                    if (googleButton) {
+                        // Essential styles for seamless integration
+                        googleButton.style.cssText = `
+                            border-radius: 50px !important;
+                            font-family: 'Poppins', sans-serif !important;
+                            font-weight: 600 !important;
+                            font-size: 1rem !important;
+                            min-height: 52px !important;
+                            max-width: 100% !important;
+                            box-shadow: 0 4px 20px rgba(66, 133, 244, 0.3) !important;
+                            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                            display: flex !important;
+                            align-items: center !important;
+                            justify-content: center !important;
+                            margin: 0 auto !important;
+                        `;
+
+                        // Ensure Google branding remains intact
+                        const icon = googleButton.querySelector('svg');
+                        if (icon) {
+                            icon.style.filter = 'none !important';
+                            icon.style.width = '20px !important';
+                            icon.style.height = '20px !important';
+                        }
+
+                        const text = googleButton.querySelector('span');
+                        if (text) {
+                            text.style.color = 'white !important';
+                            text.style.fontSize = '1rem !important';
+                        }
+
+                        // Add class for CSS hover effects
+                        googleButton.classList.add('google-signin-btn');
+
+                        console.log('✅ Google Sign-In button properly integrated');
+                    }
+                }
+            }, 600);
+
+        }
+
+        function handleGoogleSignIn(response) {
+            console.log('📨 Google sign-in response received');
+
+            if (!response.credential) {
+                console.error('❌ No credential received');
+                showToast('Google sign-in failed. Please try again.', 'error');
+                return;
+            }
+
+            // Decode JWT to get email for validation
+            try {
+                const payload = JSON.parse(atob(response.credential.split('.')[1]));
+                const email = payload.email;
+
+                if (!email || !email.endsWith('@vitbhopal.ac.in')) {
+                    console.error('❌ Non-VIT email detected:', email);
+                    showToast('Please use your VIT Bhopal University email (@vitbhopal.ac.in) to sign in.', 'error');
+                    return;
+                }
+
+                console.log('✅ VIT email verified:', email);
+            } catch (error) {
+                console.error('❌ Error decoding JWT:', error);
+                showToast('Authentication failed. Please try again.', 'error');
+                return;
+            }
+
+            console.log('✅ ID token received, sending to backend...');
+            showToast('Signing you in...', 'info');
+
+            // Send ID token to backend
+            fetch(`${API_BASE}/google-token`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ idToken: response.credential })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log('✅ Backend response:', data);
+
+                if (!data.token) {
+                    throw new Error(data.message || 'Authentication failed');
+                }
+
+                // Success - User is now logged in
+                localStorage.setItem('token', data.token);
+                showToast('Welcome! Taking you to your profile...', 'success');
+
+                setTimeout(() => {
+                    window.location.href = 'features/profile/profile.html?sidebar=active';
+                }, 1500);
+            })
+            .catch(err => {
+                console.error('❌ Authentication error:', err);
+                let errorMessage = 'Authentication failed. Please try again.';
+
+                if (err.message.includes('VIT Bhopal')) {
+                    errorMessage = err.message;
+                } else if (err.message.includes('network') || err.message.includes('fetch')) {
+                    errorMessage = 'Unable to connect to server. Please check your internet connection.';
+                }
+
+                showToast(errorMessage, 'error');
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            // Remove existing toasts
+            const existingToasts = document.querySelectorAll('.auth-toast');
+            existingToasts.forEach(toast => toast.remove());
+
+            // Create new toast
+            const toast = document.createElement('div');
+            toast.className = `auth-toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            // Auto-hide after 4 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 DOM loaded, initializing Google Sign-In...');
+
+            // Check if Google API is already loaded
+            if (window.google && window.google.accounts && window.google.accounts.id) {
+                console.log('✅ Google API available, initializing...');
+                initGoogleSignIn();
+            } else {
+                // Wait for Google API to load
+                window.addEventListener('load', () => {
+                    if (window.google && window.google.accounts && window.google.accounts.id) {
+                        console.log('✅ Google API loaded, initializing...');
+                        initGoogleSignIn();
+                    } else {
+                        console.error('❌ Google API failed to load');
+                        showToast('Google sign-in failed to load. Please refresh the page.', 'error');
+                    }
+                });
+            }
+        });
+    </script>
     <script src="script.js"></script>
 </body>
 </html>

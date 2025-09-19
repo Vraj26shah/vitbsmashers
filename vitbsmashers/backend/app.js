@@ -6,6 +6,8 @@ import cookieParser from 'cookie-parser';
 import cors from 'cors';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import passport from './config/passport.js';
+import session from 'express-session';
 // import authRouter from './routes/authRoutes.js';
 import authRouter from './routes/authRoutes.js';
 // import attendanceRouter from './routes/attendanceRoutes.js';
@@ -34,8 +36,50 @@ connect();
 app.use(express.json());
 app.use(cookieParser());
 
+// Session middleware (required for Passport OAuth)
+app.use(session({
+  secret: process.env.JWT_SECRET || 'vitbsmashers_session_secret',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production', // Use HTTPS in production
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Enable CORS for browser clients
-app.use(cors({ origin: true, credentials: true }));
+const corsOptions = {
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      'http://localhost:8000',  // Frontend development server
+      'http://localhost:5500',  // Alternative frontend port
+      'http://127.0.0.1:8000', // Alternative localhost
+      'http://127.0.0.1:5500', // Alternative localhost
+      'http://localhost:4000',  // Backend itself (for internal requests)
+      'https://vitbsmashers.vercel.app', // Production frontend
+      'https://vitbsmashers-main.vercel.app' // Alternative production
+    ];
+
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      callback(null, true);
+    } else {
+      console.log('CORS blocked origin:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With']
+};
+
+app.use(cors(corsOptions));
 
 // API Routes
 // app.use('/api/v1/auth', authRouter);
@@ -116,10 +160,7 @@ app.get('/features/club/club.html', (req, res) => {
 app.use('/features', express.static(path.join(frontendDir, 'features')));
 
 
-// Serve login page
-app.get('/login1.html', (req, res) => {
-  res.sendFile(path.resolve(frontendDir, 'login1.html'));
-});
+// Login page removed - using Google sign-in on home page only
 
 // Serve frontend files
 app.use(express.static(frontendDir));

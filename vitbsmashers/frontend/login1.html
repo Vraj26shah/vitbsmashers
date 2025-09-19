@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scholars Stack - Login</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <meta name="google-signin-client_id" content="686446558105-bl2q9t63tcnei5u4ugck952tanccrpdu.apps.googleusercontent.com">
     <style>
         * {
             margin: 0;
@@ -374,26 +375,59 @@
 
         /* Google Sign-in Button */
         .google-btn {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
             background: white;
             color: #5f6368;
-            border-radius: 40px;
-            padding: 10px;
+            border-radius: 25px;
+            padding: 12px 16px;
             cursor: pointer;
             transition: all 0.3s ease;
             margin-top: 15px;
             font-weight: 500;
             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            border: 1px solid #ddd;
+            border: 2px solid black;
             font-size: clamp(0.8rem, 1vw, 0.9rem);
+            min-height: 48px;
+            width: 100%;
+            overflow: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
         }
 
         .google-btn:hover {
-            background: #f8f8f8;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+            background: white;
+            box-shadow: 0 5px 15px white;
             transform: translateY(-2px);
+        }
+
+        .google-btn:active {
+            background: #f1f3f4;
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .google-text {
+            flex: 1;
+            text-align: center;
+            font-family: 'Roboto', sans-serif;
+            font-size: inherit;
+            font-weight: 500;
+            color: #3c4043;
         }
 
         .google-icon {
@@ -761,9 +795,18 @@
             }
             
             .google-btn {
-                padding: 10px;
+                padding: 12px 16px;
                 font-size: clamp(0.9rem, 3.5vw, 1rem);
                 max-width: 100%;
+                min-height: 44px;
+                border: 2px solid black;
+                border-radius: 25px;
+            }
+
+            .google-icon {
+                width: 18px;
+                height: 18px;
+                margin-right: 10px;
             }
             
             .logreg-link p {
@@ -821,8 +864,17 @@
             }
             
             .google-btn {
-                padding: 8px 10px;
+                padding: 12px 16px;
                 font-size: clamp(0.9rem, 4vw, 0.95rem);
+                min-height: 42px;
+                border: 2px solid black;
+                border-radius: 25px;
+            }
+
+            .google-icon {
+                width: 16px;
+                height: 16px;
+                margin-right: 8px;
             }
             
             .or-divider {
@@ -882,6 +934,7 @@
             }
         }
     </style>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body>
     <div class="bg-particles">
@@ -922,17 +975,7 @@
                     <span>or</span>
                 </div>
                 
-                <div class="google-btn animation" style="--i:5; --j:26;">
-                    <div class="google-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
-                            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
-                            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
-                            <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
-                            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
-                        </svg>
-                    </div>
-                    Login with Google
-                </div>
+                <div class="google-btn animation" style="--i:5; --j:26;"></div>
                 
                 <div class="logreg-link animation" style="--i:6; --j:27;">
                     <p>Don't have an account? <a href="#" class="register-link">Sign Up</a></p>
@@ -973,17 +1016,7 @@
                     <span>or</span>
                 </div>
                 
-                <div class="google-btn animation" style="--i:24; --j:7;">
-                    <div class="google-icon">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
-                            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
-                            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
-                            <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
-                            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
-                        </svg>
-                    </div>
-                    Sign Up with Google
-                </div>
+                <div class="google-btn signup animation" style="--i:24; --j:7;"></div>
                 
                 <div class="logreg-link animation" style="--i:25; --j:8;">
                     <p>Already have an account? <a href="#" class="login-link">Login</a></p>
@@ -1080,45 +1113,86 @@
             showToast('Switched to login form', 'success');
         }
 
-        // Google authentication
-        googleBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                this.innerHTML = '<div class="spinner"></div> Authenticating...';
-                
-                // Simulate Google auth process
-                setTimeout(() => {
-                    const googleEmail = prompt("Enter your VIT email for Google signup:", "example@vitbhopal.ac.in");
-                    
-                    if (!googleEmail || !googleEmail.endsWith('@vitbhopal.ac.in')) {
-                        showToast('Please use your VIT Bhopal email address', 'error');
-                        this.innerHTML = '<div class="google-icon">' + 
-                            '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">' +
-                            '<path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>' +
-                            '<path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>' +
-                            '<path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>' +
-                            '<path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>' +
-                            '</svg>' +
-                            '</div>' + (this.textContent.includes('Login') ? 'Login with Google' : 'Sign Up with Google');
-                        return;
-                    }
-                    
-                    // Show OTP modal
-                    otpEmail.textContent = googleEmail;
-                    otpModal.style.display = 'flex';
-                    startOtpCountdown();
-                    showToast('OTP sent to your email', 'success');
-                    
-                    // Reset button content
-                    this.innerHTML = '<div class="google-icon">' + 
-                        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">' +
-                        '<path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>' +
-                        '<path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>' +
-                        '<path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>' +
-                        '<path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>' +
-                        '</svg>' +
-                        '</div>' + (this.textContent.includes('Login') ? 'Login with Google' : 'Sign Up with Google');
-                }, 1500);
+        let googleAuthInstance = null;
+
+        function initGoogleSignIn() {
+            // Initialize Google Sign-In with ID token flow
+            googleAuthInstance = google.accounts.id.initialize({
+                client_id: '686446558105-bl2q9t63tcnei5u4ugck952tanccrpdu.apps.googleusercontent.com',
+                callback: handleGoogleSignIn,
+                auto_select: false,
+                cancel_on_tap_outside: false,
+                context: 'signin',
+                ux_mode: 'popup'
             });
+
+            // Instead of rendering Google buttons, make our containers clickable
+            googleBtns.forEach(btn => {
+                // Clear any existing content and set up our custom button
+                btn.innerHTML = `
+                    <div class="google-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
+                            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z"/>
+                            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z"/>
+                            <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
+                            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
+                        </svg>
+                    </div>
+                    <span class="google-text">${btn.classList.contains('signup') ? 'Sign Up with Google' : 'Continue with Google'}</span>
+                `;
+
+                // Make the entire button clickable
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    if (googleAuthInstance) {
+                        // Trigger Google sign-in popup
+                        google.accounts.id.prompt();
+                    } else {
+                        showToast('Google sign-in not ready. Please try again.', 'error');
+                    }
+                });
+            });
+        }
+
+        function handleGoogleSignIn(response) {
+            const idToken = response.credential;
+            if (!idToken) {
+                showToast('Google sign-in failed. Please try again.', 'error');
+                return;
+            }
+
+            // Send ID token to backend for verification
+            fetch(`${API_BASE}/google-token`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ idToken })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (!data.token) {
+                    throw new Error(data.message || 'Authentication failed');
+                }
+                localStorage.setItem('token', data.token);
+                showToast('Google authentication successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/features/profile/profile.html';
+                }, 1200);
+            })
+            .catch(err => {
+                showToast(err.message || 'Google authentication failed', 'error');
+            });
+        }
+
+        // Initialize Google Sign-In when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.google && window.google.accounts) {
+                initGoogleSignIn();
+            } else {
+                // Fallback if script not loaded
+                setTimeout(initGoogleSignIn, 1000);
+            }
         });
 
         // Email verification for registration
@@ -1355,9 +1429,42 @@
             if (target) target.focus();
         }
 
+        // Handle Google OAuth redirect
+        function handleGoogleAuthRedirect() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const googleSuccess = urlParams.get('google_success');
+            const error = urlParams.get('error');
+
+            if (token && googleSuccess) {
+                // Google auth successful, store token and redirect
+                localStorage.setItem('token', token);
+                showToast('Google authentication successful! Redirecting...', 'success');
+                setTimeout(() => {
+                    window.location.href = '/features/profile/profile.html';
+                }, 1200);
+                return true;
+            }
+
+            if (error) {
+                if (error === 'google_auth_failed') {
+                    showToast('Google authentication failed. Please try again.', 'error');
+                } else if (error === 'token_generation_failed') {
+                    showToast('Authentication successful but token generation failed. Please contact support.', 'error');
+                }
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return true;
+            }
+
+            return false;
+        }
+
         // Initialize on load
-        applyModeFromUrl();
-        focusInitialField();
+        if (!handleGoogleAuthRedirect()) {
+            applyModeFromUrl();
+            focusInitialField();
+        }
     </script>
 </body>
 </html>

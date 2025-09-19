@@ -2,7 +2,10 @@ import User from '../models/user.model.js';
 import AppError from '../utils/appError.js';
 import sendEmail from '../utils/email.js';
 import { signToken } from '../service/authService.js';
+import { OAuth2Client } from 'google-auth-library';
 
+// Initialize Google OAuth2 client
+const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 
 // Signup Controller
@@ -128,8 +131,6 @@ export const signup = async (req, res, next) => {
 };
 
 
-
-
 // Verify OTP Controller
 export const verifyOTP = async (req, res, next) => {
   try {
@@ -180,7 +181,7 @@ export const verifyOTP = async (req, res, next) => {
     console.log('   🔢 OTP cleared from database');
 
     // 4) Log the user in
-    const token = signToken(user._id);
+    const token = signToken(user._id, user.email);
 
     res.status(200).json({
       status: 'success',
@@ -307,7 +308,7 @@ export const login = async (req, res, next) => {
     }
 
     // 4) If everything ok, send token to client
-    const token = signToken(user._id);
+    const token = signToken(user._id, user.email);
 
     res.status(200).json({
       status: 'success',
@@ -325,7 +326,106 @@ export const login = async (req, res, next) => {
   }
 };
 
+// Google ID Token Verification Controller (for client-side Google Sign-In)
+export const verifyGoogleToken = async (req, res, next) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) {
+      return next(new AppError('ID token is required', 400));
+    }
 
+    // Verify the ID token with Google
+    const ticket = await googleClient.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const googleId = payload.sub;
+    const email = payload.email;
+    const displayName = payload.name;
+    const picture = payload.picture;
+
+    console.log('🔍 GOOGLE TOKEN VERIFICATION:');
+    console.log('   🆔 Google ID:', googleId);
+    console.log('   📧 Email:', email);
+    console.log('   👤 Name:', displayName);
+
+    // Check if user already exists with this Google ID
+    let user = await User.findOne({ googleId });
+
+    if (user) {
+      // User exists, return token
+      console.log('✅ User found with Google ID');
+      const token = signToken(user._id, user.email);
+      return res.status(200).json({
+        status: 'success',
+        token,
+        data: { user, authMethod: 'google' }
+      });
+    }
+
+    // Check if user exists with the same email
+    user = await User.findOne({ email });
+
+    if (user) {
+      // User exists with email but no Google ID - link the accounts
+      user.googleId = googleId;
+      user.fullName = displayName;
+      user.profilePicture = picture;
+      await user.save();
+      console.log('✅ Linked existing user with Google account');
+      const token = signToken(user._id, user.email);
+      return res.status(200).json({
+        status: 'success',
+        token,
+        data: { user, authMethod: 'google_linked' }
+      });
+    }
+
+    // Validate that email is from VIT Bhopal
+    console.log('🔍 Checking email domain:', email);
+    if (!email) {
+      console.log('❌ No email provided');
+      return next(new AppError('❌ Authentication Error<br><strong>No email found in your Google account.</strong><br><small>Please ensure your Google account has a valid email address.</small>', 401));
+    }
+
+    if (!email.endsWith('@vitbhopal.ac.in')) {
+      console.log('❌ Non-VIT email detected:', email);
+      const domain = email.split('@')[1] || 'unknown';
+      return next(new AppError(`❌ Invalid Account Type<br><strong>Only VIT Bhopal emails (@vitbhopal.ac.in) are allowed.</strong><br><small>You tried to sign in with: ${email}<br>Please use your institutional Google account.</small>`, 401));
+    }
+    console.log('✅ VIT email validated:', email);
+
+    // Create new user
+    const newUser = await User.create({
+      googleId,
+      email,
+      username: displayName.replace(/\s+/g, '').toLowerCase() + Math.floor(Math.random() * 1000),
+      fullName: displayName,
+      profilePicture: picture,
+      isVerified: true, // Google accounts are pre-verified
+      role: email === 'vitbsmashers@gmail.com' ? 'admin' : 'user'
+    });
+
+    console.log('✅ New user created via Google auth');
+    console.log('   🆔 User ID:', newUser._id);
+    console.log('   👤 Username:', newUser.username);
+
+    const token = signToken(newUser._id, newUser.email);
+    res.status(201).json({
+      status: 'success',
+      token,
+      data: { user: newUser, authMethod: 'google_new' }
+    });
+  } catch (err) {
+    console.error('❌ Google token verification error:', err.message);
+    if (err.message.includes('invalid_token') || err.message.includes('not a valid origin')) {
+      return next(new AppError('Invalid Google token. Please try signing in again.', 401));
+    }
+    next(new AppError('Google authentication failed', 500));
+  }
+};
 
 // Export all functions as named exports
 export default {
@@ -333,4 +433,5 @@ export default {
   verifyOTP,
   resendOTP,
   login,
+  verifyGoogleToken
 };

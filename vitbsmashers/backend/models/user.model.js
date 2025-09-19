@@ -19,18 +19,27 @@ const userSchema = new mongoose.Schema({
     index: true, // Add index for faster email lookups
     validate: {
       validator: function(value) {
-        return value.endsWith('@vitbhopal.ac.in') && 
-               validator.isEmail(value) &&
-               /^[a-zA-Z0-9]+(\.[a-zA-Z0-9]+)?@vitbhopal\.ac\.in$/.test(value);
+        return value.endsWith('@vitbhopal.ac.in') &&
+                validator.isEmail(value) &&
+                /^[a-zA-Z0-9._-]+@vitbhopal\.ac\.in$/.test(value);
       },
       message: 'Email must be a valid VIT Bhopal email'
     }
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
+    required: function() {
+      // Password is required only if user is not authenticated via Google
+      return !this.googleId;
+    },
     minlength: [4, 'Password must be at least 4 characters long'],
     select: false
+  },
+  googleId: {
+    type: String,
+    unique: true,
+    sparse: true, // Allows null values but ensures uniqueness for non-null values
+    index: true
   },
   otp: {
     type: String,
@@ -89,12 +98,17 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
   }
 });
 
-// Hash password before saving
+// Hash password before saving (only if password exists)
 userSchema.pre('save', async function(next) {
-  if (!this.isModified('password')) return next();
+  if (!this.isModified('password') || !this.password) return next();
   this.password = await bcrypt.hash(this.password, 10);
   this.passwordChangedAt = Date.now() - 1000; // Subtract 1 second to ensure token was issued before password change
   next();
@@ -103,7 +117,13 @@ userSchema.pre('save', async function(next) {
 
 // Method to compare passwords
 userSchema.methods.correctPassword = async function(candidatePassword) {
+  if (!this.password) return false; // OAuth users don't have passwords
   return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Method to check if user is authenticated via Google
+userSchema.methods.isGoogleUser = function() {
+  return !!this.googleId;
 };
 
 
@@ -165,6 +185,10 @@ userSchema.methods.incrementUpdateCount = function() {
 
 // Method to check if profile is complete for purchases
 userSchema.methods.isProfileComplete = function() {
+  // Use the stored profileCompleted field if it exists, otherwise check individual fields
+  if (this.profileCompleted !== undefined) {
+    return this.profileCompleted;
+  }
   return !!(this.phone &&
             this.registrationNumber &&
             this.branch);

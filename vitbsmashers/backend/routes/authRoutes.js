@@ -1,11 +1,37 @@
 import express from 'express';
-import { signup, verifyOTP, resendOTP, login } from '../controllers/authController.js';
+import { signup, verifyOTP, resendOTP, login, verifyGoogleToken } from '../controllers/authController.js';
 import authMiddlewareModule from '../middleware/authMiddleware.js';
 import User from '../models/user.model.js';
+import passport from '../config/passport.js';
+import { signToken } from '../service/authService.js';
 const router = express.Router();
 
 
 
+
+// Google OAuth routes
+router.get('/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    prompt: 'select_account'
+  })
+);
+
+router.get('/google/callback',
+  passport.authenticate('google', { failureRedirect: '/login1.html?error=google_auth_failed' }),
+  (req, res) => {
+    // Successful authentication, redirect to frontend with token
+    const token = req.user ? signToken(req.user._id, req.user.email) : null;
+    if (token) {
+      res.redirect(`/login1.html?token=${token}&google_success=true`);
+    } else {
+      res.redirect('/login1.html?error=token_generation_failed');
+    }
+  }
+);
+
+// Google ID Token verification route (for client-side Google Sign-In)
+router.post('/google-token', verifyGoogleToken);
 
 // Authentication routes
 router.post('/signup', signup);

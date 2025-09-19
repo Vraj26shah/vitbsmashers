@@ -11,19 +11,19 @@ async function handleLogout() {
                 }
             });
 
-            // If unauthorized, redirect to login
+            // If unauthorized, redirect to index
             if (response.status === 401) {
                 showNotification('Please log in to continue', 'warning');
                 setTimeout(() => {
-                    window.location.href = '/login1.html';
+                    window.location.href = '/index.html';
                 }, 1000);
                 return;
             }
         } else {
-            // No token found, redirect to login
+            // No token found, redirect to index
             showNotification('Please log in to continue', 'warning');
             setTimeout(() => {
-                window.location.href = '/login1.html';
+                window.location.href = '/index.html';
             }, 1000);
             return;
         }
@@ -40,9 +40,9 @@ async function handleLogout() {
     // Show logout message
     showNotification('Logged out successfully', 'success');
 
-    // Redirect to login page after a short delay
+    // Redirect to index page after a short delay
     setTimeout(() => {
-        window.location.href = '/login1.html';
+        window.location.href = '/index.html';
     }, 1000);
 }
 

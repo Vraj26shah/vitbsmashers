@@ -1987,7 +1987,17 @@
                 <i class='bx bx-search'></i>
                 <input type="text" placeholder="Search courses, subjects, or professors..." id="searchInput">
             </div>
-            
+
+            <!-- Profile completion notice for authenticated users -->
+            <div id="profileNotice" class="profile-notice" style="display: none; background: rgba(243, 156, 18, 0.1); border: 1px solid var(--warning-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: center;">
+                <i class='bx bx-info-circle' style="color: var(--warning-color); font-size: 20px; margin-bottom: 8px;"></i>
+                <p style="color: var(--warning-color); margin: 0; font-weight: 500;">
+                    Complete your profile to unlock premium course purchases!
+                    <br><small style="color: #ddd; font-weight: 400;">Required: Phone number, Registration number, and Program</small>
+                    <br><a href="/features/profile/profile.html" style="color: var(--accent-blue); text-decoration: underline; margin-left: 8px;">Complete Profile</a>
+                </p>
+            </div>
+
             <div class="filter-container">
                 <button class="filter-btn active" data-filter="all">
                     <i class='bx bx-filter'></i> All Courses
@@ -2446,9 +2456,77 @@
 
         // Initialize user profile
         let userProfile = { name: '', email: '', phone: '', fullName: '', registrationNumber: '', branch: '', year: '' };
+        let isUserAuthenticated = false;
+        let isUserProfileComplete = false;
 
         function isProfileComplete() {
-            return userProfile.name && userProfile.email && userProfile.phone;
+            return isUserProfileComplete;
+        }
+
+        function isAuthenticated() {
+            const token = localStorage.getItem('token');
+            return !!token;
+        }
+
+        // Control payment button visibility and profile notice based on auth and profile status
+        function updatePaymentButtonVisibility() {
+            const paymentButtons = document.querySelectorAll('.add-to-cart, .enroll-now, #checkoutButton');
+            const profileNotice = document.getElementById('profileNotice');
+
+            console.log('🔄 Updating payment button visibility:', {
+                isUserAuthenticated,
+                isUserProfileComplete,
+                buttonsFound: paymentButtons.length
+            });
+
+            paymentButtons.forEach(button => {
+                if (!isUserAuthenticated) {
+                    // Hide all payment buttons for non-authenticated users
+                    button.style.display = 'none';
+                    if (profileNotice) profileNotice.style.display = 'none';
+                    console.log('🚫 User not authenticated - hiding payment buttons');
+                } else if (!isUserProfileComplete) {
+                    // Show buttons but disable them for authenticated users with incomplete profiles
+                    button.style.display = 'inline-flex';
+                    button.disabled = true;
+                    button.style.opacity = '0.6';
+                    button.style.cursor = 'not-allowed';
+                    button.title = 'Complete your profile to enable payments';
+
+                    // Change button text to indicate profile completion needed
+                    if (button.classList.contains('enroll-now')) {
+                        button.innerHTML = '<i class="bx bx-user-check"></i> Complete Profile First';
+                    } else if (button.classList.contains('add-to-cart')) {
+                        button.innerHTML = '<i class="bx bx-cart"></i> Complete Profile';
+                    } else if (button.id === 'checkoutButton') {
+                        button.textContent = 'Complete Profile First';
+                    }
+
+                    // Show profile completion notice
+                    if (profileNotice) profileNotice.style.display = 'block';
+                    console.log('⚠️ Profile incomplete - disabling payment buttons');
+                } else {
+                    // Enable buttons for authenticated users with complete profiles
+                    button.style.display = 'inline-flex';
+                    button.disabled = false;
+                    button.style.opacity = '1';
+                    button.style.cursor = 'pointer';
+                    button.title = '';
+
+                    // Restore original button text
+                    if (button.classList.contains('enroll-now')) {
+                        button.innerHTML = '<i class="bx bxs-graduation"></i> Enroll Now - Secure Payment';
+                    } else if (button.classList.contains('add-to-cart')) {
+                        button.innerHTML = '<i class="bx bx-cart"></i> Add to Cart';
+                    } else if (button.id === 'checkoutButton') {
+                        button.textContent = 'Checkout';
+                    }
+
+                    // Hide profile completion notice
+                    if (profileNotice) profileNotice.style.display = 'none';
+                    console.log('✅ Profile complete - enabling payment buttons');
+                }
+            });
         }
 
         // Course data
@@ -2932,8 +3010,18 @@ enrollNowButton.addEventListener('click', async () => {
   if (selectedCourse) {
     console.log('Enroll now clicked for course:', selectedCourse.title);
 
-    if (!isAuthenticated()) {
-      console.log('User not authenticated, redirecting to login');
+    if (!isUserAuthenticated) {
+      console.log('User not authenticated, showing login prompt');
+      showLoginPrompt();
+      return;
+    }
+
+    if (!isUserProfileComplete) {
+      console.log('Profile not complete, redirecting to profile');
+      showNotification('Please complete your profile before purchasing courses.', 'warning');
+      setTimeout(() => {
+        window.location.href = '../profile/profile.html';
+      }, 1000);
       return;
     }
 
@@ -2962,7 +3050,7 @@ enrollNowButton.addEventListener('click', async () => {
           // Not authenticated - redirect to login
           showNotification('Please log in to proceed with payment.', 'warning');
           setTimeout(() => {
-            window.location.href = '/login1.html';
+            window.location.href = '/index.html';
           }, 1000);
           return;
         } else if (response.status === 403) {
@@ -2970,7 +3058,7 @@ enrollNowButton.addEventListener('click', async () => {
             // Profile incomplete - redirect to profile page
             showNotification('Please complete your profile before purchasing courses.', 'warning');
             setTimeout(() => {
-              window.location.href = '/features/profile/profile.html';
+              window.location.href = '../profile/profile.html';
             }, 1000);
             return;
           } else if (errorData.error === 'not_verified') {
@@ -3017,8 +3105,18 @@ checkoutButton.addEventListener('click', async () => {
     return;
   }
 
-  if (!isAuthenticated()) {
-    console.log('User not authenticated for checkout');
+  if (!isUserAuthenticated) {
+    console.log('User not authenticated for checkout, showing login prompt');
+    showLoginPrompt();
+    return;
+  }
+
+  if (!isUserProfileComplete) {
+    console.log('Profile not complete, redirecting to profile');
+    showNotification('Please complete your profile before purchasing courses.', 'warning');
+    setTimeout(() => {
+      window.location.href = '/features/profile/profile.html';
+    }, 1000);
     return;
   }
 
@@ -3048,7 +3146,7 @@ checkoutButton.addEventListener('click', async () => {
         // Not authenticated - redirect to login
         showNotification('Please log in to proceed with payment.', 'warning');
         setTimeout(() => {
-          window.location.href = '/login1.html';
+          window.location.href = '/index.html';
         }, 1000);
         return;
       } else if (response.status === 403) {
@@ -3056,7 +3154,7 @@ checkoutButton.addEventListener('click', async () => {
           // Profile incomplete - redirect to profile page
           showNotification('Please complete your profile before purchasing courses.', 'warning');
           setTimeout(() => {
-            window.location.href = '/features/profile/profile.html';
+            window.location.href = '../profile/profile.html';
           }, 1000);
           return;
         } else if (errorData.error === 'not_verified') {
@@ -3097,31 +3195,148 @@ accessBtns.forEach(btn => {
   btn.addEventListener('click', async (e) => {
     e.preventDefault();
     const courseId = btn.closest('.course-card').dataset.course;
-    
+    const courseCard = btn.closest('.course-card');
+    const courseTitle = courseCard.querySelector('.course-title').textContent;
+    const coursePrice = courseCard.querySelector('.course-price').textContent;
+
+    console.log('Access button clicked for course:', courseId, courseTitle);
+
+    if (!isUserAuthenticated) {
+      console.log('User not authenticated, showing login prompt');
+      showLoginPrompt();
+      return;
+    }
+
+    if (!isUserProfileComplete) {
+      console.log('Profile not complete, redirecting to profile');
+      showNotification('Please complete your profile before purchasing courses.', 'warning');
+      setTimeout(() => {
+        window.location.href = '/features/profile/profile.html';
+      }, 1000);
+      return;
+    }
+
     try {
-      const response = await fetch('/api/v1/payment/create-checkout-session', {
+      const amount = parseInt(coursePrice.replace('₹', '').replace(',', '')) * 100;
+      console.log('Creating checkout session with amount:', amount);
+
+      const response = await fetch('http://localhost:4000/api/v1/payment/create-checkout-session', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}` // Assuming JWT auth
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ courseId }),
+        body: JSON.stringify({
+          courseId: courseId,
+          subject: courseTitle,
+          amount: amount
+        }),
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('Payment error response:', errorData);
+
+        if (response.status === 401) {
+          // Not authenticated - redirect to login
+          showNotification('Please log in to proceed with payment.', 'warning');
+          setTimeout(() => {
+            window.location.href = '/index.html';
+          }, 1000);
+          return;
+        } else if (response.status === 403) {
+          if (errorData.error === 'profile_incomplete') {
+            // Profile incomplete - redirect to profile page
+            showNotification('Please complete your profile before purchasing courses.', 'warning');
+            setTimeout(() => {
+              window.location.href = '../profile/profile.html';
+            }, 1000);
+            return;
+          } else if (errorData.error === 'not_verified') {
+            // Email not verified
+            showNotification('Please verify your email before making purchases.', 'warning');
+            setTimeout(() => {
+              window.location.href = '/verify-email';
+            }, 1000);
+            return;
+          } else {
+            // Other 403 errors
+            showNotification(errorData.message || 'Access denied.', 'danger');
+            return;
+          }
+        }
+
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
       const data = await response.json();
-      window.location.href = data.sessionUrl;
+      console.log('Payment data received:', data);
+
+      if (data.orderId) {
+        initializePayment(data, courseTitle);
+      } else {
+        showNotification('Payment initiation failed: ' + (data.error || 'Unknown error'), 'danger');
+      }
     } catch (err) {
-      alert('Payment initiation failed');
+      console.error('Payment error:', err);
+      showNotification('Payment initiation failed: ' + err.message, 'danger');
     }
   });
 });
-function isAuthenticated() {
-  const token = localStorage.getItem('token');
-  if (!token) {
-    alert('Please log in to proceed with payment.');
-    window.location.href = '/login1.html'; // Correct path to login page
-    return false;
-  }
-  return true;
+// Add login prompt for non-authenticated users
+function showLoginPrompt() {
+  const loginPrompt = document.createElement('div');
+  loginPrompt.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    border-radius: 16px;
+    padding: 30px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    border: 2px solid var(--accent-blue);
+    z-index: 10000;
+    text-align: center;
+    max-width: 400px;
+    width: 90%;
+  `;
+
+  loginPrompt.innerHTML = `
+    <i class='bx bx-lock-alt' style="font-size: 48px; color: var(--accent-blue); margin-bottom: 20px;"></i>
+    <h3 style="color: var(--light-color); margin-bottom: 15px;">Login Required</h3>
+    <p style="color: #ddd; margin-bottom: 25px; line-height: 1.5;">
+      Please log in with your VIT Bhopal email to access premium courses and make purchases.
+    </p>
+    <div style="display: flex; gap: 12px; justify-content: center;">
+      <a href="/index.html" style="
+        background: var(--accent-blue);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      " onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='var(--accent-blue)'">
+        <i class='bx bx-log-in'></i> Login Now
+      </a>
+      <button onclick="this.parentElement.parentElement.parentElement.remove()" style="
+        background: transparent;
+        border: 2px solid var(--accent-blue);
+        color: var(--accent-blue);
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+      " onmouseover="this.style.background='var(--accent-blue)'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='var(--accent-blue)'">
+        Close
+      </button>
+    </div>
+  `;
+
+  document.body.appendChild(loginPrompt);
 }
 
 
@@ -3148,26 +3363,104 @@ async function fetchUserProfile() {
   }
 }
 
-let isUserProfileComplete = false;
+ // Load user profile on page load
+  async function loadUserProfile() {
+   const token = localStorage.getItem('token');
+   isUserAuthenticated = !!token;
 
-// Load user profile on page load
-async function loadUserProfile() {
-  const profileData = await fetchUserProfile();
-  if (profileData) {
-      const profile = profileData.user;
-      userProfile = {
-        name: profile.username || profile.name || '',
-        email: profile.email || '',
-        phone: profile.phone || '',
-        fullName: profile.fullName || '',
-        registrationNumber: profile.registrationNumber || '',
-        branch: profile.branch || '',
-        year: profile.year || ''
-      };
-      // Use the backend's profile completion status from the response
-      isUserProfileComplete = profileData.profileComplete || false;
+   console.log('🔐 Authentication check:', { isUserAuthenticated, hasToken: !!token });
+
+   if (isUserAuthenticated) {
+     console.log('📡 Fetching user profile from backend...');
+     const profileData = await fetchUserProfile();
+
+     console.log('📦 Raw profile data received:', profileData);
+
+     if (profileData && profileData.user) {
+         const profile = profileData.user;
+         userProfile = {
+           name: profile.username || profile.name || '',
+           email: profile.email || '',
+           phone: profile.phone || '',
+           fullName: profile.fullName || '',
+           registrationNumber: profile.registrationNumber || '',
+           branch: profile.branch || '',
+           year: profile.year || ''
+         };
+
+         console.log('👤 Processed user profile:', userProfile);
+
+         // Check profile completion using the same logic as backend payment controller
+         const hasPhone = !!(profile.phone && profile.phone.trim());
+         const hasRegistrationNumber = !!(profile.registrationNumber && profile.registrationNumber.trim());
+         const hasBranch = !!(profile.branch && profile.branch.trim());
+
+         console.log('🔍 Field presence check:', {
+           phone: profile.phone,
+           hasPhone,
+           registrationNumber: profile.registrationNumber,
+           hasRegistrationNumber,
+           branch: profile.branch,
+           hasBranch
+         });
+
+         // Use backend flag OR check individual fields (same as backend validation)
+         const backendFlagComplete = (profileData.profileComplete === true);
+         const fieldsComplete = (hasPhone && hasRegistrationNumber && hasBranch);
+
+         isUserProfileComplete = backendFlagComplete || fieldsComplete;
+
+         console.log('✅ Profile completion calculation:', {
+           backendFlag: profileData.profileComplete,
+           backendFlagComplete,
+           fieldsComplete,
+           finalResult: isUserProfileComplete
+         });
+
+         // If profile is complete but backend flag is false, there might be a sync issue
+         if (fieldsComplete && !backendFlagComplete) {
+           console.warn('⚠️ Profile fields are complete but backend flag is false - possible sync issue');
+         }
+     } else {
+       isUserProfileComplete = false;
+       console.log('❌ No profile data received from backend');
+       console.log('🔍 Profile data structure:', profileData);
+     }
+   } else {
+     isUserProfileComplete = false;
+     console.log('❌ User not authenticated');
+   }
+
+   console.log('🎯 Final profile status:', {
+     isUserAuthenticated,
+     isUserProfileComplete,
+     userProfile
+   });
+
+   // Update payment button visibility based on auth and profile status
+   updatePaymentButtonVisibility();
+ }
+
+  // Refresh profile status when page becomes visible (user returns to tab)
+  function setupProfileRefresh() {
+    // Refresh profile when page becomes visible
+    document.addEventListener('visibilitychange', async () => {
+      if (!document.hidden && isUserAuthenticated) {
+        console.log('🔄 Page became visible, refreshing profile status...');
+        await loadUserProfile();
+      }
+    });
+
+    // Also refresh profile every 30 seconds if user is authenticated
+    if (isUserAuthenticated) {
+      setInterval(async () => {
+        if (!document.hidden) { // Only refresh if page is visible
+          console.log('🔄 Periodic profile refresh...');
+          await loadUserProfile();
+        }
+      }, 30000); // 30 seconds
+    }
   }
-}
 
 function isProfileComplete() {
   return isUserProfileComplete;
@@ -3234,6 +3527,283 @@ function isProfileComplete() {
         `;
         document.head.appendChild(notificationStyle);
 
+        // DEBUG FUNCTION: Test marketplace profile completion
+        window.testMarketplaceProfile = async function() {
+            console.log('🧪 TESTING MARKETPLACE PROFILE COMPLETION...');
+
+            console.log('📊 Current state:', {
+                isUserAuthenticated,
+                isUserProfileComplete,
+                userProfile
+            });
+
+            // Test profile fetch
+            const profileData = await fetchUserProfile();
+            console.log('🔄 Fresh profile data:', profileData);
+
+            // Test profile completion logic
+            if (profileData && profileData.user) {
+                const profile = profileData.user;
+                const hasPhone = !!(profile.phone && profile.phone.trim());
+                const hasRegistrationNumber = !!(profile.registrationNumber && profile.registrationNumber.trim());
+                const hasBranch = !!(profile.branch && profile.branch.trim());
+
+                const calculatedComplete = (profileData.profileComplete === true) ||
+                                         (hasPhone && hasRegistrationNumber && hasBranch);
+
+                console.log('🔍 Profile completion calculation:', {
+                    backendFlag: profileData.profileComplete,
+                    hasPhone,
+                    hasRegistrationNumber,
+                    hasBranch,
+                    calculatedComplete,
+                    currentState: isUserProfileComplete
+                });
+            }
+
+            // Test button visibility
+            updatePaymentButtonVisibility();
+
+            return {
+                currentState: { isUserAuthenticated, isUserProfileComplete, userProfile },
+                freshData: profileData
+            };
+        };
+
+        // FORCE REFRESH PROFILE STATUS
+        window.forceRefreshProfileStatus = async function() {
+            console.log('🔄 FORCE REFRESHING PROFILE STATUS...');
+
+            // Clear any cached state
+            isUserProfileComplete = false;
+
+            // Re-fetch profile data
+            await loadUserProfile();
+
+            // Force update button visibility
+            updatePaymentButtonVisibility();
+
+            console.log('✅ Profile status refreshed:', {
+                isUserAuthenticated,
+                isUserProfileComplete
+            });
+
+            return isUserProfileComplete;
+        };
+
+        // INSTANT PROFILE CHECK - Synchronous localStorage check
+        function instantProfileCheck() {
+            console.log('⚡ INSTANT PROFILE CHECK - SYNCHRONOUS...');
+
+            try {
+                // Check for global profile completion flag first
+                if (window.profileCompletedInstantly === true) {
+                    console.log('🎯 GLOBAL FLAG DETECTED - Profile completed instantly!');
+                    forceEnablePaymentsInstantly();
+                    return true;
+                }
+
+                const token = localStorage.getItem('token');
+                const cachedProfile = localStorage.getItem('profileData');
+                const profileCompletedFlag = localStorage.getItem('profileCompleted');
+
+                console.log('📊 Storage check:', {
+                    hasToken: !!token,
+                    hasCachedProfile: !!cachedProfile,
+                    profileCompletedFlag: profileCompletedFlag,
+                    globalFlag: window.profileCompletedInstantly
+                });
+
+                // Multiple completion indicators
+                const indicators = {
+                    globalFlag: window.profileCompletedInstantly === true,
+                    localStorageFlag: profileCompletedFlag === 'true',
+                    cachedProfileComplete: false,
+                    hasRequiredFields: false
+                };
+
+                // Check cached profile
+                if (cachedProfile) {
+                    const profile = JSON.parse(cachedProfile);
+                    indicators.cachedProfileComplete = profile.profileCompleted === true;
+
+                    // Check if required fields are present
+                    indicators.hasRequiredFields = !!(profile.phone && profile.registrationNumber && profile.program);
+                }
+
+                console.log('🔍 Completion indicators:', indicators);
+
+                // If ANY indicator is true, enable payments instantly
+                if (indicators.globalFlag || indicators.localStorageFlag || indicators.cachedProfileComplete || indicators.hasRequiredFields) {
+                    console.log('✅ PROFILE COMPLETED DETECTED - ENABLING PAYMENTS INSTANTLY');
+
+                    // Force enable payments immediately
+                    forceEnablePaymentsInstantly();
+
+                    // Set global flag to prevent re-checking
+                    window.profileCompletedInstantly = true;
+
+                    return true;
+                }
+
+            } catch (error) {
+                console.warn('⚡ Error in instant profile check:', error);
+            }
+
+            console.log('❌ No completion indicators found');
+            return false;
+        }
+
+        // FORCE ENABLE PAYMENTS INSTANTLY - No delays
+        function forceEnablePaymentsInstantly() {
+            console.log('🚀 FORCE ENABLING PAYMENTS INSTANTLY...');
+
+            // Set all flags immediately
+            isUserAuthenticated = true;
+            isUserProfileComplete = true;
+
+            // Populate user profile from localStorage if available
+            try {
+                const cachedProfile = localStorage.getItem('profileData');
+                if (cachedProfile) {
+                    const profile = JSON.parse(cachedProfile);
+                    userProfile = {
+                        name: profile.fullName || profile.name || 'Student',
+                        email: profile.email || '',
+                        phone: profile.phone || '',
+                        fullName: profile.fullName || 'Student',
+                        registrationNumber: profile.registrationNumber || '',
+                        branch: profile.program || profile.branch || '',
+                        year: profile.year || ''
+                    };
+                }
+            } catch (error) {
+                console.warn('Error loading cached profile:', error);
+            }
+
+            // Immediately update ALL payment buttons
+            updatePaymentButtonVisibility();
+
+            // Hide profile notice immediately
+            const profileNotice = document.getElementById('profileNotice');
+            if (profileNotice) {
+                profileNotice.style.display = 'none';
+            }
+
+            console.log('✅ PAYMENTS ENABLED INSTANTLY:', {
+                isUserAuthenticated,
+                isUserProfileComplete,
+                userProfile
+            });
+        }
+
+        // MANUAL PAYMENT ENABLE - Emergency function to force enable payments
+        window.forceEnablePayments = function() {
+            console.log('🚨 FORCE ENABLING PAYMENTS...');
+
+            // Force authentication and profile completion
+            isUserAuthenticated = true;
+            isUserProfileComplete = true;
+
+            // Update all payment buttons
+            updatePaymentButtonVisibility();
+
+            console.log('✅ Payments force-enabled:', {
+                isUserAuthenticated,
+                isUserProfileComplete
+            });
+
+            return true;
+        };
+
+        // TEST INSTANT PROFILE CHECK - Debug function
+        window.testInstantProfileCheck = function() {
+            console.log('🧪 TESTING INSTANT PROFILE CHECK...');
+
+            const result = instantProfileCheck();
+
+            console.log('📊 Instant check result:', result);
+            console.log('📊 Current state:', {
+                isUserAuthenticated,
+                isUserProfileComplete,
+                globalFlag: window.profileCompletedInstantly
+            });
+
+            // Check localStorage
+            try {
+                const cached = localStorage.getItem('profileData');
+                const completedFlag = localStorage.getItem('profileCompleted');
+                console.log('💾 localStorage state:', {
+                    hasProfileData: !!cached,
+                    profileCompletedFlag: completedFlag,
+                    profileData: cached ? JSON.parse(cached) : null
+                });
+            } catch (error) {
+                console.warn('⚠️ Error reading localStorage:', error);
+            }
+
+            return result;
+        };
+
+        // EMERGENCY PROFILE CHECK - More aggressive validation
+        function emergencyProfileCheck() {
+            console.log('🚨 EMERGENCY PROFILE CHECK...');
+
+            // Check if we have cached profile data that indicates completion
+            try {
+                const cachedProfile = localStorage.getItem('profileData');
+                if (cachedProfile) {
+                    const profile = JSON.parse(cachedProfile);
+                    console.log('🚨 Cached profile data:', profile);
+
+                    // Check multiple completion indicators
+                    const hasCompletionFlag = profile.profileCompleted === true;
+                    const hasRequiredFields = !!(profile.phone && profile.registrationNumber && profile.program);
+
+                    console.log('🚨 Completion indicators:', {
+                        hasCompletionFlag,
+                        hasRequiredFields,
+                        phone: profile.phone,
+                        registrationNumber: profile.registrationNumber,
+                        program: profile.program
+                    });
+
+                    if (hasCompletionFlag || hasRequiredFields) {
+                        console.log('🚨 Found completed profile in localStorage, forcing update...');
+
+                        // Update user profile with cached data
+                        userProfile = {
+                            name: profile.fullName || profile.name || '',
+                            email: profile.email || '',
+                            phone: profile.phone || '',
+                            fullName: profile.fullName || '',
+                            registrationNumber: profile.registrationNumber || '',
+                            branch: profile.program || profile.branch || '',
+                            year: profile.year || ''
+                        };
+
+                        // Force the marketplace to recognize this
+                        isUserAuthenticated = true;
+                        isUserProfileComplete = true;
+
+                        updatePaymentButtonVisibility();
+
+                        console.log('🚨 Emergency profile check successful:', {
+                            userProfile,
+                            isUserAuthenticated,
+                            isUserProfileComplete
+                        });
+
+                        return true;
+                    }
+                }
+            } catch (error) {
+                console.warn('🚨 Error in emergency profile check:', error);
+            }
+
+            return false;
+        }
+
         // Initialize
         // Check URL parameters for sidebar activation
         function checkSidebarActivation() {
@@ -3246,14 +3816,86 @@ function isProfileComplete() {
             }
         }
     
+        // CONTINUOUS PROFILE MONITORING
+        function startProfileMonitoring() {
+            console.log('👀 Starting continuous profile monitoring...');
+
+            // Check every 2 seconds for profile completion
+            const monitorInterval = setInterval(() => {
+                if (instantProfileCheck()) {
+                    console.log('🎯 Profile completion detected by monitor - stopping monitoring');
+                    clearInterval(monitorInterval);
+                }
+            }, 2000);
+
+            // Stop monitoring after 30 seconds to avoid infinite checking
+            setTimeout(() => {
+                clearInterval(monitorInterval);
+                console.log('⏰ Profile monitoring stopped (timeout)');
+            }, 30000);
+        }
+
+        // LISTEN FOR PROFILE COMPLETION EVENTS FROM OTHER PAGES
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'profileCompleted' || e.key === 'profileData') {
+                console.log('📡 Storage event detected:', e.key);
+                instantProfileCheck();
+            }
+        });
+
+        // LISTEN FOR CUSTOM PROFILE COMPLETION EVENT
+        window.addEventListener('profileCompleted', function() {
+            console.log('🎉 Profile completion event received!');
+            forceEnablePaymentsInstantly();
+        });
+
         document.addEventListener('DOMContentLoaded', async function() {
+            console.log('🏪 Marketplace page loading...');
+            console.log('💡 TIP: Run testMarketplaceProfile() in console to debug profile issues');
+            console.log('💡 TIP: Run forceRefreshProfileStatus() to force refresh profile status');
+            console.log('💡 TIP: Run forceEnablePayments() to force enable payments (emergency)');
+            console.log('💡 TIP: Run testInstantProfileCheck() to test instant profile detection');
+
             createParticles();
-            await loadUserProfile(); // Load user profile first
+
+            // INSTANT CHECK FIRST - Synchronous check for completed profiles
+            console.log('🚀 RUNNING INSTANT PROFILE CHECK...');
+            const instantResult = instantProfileCheck();
+            if (instantResult) {
+                console.log('⚡ Profile enabled INSTANTLY from localStorage');
+            }
+
+            // START CONTINUOUS MONITORING
+            startProfileMonitoring();
+
+            // IMMEDIATE CHECK - Additional immediate validation
+            const immediateResult = immediateProfileCheck();
+            if (immediateResult && !instantResult) {
+                console.log('⚡ Profile enabled from immediate check');
+            }
+
+            // EMERGENCY CHECK - Additional fallback
+            emergencyProfileCheck();
+
+            await loadUserProfile(); // Load user profile from backend
+            setupProfileRefresh(); // Setup automatic profile refresh
             updateCart();
             handlePaymentStatus();
-    
+
             // Check for sidebar activation from URL
             checkSidebarActivation();
+
+            // Final emergency check after everything loads
+            setTimeout(() => {
+                emergencyProfileCheck();
+                console.log('✅ Marketplace page fully loaded');
+                console.log('🎯 Final profile status:', {
+                    authenticated: isUserAuthenticated,
+                    profileComplete: isUserProfileComplete,
+                    instantCheckResult: instantResult,
+                    immediateCheckResult: immediateResult
+                });
+            }, 1000);
         });
     </script>
 </body>

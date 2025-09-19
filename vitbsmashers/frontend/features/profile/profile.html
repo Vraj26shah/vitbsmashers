@@ -823,6 +823,23 @@ Logout<!DOCTYPE html>
             box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.3);
         }
 
+        /* Email field with lock icon styling */
+        .form-control[readonly] {
+            position: relative;
+            padding-right: 40px; /* Make room for lock icon */
+        }
+
+        .email-lock-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #2ecc71;
+            font-size: 16px;
+            pointer-events: none;
+            z-index: 5;
+        }
+
         .form-note {
             color: var(--warning-color);
             font-size: 12px;
@@ -948,6 +965,57 @@ Logout<!DOCTYPE html>
         .form-row .form-group {
             flex: 1;
             margin-bottom: 0;
+        }
+
+        /* Error message styles */
+        .field-error {
+            color: #e74c3c !important;
+            font-size: 12px !important;
+            margin-top: 5px !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            font-weight: 500 !important;
+        }
+
+        .field-error i {
+            font-size: 14px !important;
+        }
+
+        .general-error {
+            background: rgba(231, 76, 60, 0.1) !important;
+            border: 1px solid #e74c3c !important;
+            border-radius: 8px !important;
+            padding: 12px !important;
+            margin-bottom: 20px !important;
+            color: #e74c3c !important;
+            font-weight: 500 !important;
+            display: flex !important;
+            align-items: center !important;
+            gap: 8px !important;
+        }
+
+        .general-error i {
+            font-size: 16px !important;
+        }
+
+        /* Profile completion indicator */
+        .profile-completed-indicator {
+            background: rgba(46, 204, 113, 0.1) !important;
+            border: 1px solid #2ecc71 !important;
+            border-radius: 20px !important;
+            padding: 4px 12px !important;
+            font-size: 12px !important;
+            color: #2ecc71 !important;
+            font-weight: 600 !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 5px !important;
+            margin-left: 10px !important;
+        }
+
+        .profile-completed-indicator i {
+            font-size: 14px !important;
         }
 
         /* Responsive Design */
@@ -1555,14 +1623,49 @@ Logout<!DOCTYPE html>
             <p class="form-subtitle">Please fill in these mandatory fields to access your Scholars Stack profile</p>
             
             <div class="form-group">
-                <label>VIT Email ID</label>
-                <input type="email" class="form-control" id="vitEmail" placeholder="e.g. john.smith@vitbhopal.ac.in" required>
-                <p class="form-note">This can only be set once and cannot be changed later</p>
+                <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--light-color);">
+                    <i class='bx bx-envelope' style="color: var(--accent-blue);"></i>
+                    Your VIT Email ID
+                </label>
+                <div style="position: relative; margin-top: 8px;">
+                    <input type="email" class="form-control" id="vitEmail" value="" placeholder="Loading your email..." readonly required style="
+                        background-color: #f8f9fa !important;
+                        cursor: not-allowed !important;
+                        border: 2px solid #2ecc71 !important;
+                        color: #2c3e50 !important;
+                        font-weight: 600 !important;
+                        font-size: 16px !important;
+                        padding-right: 50px !important;
+                        text-align: center !important;
+                        letter-spacing: 0.5px !important;
+                    ">
+                    <i class='bx bxs-lock' style="
+                        position: absolute;
+                        right: 15px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        color: #2ecc71;
+                        font-size: 18px;
+                        pointer-events: none;
+                        z-index: 5;
+                    "></i>
+                </div>
+                <div style="background: rgba(46, 204, 113, 0.1); border: 1px solid #2ecc71; border-radius: 8px; padding: 12px; margin-top: 10px;">
+                    <div id="googleEmailIndicator" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+                        <i class='bx bxs-check-circle' style="color: #2ecc71; font-size: 18px;"></i>
+                        <strong style="color: #2ecc71; font-weight: 600;">Successfully logged in with Google</strong>
+                    </div>
+                    <div style="text-align: center;">
+                        <small style="color: #2ecc71; font-weight: 500; font-size: 13px;">
+                            🔒 This email is locked and cannot be changed - it matches your Google account
+                        </small>
+                    </div>
+                </div>
             </div>
             
             <div class="form-group">
                 <label>Phone Number</label>
-                <input type="tel" class="form-control" id="phoneNumber" placeholder="e.g. +91 9876543210" required>
+                <input type="tel" class="form-control" id="phoneNumber" placeholder="e.g. 9876543210" required>
                 <p class="form-note">This can only be set once and cannot be changed later</p>
             </div>
             
@@ -1894,6 +1997,24 @@ Logout<!DOCTYPE html>
             return true;
         }
 
+        // Emergency check: If profile is completed, ensure setup form is never shown
+        function emergencyProfileCheck() {
+            try {
+                const profileData = localStorage.getItem('profileData');
+                if (profileData) {
+                    const parsed = JSON.parse(profileData);
+                    if (parsed.profileCompleted === true) {
+                        console.log('🚨 EMERGENCY: Profile completed detected, forcing profile view');
+                        ensureSetupFormHidden();
+                        return true;
+                    }
+                }
+            } catch (error) {
+                console.warn('⚠️ Error in emergency profile check:', error);
+            }
+            return false;
+        }
+
         // Show login required message
         function showLoginRequired() {
             document.body.innerHTML = `
@@ -1937,7 +2058,7 @@ Logout<!DOCTYPE html>
                             You need to log in to access your profile page. Please sign in to view and manage your account information.
                         </p>
                         <div style="display: flex; gap: 15px; justify-content: center;">
-                            <a href="../../login1.html" style="
+                            <a href="../../index.html" style="
                                 background: #3498db;
                                 color: white;
                                 padding: 12px 24px;
@@ -1951,38 +2072,29 @@ Logout<!DOCTYPE html>
                             " onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">
                                 <i class='bx bx-log-in'></i> Login Now
                             </a>
-                            <a href="../../index.html" style="
-                                background: transparent;
-                                color: #3498db;
-                                padding: 12px 24px;
-                                border-radius: 10px;
-                                text-decoration: none;
-                                font-weight: 600;
-                                border: 2px solid #3498db;
-                                transition: all 0.3s ease;
-                                display: inline-flex;
-                                align-items: center;
-                                gap: 8px;
-                            " onmouseover="this.style.background='#3498db'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='#3498db'">
-                                <i class='bx bx-home'></i> Go Home
-                            </a>
                         </div>
                     </div>
                 </div>
             `;
         }
 
-        // Create background particles
+        // Create background particles (optimized)
         function createParticles() {
             const particlesContainer = document.getElementById('bgParticles');
-            const particleCount = 20;
+            if (!particlesContainer) return;
+
+            // Reduce particle count for better performance
+            const particleCount = 12;
+
+            // Use document fragment for better performance
+            const fragment = document.createDocumentFragment();
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
                 particle.classList.add('particle');
 
-                // Random size
-                const size = Math.random() * 60 + 20;
+                // Random size (smaller for performance)
+                const size = Math.random() * 40 + 15;
                 particle.style.width = `${size}px`;
                 particle.style.height = `${size}px`;
 
@@ -1991,13 +2103,15 @@ Logout<!DOCTYPE html>
                 particle.style.left = `${Math.random() * 100}%`;
 
                 // Random animation delay
-                particle.style.animationDelay = `${Math.random() * 10}s`;
+                particle.style.animationDelay = `${Math.random() * 8}s`;
 
                 // Random opacity
-                particle.style.opacity = Math.random() * 0.5 + 0.3;
+                particle.style.opacity = Math.random() * 0.4 + 0.2;
 
-                particlesContainer.appendChild(particle);
+                fragment.appendChild(particle);
             }
+
+            particlesContainer.appendChild(fragment);
         }
 
         // Setup menu toggle
@@ -2030,13 +2144,82 @@ Logout<!DOCTYPE html>
 
                 if (response.ok) {
                     const data = await response.json();
-                    return data.data || data;
+                    console.log('🔍 Backend response received:', data);
+
+                    if (data.data && data.data.user) {
+                        // Add profile completion status to the user object
+                        const user = data.data.user;
+                        user.profileCompleted = data.data.profileComplete || false;
+                        console.log('✅ Profile loaded successfully:', {
+                            email: user.email,
+                            phone: user.phone,
+                            branch: user.branch,
+                            registrationNumber: user.registrationNumber,
+                            fullName: user.fullName,
+                            profileCompleted: user.profileCompleted,
+                            hasRequiredFields: !!(user.phone && user.registrationNumber && user.branch)
+                        });
+                        return user;
+                    } else {
+                        console.warn('⚠️ Backend response missing user data:', data);
+                    }
+                } else {
+                    console.warn('⚠️ Backend response not OK:', response.status, response.statusText);
                 }
                 return null;
             } catch (error) {
                 console.error('Failed to load profile:', error);
                 return null;
             }
+        }
+
+        // Get user data from backend (for email population)
+        async function getUserData() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.log('❌ No token available for user data fetch');
+                    return null;
+                }
+
+                console.log('🔄 Fetching user data from backend...');
+                const response = await fetch('http://localhost:4000/api/v1/profile/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ User data received:', data);
+                    return data.data && data.data.user ? data.data.user : null;
+                } else {
+                    console.log('❌ Failed to fetch user data, status:', response.status);
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Error fetching user data:', error);
+                return null;
+            }
+        }
+
+        // Function to ensure email is properly displayed
+        function displayUserEmail(email) {
+            const emailField = document.getElementById('vitEmail');
+            if (emailField && email) {
+                emailField.value = email;
+                emailField.placeholder = '';
+                console.log('📧 Email displayed to user:', email);
+
+                // Add success styling
+                emailField.style.boxShadow = '0 0 0 3px rgba(46, 204, 113, 0.3)';
+                setTimeout(() => {
+                    emailField.style.boxShadow = '';
+                }, 2000);
+
+                return true;
+            }
+            return false;
         }
 
         // Load purchased courses from backend
@@ -2067,37 +2250,424 @@ Logout<!DOCTYPE html>
             }
         }
 
-        // Initialize profile page
-        async function initializeProfile() {
-            const profileData = await loadUserProfile();
 
-            if (profileData) {
-                // Profile exists in backend
-                document.getElementById('setupForm').style.display = 'none';
-                document.getElementById('profileSection').style.display = 'block';
-                document.getElementById('profileSection').classList.add('active');
+        // ULTRA-SIMPLE INITIALIZATION: Show profile immediately
+        function initializeProfileInstantly() {
+            console.log('⚡ SIMPLE INIT: Starting profile...');
 
-                // Populate profile data
-                document.getElementById('userEmail').textContent = profileData.email || 'Not specified';
-                document.getElementById('userPhone').textContent = profileData.phone || 'Not specified';
-                document.getElementById('userProgram').textContent = profileData.branch || 'Not specified';
-                document.getElementById('userReg').textContent = `Registration: ${profileData.registrationNumber || 'Not specified'}`;
-                document.getElementById('userProgramText').textContent = profileData.branch || 'Not specified';
-                document.getElementById('userRegText').textContent = profileData.registrationNumber || 'Not specified';
+            // STEP 1: Check localStorage FIRST (instant)
+            const cachedProfile = getCachedProfileData();
+            console.log('📦 Cached profile data:', cachedProfile);
 
-                document.getElementById('userFullName').textContent = profileData.fullName || profileData.username || 'Student';
-                document.getElementById('editableName').textContent = profileData.fullName || profileData.username || 'Student';
+            if (cachedProfile && cachedProfile.profileCompleted) {
+                console.log('🚀 INSTANT: Showing cached profile data');
+                showProfileFromCache(cachedProfile);
+                // Start background sync with backend
+                syncWithBackendInBackground();
+                return;
+            }
 
-                // Set avatar
-                const avatarUrl = profileData.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(profileData.fullName || profileData.username || 'Student')}&background=3498db&color=fff&size=200`;
-                document.getElementById('avatarImage').src = avatarUrl;
+            console.log('📝 No valid cached data, proceeding with backend load');
 
-                // Load purchased courses
-                loadPurchasedCourses();
-            } else {
-                // Profile not completed, show setup form
-                document.getElementById('setupForm').style.display = 'block';
-                document.getElementById('profileSection').style.display = 'none';
+            // STEP 2: Show profile section immediately (no loading)
+            showProfileSection();
+
+            // STEP 3: Load from backend and update
+            loadProfileFromBackend();
+        }
+
+        // Show profile from cached data (instant)
+        function showProfileFromCache(cachedProfile) {
+            console.log('📱 Showing cached profile instantly');
+
+            // Hide setup form immediately
+            document.getElementById('setupForm').style.display = 'none';
+
+            // Show profile section
+            document.getElementById('profileSection').style.display = 'block';
+            document.getElementById('profileSection').classList.add('active');
+
+            // Populate with cached data instantly
+            populateCompleteProfile(cachedProfile);
+
+            // Load courses later (non-blocking)
+            setTimeout(() => loadPurchasedCourses(), 200);
+
+            // Ensure setup form stays hidden
+            ensureSetupFormHidden();
+
+            console.log('✅ Cached profile displayed instantly');
+        }
+
+        // Simple function to show profile section immediately
+        function showProfileSection() {
+            console.log('📱 Showing profile section immediately');
+
+            // Hide setup form
+            document.getElementById('setupForm').style.display = 'none';
+
+            // Show profile section
+            const profileSection = document.getElementById('profileSection');
+            profileSection.style.display = 'block';
+            profileSection.classList.add('active');
+
+            // Ensure setup form stays hidden
+            ensureSetupFormHidden();
+        }
+
+        // Load profile from backend (after showing cache or loading state)
+        async function loadProfileFromBackend() {
+            console.log('🔄 Loading profile from backend...');
+
+            try {
+                const profileData = await loadUserProfile();
+
+                if (profileData) {
+                    console.log('📊 Backend profile data loaded');
+
+                    // Check if profile is completed
+                    const isProfileCompleted = profileData && (
+                        profileData.profileCompleted === true ||
+                        (profileData.phone && profileData.registrationNumber && profileData.branch)
+                    );
+
+                    if (isProfileCompleted) {
+                        console.log('✅ PROFILE COMPLETED: Showing profile view');
+
+                        // Update with fresh backend data
+                        document.getElementById('setupForm').style.display = 'none';
+                        document.getElementById('profileSection').style.display = 'block';
+                        document.getElementById('profileSection').classList.add('active');
+
+                        // Populate with backend data
+                        populateCompleteProfile(profileData);
+
+                        // Load courses after profile is shown (deferred)
+                        setTimeout(() => loadPurchasedCourses(), 300);
+
+                        // Update localStorage with fresh data
+                        updateLocalStorageWithBackendData(profileData);
+
+                        console.log('✅ Backend profile data populated successfully');
+
+                        // Ensure setup form stays hidden
+                        ensureSetupFormHidden();
+
+                    } else {
+                        console.log('📝 Profile not completed, showing setup form');
+
+                        // Hide profile section and show setup form
+                        document.getElementById('profileSection').style.display = 'none';
+                        document.getElementById('setupForm').style.display = 'block';
+
+                        // Populate email from token
+                        populateEmailForSetup();
+                    }
+                } else {
+                    console.log('❌ No profile data from backend');
+                    // Show setup form if no data
+                    document.getElementById('profileSection').style.display = 'none';
+                    document.getElementById('setupForm').style.display = 'block';
+                    populateEmailForSetup();
+                }
+
+            } catch (error) {
+                console.error('❌ Error loading profile from backend:', error);
+
+                // Fallback to cached data if available
+                const cachedProfile = getCachedProfileData();
+                if (cachedProfile && cachedProfile.profileCompleted) {
+                    console.log('📱 Fallback: Using cached profile data');
+                    showProfileFromCache(cachedProfile);
+                } else {
+                    // Show setup form as last resort
+                    document.getElementById('profileSection').style.display = 'none';
+                    document.getElementById('setupForm').style.display = 'block';
+                    populateEmailForSetup();
+                }
+            }
+        }
+
+        // Background sync with backend (non-blocking)
+        function syncWithBackendInBackground() {
+            console.log('🔄 Starting background sync...');
+            setTimeout(async () => {
+                try {
+                    const profileData = await loadUserProfile();
+                    if (profileData) {
+                        // Silently update with fresh data
+                        populateCompleteProfile(profileData);
+                        updateLocalStorageWithBackendData(profileData);
+                        console.log('🔄 Background sync completed');
+                    }
+                } catch (error) {
+                    console.log('⚠️ Background sync failed (non-critical)');
+                }
+            }, 1000); // Wait 1 second before background sync
+        }
+
+        // Update localStorage with backend data
+        function updateLocalStorageWithBackendData(profileData) {
+            try {
+                const localProfileData = {
+                    email: profileData.email,
+                    phone: profileData.phone,
+                    program: profileData.branch,
+                    regNumber: profileData.registrationNumber,
+                    fullName: profileData.fullName || 'Student',
+                    profileCompleted: profileData.profileCompleted ||
+                        !!(profileData.phone && profileData.registrationNumber && profileData.branch),
+                    lastUpdated: new Date().toISOString(),
+                    schedule: getStoredSchedule()
+                };
+                localStorage.setItem('profileData', JSON.stringify(localProfileData));
+            } catch (error) {
+                console.warn('⚠️ Failed to update localStorage with backend data');
+            }
+        }
+
+        // Populate email for setup form
+        function populateEmailForSetup() {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.email) {
+                        displayUserEmail(payload.email);
+                    }
+                }
+            } catch (error) {
+                console.warn('⚠️ Error populating email for setup');
+            }
+        }
+
+        // Get cached profile data from localStorage
+        function getCachedProfileData() {
+            try {
+                const cached = localStorage.getItem('profileData');
+                console.log('🔍 Raw localStorage data:', cached);
+
+                if (cached) {
+                    const profileData = JSON.parse(cached);
+                    console.log('📦 Parsed cached profile data:', profileData);
+
+                    // Check if cache is recent (within 24 hours)
+                    if (profileData.lastUpdated) {
+                        const cacheAge = new Date() - new Date(profileData.lastUpdated);
+                        const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+                        console.log('⏱️ Cache age:', cacheAge, 'ms (max allowed:', oneDay, 'ms)');
+
+                        if (cacheAge < oneDay) {
+                            console.log('📅 Using recent cached profile data');
+                            return profileData;
+                        } else {
+                            console.log('⏰ Cached profile data is too old, ignoring');
+                            localStorage.removeItem('profileData');
+                        }
+                    } else {
+                        console.log('⚠️ No lastUpdated timestamp in cached data');
+                        // Still use it if it exists but has no timestamp
+                        return profileData;
+                    }
+                } else {
+                    console.log('❌ No cached profile data in localStorage');
+                }
+            } catch (error) {
+                console.warn('⚠️ Error reading cached profile data:', error);
+                localStorage.removeItem('profileData'); // Clear corrupted data
+            }
+            return null;
+        }
+
+        // Get stored schedule data from localStorage
+        function getStoredSchedule() {
+            try {
+                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                return profileData.schedule || [];
+            } catch (error) {
+                console.warn('⚠️ Error reading stored schedule:', error);
+                return [];
+            }
+        }
+
+        // FAST PROFILE POPULATION: Optimized for speed
+        function populateCompleteProfile(profileData) {
+            if (!profileData) {
+                console.warn('⚠️ No profile data provided to populateCompleteProfile');
+                return;
+            }
+
+            console.log('📊 Populating profile with data:', profileData);
+
+            // Use requestAnimationFrame for smooth DOM updates
+            requestAnimationFrame(() => {
+                // Batch DOM reads first (more efficient)
+                const elements = {
+                    userEmail: document.getElementById('userEmail'),
+                    userPhone: document.getElementById('userPhone'),
+                    userProgram: document.getElementById('userProgram'),
+                    userReg: document.getElementById('userReg'),
+                    userProgramText: document.getElementById('userProgramText'),
+                    userRegText: document.getElementById('userRegText'),
+                    userFullName: document.getElementById('userFullName'),
+                    editableName: document.getElementById('editableName'),
+                    avatarImage: document.getElementById('avatarImage'),
+                    userSemester: document.getElementById('userSemester'),
+                    userCGPA: document.getElementById('userCGPA'),
+                    headerCGPA: document.getElementById('headerCGPA'),
+                    headerSemester: document.getElementById('headerSemester'),
+                    userDOB: document.getElementById('userDOB')
+                };
+
+                // Ensure email is available (try multiple sources)
+                let userEmail = profileData.email;
+                if (!userEmail) {
+                    try {
+                        const token = localStorage.getItem('token');
+                        if (token) {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            userEmail = payload.email;
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ Error getting email from token');
+                    }
+                }
+
+                // Extract user data with fallbacks
+                const fullName = profileData.fullName || profileData.username || 'Student';
+                const phone = profileData.phone || 'Not specified';
+                const program = profileData.branch || profileData.program || 'Not specified';
+                const regNumber = profileData.registrationNumber || profileData.regNumber || 'Not specified';
+                const semester = profileData.semester || 'Not specified';
+                const cgpa = profileData.cgpa || 'Not specified';
+                const dob = profileData.dob || 'Not specified';
+
+                console.log('📝 Extracted user data:', {
+                    fullName, phone, program, regNumber, semester, cgpa, dob, userEmail
+                });
+
+                // Batch DOM writes (much faster)
+                if (elements.userEmail) {
+                    elements.userEmail.textContent = userEmail || 'Not specified';
+                    console.log('✅ Email populated:', userEmail);
+                }
+                if (elements.userPhone) {
+                    elements.userPhone.textContent = phone;
+                    console.log('✅ Phone populated:', phone);
+                }
+                if (elements.userProgram) {
+                    elements.userProgram.textContent = program;
+                    console.log('✅ Program populated:', program);
+                }
+                if (elements.userReg) {
+                    elements.userReg.textContent = `Registration: ${regNumber}`;
+                    console.log('✅ Registration populated:', regNumber);
+                }
+                if (elements.userProgramText) {
+                    elements.userProgramText.textContent = program;
+                }
+                if (elements.userRegText) {
+                    elements.userRegText.textContent = regNumber;
+                }
+                if (elements.userFullName) {
+                    elements.userFullName.textContent = fullName;
+                    console.log('✅ Full name populated:', fullName);
+                }
+                if (elements.editableName) {
+                    elements.editableName.textContent = fullName;
+                }
+                if (elements.userSemester) {
+                    elements.userSemester.textContent = semester;
+                }
+                if (elements.userCGPA) {
+                    elements.userCGPA.textContent = cgpa;
+                }
+                if (elements.headerCGPA) {
+                    elements.headerCGPA.textContent = cgpa;
+                }
+                if (elements.headerSemester) {
+                    elements.headerSemester.textContent = semester.split(' ')[0] || '1';
+                }
+                if (elements.userDOB) {
+                    elements.userDOB.textContent = dob;
+                }
+
+                // Set avatar (lazy load for performance)
+                if (elements.avatarImage) {
+                    const avatarUrl = profileData.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=3498db&color=fff&size=200`;
+                    elements.avatarImage.src = avatarUrl;
+                    console.log('✅ Avatar set:', avatarUrl);
+                }
+
+                // Mark profile as completed (deferred)
+                setTimeout(() => markProfileAsCompleted(), 50);
+
+                console.log('✅ Profile population completed');
+            });
+        }
+
+        // Function to mark profile fields as completed and read-only
+        function markProfileAsCompleted() {
+            // Add visual indicators that profile is completed
+            const profileCard = document.querySelector('.profile-card');
+            if (profileCard) {
+                profileCard.style.borderColor = '#2ecc71';
+                profileCard.style.boxShadow = '0 12px 25px rgba(46, 204, 113, 0.3)';
+            }
+
+            // Add completion badge to page title
+            const pageTitle = document.querySelector('.page-title');
+            if (pageTitle) {
+                const completionBadge = document.createElement('span');
+                completionBadge.className = 'profile-completed-indicator';
+                completionBadge.innerHTML = '<i class="bx bxs-check-circle"></i> Profile Completed';
+                pageTitle.appendChild(completionBadge);
+            }
+
+            // Hide edit buttons for core profile fields (email, phone, program, registration)
+            const editButtons = document.querySelectorAll('.edit-btn[data-target]');
+            editButtons.forEach(button => {
+                const target = button.getAttribute('data-target');
+                // Only hide edit buttons for core profile information, not schedule
+                if (target !== 'scheduleForm') {
+                    button.style.display = 'none';
+                }
+            });
+
+            // Add read-only styling to fixed fields
+            const fixedFields = document.querySelectorAll('.fixed-field');
+            fixedFields.forEach(field => {
+                field.style.position = 'relative';
+                if (!field.querySelector('.readonly-indicator')) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'readonly-indicator';
+                    indicator.innerHTML = ' <i class="bx bx-lock-alt" style="font-size: 10px; opacity: 0.7;"></i>';
+                    indicator.style.cssText = 'color: #2ecc71; font-weight: 600;';
+                    field.appendChild(indicator);
+                }
+            });
+
+            console.log('✅ Profile marked as completed and read-only');
+        }
+
+        // Function to ensure setup form is permanently hidden for completed profiles
+        function ensureSetupFormHidden() {
+            const setupForm = document.getElementById('setupForm');
+            const profileSection = document.getElementById('profileSection');
+
+            if (setupForm && profileSection) {
+                // Force hide setup form
+                setupForm.style.display = 'none';
+                setupForm.style.visibility = 'hidden';
+                setupForm.style.opacity = '0';
+
+                // Force show profile section
+                profileSection.style.display = 'block';
+                profileSection.style.visibility = 'visible';
+                profileSection.style.opacity = '1';
+                profileSection.classList.add('active');
+
+                console.log('🔒 Setup form permanently hidden, profile view enforced');
             }
         }
         
@@ -2135,25 +2705,45 @@ Logout<!DOCTYPE html>
         
         // Save profile setup
         document.getElementById('saveSetup').addEventListener('click', async function() {
+            // Clear any previous error messages
+            clearFieldErrors();
+
+            // Get email from the locked field (which is already populated from backend/token)
             const vitEmail = document.getElementById('vitEmail').value;
+
+            if (!vitEmail) {
+                showFieldError('vitEmail', 'Email not found. Please refresh the page and try again.');
+                return;
+            }
+
             const phone = document.getElementById('phoneNumber').value;
             const program = document.getElementById('programSelect').value;
             const regNumber = document.getElementById('regNumber').value;
 
-            if (!vitEmail || !phone || !program || !regNumber) {
-                alert('Please fill in all mandatory fields!');
+            // Basic client-side validation
+            let hasClientErrors = false;
+
+            if (!phone || phone.trim() === '') {
+                showFieldError('phoneNumber', 'Phone number is required');
+                hasClientErrors = true;
+            }
+
+            if (!program || program.trim() === '') {
+                showFieldError('programSelect', 'Program selection is required');
+                hasClientErrors = true;
+            }
+
+            if (!regNumber || regNumber.trim() === '') {
+                showFieldError('regNumber', 'Registration number is required');
+                hasClientErrors = true;
+            }
+
+            if (hasClientErrors) {
                 return;
             }
 
-            if (!vitEmail.endsWith('@vitbhopal.ac.in')) {
-                alert('Please enter a valid VIT Bhopal email address');
-                return;
-            }
-
-            if (!/^\d{2}[A-Z]{3}\d{5}$/.test(regNumber)) {
-                alert('Please enter a valid registration number (e.g. 23BCE0001)');
-                return;
-            }
+            // Clean phone number (remove any spaces or +91 prefix if accidentally added)
+            const cleanPhone = phone.replace(/\s+/g, '').replace(/^\+91/, '');
 
             // Show loading state
             const saveBtn = document.getElementById('saveSetup');
@@ -2165,8 +2755,8 @@ Logout<!DOCTYPE html>
                 // Call backend API to update profile
                 const token = localStorage.getItem('token');
                 if (!token) {
-                    alert('Please log in first');
-                    window.location.href = 'login1.html';
+                    showGeneralError('Please log in first');
+                    window.location.href = '../index.html';
                     return;
                 }
 
@@ -2178,30 +2768,78 @@ Logout<!DOCTYPE html>
                     },
                     body: JSON.stringify({
                         fullName: 'Student', // Default name, can be changed later
-                        phone: phone,
+                        phone: cleanPhone,
                         registrationNumber: regNumber,
-                        branch: program
+                        branch: program,
+                        email: vitEmail // Include email to ensure it's properly stored
                     })
                 });
 
-                if (!response.ok) {
-                    throw new Error('Failed to update profile');
-                }
-
                 const data = await response.json();
 
-                // Save to localStorage as well
-                const profileData = {
-                    email: vitEmail,
-                    phone: phone,
-                    program: program,
-                    regNumber: regNumber,
-                    fullName: 'Student',
-                    schedule: []
-                };
+                if (!response.ok) {
+                    // Handle detailed error messages from backend
+                    if (data.errors) {
+                        // Show specific field errors
+                        Object.keys(data.errors).forEach(field => {
+                            if (field === 'general') {
+                                showGeneralError(data.errors[field]);
+                            } else {
+                                showFieldError(field, data.errors[field]);
+                            }
+                        });
+                    } else {
+                        showGeneralError(data.message || 'Failed to save profile. Please try again.');
+                    }
+                    return;
+                }
 
-                localStorage.setItem('profileData', JSON.stringify(profileData));
-                localStorage.setItem('profileCompleted', 'true');
+                // Success - profile completed
+                console.log('✅ Profile completed successfully:', data);
+
+                // Save complete profile data to localStorage for offline access and consistency
+                try {
+                    const profileData = {
+                        email: vitEmail,
+                        phone: cleanPhone,
+                        program: program,
+                        regNumber: regNumber,
+                        fullName: 'Student',
+                        profileCompleted: true,
+                        lastUpdated: new Date().toISOString(),
+                        schedule: getStoredSchedule() // Preserve any existing schedule data
+                    };
+
+                    localStorage.setItem('profileData', JSON.stringify(profileData));
+                    console.log('💾 Profile data saved to localStorage successfully');
+
+                    // INSTANT NOTIFICATION TO MARKETPLACE - CRITICAL FOR IMMEDIATE RECOGNITION
+                    console.log('📢 INSTANT: Notifying marketplace of profile completion...');
+
+                    // Set global flag for instant recognition across all tabs/windows
+                    window.profileCompletedInstantly = true;
+                    localStorage.setItem('profileCompleted', 'true');
+
+                    // Dispatch custom event for same-window marketplace
+                    window.dispatchEvent(new CustomEvent('profileCompleted'));
+
+                    // Also notify parent window if in iframe
+                    if (window.parent && window.parent !== window) {
+                        try {
+                            window.parent.profileCompletedInstantly = true;
+                            window.parent.dispatchEvent(new CustomEvent('profileCompleted'));
+                            console.log('📢 INSTANT: Notified parent window');
+                        } catch (error) {
+                            console.warn('⚠️ Could not notify parent window:', error);
+                        }
+                    }
+
+                    console.log('📢 INSTANT: Profile completion notification sent to all listeners');
+
+                } catch (error) {
+                    console.warn('⚠️ Failed to save profile to localStorage:', error);
+                    // Continue with the flow even if localStorage fails
+                }
 
                 document.getElementById('setupForm').style.display = 'none';
                 document.getElementById('successAnimation').style.display = 'block';
@@ -2213,19 +2851,15 @@ Logout<!DOCTYPE html>
                     setTimeout(() => {
                         document.getElementById('profileSection').classList.add('active');
 
-                        // Update profile with saved data
-                        document.getElementById('userEmail').textContent = vitEmail;
-                        document.getElementById('userPhone').textContent = phone;
-                        document.getElementById('userProgram').textContent = program;
-                        document.getElementById('userReg').textContent = `Registration: ${regNumber}`;
-                        document.getElementById('userProgramText').textContent = program;
-                        document.getElementById('userRegText').textContent = regNumber;
-                        document.getElementById('userFullName').textContent = 'Student';
-                        document.getElementById('editableName').textContent = 'Student';
-
-                        // Set default avatar
-                        const defaultAvatar = "https://ui-avatars.com/api/?name=Student&background=3498db&color=fff&size=200";
-                        document.getElementById('avatarImage').src = defaultAvatar;
+                        // Populate complete profile with data from backend response
+                        if (data.data && data.data.user) {
+                            console.log('📊 Populating with backend response data:', data.data.user);
+                            populateCompleteProfile(data.data.user);
+                        } else {
+                            // Fallback to local data
+                            console.log('📱 Falling back to local profile data:', profileData);
+                            populateCompleteProfile(profileData);
+                        }
 
                         // Load purchased courses
                         loadPurchasedCourses();
@@ -2234,24 +2868,113 @@ Logout<!DOCTYPE html>
 
             } catch (error) {
                 console.error('Profile update error:', error);
-                alert('Failed to save profile. Please try again.');
+                showGeneralError('Network error. Please check your connection and try again.');
             } finally {
                 saveBtn.textContent = originalText;
                 saveBtn.disabled = false;
             }
         });
+
+        // Function to show field-specific error messages
+        function showFieldError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+
+            // Remove any existing error for this field
+            const existingError = field.parentNode.querySelector('.field-error');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Create error message element
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'field-error';
+            errorDiv.innerHTML = `<i class='bx bx-error-circle'></i> ${message}`;
+            errorDiv.style.cssText = `
+                color: #e74c3c;
+                font-size: 12px;
+                margin-top: 5px;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                font-weight: 500;
+            `;
+
+            // Insert error message after the field
+            field.parentNode.insertBefore(errorDiv, field.nextSibling);
+
+            // Highlight the field
+            field.style.borderColor = '#e74c3c';
+            field.style.boxShadow = '0 0 0 3px rgba(231, 76, 60, 0.3)';
+
+            console.log(`❌ Field error for ${fieldId}:`, message);
+        }
+
+        // Function to show general error message
+        function showGeneralError(message) {
+            // Remove any existing general error
+            const existingError = document.querySelector('.general-error');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Create general error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'general-error';
+            errorDiv.innerHTML = `<i class='bx bx-error'></i> ${message}`;
+            errorDiv.style.cssText = `
+                background: rgba(231, 76, 60, 0.1);
+                border: 1px solid #e74c3c;
+                border-radius: 8px;
+                padding: 12px;
+                margin-bottom: 20px;
+                color: #e74c3c;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            `;
+
+            // Insert at the top of the form
+            const form = document.getElementById('setupForm');
+            form.insertBefore(errorDiv, form.firstChild);
+
+            console.log('❌ General error:', message);
+        }
+
+        // Function to clear all field errors
+        function clearFieldErrors() {
+            // Remove field errors
+            document.querySelectorAll('.field-error').forEach(error => error.remove());
+
+            // Reset field styles
+            const fields = ['vitEmail', 'phoneNumber', 'programSelect', 'regNumber'];
+            fields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.style.borderColor = '';
+                    field.style.boxShadow = '';
+                }
+            });
+
+            // Remove general error
+            const generalError = document.querySelector('.general-error');
+            if (generalError) {
+                generalError.remove();
+            }
+        }
         
         // Edit personal information
         document.getElementById('savePersonal').addEventListener('click', function(e) {
             e.preventDefault();
             const fullName = document.getElementById('nameInput').value;
             const dob = document.getElementById('dobInput').value;
-            
+
             if (!fullName && !dob) {
                 alert('Please fill in at least one field');
                 return;
             }
-            
+
             let formattedDOB = '';
             if (dob) {
                 const dobDate = new Date(dob);
@@ -2259,32 +2982,46 @@ Logout<!DOCTYPE html>
                     day: 'numeric', month: 'long', year: 'numeric'
                 });
             }
-            
+
             if (fullName) {
                 document.getElementById('userFullName').textContent = fullName;
                 document.getElementById('editableName').textContent = fullName;
             }
-            
+
             if (dob) {
                 document.getElementById('userDOB').textContent = formattedDOB;
             }
-            
+
             document.getElementById('personalForm').style.display = 'none';
-            
-            // Save to localStorage
-            const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-            if (fullName) profileData.fullName = fullName;
-            if (dob) profileData.dob = formattedDOB;
-            localStorage.setItem('profileData', JSON.stringify(profileData));
-            
+
+            // Save to localStorage with error handling
+            try {
+                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                if (fullName) profileData.fullName = fullName;
+                if (dob) profileData.dob = formattedDOB;
+                profileData.lastUpdated = new Date().toISOString();
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+                console.log('💾 Personal info updated in localStorage');
+            } catch (error) {
+                console.warn('⚠️ Failed to update personal info in localStorage:', error);
+            }
+
             // Update avatar if name changed
             if (fullName) {
-                const defaultAvatar = "https://ui-avatars.com/api/?name=" + 
-                    encodeURIComponent(fullName) + 
+                const defaultAvatar = "https://ui-avatars.com/api/?name=" +
+                    encodeURIComponent(fullName) +
                     "&background=3498db&color=fff&size=200";
                 document.getElementById('avatarImage').src = defaultAvatar;
-                profileData.avatar = defaultAvatar;
-                localStorage.setItem('profileData', JSON.stringify(profileData));
+
+                // Update avatar in localStorage
+                try {
+                    const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                    profileData.avatar = defaultAvatar;
+                    profileData.lastUpdated = new Date().toISOString();
+                    localStorage.setItem('profileData', JSON.stringify(profileData));
+                } catch (error) {
+                    console.warn('⚠️ Failed to update avatar in localStorage:', error);
+                }
             }
         });
         
@@ -2298,29 +3035,35 @@ Logout<!DOCTYPE html>
             e.preventDefault();
             const semester = document.getElementById('semesterInput').value;
             const cgpa = document.getElementById('cgpaInput').value;
-            
+
             if (!semester && !cgpa) {
                 alert('Please fill in at least one field');
                 return;
             }
-            
+
             if (semester) {
                 document.getElementById('userSemester').textContent = semester;
                 document.getElementById('headerSemester').textContent = semester.split(' ')[0];
             }
-            
+
             if (cgpa) {
                 document.getElementById('userCGPA').textContent = cgpa;
                 document.getElementById('headerCGPA').textContent = cgpa;
             }
-            
+
             document.getElementById('academicForm').style.display = 'none';
-            
-            // Save to localStorage
-            const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-            if (semester) profileData.semester = semester;
-            if (cgpa) profileData.cgpa = cgpa;
-            localStorage.setItem('profileData', JSON.stringify(profileData));
+
+            // Save to localStorage with error handling
+            try {
+                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                if (semester) profileData.semester = semester;
+                if (cgpa) profileData.cgpa = cgpa;
+                profileData.lastUpdated = new Date().toISOString();
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+                console.log('💾 Academic info updated in localStorage');
+            } catch (error) {
+                console.warn('⚠️ Failed to update academic info in localStorage:', error);
+            }
         });
         
         document.getElementById('cancelAcademic').addEventListener('click', function(e) {
@@ -2353,12 +3096,18 @@ Logout<!DOCTYPE html>
             };
             
             addScheduleToUI(scheduleItem);
-            
-            // Save to localStorage
-            const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-            if (!profileData.schedule) profileData.schedule = [];
-            profileData.schedule.push(scheduleItem);
-            localStorage.setItem('profileData', JSON.stringify(profileData));
+
+            // Save to localStorage with error handling
+            try {
+                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                if (!profileData.schedule) profileData.schedule = [];
+                profileData.schedule.push(scheduleItem);
+                profileData.lastUpdated = new Date().toISOString();
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+                console.log('💾 Schedule item added to localStorage');
+            } catch (error) {
+                console.warn('⚠️ Failed to save schedule to localStorage:', error);
+            }
             
             // Clear form
             document.getElementById('scheduleDay').value = '';
@@ -2382,12 +3131,18 @@ Logout<!DOCTYPE html>
             // Add delete functionality
             scheduleItem.querySelector('.delete-btn').addEventListener('click', function() {
                 scheduleItem.remove();
-                
-                // Remove from localStorage
-                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-                if (profileData.schedule) {
-                    profileData.schedule = profileData.schedule.filter(s => s.display !== this.dataset.id);
-                    localStorage.setItem('profileData', JSON.stringify(profileData));
+
+                // Remove from localStorage with error handling
+                try {
+                    const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                    if (profileData.schedule) {
+                        profileData.schedule = profileData.schedule.filter(s => s.display !== this.dataset.id);
+                        profileData.lastUpdated = new Date().toISOString();
+                        localStorage.setItem('profileData', JSON.stringify(profileData));
+                        console.log('💾 Schedule item removed from localStorage');
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Failed to remove schedule from localStorage:', error);
                 }
             });
         }
@@ -2431,26 +3186,110 @@ Logout<!DOCTYPE html>
         // Avatar upload functionality
         const avatarUpload = document.getElementById('avatarUpload');
         const profileAvatar = document.getElementById('profileAvatar');
-        
+
         profileAvatar.addEventListener('click', function() {
             avatarUpload.click();
         });
-        
+
         avatarUpload.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Please select an image smaller than 5MB');
+                    return;
+                }
+
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select a valid image file');
+                    return;
+                }
+
                 const reader = new FileReader();
                 reader.onload = function(event) {
                     document.getElementById('avatarImage').src = event.target.result;
-                    
-                    // Save to localStorage
-                    const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-                    profileData.avatar = event.target.result;
-                    localStorage.setItem('profileData', JSON.stringify(profileData));
+
+                    // Save to localStorage with error handling
+                    try {
+                        const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                        profileData.avatar = event.target.result;
+                        profileData.lastUpdated = new Date().toISOString();
+                        localStorage.setItem('profileData', JSON.stringify(profileData));
+                        console.log('💾 Avatar updated in localStorage');
+                    } catch (error) {
+                        console.warn('⚠️ Failed to save avatar to localStorage:', error);
+                    }
                 };
                 reader.readAsDataURL(file);
             }
         });
+
+        // Function to clear old localStorage data (cleanup utility)
+        function clearOldProfileData() {
+            try {
+                const profileData = localStorage.getItem('profileData');
+                if (profileData) {
+                    const parsed = JSON.parse(profileData);
+                    // Check if data is older than 30 days
+                    if (parsed.lastUpdated) {
+                        const dataAge = new Date() - new Date(parsed.lastUpdated);
+                        const thirtyDays = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+                        if (dataAge > thirtyDays) {
+                            console.log('🧹 Clearing old profile data from localStorage');
+                            localStorage.removeItem('profileData');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('⚠️ Error clearing old profile data:', error);
+                // Clear corrupted data
+                localStorage.removeItem('profileData');
+            }
+        }
+
+        // Function to sync profile data with backend
+        async function syncProfileWithBackend() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return false;
+
+                const response = await fetch('http://localhost:4000/api/v1/profile/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.data && data.data.user) {
+                        const backendProfile = data.data.user;
+
+                        // Update localStorage with fresh backend data
+                        try {
+                            const localProfileData = {
+                                email: backendProfile.email,
+                                phone: backendProfile.phone,
+                                program: backendProfile.branch,
+                                regNumber: backendProfile.registrationNumber,
+                                fullName: backendProfile.fullName || 'Student',
+                                profileCompleted: backendProfile.isProfileComplete(),
+                                lastUpdated: new Date().toISOString(),
+                                schedule: getStoredSchedule() // Preserve existing schedule
+                            };
+                            localStorage.setItem('profileData', JSON.stringify(localProfileData));
+                            console.log('🔄 Profile data synced with backend');
+                            return true;
+                        } catch (error) {
+                            console.warn('⚠️ Failed to sync profile data to localStorage:', error);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('⚠️ Failed to sync profile with backend:', error);
+            }
+            return false;
+        }
         
         // Edit button functionality
         const editButtons = document.querySelectorAll('.edit-btn');
@@ -2571,23 +3410,131 @@ Logout<!DOCTYPE html>
             alert('Analytics feature coming soon!');
         }
 
-        // Initialize page
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Check authentication first
+
+        // Check URL parameters for sidebar activation
+        function checkSidebarActivation() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('sidebar') === 'active') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.classList.add('active');
+                }
+            }
+        }
+
+        // DEBUG FUNCTION: Test profile loading manually
+        window.testProfileLoading = async function() {
+            console.log('🧪 TESTING PROFILE LOADING...');
+
+            // Test 1: Check localStorage
+            const cached = getCachedProfileData();
+            console.log('📦 Cached data:', cached);
+
+            // Test 2: Load from backend
+            const backendData = await loadUserProfile();
+            console.log('🔄 Backend data:', backendData);
+
+            // Test 3: Populate profile
+            if (backendData) {
+                populateCompleteProfile(backendData);
+                console.log('✅ Profile populated with backend data');
+            } else if (cached) {
+                populateCompleteProfile(cached);
+                console.log('✅ Profile populated with cached data');
+            } else {
+                console.log('❌ No data available to populate');
+            }
+
+            return { cached, backendData };
+        };
+
+        // ULTRA-FAST INITIALIZATION
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 ULTRA-FAST: Starting profile page...');
+
+            // Check authentication first (blocking - must happen)
             if (!checkAuthentication()) {
-                return; // Stop initialization if not authenticated
+                return;
             }
 
-            createParticles();
+            // PHASE 1: CRITICAL (instant - no delay)
+            emergencyProfileCheck(); // Hide setup form if profile completed
+            initializeProfileInstantly(); // Show cached data instantly
 
-            // Initialize profile
-            await initializeProfile();
+            // PHASE 2: HIGH PRIORITY (immediate but non-blocking)
+            populateEmailImmediately();
 
-            // Initialize admin panel manager
-            if (window.adminPanelManager) {
-                window.adminPanelManager.init();
-            }
+            // PHASE 3: MEDIUM PRIORITY (deferred)
+            setTimeout(() => {
+                createParticles(); // Visual enhancement
+                checkSidebarActivation();
+                clearOldProfileData();
+            }, 100);
+
+            // PHASE 4: LOW PRIORITY (background)
+            setTimeout(() => {
+                // Initialize admin panel (only if user is admin)
+                if (window.adminPanelManager) {
+                    window.adminPanelManager.init();
+                }
+            }, 500);
+
+            // PHASE 5: MAINTENANCE (much later)
+            setTimeout(() => {
+                emergencyProfileCheck(); // Final safety check
+                console.log('✅ Profile page fully loaded');
+                console.log('💡 TIP: Run testProfileLoading() in console to debug');
+            }, 2000);
         });
+
+        // Function to populate email immediately when page loads
+        function populateEmailImmediately() {
+            console.log('🔍 Starting immediate email population...');
+
+            try {
+                const token = localStorage.getItem('token');
+                console.log('📋 Token exists:', !!token);
+
+                if (!token) {
+                    console.log('❌ No token found');
+                    return;
+                }
+
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                console.log('🔍 Token payload:', payload);
+                console.log('📧 Email in payload:', payload.email);
+
+                if (payload.email && payload.email.endsWith('@vitbhopal.ac.in')) {
+                    const emailField = document.getElementById('vitEmail');
+                    console.log('🎯 Email field found:', !!emailField);
+
+                    if (emailField) {
+                        emailField.value = payload.email;
+                        emailField.placeholder = '';
+                        console.log('✅ Email populated immediately:', payload.email);
+
+                        // Force a visual update
+                        emailField.style.backgroundColor = '#f8f9fa';
+                        emailField.style.border = '2px solid #2ecc71';
+                        emailField.style.color = '#2c3e50';
+                        emailField.style.fontWeight = '600';
+
+                        // Update the indicator
+                        const indicator = document.getElementById('googleEmailIndicator');
+                        if (indicator) {
+                            indicator.style.display = 'flex';
+                        }
+                    } else {
+                        console.log('❌ Email field not found in DOM');
+                    }
+                } else {
+                    console.log('❌ Invalid email in token:', payload.email);
+                }
+            } catch (error) {
+                console.error('❌ Error in immediate email population:', error);
+                console.error('❌ Error details:', error.message);
+            }
+        }
     </script>
 </body>
 </html>

@@ -48,10 +48,14 @@ export const loginUser = async (username, password) => {
   return user;
 };
 
- export const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN
-  });
+ export const signToken = (id, email = null) => {
+ const payload = { id };
+ if (email) {
+   payload.email = email;
+ }
+ return jwt.sign(payload, process.env.JWT_SECRET, {
+   expiresIn: process.env.JWT_EXPIRES_IN
+ });
 };
 // Optionally export all services as an object
 export default {
