@@ -12,30 +12,17 @@ const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 export const signup = async (req, res, next) => {
   try {
     const { username, email, password } = req.body;
-    console.log('🔐 SIGNUP REQUEST RECEIVED:');
-    console.log('   👤 Username:', username);
-    console.log('   📧 Email:', email);
-    console.log('   🔑 Password: *** (hidden for security)');
 
-    // 1) Check if user already exists by Findone user (optimized with timeout)
-    console.log('🔍 DATABASE QUERY: Checking for existing user...');
+    // 1) Check if user already exists
     const existingUser = await User.findOne({ $or: [{ username }, { email }] })
-      .maxTimeMS(5000) // 5 second timeout
-      .lean(); // Use lean() for better performance
+      .maxTimeMS(5000)
+      .lean();
 
     if (existingUser) {
-      console.log('❌ DATABASE RESULT: User already exists!');
-      console.log('   📋 Existing user details:', {
-        username: existingUser.username,
-        email: existingUser.email,
-        isVerified: existingUser.isVerified
-      });
       return next(new AppError('Username or email already exists', 400));
     }
-    console.log('✅ DATABASE RESULT: No existing user found, proceeding...');
 
-    // 2) Create new user with timeout
-    console.log('👤 DATABASE OPERATION: Creating new user...');
+    // 2) Create new user
     let newUser;
     try {
       newUser = await User.create({
@@ -43,37 +30,21 @@ export const signup = async (req, res, next) => {
         email,
         password
       });
-      console.log('✅ DATABASE SUCCESS: User created successfully!');
     } catch (createErr) {
-      console.error('❌ DATABASE ERROR: Failed to create user:', createErr.message);
       if (createErr.name === 'MongoServerError' && createErr.code === 11000) {
         return next(new AppError('Username or email already exists', 400));
       }
       return next(new AppError('Failed to create user - database issue', 500));
     }
-    console.log('   🆔 User ID:', newUser._id);
-    console.log('   👤 Username:', newUser.username);
-    console.log('   📧 Email:', newUser.email);
-    console.log('   ✅ Verified:', newUser.isVerified);
 
     // 3) Generate OTP and send email
-    console.log('🔢 OTP GENERATION: Generating OTP for user...');
     const otp = newUser.generateOTP();
-    console.log('   🔢 Generated OTP:', otp);
-    console.log('   ⏰ OTP Expires:', new Date(newUser.otpExpires).toLocaleString());
 
-    // OTP is now displayed only on the website frontend, not in terminal
-
-    console.log('💾 DATABASE OPERATION: Saving user with OTP...');
     try {
       await newUser.save({ validateBeforeSave: false });
-      console.log('✅ DATABASE SUCCESS: User with OTP saved successfully!');
     } catch (saveErr) {
-      console.error('❌ DATABASE ERROR: Failed to save OTP:', saveErr.message);
       // In development, still continue even if save fails - OTP is already displayed
-      if (process.env.NODE_ENV === 'development') {
-        console.log('⚠️ Database save failed, but OTP is displayed above for testing');
-      } else {
+      if (process.env.NODE_ENV !== 'development') {
         return next(new AppError('Failed to save user data', 500));
       }
     }
@@ -83,6 +54,7 @@ export const signup = async (req, res, next) => {
     try {
       // Skip email if configured
       if (process.env.SKIP_EMAIL === 'true') {
+        console.log(`✅ SIGNUP: User ${username} created, OTP: ${otp}`);
         res.status(201).json({
           status: 'success',
           message: 'OTP ready for verification! (Email skipped)',
@@ -106,20 +78,15 @@ export const signup = async (req, res, next) => {
         message: 'OTP sent to your VIT email!'
       });
 
-      // In development, already showed OTP above
     } catch (err) {
-      console.error('Email error details:', err);
-      // In development, don't clear OTP on email failure - keep for manual testing
+      // In development, don't clear OTP on email failure
       if (process.env.NODE_ENV !== 'development') {
         newUser.otp = undefined;
         newUser.otpExpires = undefined;
         await newUser.save({ validateBeforeSave: false });
-      } else {
-        console.log('⚠️ Email failed in dev - OTP still available in console for testing');
       }
       return next(new AppError(`Email sending failed: ${err.message}`, 500));
     }
-      console.log('   🔢 Generated OTP:', otp);
 
   } catch (err) {
     // Handle database timeout errors specifically
@@ -136,52 +103,30 @@ export const verifyOTP = async (req, res, next) => {
   try {
     const { email, otp } = req.body;
 
-    // 1) Find user by email (optimized with timeout)
-    console.log('🔍 DATABASE QUERY: Finding user by email for OTP verification...');
-    console.log('   📧 Email:', email);
+    // 1) Find user by email
     const user = await User.findOne({ email })
       .select('+otp +otpExpires')
-      .maxTimeMS(5000); // 5 second timeout
+      .maxTimeMS(5000);
 
     if (!user) {
-      console.log('❌ DATABASE RESULT: No user found with email:', email);
       return next(new AppError('No user found with that email', 404));
     }
-    console.log('✅ DATABASE RESULT: User found!');
-    console.log('   🆔 User ID:', user._id);
-    console.log('   👤 Username:', user.username);
-    console.log('   📧 Email:', user.email);
 
     // 2) Check if OTP matches and is not expired
-    console.log('🔍 OTP VALIDATION: Checking OTP...');
-    console.log('   🔢 Provided OTP:', otp);
-    console.log('   🔢 Stored OTP:', user.otp);
-    console.log('   ⏰ OTP Expires:', new Date(user.otpExpires).toLocaleString());
-    console.log('   🕐 Current Time:', new Date().toLocaleString());
-
     if (user.otp !== otp || user.otpExpires < Date.now()) {
-      console.log('❌ OTP VALIDATION: Invalid or expired OTP!');
-      if (user.otp !== otp) {
-        console.log('   ❌ Reason: OTP does not match');
-      } else {
-        console.log('   ❌ Reason: OTP has expired');
-      }
       return next(new AppError('Invalid or expired OTP', 400));
     }
-    console.log('✅ OTP VALIDATION: OTP is valid!');
 
     // 3) Mark user as verified and clear OTP
-    console.log('💾 DATABASE OPERATION: Updating user verification status...');
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpires = undefined;
     await user.save({ validateBeforeSave: false });
-    console.log('✅ DATABASE SUCCESS: User verification updated!');
-    console.log('   ✅ User is now verified:', user.isVerified);
-    console.log('   🔢 OTP cleared from database');
 
     // 4) Log the user in
     const token = signToken(user._id, user.email);
+
+    console.log(`✅ OTP VERIFICATION: User ${user.username} verified successfully`);
 
     res.status(200).json({
       status: 'success',
@@ -205,10 +150,10 @@ export const resendOTP = async (req, res, next) => {
   try {
     const { email } = req.body;
 
-    // 1) Find user by email (optimized with timeout)
+    // 1) Find user by email
     const user = await User.findOne({ email })
       .select('+otp +otpExpires')
-      .maxTimeMS(5000); // 5 second timeout
+      .maxTimeMS(5000);
     if (!user) {
       return next(new AppError('No user found with that email', 404));
     }
@@ -220,20 +165,11 @@ export const resendOTP = async (req, res, next) => {
 
     // 3) Generate new OTP and send
     const otp = user.generateOTP();
-    console.log('   🔢 New OTP Generated:', otp);
-    console.log('   ⏰ OTP Expires:', new Date(user.otpExpires).toLocaleString());
-
-    // OTP is now displayed only on the website frontend, not in terminal
 
     try {
       await user.save({ validateBeforeSave: false });
-      console.log('✅ DATABASE SUCCESS: New OTP saved for resend');
     } catch (saveErr) {
-      console.error('❌ DATABASE ERROR: Failed to save new OTP for resend:', saveErr.message);
-      // In development, still continue even if save fails - OTP is already displayed
-      if (process.env.NODE_ENV === 'development') {
-        console.log('⚠️ Database save failed, but OTP is displayed above for testing');
-      } else {
+      if (process.env.NODE_ENV !== 'development') {
         return next(new AppError('Failed to update OTP', 500));
       }
     }
@@ -243,6 +179,7 @@ export const resendOTP = async (req, res, next) => {
     try {
       // Skip email if configured
       if (process.env.SKIP_EMAIL === 'true') {
+        console.log(`📧 OTP RESEND: User ${user.username}, OTP: ${otp}`);
         return res.status(200).json({
           status: 'success',
           message: 'OTP re-sent! (Email skipped)',
@@ -261,16 +198,11 @@ export const resendOTP = async (req, res, next) => {
         message: 'OTP re-sent to your email'
       });
 
-      // In development, already showed OTP above
     } catch (err) {
-      console.error('Email error details (resend):', err);
-      // In development, don't clear OTP on email failure
       if (process.env.NODE_ENV !== 'development') {
         user.otp = undefined;
         user.otpExpires = undefined;
         await user.save({ validateBeforeSave: false });
-      } else {
-        console.log('⚠️ Email resend failed in dev - OTP still available in console');
       }
       return next(new AppError(`Email sending failed: ${err.message}`, 500));
     }
@@ -293,10 +225,10 @@ export const login = async (req, res, next) => {
       return next(new AppError('Please provide username and password', 400));
     }
 
-    // 2) Check if user exists and password is correct (optimized with timeout)
+    // 2) Check if user exists and password is correct
     const user = await User.findOne({ username })
       .select('+password')
-      .maxTimeMS(3000); // 3 second timeout for login
+      .maxTimeMS(3000);
 
     if (!user || !(await user.correctPassword(password))) {
       return next(new AppError('Incorrect username or password', 401));
@@ -309,6 +241,8 @@ export const login = async (req, res, next) => {
 
     // 4) If everything ok, send token to client
     const token = signToken(user._id, user.email);
+
+    console.log(`✅ LOGIN: User ${username} logged in successfully`);
 
     res.status(200).json({
       status: 'success',
@@ -346,17 +280,11 @@ export const verifyGoogleToken = async (req, res, next) => {
     const displayName = payload.name;
     const picture = payload.picture;
 
-    console.log('🔍 GOOGLE TOKEN VERIFICATION:');
-    console.log('   🆔 Google ID:', googleId);
-    console.log('   📧 Email:', email);
-    console.log('   👤 Name:', displayName);
-
     // Check if user already exists with this Google ID
     let user = await User.findOne({ googleId });
 
     if (user) {
       // User exists, return token
-      console.log('✅ User found with Google ID');
       const token = signToken(user._id, user.email);
       return res.status(200).json({
         status: 'success',
@@ -374,7 +302,6 @@ export const verifyGoogleToken = async (req, res, next) => {
       user.fullName = displayName;
       user.profilePicture = picture;
       await user.save();
-      console.log('✅ Linked existing user with Google account');
       const token = signToken(user._id, user.email);
       return res.status(200).json({
         status: 'success',
@@ -384,18 +311,14 @@ export const verifyGoogleToken = async (req, res, next) => {
     }
 
     // Validate that email is from VIT Bhopal
-    console.log('🔍 Checking email domain:', email);
     if (!email) {
-      console.log('❌ No email provided');
       return next(new AppError('❌ Authentication Error<br><strong>No email found in your Google account.</strong><br><small>Please ensure your Google account has a valid email address.</small>', 401));
     }
 
     if (!email.endsWith('@vitbhopal.ac.in')) {
-      console.log('❌ Non-VIT email detected:', email);
       const domain = email.split('@')[1] || 'unknown';
       return next(new AppError(`❌ Invalid Account Type<br><strong>Only VIT Bhopal emails (@vitbhopal.ac.in) are allowed.</strong><br><small>You tried to sign in with: ${email}<br>Please use your institutional Google account.</small>`, 401));
     }
-    console.log('✅ VIT email validated:', email);
 
     // Create new user
     const newUser = await User.create({
@@ -408,9 +331,7 @@ export const verifyGoogleToken = async (req, res, next) => {
       role: email === 'vitbsmashers@gmail.com' ? 'admin' : 'user'
     });
 
-    console.log('✅ New user created via Google auth');
-    console.log('   🆔 User ID:', newUser._id);
-    console.log('   👤 Username:', newUser.username);
+    console.log(`✅ GOOGLE AUTH: New user ${newUser.username} created`);
 
     const token = signToken(newUser._id, newUser.email);
     res.status(201).json({

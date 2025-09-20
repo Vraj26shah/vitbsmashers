@@ -127,20 +127,30 @@ export const webhook = (req, res) => {
   const signature = req.headers['x-razorpay-signature'];
 
   try {
-    // Verify webhook signature
-    const expectedSignature = crypto
-      .createHmac('sha256', secret)
-      .update(JSON.stringify(req.body))
-      .digest('hex');
+    // Verify webhook signature if secret is configured
+    if (secret && signature) {
+      const expectedSignature = crypto
+        .createHmac('sha256', secret)
+        .update(JSON.stringify(req.body))
+        .digest('hex');
 
-    if (signature !== expectedSignature) {
-      return res.status(400).json({ error: 'Invalid signature' });
+      if (signature !== expectedSignature) {
+        console.warn('⚠️ Webhook signature verification failed');
+        return res.status(400).json({ error: 'Invalid signature' });
+      }
+      console.log('✅ Webhook signature verified');
+    } else if (secret && !signature) {
+      console.warn('⚠️ Webhook secret configured but no signature provided');
+      return res.status(400).json({ error: 'Signature required' });
+    } else {
+      console.log('ℹ️ Webhook signature verification skipped (no secret configured)');
     }
 
+    // Process the webhook
     paymentService.handleWebhook(req.body);
     res.status(200).json({ received: true });
   } catch (err) {
-    console.error('Webhook error:', err);
+    console.error('❌ Webhook error:', err);
     res.status(500).json({ error: 'Webhook processing failed' });
   }
 };

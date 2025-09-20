@@ -14,6 +14,7 @@ import authRouter from './routes/authRoutes.js';
 // import gpaRouter from './routes/gpaRoutes.js';
 // import timetableRouter from './routes/timetableRoutes.js';
 // import courseRouter from './routes/courseRoutes.js';
+import courseRouter from './routes/courseRoutes.js';
 // import messRouter from './routes/messRoutes.js';
 // import mapRouter from './routes/mapRoutes.js';
 import facultyRouter from './routes/facultyRoutes.js';
@@ -25,6 +26,7 @@ import profileRouter from './routes/profileRoutes.js';
 import paymentRouter from './routes/paymentRoutes.js';
 import eventRouter from './routes/eventRoutes.js';
 // import adminRouter from './routes/adminRoutes.js';
+import adminRouter from './routes/adminRoutes.js';
 import { errorHandler, notFound } from './middleware/authMiddleware.js';
 import connect from './db/db.js';
 import fs from 'fs';
@@ -87,7 +89,7 @@ app.use('/api/v1/auth', authRouter);
 // app.use('/api/v1/attendance', attendanceRouter);
 // app.use('/api/v1/gpa', gpaRouter);
 // app.use('/api/v1/timetable', timetableRouter);
-// app.use('/api/v1/courses', courseRouter);//you want to focus no course section only
+app.use('/api/v1/courses', courseRouter);
 // app.use('/api/v1/mess', messRouter);
 // app.use('/api/v1/map', mapRouter);
 app.use('/api/v1/faculty', facultyRouter);
@@ -96,7 +98,7 @@ app.use('/api/v1/profile', profileRouter);
 // app.use('/api/v1/marketplace', marketplaceRouter);
 app.use('/api/v1/payment', paymentRouter);
 app.use('/api/v1/events', eventRouter);
-// app.use('/api/v1/admin', adminRouter);
+app.use('/api/v1/admin', adminRouter);
 
 // Frontend compatibility routes (frontend calls different paths)
 app.use('/api/payments', paymentRouter); // Frontend calls /api/payments/create-checkout-session

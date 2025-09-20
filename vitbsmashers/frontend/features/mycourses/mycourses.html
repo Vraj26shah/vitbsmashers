@@ -483,6 +483,187 @@
             box-shadow: 0 4px 10px rgba(46, 204, 113, 0.4);
         }
 
+        /* Course Badge */
+        .course-badge {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: var(--success-color);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            z-index: 2;
+        }
+
+        /* Course Stats */
+        .course-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 12px;
+            color: #aaa;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 6px 8px;
+            border-radius: 6px;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .stat-item i {
+            color: var(--accent-teal);
+            font-size: 14px;
+        }
+
+        /* Payment Details */
+        .payment-details {
+            background: rgba(52, 152, 219, 0.1);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            position: relative;
+        }
+
+        .payment-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--accent-blue);
+        }
+
+        .payment-header i {
+            font-size: 16px;
+            color: var(--accent-blue);
+        }
+
+        .payment-info-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 8px;
+        }
+
+        .payment-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .payment-item:last-child {
+            border-bottom: none;
+        }
+
+        .payment-label {
+            font-size: 12px;
+            color: #aaa;
+            font-weight: 500;
+        }
+
+        .payment-value {
+            font-size: 12px;
+            color: var(--light-color);
+            font-weight: 600;
+        }
+
+        .payment-value.status-completed {
+            color: var(--success-color);
+        }
+
+        .payment-value.status-pending {
+            color: var(--warning-color);
+        }
+
+        .payment-value.status-failed {
+            color: var(--danger-color);
+        }
+
+        .payment-note {
+            font-size: 12px;
+            color: #aaa;
+            font-style: italic;
+            margin: 0;
+        }
+
+        /* Enhanced Course Footer */
+        .course-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .course-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--gold-color);
+        }
+
+        .access-btn {
+            background: linear-gradient(135deg, var(--success-color), #27ae60);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            text-decoration: none;
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
+        }
+
+        .access-btn:hover {
+            background: linear-gradient(135deg, #27ae60, var(--success-color));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .access-btn:active {
+            transform: translateY(0);
+        }
+
+        .access-btn i {
+            font-size: 16px;
+        }
+
+        /* Full width button for footer */
+        .full-width-btn {
+            width: 100% !important;
+            padding: 16px 24px !important;
+            font-size: 16px !important;
+            font-weight: 700 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            border-radius: 12px !important;
+            box-shadow: 0 6px 20px rgba(46, 204, 113, 0.4) !important;
+        }
+
+        .full-width-btn:hover {
+            transform: translateY(-3px) !important;
+            box-shadow: 0 8px 25px rgba(46, 204, 113, 0.5) !important;
+        }
+
         /* Responsive Design */
         @media (max-width: 1200px) {
             .main-content {
@@ -893,7 +1074,7 @@
         <h1 class="page-title">
             <i class='bx bxs-graduation'></i> My Courses
         </h1>
-        
+
         <div class="course-grid" id="myCoursesGrid">
         </div>
     </main>
@@ -1040,7 +1221,7 @@
                 const token = localStorage.getItem('token');
                 if (!token) return;
 
-                // For now, show placeholder message - will be implemented with backend
+                // Show loading state
                 courseGrid.innerHTML = `
                     <div style="
                         text-align: center;
@@ -1052,13 +1233,34 @@
                         max-width: 600px;
                         margin: 0 auto;
                     ">
-                        <i class='bx bx-book' style="font-size: 64px; color: #3498db; margin-bottom: 20px;"></i>
-                        <h2 style="color: #ecf0f1; margin-bottom: 15px; font-size: 24px;">Your Purchased Courses</h2>
-                        <p style="color: #ddd; margin-bottom: 10px; font-size: 16px;">Courses will be loaded from your account data.</p>
-                        <p style="color: #aaa; font-size: 14px;">This feature will be fully implemented with backend integration.</p>
-                        <p style="color: #888; font-size: 12px; margin-top: 15px;">No courses purchased yet? Visit the <a href="../marketplace/market.html" style="color: #3498db; text-decoration: none;">Marketplace</a> to explore available courses.</p>
+                        <i class='bx bx-loader-alt bx-spin' style="font-size: 48px; color: #3498db; margin-bottom: 20px;"></i>
+                        <h3 style="color: #ecf0f1; margin-bottom: 15px; font-size: 20px;">Loading Your Courses...</h3>
+                        <p style="color: #ddd; font-size: 14px;">Please wait while we fetch your purchased courses.</p>
                     </div>
                 `;
+
+                // Add cache-busting parameter to ensure fresh data
+                const cacheBuster = Date.now();
+                const response = await fetch(`http://localhost:4000/api/v1/courses/my-courses?_t=${cacheBuster}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache'
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    displayCourses(data.data.courses);
+                } else {
+                    throw new Error(data.message || 'Failed to load courses');
+                }
             } catch (error) {
                 console.error('Failed to load courses:', error);
                 courseGrid.innerHTML = `
@@ -1073,10 +1275,232 @@
                         <i class='bx bx-error' style="font-size: 48px; margin-bottom: 15px;"></i>
                         <h3 style="color: #ecf0f1; margin-bottom: 10px;">Failed to Load Courses</h3>
                         <p style="color: #ddd;">Please try refreshing the page or contact support if the problem persists.</p>
+                        <button onclick="loadCourses()" style="
+                            background: #3498db;
+                            color: white;
+                            border: none;
+                            padding: 10px 20px;
+                            border-radius: 5px;
+                            cursor: pointer;
+                            margin-top: 15px;
+                        ">Retry</button>
                     </div>
                 `;
             }
         }
+
+        // Display courses in the grid
+        function displayCourses(courses) {
+            if (!courses || courses.length === 0) {
+                courseGrid.innerHTML = `
+                    <div style="
+                        text-align: center;
+                        padding: 60px 20px;
+                        color: #666;
+                        background: rgba(44, 62, 80, 0.5);
+                        border-radius: 16px;
+                        border: 2px solid rgba(52, 152, 219, 0.3);
+                        max-width: 600px;
+                        margin: 0 auto;
+                    ">
+                        <i class='bx bx-book' style="font-size: 64px; color: #3498db; margin-bottom: 20px;"></i>
+                        <h2 style="color: #ecf0f1; margin-bottom: 15px; font-size: 24px;">No Courses Yet</h2>
+                        <p style="color: #ddd; margin-bottom: 20px; font-size: 16px;">You haven't purchased any courses yet.</p>
+                        <a href="../marketplace/market.html" style="
+                            background: var(--accent-blue);
+                            color: white;
+                            padding: 12px 24px;
+                            border-radius: 10px;
+                            text-decoration: none;
+                            font-weight: 600;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 8px;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='var(--accent-blue)'">
+                            <i class='bx bx-cart'></i> Browse Courses
+                        </a>
+                    </div>
+                `;
+                return;
+            }
+
+            // Create course cards
+            const courseCards = courses.map(course => createCourseCard(course)).join('');
+            courseGrid.innerHTML = courseCards;
+        }
+
+        // Global variables for courses and image mapping
+        let coursesData = {};
+        let courseImageMap = {};
+
+        // Load courses from JSON file (same as marketplace)
+        async function loadCoursesFromJSON() {
+            try {
+                console.log('📂 Loading courses from JSON file...');
+                const response = await fetch('../marketplace/courses.json');
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                coursesData = data.courses;
+
+                // Build image mapping from loaded courses
+                courseImageMap = {};
+                Object.keys(coursesData).forEach(courseId => {
+                    courseImageMap[courseId] = coursesData[courseId].image;
+                });
+
+                console.log(`✅ Loaded ${Object.keys(coursesData).length} courses from JSON`);
+                return true;
+            } catch (error) {
+                console.error('❌ Error loading courses from JSON:', error);
+                // Fallback to hardcoded courses if JSON fails to load
+                console.log('🔄 Falling back to hardcoded courses...');
+                return false;
+            }
+        }
+
+        // Get consistent image for course
+        function getCourseImage(course) {
+            const courseId = course.pid || course._id || course.id;
+            return courseImageMap[courseId] || course.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+        }
+
+        // Create course card HTML
+        function createCourseCard(course) {
+            const imageUrl = getCourseImage(course);
+
+            // Payment information
+            const paymentInfo = course.paymentInfo;
+            const paymentDetailsHtml = paymentInfo ? `
+                <div class="payment-details">
+                    <div class="payment-header">
+                        <i class='bx bx-receipt'></i>
+                        <span>Payment Details</span>
+                    </div>
+                    <div class="payment-info-grid">
+                        <div class="payment-item">
+                            <span class="payment-label">Purchase Date:</span>
+                            <span class="payment-value">${new Date(paymentInfo.purchaseDate).toLocaleDateString('en-IN', {
+                                year: 'numeric',
+                                month: 'short',
+                                day: 'numeric'
+                            })}</span>
+                        </div>
+                        <div class="payment-item">
+                            <span class="payment-label">Amount Paid:</span>
+                            <span class="payment-value">₹${(paymentInfo.amount / 100).toFixed(2)}</span>
+                        </div>
+                        <div class="payment-item">
+                            <span class="payment-label">Payment Method:</span>
+                            <span class="payment-value">${getGatewayDisplayName(paymentInfo.gateway)}</span>
+                        </div>
+                        <div class="payment-item">
+                            <span class="payment-label">Order ID:</span>
+                            <span class="payment-value">${String(paymentInfo.orderId).slice(-8).toUpperCase()}</span>
+                        </div>
+                        <div class="payment-item">
+                            <span class="payment-label">Status:</span>
+                            <span class="payment-value status-${paymentInfo.status}">${paymentInfo.status.charAt(0).toUpperCase() + paymentInfo.status.slice(1)}</span>
+                        </div>
+                    </div>
+                </div>
+            ` : `
+                <div class="payment-details">
+                    <div class="payment-header">
+                        <i class='bx bx-info-circle'></i>
+                        <span>Payment Info Unavailable</span>
+                    </div>
+                    <p class="payment-note">Payment details could not be retrieved for this course.</p>
+                </div>
+            `;
+
+            return `
+                <div class="course-card" data-course-id="${course._id || course.pid}">
+                    <div class="course-image" style="background-image: url('${imageUrl}');">
+                        <div class="course-badge">PURCHASED</div>
+                    </div>
+                    <div class="course-info">
+                        <div class="course-header">
+                            <div>
+                                <h3 class="course-title">${course.title}</h3>
+                            </div>
+                        </div>
+
+
+
+                        ${paymentDetailsHtml}
+
+                        <div class="course-footer">
+                            <button class="access-btn full-width-btn" onclick="accessCourse('${course._id || course.pid}')">
+                                <i class='bx bx-play'></i> Access Course
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Helper function to get display name for payment gateway
+        function getGatewayDisplayName(gateway) {
+            switch(gateway) {
+                case 'razorpay': return 'Razorpay';
+                case 'phonepe': return 'PhonePe';
+                case 'mock': return 'Test Payment';
+                default: return 'Unknown';
+            }
+        }
+
+        // Access course function
+        function accessCourse(courseId) {
+            // For now, show a placeholder - in a real implementation, this would navigate to course content
+            showNotification('Course access feature coming soon!', 'info');
+            console.log('Accessing course:', courseId);
+        }
+
+        // Notification function
+        function showNotification(message, type = 'info') {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? 'var(--success-color)' : type === 'warning' ? 'var(--warning-color)' : type === 'danger' ? 'var(--danger-color)' : 'var(--accent-blue)'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 400px;
+                animation: slideIn 0.3s ease;
+                font-size: 14px;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // Add CSS for notification animations
+        const notificationStyle = document.createElement('style');
+        notificationStyle.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(notificationStyle);
 
 
         document.addEventListener('DOMContentLoaded', async function() {
@@ -1086,7 +1510,32 @@
             }
 
             createParticles();
+
+            // Load courses from JSON file first
+            const coursesLoaded = await loadCoursesFromJSON();
+
+            if (!coursesLoaded) {
+                console.error('❌ Failed to load courses from JSON - my courses may not work properly');
+                showNotification('Failed to load course data. Please refresh the page.', 'danger');
+            }
+
+            // Check if user came from successful payment
+            const urlParams = new URLSearchParams(window.location.search);
+            const fromPayment = urlParams.get('payment') === 'success';
+
+            if (fromPayment) {
+                console.log('User came from successful payment, ensuring fresh data...');
+                // Clear any cached data and force fresh load
+                localStorage.removeItem('courses_cache');
+            }
+
             await loadCourses();
+
+            // Clean up URL parameters after loading
+            if (fromPayment) {
+                const newUrl = window.location.pathname + (urlParams.get('sidebar') ? '?sidebar=active' : '');
+                window.history.replaceState({}, document.title, newUrl);
+            }
         });
     </script>
 </body>

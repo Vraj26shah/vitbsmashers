@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import mongoose from 'mongoose';
 import AppError from '../utils/appError.js';
 import User from '../models/user.model.js';
 
@@ -67,14 +68,33 @@ export const protect = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // 3) Check if user still exists
-    const currentUser = await User.findById(decoded.id);
+    const userId = decoded._id || decoded.id;
+    console.log('🔍 Auth middleware - Looking for user ID:', userId);
+    console.log('🔍 Auth middleware - Database connection status:', mongoose.connection.readyState);
+
+    const currentUser = await User.findById(userId);
     if (!currentUser) {
+      console.log('❌ Auth middleware - User not found for ID:', userId);
+
+      // Try to find all users to debug database connection
+      try {
+        const allUsers = await User.find({}).limit(5);
+        console.log('🔍 Auth middleware - Total users in DB:', allUsers.length);
+        if (allUsers.length > 0) {
+          console.log('🔍 Auth middleware - Sample user IDs:', allUsers.map(u => u._id.toString()).slice(0, 3));
+        }
+      } catch (dbError) {
+        console.log('❌ Auth middleware - Database query error:', dbError.message);
+      }
+
       return res.status(401).json({
         error: 'User not found',
         message: 'The user belonging to this token no longer exists.',
         redirect: '/login'
       });
     }
+
+    console.log('✅ Auth middleware - User found:', currentUser.username, '(' + currentUser.email + ')');
 
     // 4) Check if user changed password after token was issued
     if (currentUser.changedPasswordAfter(decoded.iat)) {

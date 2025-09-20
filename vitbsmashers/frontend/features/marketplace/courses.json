@@ -1,0 +1,124 @@
+{
+  "courses": {
+    "CSE001": {
+      "id": "CSE001",
+      "title": "Data Structures & Algorithms",
+      "image": "https://images.unsplash.com/photo-1550439062-609e1531270e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+      "price": "₹1,299",
+      "tags": "cs",
+      "description": "This comprehensive course covers all essential data structures and algorithms with detailed notes, solved problems, and exam strategies. Designed specifically for VITB students, it includes PYQs from the last 5 years with detailed solutions.",
+      "modulesList": [
+        { "title": "Introduction to Data Structures", "topics": "Arrays, Linked Lists, Stacks, Queues, Time Complexity Analysis" },
+        { "title": "Trees and Graphs", "topics": "Binary Trees, BST, AVL Trees, Graph Representation, BFS, DFS" },
+        { "title": "Sorting Algorithms", "topics": "Bubble Sort, Selection Sort, Insertion Sort, Merge Sort, Quick Sort" },
+        { "title": "Searching Algorithms", "topics": "Linear Search, Binary Search, Hashing, Collision Resolution" },
+        { "title": "Dynamic Programming", "topics": "Memoization, Tabulation, LCS, Knapsack, Matrix Chain Multiplication" },
+        { "title": "Greedy Algorithms", "topics": "Activity Selection, Huffman Coding, Dijkstra's Algorithm" }
+      ]
+    },
+    "CSE002": {
+      "id": "CSE002",
+      "title": "Web Development Bootcamp",
+      "image": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+      "price": "₹1,399",
+      "tags": "cs",
+      "description": "Complete full-stack web development course covering HTML, CSS, JavaScript, React, Node.js, Express, and MongoDB.",
+      "modulesList": [
+        { "title": "HTML & CSS Fundamentals", "topics": "Semantic HTML, CSS Grid, Flexbox, Responsive Design" },
+        { "title": "JavaScript Essentials", "topics": "ES6+, DOM Manipulation, Async Programming" },
+        { "title": "React Development", "topics": "Components, Hooks, State Management, Routing" },
+        { "title": "Backend with Node.js", "topics": "Express, REST APIs, Authentication, Database Integration" }
+      ]
+    },
+    "CSE003": {
+      "id": "CSE003",
+      "title": "Machine Learning Fundamentals",
+      "image": "https://images.unsplash.com/photo-1555949963-aa79dcee981c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+      "price": "₹1,899",
+      "tags": "cs sci",
+      "description": "Learn machine learning from basics to advanced concepts including supervised and unsupervised learning, neural networks, and practical applications.",
+      "modulesList": [
+        { "title": "ML Fundamentals", "topics": "What is ML, Types of Learning, Applications" },
+        { "title": "Supervised Learning", "topics": "Linear Regression, Logistic Regression, Decision Trees" },
+        { "title": "Unsupervised Learning", "topics": "K-Means, PCA, Anomaly Detection" },
+        { "title": "Neural Networks", "topics": "Perceptrons, Backpropagation, Deep Learning Basics" }
+      ]
+    },
+    "CSE004": {
+      "id": "CSE004",
+      "title": "Database Management Systems",
+      "image": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+      "price": "₹1,199",
+      "tags": "cs",
+      "description": "Comprehensive database course covering SQL, NoSQL, normalization, indexing, transactions, and database design principles.",
+      "modulesList": [
+        { "title": "SQL Fundamentals", "topics": "DDL, DML, DCL, Joins, Subqueries" },
+        { "title": "Database Design", "topics": "ER Diagrams, Normalization, Indexing" },
+        { "title": "Advanced SQL", "topics": "Stored Procedures, Triggers, Views" },
+        { "title": "NoSQL Databases", "topics": "MongoDB, Document Stores, Key-Value Stores" }
+      ]
+    },
+    "CSE005": {
+      "id": "CSE005",
+      "title": "Operating Systems",
+      "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+      "price": "₹1,399",
+      "tags": "cs eng",
+      "description": "Deep dive into operating systems concepts including process management, memory management, file systems, and concurrency.",
+      "modulesList": [
+        { "title": "OS Basics", "topics": "Structure, Processes, Threads" },
+        { "title": "Memory Management", "topics": "Paging, Segmentation, Virtual Memory" },
+        { "title": "File Systems", "topics": "File Organization, Directory Structure, Protection" },
+        { "title": "Concurrency", "topics": "Synchronization, Deadlocks, Race Conditions" }
+      ]
+    },
+    "CSE006": {
+      "id": "CSE006",
+      "title": "Computer Networks",
+      "image": "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+      "price": "₹1,149",
+      "tags": "cs eng",
+      "description": "Complete coverage of computer networks from OSI model to TCP/IP, routing, switching, and network security.",
+      "modulesList": [
+        { "title": "Network Fundamentals", "topics": "OSI, TCP/IP, LAN, WAN" },
+        { "title": "Routing", "topics": "RIP, OSPF, BGP" },
+        { "title": "Transport Layer", "topics": "TCP, UDP, Congestion Control" },
+        { "title": "Network Security", "topics": "Encryption, Firewalls, VPNs" }
+      ]
+    },
+    "CSE007": {
+      "id": "CSE007",
+      "title": "Advanced Calculus",
+      "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+      "price": "₹999",
+      "tags": "math",
+      "description": "Master complex calculus concepts with step-by-step solutions and practical applications in engineering and physics.",
+      "modulesList": [
+        { "title": "Limits and Continuity", "topics": "Limits, Continuity, Intermediate Value Theorem" },
+        { "title": "Differentiation", "topics": "Derivatives, Chain Rule, Implicit Differentiation" },
+        { "title": "Integration", "topics": "Definite and Indefinite Integrals, Techniques of Integration" },
+        { "title": "Series and Sequences", "topics": "Power Series, Taylor Series, Convergence Tests" }
+      ]
+    },
+    "CSE008": {
+      "id": "CSE008",
+      "title": "Organic Chemistry",
+      "image": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
+      "price": "₹1,099",
+      "tags": "sci",
+      "description": "Comprehensive coverage of organic chemistry principles, reactions, and mechanisms with laboratory applications.",
+      "modulesList": [
+        { "title": "Basic Concepts", "topics": "Structure, Bonding, Isomerism" },
+        { "title": "Hydrocarbons", "topics": "Alkanes, Alkenes, Alkynes, Aromatic Compounds" },
+        { "title": "Functional Groups", "topics": "Alcohols, Phenols, Ethers, Carboxylic Acids" },
+        { "title": "Reaction Mechanisms", "topics": "SN1, SN2, E1, E2, Addition, Elimination" }
+      ]
+    }
+  },
+  "metadata": {
+    "version": "1.0",
+    "lastUpdated": "2025-09-20",
+    "totalCourses": 8,
+    "categories": ["cs", "eng", "math", "sci"]
+  }
+}

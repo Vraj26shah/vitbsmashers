@@ -276,11 +276,13 @@
                 // Close modal
                 this.modal.querySelector('.mock-close').addEventListener('click', () => {
                     this.close();
+                    showNotification('Payment cancelled - returning to marketplace', 'warning');
                 });
 
                 this.modal.addEventListener('click', (e) => {
                     if (e.target === this.modal) {
                         this.close();
+                        showNotification('Payment cancelled - returning to marketplace', 'warning');
                     }
                 });
 
@@ -322,7 +324,7 @@
                                 'Authorization': `Bearer ${localStorage.getItem('token')}`
                             },
                             body: JSON.stringify({
-                                order_id: this.currentOrder.order_id,
+                                order_id: this.currentOrder.order_id, // MongoDB ObjectId
                                 payment_id: `mock_payment_${Date.now()}`,
                                 signature: 'mock_signature'
                             })
@@ -332,14 +334,15 @@
                         if (result.success) {
                             showNotification('Payment successful! Courses unlocked.', 'success');
                             setTimeout(() => {
-                                window.location.href = 'payment.html?payment=success&order_id=' + orderId;
+                                window.location.href = '../mycourses/mycourses.html?sidebar=active';
                             }, 2000);
                         } else {
                             showNotification('Payment verification failed', 'danger');
                         }
                     } else {
-                        // Simulate failed payment
+                        // Simulate failed payment - stay on marketplace
                         showNotification('Payment failed. Please try again.', 'danger');
+                        console.log('❌ Payment failed - staying on marketplace');
                     }
                 } catch (error) {
                     console.error('Mock payment error:', error);
@@ -379,7 +382,8 @@
                         },
                         modal: {
                             ondismiss: function() {
-                                showNotification('Payment cancelled', 'warning');
+                                showNotification('Payment cancelled - returning to marketplace', 'warning');
+                                // Stay on marketplace page - don't redirect
                                 resolve({ success: false, cancelled: true });
                             }
                         }
@@ -933,12 +937,7 @@
         }
 
         .course-rating {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            font-size: 16px;
-            color: var(--gold-color);
-            font-weight: 600;
+            display: none;
         }
 
         .course-meta {
@@ -1052,9 +1051,12 @@
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
             border: 2px solid var(--accent-blue);
             width: 320px;
-            z-index: 1000;
+            max-width: 90vw;
+            z-index: 10000;
             transform: translateY(150%);
             transition: transform 0.5s ease;
+            max-height: 70vh;
+            overflow-y: auto;
         }
 
         .cart-preview.active {
@@ -1158,17 +1160,26 @@
             display: flex;
             gap: 12px;
             flex-wrap: wrap;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .cart-btn {
             flex: 1;
-            padding: 10px;
+            min-width: 100px;
+            padding: 12px 16px;
             border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
             text-align: center;
             font-size: 14px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
 
         .btn-view-cart {
@@ -1184,13 +1195,31 @@
         }
 
         .btn-checkout {
-            background: var(--success-color);
+            background: linear-gradient(135deg, var(--success-color), #27ae60);
             color: white;
             border: none;
+            box-shadow: 0 4px 12px rgba(46, 204, 113, 0.3);
         }
 
         .btn-checkout:hover {
-            background: #27ae60;
+            background: linear-gradient(135deg, #27ae60, var(--success-color));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .btn-checkout:active {
+            transform: translateY(0);
+        }
+
+        .btn-clear-cart {
+            background: rgba(231, 76, 60, 0.2);
+            color: var(--danger-color);
+            border: 2px solid rgba(231, 76, 60, 0.3);
+        }
+
+        .btn-clear-cart:hover {
+            background: var(--danger-color);
+            color: white;
             transform: translateY(-2px);
         }
 
@@ -1994,7 +2023,7 @@
                 <p style="color: var(--warning-color); margin: 0; font-weight: 500;">
                     Complete your profile to unlock premium course purchases!
                     <br><small style="color: #ddd; font-weight: 400;">Required: Phone number, Registration number, and Program</small>
-                    <br><a href="/features/profile/profile.html" style="color: var(--accent-blue); text-decoration: underline; margin-left: 8px;">Complete Profile</a>
+                    <br><a href="market.html" style="color: var(--accent-blue); text-decoration: underline; margin-left: 8px;">Complete Profile</a>
                 </p>
             </div>
 
@@ -2017,358 +2046,22 @@
             </div>
         </div>
         
-        <!-- Course Grid -->
+        <!-- Course Grid - Courses will be loaded dynamically from courses.json -->
         <div class="course-grid">
-            <!-- Course 1 -->
-            <div class="course-card" data-course="1" data-tags="cs">
-                <div class="course-image" style="background-image: url('https://images.unsplash.com/photo-1550439062-609e1531270e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
-                    <div class="premium-badge">PREMIUM</div>
-                </div>
-                <div class="course-info">
-                    <div class="course-header">
-                        <div>
-                            <h3 class="course-title">Data Structures & Algorithms</h3>
-                        </div>
-                        <div class="course-rating">
-                            <i class='bx bxs-star' style="color: var(--gold-color);"></i>
-                            <span>4.9</span>
-                        </div>
-                    </div>
-                    
-                    <div class="course-meta">
-                        <div class="meta-item">
-                            <i class='bx bx-book'></i>
-                            <span>12 Modules</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-time'></i>
-                            <span>40+ Hours</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-download'></i>
-                            <span>200+ Notes</span>
-                        </div>
-                    </div>
-                    
-                    <p class="course-description">
-                        Master essential data structures and algorithms with comprehensive notes, solved problems, and exam strategies.
-                    </p>
-                    
-                    <div class="course-footer">
-                        <div class="course-price">₹1,299</div>
-                        <button class="add-to-cart" data-id="1" data-title="Data Structures & Algorithms" data-price="1299" data-image="https://images.unsplash.com/photo-1550439062-609e1531270e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80">
-                            <i class='bx bx-cart'></i> Add to Cart
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Course 2 -->
-            <div class="course-card" data-course="2" data-tags="cs">
-                <div class="course-image" style="background-image: url('https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
-                    <div class="premium-badge">PREMIUM</div>
-                </div>
-                <div class="course-info">
-                    <div class="course-header">
-                        <div>
-                            <h3 class="course-title">Database Management Systems</h3>
-                        </div>
-                        <div class="course-rating">
-                            <i class='bx bxs-star' style="color: var(--gold-color);"></i>
-                            <span>4.8</span>
-                        </div>
-                    </div>
-                    
-                    <div class="course-meta">
-                        <div class="meta-item">
-                            <i class='bx bx-book'></i>
-                            <span>10 Modules</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-time'></i>
-                            <span>35+ Hours</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-download'></i>
-                            <span>180+ Notes</span>
-                        </div>
-                    </div>
-                    
-                    <p class="course-description">
-                        Comprehensive DBMS notes covering SQL, normalization, transactions, and advanced database concepts.
-                    </p>
-                    
-                    <div class="course-footer">
-                        <div class="course-price">₹1,199</div>
-                        <button class="add-to-cart" data-id="2" data-title="Database Management Systems" data-price="1199" data-image="https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80">
-                            <i class='bx bx-cart'></i> Add to Cart
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Course 3 -->
-            <div class="course-card" data-course="3" data-tags="cs sci">
-                <div class="course-image" style="background-image: url('https://images.unsplash.com/photo-1581094794329-16d1f0d22b6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
-                    <div class="premium-badge">PREMIUM</div>
-                </div>
-                <div class="course-info">
-                    <div class="course-header">
-                        <div>
-                            <h3 class="course-title">Machine Learning Fundamentals</h3>
-                        </div>
-                        <div class="course-rating">
-                            <i class='bx bxs-star' style="color: var(--gold-color);"></i>
-                            <span>4.9</span>
-                        </div>
-                    </div>
-                    
-                    <div class="course-meta">
-                        <div class="meta-item">
-                            <i class='bx bx-book'></i>
-                            <span>15 Modules</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-time'></i>
-                            <span>50+ Hours</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-download'></i>
-                            <span>250+ Notes</span>
-                        </div>
-                    </div>
-                    
-                    <p class="course-description">
-                        From basics to advanced algorithms. Includes Python implementations, case studies, and exam notes.
-                    </p>
-                    
-                    <div class="course-footer">
-                        <div class="course-price">₹1,499</div>
-                        <button class="add-to-cart" data-id="3" data-title="Machine Learning Fundamentals" data-price="1499" data-image="https://images.unsplash.com/photo-1581094794329-16d1f0d22b6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80">
-                            <i class='bx bx-cart'></i> Add to Cart
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Course 4 -->
-            <div class="course-card" data-course="4" data-tags="cs eng">
-                <div class="course-image" style="background-image: url('https://images.unsplash.com/photo-1509228468518-180dd4864904?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
-                    <div class="premium-badge">PREMIUM</div>
-                </div>
-                <div class="course-info">
-                    <div class="course-header">
-                        <div>
-                            <h3 class="course-title">Operating Systems</h3>
-                        </div>
-                        <div class="course-rating">
-                            <i class='bx bxs-star' style="color: var(--gold-color);"></i>
-                            <span>4.7</span>
-                        </div>
-                    </div>
-                    
-                    <div class="course-meta">
-                        <div class="meta-item">
-                            <i class='bx bx-book'></i>
-                            <span>14 Modules</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-time'></i>
-                            <span>45+ Hours</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-download'></i>
-                            <span>220+ Notes</span>
-                        </div>
-                    </div>
-                    
-                    <p class="course-description">
-                        Comprehensive notes on processes, threads, memory management, file systems, and security.
-                    </p>
-                    
-                    <div class="course-footer">
-                        <div class="course-price">₹1,099</div>
-                        <button class="add-to-cart" data-id="4" data-title="Operating Systems" data-price="1099" data-image="https://images.unsplash.com/photo-1509228468518-180dd4864904?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80">
-                            <i class='bx bx-cart'></i> Add to Cart
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Course 5 -->
-            <div class="course-card" data-course="5" data-tags="cs eng">
-                <div class="course-image" style="background-image: url('https://images.unsplash.com/photo-1596495577886-d920f1fb7238?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
-                    <div class="premium-badge">PREMIUM</div>
-                </div>
-                <div class="course-info">
-                    <div class="course-header">
-                        <div>
-                            <h3 class="course-title">Computer Networks</h3>
-                        </div>
-                        <div class="course-rating">
-                            <i class='bx bxs-star' style="color: var(--gold-color);"></i>
-                            <span>4.8</span>
-                        </div>
-                    </div>
-                    
-                    <div class="course-meta">
-                        <div class="meta-item">
-                            <i class='bx bx-book'></i>
-                            <span>11 Modules</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-time'></i>
-                            <span>38+ Hours</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-download'></i>
-                            <span>190+ Notes</span>
-                        </div>
-                    </div>
-                    
-                    <p class="course-description">
-                        Complete notes covering OSI model, TCP/IP, routing, switching, and network security.
-                    </p>
-                    
-                    <div class="course-footer">
-                        <div class="course-price">₹1,149</div>
-                        <button class="add-to-cart" data-id="5" data-title="Computer Networks" data-price="1149" data-image="https://images.unsplash.com/photo-1596495577886-d920f1fb7238?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80">
-                            <i class='bx bx-cart'></i> Add to Cart
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Course 6 -->
-            <div class="course-card" data-course="6" data-tags="cs">
-                <div class="course-image" style="background-image: url('https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
-                    <div class="premium-badge">PREMIUM</div>
-                </div>
-                <div class="course-info">
-                    <div class="course-header">
-                        <div>
-                            <h3 class="course-title">Web Development</h3>
-                        </div>
-                        <div class="course-rating">
-                            <i class='bx bxs-star' style="color: var(--gold-color);"></i>
-                            <span>4.9</span>
-                        </div>
-                    </div>
-                    
-                    <div class="course-meta">
-                        <div class="meta-item">
-                            <i class='bx bx-book'></i>
-                            <span>16 Modules</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-time'></i>
-                            <span>60+ Hours</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-download'></i>
-                            <span>280+ Notes</span>
-                        </div>
-                    </div>
-                    
-                    <p class="course-description">
-                        Full-stack web development notes covering HTML, CSS, JavaScript, React, Node.js and more.
-                    </p>
-                    
-                    <div class="course-footer">
-                        <div class="course-price">₹1,399</div>
-                        <button class="add-to-cart" data-id="6" data-title="Web Development" data-price="1399" data-image="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80">
-                            <i class='bx bx-cart'></i> Add to Cart
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Course 7 -->
-            <div class="course-card" data-course="7" data-tags="math">
-                <div class="course-image" style="background-image: url('https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
-                    <div class="premium-badge">PREMIUM</div>
-                </div>
-                <div class="course-info">
-                    <div class="course-header">
-                        <div>
-                            <h3 class="course-title">Advanced Calculus</h3>
-                        </div>
-                        <div class="course-rating">
-                            <i class='bx bxs-star' style="color: var(--gold-color);"></i>
-                            <span>4.6</span>
-                        </div>
-                    </div>
-                    
-                    <div class="course-meta">
-                        <div class="meta-item">
-                            <i class='bx bx-book'></i>
-                            <span>8 Modules</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-time'></i>
-                            <span>30+ Hours</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-download'></i>
-                            <span>150+ Notes</span>
-                        </div>
-                    </div>
-                    
-                    <p class="course-description">
-                        Master complex calculus concepts with step-by-step solutions and practical applications.
-                    </p>
-                    
-                    <div class="course-footer">
-                        <div class="course-price">₹999</div>
-                        <button class="add-to-cart" data-id="7" data-title="Advanced Calculus" data-price="999" data-image="https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80">
-                            <i class='bx bx-cart'></i> Add to Cart
-                        </button>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Course 8 -->
-            <div class="course-card" data-course="8" data-tags="sci">
-                <div class="course-image" style="background-image: url('https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80');">
-                    <div class="premium-badge">PREMIUM</div>
-                </div>
-                <div class="course-info">
-                    <div class="course-header">
-                        <div>
-                            <h3 class="course-title">Organic Chemistry</h3>
-                        </div>
-                        <div class="course-rating">
-                            <i class='bx bxs-star' style="color: var(--gold-color);"></i>
-                            <span>4.8</span>
-                        </div>
-                    </div>
-                    
-                    <div class="course-meta">
-                        <div class="meta-item">
-                            <i class='bx bx-book'></i>
-                            <span>9 Modules</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-time'></i>
-                            <span>35+ Hours</span>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bx-download'></i>
-                            <span>180+ Notes</span>
-                        </div>
-                    </div>
-                    
-                    <p class="course-description">
-                        Comprehensive coverage of organic chemistry principles, reactions, and mechanisms.
-                    </p>
-                    
-                    <div class="course-footer">
-                        <div class="course-price">₹1,099</div>
-                        <button class="add-to-cart" data-id="8" data-title="Organic Chemistry" data-price="1099" data-image="https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80">
-                            <i class='bx bx-cart'></i> Add to Cart
-                        </button>
-                    </div>
-                </div>
+            <!-- Loading message while courses are being loaded -->
+            <div style="
+                text-align: center;
+                padding: 60px 20px;
+                color: #666;
+                background: rgba(44, 62, 80, 0.5);
+                border-radius: 16px;
+                border: 2px solid rgba(52, 152, 219, 0.3);
+                max-width: 600px;
+                margin: 0 auto;
+            ">
+                <i class='bx bx-loader-alt bx-spin' style="font-size: 48px; color: #3498db; margin-bottom: 20px;"></i>
+                <h3 style="color: #ecf0f1; margin-bottom: 15px; font-size: 20px;">Loading Courses...</h3>
+                <p style="color: #ddd; margin: 0; font-size: 14px;">Please wait while we load the latest course offerings.</p>
             </div>
         </div>
     </main>
@@ -2430,7 +2123,7 @@
         </div>
         
         <div class="cart-actions">
-            <button class="cart-btn btn-view-cart">View Cart</button>
+            <button class="cart-btn btn-clear-cart" id="clearCartButton" style="background: rgba(231, 76, 60, 0.2); color: var(--danger-color); display: none;">Clear All</button>
             <button class="cart-btn btn-checkout" id="checkoutButton">Checkout</button>
         </div>
     </div>
@@ -2529,168 +2222,258 @@
             });
         }
 
-        // Course data
-        const courses = {
-            1: {
-                id: "1",
-                title: "Data Structures & Algorithms",
-                image: "https://images.unsplash.com/photo-1550439062-609e1531270e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                price: "₹1,299",
-                rating: 4.9,
-                modules: 12,
-                hours: 40,
-                notes: 200,
-                description: "This comprehensive course covers all essential data structures and algorithms with detailed notes, solved problems, and exam strategies. Designed specifically for VITB students, it includes PYQs from the last 5 years with detailed solutions.",
-                modulesList: [
-                    { title: "Introduction to Data Structures", topics: "Arrays, Linked Lists, Stacks, Queues, Time Complexity Analysis" },
-                    { title: "Trees and Graphs", topics: "Binary Trees, BST, AVL Trees, Graph Representation, BFS, DFS" },
-                    { title: "Sorting Algorithms", topics: "Bubble Sort, Selection Sort, Insertion Sort, Merge Sort, Quick Sort" },
-                    { title: "Searching Algorithms", topics: "Linear Search, Binary Search, Hashing, Collision Resolution" },
-                    { title: "Dynamic Programming", topics: "Memoization, Tabulation, LCS, Knapsack, Matrix Chain Multiplication" },
-                    { title: "Greedy Algorithms", topics: "Activity Selection, Huffman Coding, Dijkstra's Algorithm" }
-                ],
+        // Global variables for courses and image mapping
+        let courses = {};
+        let courseImageMap = {};
 
-            },
-            2: {
-                id: "2",
-                title: "Database Management Systems",
-                image: "https://images.unsplash.com/photo-1553877522-43269d4ea984?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                price: "₹1,199",
-                rating: 4.8,
-                modules: 10,
-                hours: 35,
-                notes: 180,
-                description: "Master database concepts with this comprehensive course covering SQL, normalization, transactions, and advanced database concepts. Includes detailed notes and PYQs with solutions.",
-                modulesList: [
-                    { title: "Database Fundamentals", topics: "Introduction, ER Model, Relational Model" },
-                    { title: "SQL Queries", topics: "DDL, DML, Joins, Subqueries, Views" },
-                    { title: "Normalization", topics: "1NF, 2NF, 3NF, BCNF, 4NF, 5NF" },
-                    { title: "Transaction Management", topics: "ACID Properties, Concurrency Control, Locking" },
-                    { title: "Indexing and Optimization", topics: "B+ Trees, Hashing, Query Optimization" }
-                ],
+        // Load courses from JSON file
+        async function loadCoursesFromJSON() {
+            try {
+                console.log('📂 Loading courses from JSON file...');
+                const response = await fetch('./courses.json');
 
-            },
-            3: {
-                id: "3",
-                title: "Machine Learning Fundamentals",
-                image: "https://images.unsplash.com/photo-1581094794329-16d1f0d22b6c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                price: "₹1,499",
-                rating: 4.9,
-                modules: 15,
-                hours: 50,
-                notes: 250,
-                description: "From basics to advanced algorithms, this course includes Python implementations, case studies, and exam notes.",
-                modulesList: [
-                    { title: "Introduction to ML", topics: "Types of Learning, Applications, Python Setup" },
-                    { title: "Linear Regression", topics: "Simple & Multiple Regression, Gradient Descent" },
-                    { title: "Classification Algorithms", topics: "Logistic Regression, Decision Trees, SVM" },
-                    { title: "Clustering", topics: "K-Means, Hierarchical, DBSCAN" },
-                    { title: "Neural Networks", topics: "Perceptrons, Backpropagation, Deep Learning" },
-                    { title: "Model Evaluation", topics: "Cross-Validation, Metrics, Hyperparameter Tuning" }
-                ],
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
 
-            },
-            4: {
-                id: "4",
-                title: "Operating Systems",
-                image: "https://images.unsplash.com/photo-1509228468518-180dd4864904?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                price: "₹1,099",
-                rating: 4.7,
-                modules: 14,
-                hours: 45,
-                notes: 220,
-                description: "Comprehensive notes on processes, threads, memory management, file systems, and security.",
-                modulesList: [
-                    { title: "OS Basics", topics: "Structure, Processes, Threads" },
-                    { title: "Memory Management", topics: "Paging, Segmentation, Virtual Memory" }
-                ],
- 
-            },
-            5: {
-                id: "5",
-                title: "Computer Networks",
-                image: "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                price: "₹1,149",
-                rating: 4.8,
-                modules: 11,
-                hours: 38,
-                notes: 190,
-                description: "Complete notes covering OSI model, TCP/IP, routing, switching, and network security.",
-                modulesList: [
-                    { title: "Network Fundamentals", topics: "OSI, TCP/IP, LAN, WAN" },
-                    { title: "Routing", topics: "RIP, OSPF, BGP" }
-                ],
+                const data = await response.json();
+                courses = data.courses;
 
-            },
-            6: {
-                id: "6",
-                title: "Web Development",
-                image: "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                price: "₹1,399",
-                rating: 4.9,
-                modules: 16,
-                hours: 60,
-                notes: 280,
-                description: "Full-stack web development notes covering HTML, CSS, JavaScript, React, Node.js and more.",
-                modulesList: [
-                    { title: "Frontend Basics", topics: "HTML, CSS, JavaScript" },
-                    { title: "Backend Development", topics: "Node.js, Express" }
-                ],
+                // Build image mapping from loaded courses
+                courseImageMap = {};
+                Object.keys(courses).forEach(courseId => {
+                    courseImageMap[courseId] = courses[courseId].image;
+                });
 
-            },
-            7: {
-                id: "7",
-                title: "Advanced Calculus",
-                image: "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                price: "₹999",
-                rating: 4.6,
-                modules: 8,
-                hours: 30,
-                notes: 150,
-                description: "Master complex calculus concepts with step-by-step solutions and practical applications.",
-                modulesList: [
-                    { title: "Limits and Continuity", topics: "Limits, Continuity, Intermediate Value Theorem" },
-                    { title: "Differentiation", topics: "Derivatives, Chain Rule, Implicit Differentiation" },
-                    { title: "Integration", topics: "Definite and Indefinite Integrals, Techniques of Integration" }
-                ]
-
-            },
-            8: {
-                id: "8",
-                title: "Organic Chemistry",
-                image: "https://images.unsplash.com/photo-1532094349884-543bc11b234d?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80",
-                price: "₹1,099",
-                rating: 4.8,
-                modules: 9,
-                hours: 35,
-                notes: 180,
-                description: "Comprehensive coverage of organic chemistry principles, reactions, and mechanisms.",
-                modulesList: [
-                    { title: "Basic Concepts", topics: "Structure, Bonding, Isomerism" },
-                    { title: "Hydrocarbons", topics: "Alkanes, Alkenes, Alkynes, Aromatic Compounds" },
-                    { title: "Functional Groups", topics: "Alcohols, Phenols, Ethers, Carboxylic Acids" }
-                ],
-
+                console.log(`✅ Loaded ${Object.keys(courses).length} courses from JSON`);
+                console.log('📊 Course IDs:', Object.keys(courses));
+                return true;
+            } catch (error) {
+                console.error('❌ Error loading courses from JSON:', error);
+                // Fallback to hardcoded courses if JSON fails to load
+                console.log('🔄 Falling back to hardcoded courses...');
+                return false;
             }
-        };
+        }
 
-        // Cart functionality
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
+        // Get consistent image for course
+        function getCourseImage(courseId) {
+            return courseImageMap[courseId] || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+        }
+
+        // Generate course cards dynamically from loaded data
+        function generateCourseCards() {
+            console.log('🏗️ Generating course cards dynamically...');
+
+            const courseGrid = document.querySelector('.course-grid');
+            if (!courseGrid) {
+                console.error('❌ Course grid element not found');
+                return;
+            }
+
+            // Clear existing content
+            courseGrid.innerHTML = '';
+
+            // Generate cards for each course
+            Object.keys(courses).forEach(courseId => {
+                const course = courses[courseId];
+                const courseCard = document.createElement('div');
+                courseCard.className = 'course-card';
+                courseCard.setAttribute('data-course', courseId);
+                courseCard.setAttribute('data-tags', course.tags || '');
+
+                courseCard.innerHTML = `
+                    <div class="course-image" id="course-image-${courseId}">
+                        <div class="premium-badge">PREMIUM</div>
+                    </div>
+                    <div class="course-info">
+                        <div class="course-header">
+                            <div>
+                                <h3 class="course-title">${course.title}</h3>
+                            </div>
+                            ${course.rating ? `
+                                <div class="course-rating">
+                                    <i class='bx bxs-star' style="color: var(--gold-color);"></i>
+                                    <span>${course.rating}</span>
+                                </div>
+                            ` : ''}
+                        </div>
+                        <p class="course-description">${course.description}</p>
+                        <div class="course-footer">
+                            <div class="course-price">${course.price}</div>
+                            <button class="add-to-cart" data-id="${courseId}" data-title="${course.title}" data-price="${parseInt(course.price.replace('₹', '').replace(',', ''))}" data-image="${course.image}">
+                                <i class='bx bx-cart'></i> Add to Cart
+                            </button>
+                        </div>
+                    </div>
+                `;
+
+                courseGrid.appendChild(courseCard);
+            });
+
+            console.log(`✅ Generated ${Object.keys(courses).length} course cards`);
+        }
+
+        // Initialize course images dynamically
+        function initializeCourseImages() {
+            console.log('🎨 Initializing course images dynamically...');
+
+            // Update all course image elements
+            Object.keys(courseImageMap).forEach(courseId => {
+                const imageElement = document.getElementById(`course-image-${courseId}`);
+                const imageUrl = getCourseImage(courseId);
+
+                if (imageElement) {
+                    imageElement.style.backgroundImage = `url('${imageUrl}')`;
+                    console.log(`✅ Set image for ${courseId}: ${imageUrl}`);
+                } else {
+                    console.warn(`⚠️ Image element not found for ${courseId}`);
+                }
+
+                // Also update the data-image attribute for cart functionality
+                const addToCartButton = document.querySelector(`[data-id="${courseId}"].add-to-cart`);
+                if (addToCartButton) {
+                    addToCartButton.setAttribute('data-image', imageUrl);
+                }
+            });
+
+            console.log('🎨 Course images initialization complete');
+        }
+
+        // Course data will be loaded dynamically from courses.json
+        // No hardcoded courses needed - everything loads from JSON file
+
+        // Cart functionality with improved initialization
+        let cart = [];
         let selectedCourse = null;
         let activeFilter = "all";
+
+        // Initialize cart from localStorage with error handling
+        function initializeCart() {
+            try {
+                const savedCart = localStorage.getItem('cart');
+                if (savedCart) {
+                    const parsedCart = JSON.parse(savedCart);
+                    // Validate cart structure
+                    if (Array.isArray(parsedCart)) {
+                        cart = parsedCart.filter(item =>
+                            item && item.id && item.title && typeof item.price === 'number'
+                        );
+                        console.log('🛒 Cart initialized from localStorage:', cart.length, 'items');
+                    } else {
+                        console.warn('⚠️ Invalid cart data in localStorage, initializing empty cart');
+                        cart = [];
+                    }
+                } else {
+                    cart = [];
+                    console.log('🛒 No saved cart found, initializing empty cart');
+                }
+            } catch (error) {
+                console.warn('⚠️ Error loading cart from localStorage:', error);
+                cart = [];
+                // Clear corrupted cart data
+                localStorage.removeItem('cart');
+            }
+        }
+
+        // Function to save cart to localStorage safely
+        function saveCartToStorage() {
+            try {
+                localStorage.setItem('cart', JSON.stringify(cart));
+                console.log('💾 Cart saved to localStorage:', cart.length, 'items');
+                return true;
+            } catch (error) {
+                console.warn('⚠️ Failed to save cart to localStorage:', error);
+                return false;
+            }
+        }
+
+        // Function to clear cart completely
+        function clearCart() {
+            cart = [];
+            saveCartToStorage();
+            updateCart();
+            console.log('🗑️ Cart cleared completely');
+        }
+
+        // Function to add item to cart
+        function addToCart(item) {
+            if (!item || !item.id || !item.title || typeof item.price !== 'number') {
+                console.warn('⚠️ Invalid item data for cart:', item);
+                return false;
+            }
+
+            // Ensure consistent image for cart items
+            const courseImage = getCourseImage(item.id);
+            const cartItem = {
+                ...item,
+                image: courseImage, // Use consistent image
+                quantity: 1
+            };
+
+            const existingItem = cart.find(cartItem => cartItem.id === item.id);
+            if (existingItem) {
+                existingItem.quantity += 1;
+                console.log('📦 Increased quantity for existing item:', item.title);
+            } else {
+                cart.push(cartItem);
+                console.log('➕ Added new item to cart:', item.title);
+            }
+
+            saveCartToStorage();
+            updateCart();
+
+            // Auto-open cart preview when item is added
+            const cartPreview = document.getElementById('cartPreview');
+            if (cartPreview && !cartPreview.classList.contains('active')) {
+                cartPreview.classList.add('active');
+                console.log('🛒 Auto-opened cart preview after adding item');
+            }
+
+            return true;
+        }
+
+        // Function to remove item from cart
+        function removeFromCart(itemId) {
+            const itemIndex = cart.findIndex(item => item.id === itemId);
+            if (itemIndex > -1) {
+                const removedItem = cart.splice(itemIndex, 1)[0];
+                saveCartToStorage();
+                updateCart();
+                console.log('🗑️ Removed item from cart:', removedItem.title);
+                return removedItem;
+            }
+            return null;
+        }
+
+        // Function to get cart total
+        function getCartTotal() {
+            return cart.reduce((total, item) => total + (item.price * item.quantity), 0);
+        }
+
+        // Function to get cart item count
+        function getCartItemCount() {
+            return cart.reduce((count, item) => count + item.quantity, 0);
+        }
 
         function updateCart() {
             const cartItems = document.getElementById('cartItems');
             const cartCount = document.getElementById('cartCount');
             const cartTotal = document.getElementById('cartTotal');
+            const cartPreview = document.getElementById('cartPreview');
+
+            // Clear existing content
             cartItems.innerHTML = '';
+
             let total = 0;
             let itemCount = 0;
 
+            // Rebuild cart items
             cart.forEach(item => {
                 itemCount += item.quantity;
                 const itemTotal = item.price * item.quantity;
                 total += itemTotal;
+
                 const cartItem = document.createElement('div');
                 cartItem.className = 'cart-item';
                 cartItem.innerHTML = `
@@ -2699,30 +2482,95 @@
                         <div class="cart-item-title">${item.title}</div>
                         <div class="cart-item-price">₹${item.price} × ${item.quantity}</div>
                     </div>
-                    <button class="remove-item" data-id="${item.id}">
+                    <button class="remove-item" data-id="${item.id}" title="Remove from cart">
                         <i class='bx bx-trash'></i>
                     </button>
                 `;
                 cartItems.appendChild(cartItem);
             });
 
+            // Update cart count and total
             cartCount.textContent = itemCount;
             cartTotal.textContent = `₹${total}`;
+
+            // Handle empty cart display
             if (cart.length === 0) {
-                cartItems.innerHTML = '<p>Your cart is empty</p>';
+                cartItems.innerHTML = `
+                    <div style="
+                        text-align: center;
+                        padding: 30px 20px;
+                        color: #666;
+                        font-style: italic;
+                    ">
+                        <i class='bx bx-cart' style="font-size: 48px; color: #ddd; margin-bottom: 15px;"></i>
+                        <p style="margin: 0; color: #aaa;">Your cart is empty</p>
+                        <p style="margin: 10px 0 0 0; font-size: 14px; color: #888;">Add some courses to get started!</p>
+                    </div>
+                `;
+
+                // Hide checkout button when cart is empty
+                const checkoutButton = document.getElementById('checkoutButton');
+                if (checkoutButton) {
+                    checkoutButton.style.display = 'none';
+                }
+            } else {
+                // Show checkout and clear buttons when cart has items
+                const checkoutButton = document.getElementById('checkoutButton');
+                const clearCartButton = document.getElementById('clearCartButton');
+
+                if (checkoutButton) {
+                    checkoutButton.style.display = 'inline-flex';
+                }
+                if (clearCartButton) {
+                    clearCartButton.style.display = 'inline-flex';
+                }
             }
 
-            // Save cart to localStorage
-            localStorage.setItem('cart', JSON.stringify(cart));
+            // Save cart to localStorage using helper function
+            saveCartToStorage();
 
-            // Add remove item listeners
+            // Add remove item listeners with improved functionality
             document.querySelectorAll('.remove-item').forEach(button => {
-                button.addEventListener('click', () => {
-                    const id = button.dataset.id;
-                    cart = cart.filter(item => item.id !== id);
-                    updateCart();
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const id = this.dataset.id;
+                    const removedItem = removeFromCart(id);
+
+                    if (removedItem) {
+                        // Show notification
+                        showNotification(`"${removedItem.title}" removed from cart`, 'warning');
+
+                        // Keep cart preview open after removal if there are still items
+                        const cartPreviewElement = document.getElementById('cartPreview');
+                        if (cartPreviewElement && cart.length > 0 && !cartPreviewElement.classList.contains('active')) {
+                            cartPreviewElement.classList.add('active');
+                        }
+                    }
                 });
             });
+
+            // Update cart icon visibility and auto-show cart when items exist
+            const cartIcon = document.getElementById('cartIcon');
+            const cartPreviewElement = document.getElementById('cartPreview');
+
+            if (cartIcon) {
+                if (cart.length === 0) {
+                    cartIcon.style.opacity = '0.6';
+                    // Hide cart preview when empty
+                    if (cartPreviewElement) {
+                        cartPreviewElement.classList.remove('active');
+                    }
+                } else {
+                    cartIcon.style.opacity = '1';
+                    // Auto-show cart preview when items exist
+                    if (cartPreviewElement && !cartPreviewElement.classList.contains('active')) {
+                        cartPreviewElement.classList.add('active');
+                        console.log('🛒 Auto-showing cart preview - items detected');
+                    }
+                }
+            }
         }
 
         // Toggle sidebar
@@ -2763,69 +2611,67 @@
         const modalCourseTitle = document.getElementById('modalCourseTitle');
         const modalCoursePrice = document.getElementById('modalCoursePrice');
         const modalBody = document.getElementById('modalBody');
-        const courseCards = document.querySelectorAll('.course-card');
         const modalAddToCart = document.getElementById('modalAddToCart');
         const enrollNowButton = document.getElementById('enrollNow');
         const cartIcon = document.getElementById('cartIcon');
         const cartPreview = document.getElementById('cartPreview');
         const closeCart = document.getElementById('closeCart');
         const checkoutButton = document.getElementById('checkoutButton');
+        const clearCartButton = document.getElementById('clearCartButton');
 
-        // Open modal
-        courseCards.forEach(card => {
-            card.addEventListener('click', (e) => {
-                // Prevent modal opening if clicking on add to cart button
-                if (e.target.closest('.add-to-cart')) return;
+        // Function to setup course card event listeners (called after cards are generated)
+        function setupCourseCardListeners() {
+            console.log('🎯 Setting up course card event listeners...');
 
-                const courseId = card.dataset.course;
-                selectedCourse = courses[courseId];
-                if (selectedCourse) {
-                    modalCourseTitle.textContent = selectedCourse.title;
-                    modalCoursePrice.textContent = selectedCourse.price;
-                    modalBody.innerHTML = `
-                        <div class="course-overview">
-                            <div class="course-image-large" style="background-image: url('${selectedCourse.image}')"></div>
-                            <div class="course-details">
+            // Use event delegation on the course grid instead of individual cards
+            const courseGrid = document.querySelector('.course-grid');
+            if (courseGrid) {
+                courseGrid.addEventListener('click', (e) => {
+                    // Find the course card that was clicked
+                    const courseCard = e.target.closest('.course-card');
+                    if (!courseCard) return;
 
-                                <p class="detailed-description">${selectedCourse.description}</p>
-                                <div class="course-stats">
-                                    <div class="stat-card">
-                                        <div class="stat-value">${selectedCourse.rating}★</div>
-                                        <div class="stat-label">Rating</div>
-                                    </div>
-                                    <div class="stat-card">
-                                        <div class="stat-value">${selectedCourse.modules}</div>
-                                        <div class="stat-label">Modules</div>
-                                    </div>
-                                    <div class="stat-card">
-                                        <div class="stat-value">${selectedCourse.hours}+</div>
-                                        <div class="stat-label">Hours</div>
-                                    </div>
-                                    <div class="stat-card">
-                                        <div class="stat-value">${selectedCourse.notes}+</div>
-                                        <div class="stat-label">Notes</div>
-                                    </div>
+                    // Prevent modal opening if clicking on add to cart button
+                    if (e.target.closest('.add-to-cart')) return;
+
+                    const courseId = courseCard.dataset.course;
+                    console.log('📖 Course card clicked:', courseId);
+
+                    selectedCourse = courses[courseId];
+                    if (selectedCourse) {
+                        modalCourseTitle.textContent = selectedCourse.title;
+                        modalCoursePrice.textContent = selectedCourse.price;
+                        modalBody.innerHTML = `
+                            <div class="course-overview">
+                                <div class="course-image-large" style="background-image: url('${selectedCourse.image}')"></div>
+                                <div class="course-details">
+                                    <p class="detailed-description">${selectedCourse.description}</p>
                                 </div>
                             </div>
-                        </div>
-                        <div class="modules-section">
-                            <h3 class="section-title">Course Modules</h3>
-                            <div class="modules-grid">
-                                ${selectedCourse.modulesList.map(module => `
-                                    <div class="module-card">
-                                        <h4 class="module-title">${module.title}</h4>
-                                        <p class="module-topics">${module.topics}</p>
-                                    </div>
-                                `).join('')}
+                            <div class="modules-section">
+                                <h3 class="section-title">Course Modules</h3>
+                                <div class="modules-grid">
+                                    ${selectedCourse.modulesList.map(module => `
+                                        <div class="module-card">
+                                            <h4 class="module-title">${module.title}</h4>
+                                            <p class="module-topics">${module.topics}</p>
+                                        </div>
+                                    `).join('')}
+                                </div>
                             </div>
-                        </div>
-
-                    `;
-                    courseModal.classList.add('active');
-                    document.body.style.overflow = 'hidden';
-                }
-            });
-        });
+                        `;
+                        courseModal.classList.add('active');
+                        document.body.style.overflow = 'hidden';
+                        console.log('✅ Modal opened for course:', selectedCourse.title);
+                    } else {
+                        console.warn('⚠️ Course not found:', courseId);
+                    }
+                });
+                console.log('✅ Course card event listeners set up');
+            } else {
+                console.error('❌ Course grid not found for event listeners');
+            }
+        }
 
         // Close modal
         closeModal.addEventListener('click', () => {
@@ -2840,37 +2686,46 @@
             }
         });
 
-        // Add to cart from course cards
-        const addToCartButtons = document.querySelectorAll('.course-card .add-to-cart');
-        addToCartButtons.forEach(button => {
-            button.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
+        // Function to setup add to cart button listeners (called after cards are generated)
+        function setupAddToCartListeners() {
+            console.log('🛒 Setting up add to cart button event listeners...');
 
-                const id = button.dataset.id;
-                const title = button.dataset.title;
-                const price = parseInt(button.dataset.price);
-                const image = button.dataset.image;
+            // Use event delegation on the course grid
+            const courseGrid = document.querySelector('.course-grid');
+            if (courseGrid) {
+                courseGrid.addEventListener('click', (e) => {
+                    // Check if the clicked element is an add to cart button
+                    const addToCartButton = e.target.closest('.add-to-cart');
+                    if (!addToCartButton) return;
 
-                console.log('Add to cart clicked:', { id, title, price, image });
+                    e.preventDefault();
+                    e.stopPropagation();
 
-                const existingItem = cart.find(item => item.id === id);
-                if (existingItem) {
-                    existingItem.quantity += 1;
-                } else {
-                    cart.push({ id, title, price, image, quantity: 1 });
-                }
+                    const id = addToCartButton.dataset.id;
+                    const title = addToCartButton.dataset.title;
+                    const price = parseInt(addToCartButton.dataset.price);
+                    const image = addToCartButton.dataset.image;
 
-                updateCart();
-                button.innerHTML = '<i class="bx bx-check"></i> Added!';
-                button.style.background = 'var(--success-color)';
+                    console.log('🛒 Add to cart clicked:', { id, title, price, image });
 
-                setTimeout(() => {
-                    button.innerHTML = '<i class="bx bx-cart"></i> Add to Cart';
-                    button.style.background = '';
-                }, 2000);
-            });
-        });
+                    // Use helper function to add item
+                    const success = addToCart({ id, title, price, image });
+
+                    if (success) {
+                        addToCartButton.innerHTML = '<i class="bx bx-check"></i> Added!';
+                        addToCartButton.style.background = 'var(--success-color)';
+
+                        setTimeout(() => {
+                            addToCartButton.innerHTML = '<i class="bx bx-cart"></i> Add to Cart';
+                            addToCartButton.style.background = '';
+                        }, 2000);
+                    }
+                });
+                console.log('✅ Add to cart event listeners set up');
+            } else {
+                console.error('❌ Course grid not found for add to cart listeners');
+            }
+        }
 
         // Add to cart from modal
         modalAddToCart.addEventListener('click', () => {
@@ -2882,34 +2737,61 @@
 
                 console.log('Modal add to cart clicked:', { id, title, price, image });
 
-                const existingItem = cart.find(item => item.id === id);
-                if (existingItem) {
-                    existingItem.quantity += 1;
-                } else {
-                    cart.push({ id, title, price, image, quantity: 1 });
-                }
+                // Use helper function to add item
+                const success = addToCart({ id, title, price, image });
 
-                updateCart();
-                showNotification('Course added to cart!', 'success');
-                courseModal.classList.remove('active');
-                document.body.style.overflow = 'auto';
+                if (success) {
+                    showNotification('Course added to cart!', 'success');
+                    courseModal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                }
             }
         });
 
 
-        // Cart toggle
+        // Cart toggle with improved functionality
         cartIcon.addEventListener('click', () => {
-            cartPreview.classList.toggle('active');
+            const cartPreview = document.getElementById('cartPreview');
+            if (cartPreview) {
+                // If cart has items, always show it; if empty, still allow toggle
+                if (cart.length > 0) {
+                    cartPreview.classList.add('active');
+                    console.log('🛒 Cart has items, keeping it visible');
+                } else {
+                    cartPreview.classList.toggle('active');
+                    console.log('📭 Cart is empty, allowing toggle');
+                }
+            }
         });
 
         closeCart.addEventListener('click', () => {
-            cartPreview.classList.remove('active');
+            const cartPreview = document.getElementById('cartPreview');
+            if (cartPreview) {
+                cartPreview.classList.remove('active');
+            }
         });
 
-        // Close cart when clicking outside
+        // Close cart when clicking outside (with improved logic)
         document.addEventListener('click', (e) => {
-            if (!cartIcon.contains(e.target) && !cartPreview.contains(e.target)) {
+            const cartIcon = document.getElementById('cartIcon');
+            const cartPreview = document.getElementById('cartPreview');
+
+            if (cartIcon && cartPreview &&
+                !cartIcon.contains(e.target) &&
+                !cartPreview.contains(e.target)) {
                 cartPreview.classList.remove('active');
+            }
+        });
+
+        // Prevent cart preview from closing when clicking on remove buttons
+        document.addEventListener('click', (e) => {
+            if (e.target.closest('.remove-item')) {
+                e.stopPropagation();
+                // Keep cart preview open
+                const cartPreview = document.getElementById('cartPreview');
+                if (cartPreview && !cartPreview.classList.contains('active')) {
+                    cartPreview.classList.add('active');
+                }
             }
         });
 
@@ -2936,22 +2818,27 @@
         // Filter and search function
         function filterCourses() {
             const searchTerm = searchInput.value.toLowerCase().trim();
-            
+
+            // Get all course cards dynamically (since they're generated after page load)
+            const courseCards = document.querySelectorAll('.course-card');
+
             courseCards.forEach(card => {
                 const title = card.querySelector('.course-title').textContent.toLowerCase();
                 const description = card.querySelector('.course-description').textContent.toLowerCase();
                 const tags = card.dataset.tags;
-                
+
                 // Check if matches filter
                 const matchesFilter = activeFilter === "all" || tags.includes(activeFilter);
-                
+
                 // Check if matches search
-                const matchesSearch = title.includes(searchTerm) || 
-                                     description.includes(searchTerm);
-                
+                const matchesSearch = title.includes(searchTerm) ||
+                                      description.includes(searchTerm);
+
                 // Show/hide based on both conditions
                 card.style.display = (matchesFilter && matchesSearch) ? 'block' : 'none';
             });
+
+            console.log(`🔍 Filtered courses - Filter: ${activeFilter}, Search: "${searchTerm}", Found: ${document.querySelectorAll('.course-card[style*="display: block"]').length} visible cards`);
         }
 // Dynamic payment handler
 async function initializePayment(orderData, courseTitle) {
@@ -2992,9 +2879,9 @@ async function verifyPayment(razorpayResponse, orderId) {
     const result = await response.json();
     if (result.success) {
       showNotification('Payment successful! Access granted to your course.', 'success');
-      // Redirect to success page or refresh
+      // Redirect to MyCourses page on successful payment
       setTimeout(() => {
-        window.location.href = '/features/marketplace/payment.html?payment=success&order_id=' + orderId;
+        window.location.href = '../mycourses/mycourses.html?sidebar=active';
       }, 2000);
     } else {
       showNotification('Payment verification failed', 'danger');
@@ -3017,11 +2904,9 @@ enrollNowButton.addEventListener('click', async () => {
     }
 
     if (!isUserProfileComplete) {
-      console.log('Profile not complete, redirecting to profile');
+      console.log('Profile not complete, staying on marketplace');
       showNotification('Please complete your profile before purchasing courses.', 'warning');
-      setTimeout(() => {
-        window.location.href = '../profile/profile.html';
-      }, 1000);
+      // Stay on marketplace page - don't redirect
       return;
     }
 
@@ -3055,11 +2940,9 @@ enrollNowButton.addEventListener('click', async () => {
           return;
         } else if (response.status === 403) {
           if (errorData.error === 'profile_incomplete') {
-            // Profile incomplete - redirect to profile page
+            // Profile incomplete - stay on marketplace
             showNotification('Please complete your profile before purchasing courses.', 'warning');
-            setTimeout(() => {
-              window.location.href = '../profile/profile.html';
-            }, 1000);
+            // Stay on marketplace page - don't redirect
             return;
           } else if (errorData.error === 'not_verified') {
             // Email not verified
@@ -3096,6 +2979,32 @@ enrollNowButton.addEventListener('click', async () => {
   }
 });
 
+// Clear cart functionality
+if (clearCartButton) {
+    clearCartButton.addEventListener('click', () => {
+        if (cart.length === 0) {
+            showNotification('Your cart is already empty', 'info');
+            return;
+        }
+
+        // Show confirmation dialog
+        const confirmed = confirm(`Are you sure you want to remove all ${cart.length} items from your cart?`);
+        if (confirmed) {
+            // Clear the cart using helper function
+            clearCart();
+
+            // Close cart preview
+            const cartPreview = document.getElementById('cartPreview');
+            if (cartPreview) {
+                cartPreview.classList.remove('active');
+            }
+
+            // Show notification
+            showNotification('Cart cleared successfully', 'success');
+        }
+    });
+}
+
 // Checkout - let backend handle all validation
 checkoutButton.addEventListener('click', async () => {
   console.log('Checkout button clicked');
@@ -3112,11 +3021,9 @@ checkoutButton.addEventListener('click', async () => {
   }
 
   if (!isUserProfileComplete) {
-    console.log('Profile not complete, redirecting to profile');
+    console.log('Profile not complete, staying on marketplace');
     showNotification('Please complete your profile before purchasing courses.', 'warning');
-    setTimeout(() => {
-      window.location.href = '/features/profile/profile.html';
-    }, 1000);
+    // Stay on marketplace page - don't redirect
     return;
   }
 
@@ -3151,11 +3058,9 @@ checkoutButton.addEventListener('click', async () => {
         return;
       } else if (response.status === 403) {
         if (errorData.error === 'profile_incomplete') {
-          // Profile incomplete - redirect to profile page
+          // Profile incomplete - stay on marketplace
           showNotification('Please complete your profile before purchasing courses.', 'warning');
-          setTimeout(() => {
-            window.location.href = '../profile/profile.html';
-          }, 1000);
+          // Stay on marketplace page - don't redirect
           return;
         } else if (errorData.error === 'not_verified') {
           // Email not verified
@@ -3208,11 +3113,9 @@ accessBtns.forEach(btn => {
     }
 
     if (!isUserProfileComplete) {
-      console.log('Profile not complete, redirecting to profile');
+      console.log('Profile not complete, staying on marketplace');
       showNotification('Please complete your profile before purchasing courses.', 'warning');
-      setTimeout(() => {
-        window.location.href = '/features/profile/profile.html';
-      }, 1000);
+      // Stay on marketplace page - don't redirect
       return;
     }
 
@@ -3246,10 +3149,11 @@ accessBtns.forEach(btn => {
           return;
         } else if (response.status === 403) {
           if (errorData.error === 'profile_incomplete') {
-            // Profile incomplete - redirect to profile page
+            // Profile incomplete - stay on marketplace and show notice
             showNotification('Please complete your profile before purchasing courses.', 'warning');
+            // Force refresh profile status to update button visibility
             setTimeout(() => {
-              window.location.href = '../profile/profile.html';
+              forceRefreshProfileStatus();
             }, 1000);
             return;
           } else if (errorData.error === 'not_verified') {
@@ -3476,13 +3380,21 @@ function isProfileComplete() {
                 localStorage.removeItem('cart'); // Clear from localStorage too
                 updateCart();
 
-                // Show success message
+                // Show success message and redirect to MyCourses
                 showNotification('Payment successful! You now have access to your courses.', 'success');
+                setTimeout(() => {
+                    window.location.href = '../mycourses/mycourses.html?sidebar=active';
+                }, 2000);
 
                 // Clean URL
                 window.history.replaceState({}, document.title, window.location.pathname);
             } else if (paymentStatus === 'cancelled') {
                 showNotification('Payment was cancelled. You can try again anytime.', 'warning');
+                // Stay on marketplace - don't redirect anywhere
+                window.history.replaceState({}, document.title, window.location.pathname);
+            } else if (paymentStatus === 'failed') {
+                showNotification('Payment failed. Please try again.', 'danger');
+                // Stay on marketplace - don't redirect anywhere
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
@@ -3858,6 +3770,32 @@ function isProfileComplete() {
 
             createParticles();
 
+            // Initialize cart first
+            initializeCart();
+
+            // Load courses from JSON file
+            const coursesLoaded = await loadCoursesFromJSON();
+
+            if (coursesLoaded) {
+                // Generate course cards from loaded data
+                generateCourseCards();
+
+                // Initialize course images dynamically
+                initializeCourseImages();
+
+                // Setup event listeners for course cards (AFTER cards are generated)
+                setupCourseCardListeners();
+
+                // Setup event listeners for add to cart buttons (AFTER cards are generated)
+                setupAddToCartListeners();
+            } else {
+                console.error('❌ Failed to load courses from JSON - marketplace may not work properly');
+                showNotification('Failed to load courses. Please refresh the page.', 'danger');
+            }
+
+            // Update cart display after initialization
+            updateCart();
+
             // INSTANT CHECK FIRST - Synchronous check for completed profiles
             console.log('🚀 RUNNING INSTANT PROFILE CHECK...');
             const instantResult = instantProfileCheck();
@@ -3879,7 +3817,7 @@ function isProfileComplete() {
 
             await loadUserProfile(); // Load user profile from backend
             setupProfileRefresh(); // Setup automatic profile refresh
-            updateCart();
+            updateCart(); // Update cart display after initialization
             handlePaymentStatus();
 
             // Check for sidebar activation from URL
@@ -3893,7 +3831,8 @@ function isProfileComplete() {
                     authenticated: isUserAuthenticated,
                     profileComplete: isUserProfileComplete,
                     instantCheckResult: instantResult,
-                    immediateCheckResult: immediateResult
+                    immediateCheckResult: immediateResult,
+                    cartItems: cart.length
                 });
             }, 1000);
         });
