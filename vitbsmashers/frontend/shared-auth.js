@@ -69,7 +69,11 @@ class AuthManager {
 
             // Try to validate with backend for better user experience and updated data
             try {
-                const response = await fetch('http://localhost:4000/api/v1/auth/validate-token', {
+                const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                    ? 'http://localhost:4000/api/v1/auth'
+                    : 'https://vitbsmashers-backend.onrender.com/api/v1/auth';
+
+                const response = await fetch(`${API_BASE}/validate-token`, {
                     method: 'GET',
                     headers: {
                         'Authorization': `Bearer ${token}`,
