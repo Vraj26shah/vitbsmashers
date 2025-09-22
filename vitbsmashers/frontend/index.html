@@ -17,35 +17,95 @@
             background: #fff;
             color: #3c4043;
             border: 1px solid #dadce0;
-            border-radius: 4px;
-            padding: 12px 24px;
-            font-family: 'Roboto', sans-serif;
-            font-size: 14px;
-            font-weight: 500;
+            border-radius: 50px;
+            padding: 14px 28px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-            min-height: 40px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            min-height: 52px;
             width: 100%;
-            max-width: 300px;
+            max-width: 320px;
             margin: 0 auto;
             text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .custom-google-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(66, 133, 244, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .custom-google-btn:hover::before {
+            left: 100%;
         }
 
         .custom-google-btn:hover {
             background: #f8f9fa;
-            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 20px rgba(66, 133, 244, 0.3);
+            transform: translateY(-2px);
+            border-color: #c4c7c5;
         }
 
         .custom-google-btn:active {
             background: #f1f3f4;
-            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(0);
         }
 
         .google-icon {
-            width: 18px;
-            height: 18px;
+            width: 20px;
+            height: 20px;
             flex-shrink: 0;
+        }
+
+        .auth-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .auth-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            text-align: left;
+            font-size: 14px;
+            color: #ecf0f1;
+            margin-top: 20px;
+            max-width: 420px;
+            padding: 16px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .auth-note i {
+            color: #3498db;
+            font-size: 18px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .auth-note-content {
+            line-height: 1.5;
+        }
+
+        .auth-note-content strong {
+            color: #3498db;
+            font-weight: 600;
         }
     </style>
 </head>
@@ -123,12 +183,15 @@
                                 </svg>
                                 Sign in with Google
                             </button>
-                            <p class="auth-note vit-note">
+                            <div class="auth-note">
                                 <i class="fas fa-university"></i>
-                                <span><strong>Exclusive for VIT Bhopal University students</strong><br>Please use your <strong>@vitbhopal.ac.in</strong> Google account to sign in</span>
-                            </p>
+                                <div class="auth-note-content">
+                                    <strong>Exclusive for VIT Bhopal University students</strong>
+                                    <br>
+                                    <span>Please use your <strong>@vitbhopal.ac.in</strong> Google account to sign in</span>
+                                </div>
+                            </div>
                         </div>
-
                     </div>
                 </div>
                 
