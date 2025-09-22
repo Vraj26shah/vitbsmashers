@@ -175,7 +175,9 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(frontendDir, 'index.html'));
 });
 
-
+app.get('/', (req, res) => {
+      res.json({"ok":"true"});
+});
 
 
 // Error handling middleware
