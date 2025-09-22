@@ -458,7 +458,30 @@
                         // Add class for CSS hover effects
                         googleButton.classList.add('google-signin-btn');
 
-                        console.log('✅ Google Sign-In button properly integrated');
+                        // Override the default click behavior to force account selection
+                        googleButton.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+
+                            // Create a custom OAuth URL that forces account selection
+                            const clientId = '686446558105-bl2q9t63tcnei5u4ugck952tanccrpdu.apps.googleusercontent.com';
+                            const redirectUri = encodeURIComponent('https://vitbsmashers.onrender.com/api/v1/auth/google/callback');
+                            const scope = encodeURIComponent('openid email profile');
+                            const state = encodeURIComponent('force_select_account');
+
+                            const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+                                `client_id=${clientId}&` +
+                                `redirect_uri=${redirectUri}&` +
+                                `scope=${scope}&` +
+                                `response_type=code&` +
+                                `access_type=offline&` +
+                                `prompt=select_account`;
+
+                            console.log('🔗 Redirecting to OAuth URL with account selection:', authUrl);
+                            window.location.href = authUrl;
+                        });
+
+                        console.log('✅ Google Sign-In button properly integrated with account selection');
                     }
                 }
             }, 600);
