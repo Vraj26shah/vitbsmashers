@@ -71,7 +71,7 @@ class AuthManager {
             try {
                 const API_BASE = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                     ? 'http://localhost:4000/api/v1/auth'
-                    : 'https://vitbsmashers-backend.onrender.com/api/v1/auth';
+                    : 'https://vitbsmashers.onrender.com/api/v1/auth';
 
                 const response = await fetch(`${API_BASE}/validate-token`, {
                     method: 'GET',
