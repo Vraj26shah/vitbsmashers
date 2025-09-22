@@ -475,7 +475,7 @@
                                 `scope=${scope}&` +
                                 `response_type=code&` +
                                 `access_type=offline&` +
-                                `prompt=select_account`;
+                                `prompt=consent select_account`;
 
                             console.log('🔗 Redirecting to OAuth URL with account selection:', authUrl);
                             window.location.href = authUrl;
