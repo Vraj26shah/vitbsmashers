@@ -69,7 +69,9 @@ const corsOptions = {
       'http://localhost:4000',  // Backend itself (for internal requests)
       'file://',                // Allow file:// protocol for direct HTML opening
       'https://vitbsmashers.vercel.app', // Production frontend
-      'https://vitbsmashers-main.vercel.app' // Alternative production
+      'https://vitbsmashers-main.vercel.app', // Alternative production
+      'https://vitbsmashers.onrender.com', // Render frontend deployment
+      'https://vitbsmashers-backend.onrender.com' // Render backend (if separate service)
     ];
 
     if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('file://')) {
