@@ -1,7 +1,5 @@
-Account
-Logout<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scholars Stack - Student Profile</title>
@@ -9,7 +7,28 @@ Logout<!DOCTYPE html>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- <script src="../../shared-admin-auth.js"></script>
     <script src="../../admin-panel-manager.js"></script> -->
+    <script src="../../shared-auth.js"></script>
+    <script src="../../shared-user-auth.js"></script>
     <script src="../../shared-logout.js"></script>
+    <script>
+        // Initialize authentication check when DOM is loaded
+        document.addEventListener('DOMContentLoaded', function() {
+            // Wait for auth manager to be ready
+            const checkAuth = () => {
+                if (window.authManager) {
+                    if (!window.authManager.isAuthenticated) {
+                        window.authManager.showLoginRequired();
+                        return;
+                    }
+                    // Continue with normal page initialization
+                } else {
+                    // Wait a bit more for auth manager
+                    setTimeout(checkAuth, 100);
+                }
+            };
+            checkAuth();
+        });
+    </script>
     <style>
         /* === GLOBAL STYLES === */
         @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -1629,26 +1648,37 @@ Logout<!DOCTYPE html>
                 </label>
                 <div style="position: relative; margin-top: 8px;">
                     <input type="email" class="form-control" id="vitEmail" value="" placeholder="Loading your email..." readonly required style="
-                        background-color: #f8f9fa !important;
+                        background-color: #fff3cd !important;
                         cursor: not-allowed !important;
-                        border: 2px solid #2ecc71 !important;
-                        color: #2c3e50 !important;
+                        border: 2px solid #f39c12 !important;
+                        color: #856404 !important;
                         font-weight: 600 !important;
                         font-size: 16px !important;
                         padding-right: 50px !important;
                         text-align: center !important;
                         letter-spacing: 0.5px !important;
                     ">
-                    <i class='bx bxs-lock' style="
+                    <i class='bx bx-loader-alt bx-spin' style="
                         position: absolute;
                         right: 15px;
                         top: 50%;
                         transform: translateY(-50%);
-                        color: #2ecc71;
+                        color: #f39c12;
                         font-size: 18px;
                         pointer-events: none;
                         z-index: 5;
-                    "></i>
+                    " id="emailLoadingIcon"></i>
+                    <div id="emailLoadingIndicator" style="
+                        position: absolute;
+                        left: 15px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        color: #3498db;
+                        font-size: 14px;
+                        display: none;
+                    ">
+                        <i class='bx bx-loader-alt bx-spin'></i> Loading...
+                    </div>
                 </div>
                 <div style="background: rgba(46, 204, 113, 0.1); border: 1px solid #2ecc71; border-radius: 8px; padding: 12px; margin-top: 10px;">
                     <div id="googleEmailIndicator" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
@@ -1659,6 +1689,20 @@ Logout<!DOCTYPE html>
                         <small style="color: #2ecc71; font-weight: 500; font-size: 13px;">
                             🔒 This email is locked and cannot be changed - it matches your Google account
                         </small>
+                        <br>
+                        <button id="refreshEmailBtn" onclick="forceEmailPopulation()" style="
+                            background: rgba(52, 152, 219, 0.2);
+                            border: 1px solid #3498db;
+                            color: #3498db;
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 11px;
+                            margin-top: 5px;
+                            display: none;
+                        ">
+                            <i class='bx bx-refresh'></i> Refresh Email
+                        </button>
                     </div>
                 </div>
             </div>
@@ -1986,16 +2030,7 @@ Logout<!DOCTYPE html>
     <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
 
     <script>
-        // Check authentication on page load
-        function checkAuthentication() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                // Show login required message
-                showLoginRequired();
-                return false;
-            }
-            return true;
-        }
+        // Check authentication on page load (removed duplicate function)
 
         // Emergency check: If profile is completed, ensure setup form is never shown
         function emergencyProfileCheck() {
@@ -2005,78 +2040,18 @@ Logout<!DOCTYPE html>
                     const parsed = JSON.parse(profileData);
                     if (parsed.profileCompleted === true) {
                         console.log('🚨 EMERGENCY: Profile completed detected, forcing profile view');
-                        ensureSetupFormHidden();
+                        // Show profile view immediately with cached data
+                        showProfileFromCache(parsed);
                         return true;
                     }
                 }
+                console.log('🚨 EMERGENCY: Profile not completed - setup form should be visible');
             } catch (error) {
                 console.warn('⚠️ Error in emergency profile check:', error);
             }
             return false;
         }
 
-        // Show login required message
-        function showLoginRequired() {
-            document.body.innerHTML = `
-                <div style="
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    min-height: 100vh;
-                    background: linear-gradient(135deg, #0a1423 0%, #0f1a2a 100%);
-                    color: #ecf0f1;
-                    text-align: center;
-                    padding: 20px;
-                ">
-                    <div style="
-                        background: rgba(15, 26, 42, 0.85);
-                        backdrop-filter: blur(10px);
-                        border-radius: 20px;
-                        padding: 40px;
-                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-                        border: 2px solid #3498db;
-                        max-width: 500px;
-                        width: 100%;
-                    ">
-                        <i class='bx bx-lock-alt' style="
-                            font-size: 60px;
-                            color: #3498db;
-                            margin-bottom: 20px;
-                        "></i>
-                        <h1 style="
-                            font-size: 28px;
-                            margin-bottom: 15px;
-                            color: #ecf0f1;
-                        ">Access Restricted</h1>
-                        <p style="
-                            font-size: 16px;
-                            margin-bottom: 30px;
-                            color: #ddd;
-                            line-height: 1.6;
-                        ">
-                            You need to log in to access your profile page. Please sign in to view and manage your account information.
-                        </p>
-                        <div style="display: flex; gap: 15px; justify-content: center;">
-                            <a href="../../index.html" style="
-                                background: #3498db;
-                                color: white;
-                                padding: 12px 24px;
-                                border-radius: 10px;
-                                text-decoration: none;
-                                font-weight: 600;
-                                transition: all 0.3s ease;
-                                display: inline-flex;
-                                align-items: center;
-                                gap: 8px;
-                            " onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">
-                                <i class='bx bx-log-in'></i> Login Now
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
 
         // Create background particles (optimized)
         function createParticles() {
@@ -2136,7 +2111,7 @@ Logout<!DOCTYPE html>
                 const token = localStorage.getItem('token');
                 if (!token) return null;
 
-                const response = await fetch('http://localhost:4000/api/v1/profile/me', {
+                const response = await fetch('/api/v1/profile/me', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -2183,7 +2158,7 @@ Logout<!DOCTYPE html>
                 }
 
                 console.log('🔄 Fetching user data from backend...');
-                const response = await fetch('http://localhost:4000/api/v1/profile/me', {
+                const response = await fetch('/api/v1/profile/me', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -2352,7 +2327,6 @@ Logout<!DOCTYPE html>
 
                         // Ensure setup form stays hidden
                         ensureSetupFormHidden();
-
                     } else {
                         console.log('📝 Profile not completed, showing setup form');
 
@@ -2360,8 +2334,12 @@ Logout<!DOCTYPE html>
                         document.getElementById('profileSection').style.display = 'none';
                         document.getElementById('setupForm').style.display = 'block';
 
-                        // Populate email from token
-                        populateEmailForSetup();
+                        // Populate email from backend data if available, otherwise from token
+                        if (profileData && profileData.email) {
+                            displayUserEmail(profileData.email);
+                        } else {
+                            populateEmailForSetup();
+                        }
                     }
                 } else {
                     console.log('❌ No profile data from backend');
@@ -2428,16 +2406,22 @@ Logout<!DOCTYPE html>
 
         // Populate email for setup form
         function populateEmailForSetup() {
+            console.log('🔄 Populating email for setup form...');
             try {
                 const token = localStorage.getItem('token');
                 if (token) {
                     const payload = JSON.parse(atob(token.split('.')[1]));
                     if (payload.email) {
                         displayUserEmail(payload.email);
+                        console.log('✅ Email populated for setup from token');
+                    } else {
+                        console.log('⚠️ No email in token for setup');
                     }
+                } else {
+                    console.log('❌ No token available for setup email population');
                 }
             } catch (error) {
-                console.warn('⚠️ Error populating email for setup');
+                console.warn('⚠️ Error populating email for setup:', error);
             }
         }
 
@@ -2519,9 +2503,10 @@ Logout<!DOCTYPE html>
                     userDOB: document.getElementById('userDOB')
                 };
 
-                // Ensure email is available (try multiple sources)
+                // Get email from profile data or token
                 let userEmail = profileData.email;
                 if (!userEmail) {
+                    // Fallback to token if email not in profile data
                     try {
                         const token = localStorage.getItem('token');
                         if (token) {
@@ -2529,12 +2514,37 @@ Logout<!DOCTYPE html>
                             userEmail = payload.email;
                         }
                     } catch (error) {
-                        console.warn('⚠️ Error getting email from token');
+                        console.warn('⚠️ Error getting email from token in profile view');
                     }
                 }
 
                 // Extract user data with fallbacks
-                const fullName = profileData.fullName || profileData.username || 'Student';
+                let fullName = profileData.fullName || profileData.username || 'Student';
+
+                // If fullName is still 'Student', try to get from AuthManager or extract from email
+                if (fullName === 'Student' && window.authManager && window.authManager.userData) {
+                    fullName = window.authManager.userData.fullName || window.authManager.userData.username || 'Student';
+                }
+
+                // If still 'Student', try to extract from email
+                if (fullName === 'Student') {
+                    try {
+                        const token = localStorage.getItem('token');
+                        if (token) {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            if (payload.email) {
+                                const emailPrefix = payload.email.split('@')[0];
+                                const nameParts = emailPrefix.split('.');
+                                fullName = nameParts.map(part =>
+                                    part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+                                ).join(' ');
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('Failed to extract name from token in profile:', error);
+                    }
+                }
+
                 const phone = profileData.phone || 'Not specified';
                 const program = profileData.branch || profileData.program || 'Not specified';
                 const regNumber = profileData.registrationNumber || profileData.regNumber || 'Not specified';
@@ -2760,7 +2770,7 @@ Logout<!DOCTYPE html>
                     return;
                 }
 
-                const response = await fetch('http://localhost:4000/api/v1/profile/update', {
+                const response = await fetch('/api/v1/profile/update', {
                     method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
@@ -3254,7 +3264,7 @@ Logout<!DOCTYPE html>
                 const token = localStorage.getItem('token');
                 if (!token) return false;
 
-                const response = await fetch('http://localhost:4000/api/v1/profile/me', {
+                const response = await fetch('/api/v1/profile/me', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -3422,119 +3432,283 @@ Logout<!DOCTYPE html>
             }
         }
 
-        // DEBUG FUNCTION: Test profile loading manually
-        window.testProfileLoading = async function() {
-            console.log('🧪 TESTING PROFILE LOADING...');
-
-            // Test 1: Check localStorage
-            const cached = getCachedProfileData();
-            console.log('📦 Cached data:', cached);
-
-            // Test 2: Load from backend
-            const backendData = await loadUserProfile();
-            console.log('🔄 Backend data:', backendData);
-
-            // Test 3: Populate profile
-            if (backendData) {
-                populateCompleteProfile(backendData);
-                console.log('✅ Profile populated with backend data');
-            } else if (cached) {
-                populateCompleteProfile(cached);
-                console.log('✅ Profile populated with cached data');
-            } else {
-                console.log('❌ No data available to populate');
-            }
-
-            return { cached, backendData };
+        // DEBUG FUNCTION: Manual email population test
+        window.testEmailPopulation = function() {
+            console.log('🧪 MANUAL EMAIL POPULATION TEST');
+            alert('Testing email population...');
+            return populateEmailImmediately();
         };
 
-        // ULTRA-FAST INITIALIZATION
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 ULTRA-FAST: Starting profile page...');
+        // DEBUG FUNCTION: Check token content
+        window.checkToken = function() {
+            const token = localStorage.getItem('token');
+            console.log('🔑 Token exists:', !!token);
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    console.log('🔍 Token payload:', payload);
+                    alert('Token payload: ' + JSON.stringify(payload, null, 2));
+                    return payload;
+                } catch (error) {
+                    console.error('❌ Token parsing error:', error);
+                    alert('Token parsing error: ' + error.message);
+                }
+            } else {
+                alert('No token found!');
+            }
+            return null;
+        };
 
-            // Check authentication first (blocking - must happen)
-            if (!checkAuthentication()) {
-                return;
+
+        // SIMPLE AND RELIABLE INITIALIZATION - Using existing profile completion system
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🚀 Starting profile page...');
+
+            // IMMEDIATE EMAIL TEST - Run as soon as DOM is ready
+            console.log('🧪 Running immediate email test...');
+            const emailLoaded = populateEmailImmediately();
+            console.log('🧪 Email loading result:', emailLoaded);
+
+            // Check if profile is already completed using existing system
+            const profileCompleted = emergencyProfileCheck();
+
+            // If profile is completed, show profile view and stop
+            if (profileCompleted) {
+                console.log('✅ Profile already completed - showing profile view');
+                // Initialize UI components for profile view
+                setTimeout(() => {
+                    createParticles();
+                    checkSidebarActivation();
+                    clearOldProfileData();
+                    if (window.adminPanelManager) {
+                        window.adminPanelManager.init();
+                    }
+                }, 100);
+                return; // Stop initialization - profile view is already shown
             }
 
-            // PHASE 1: CRITICAL (instant - no delay)
-            emergencyProfileCheck(); // Hide setup form if profile completed
-            initializeProfileInstantly(); // Show cached data instantly
+            // If email loaded successfully and profile not completed, show setup form
+            if (emailLoaded) {
+                console.log('✅ Email loaded successfully and profile not completed - showing setup form only');
+                // Show setup form
+                document.getElementById('setupForm').style.display = 'block';
+                // Hide profile section
+                document.getElementById('profileSection').style.display = 'none';
+                console.log('✅ Setup form displayed, stopping other initialization');
+                return; // Stop all other initialization
+            }
 
-            // PHASE 2: HIGH PRIORITY (immediate but non-blocking)
-            populateEmailImmediately();
+            // If email didn't load, continue with normal initialization
+            console.log('⚠️ Email not loaded from token, proceeding with normal initialization...');
 
-            // PHASE 3: MEDIUM PRIORITY (deferred)
-            setTimeout(() => {
-                createParticles(); // Visual enhancement
-                checkSidebarActivation();
-                clearOldProfileData();
-            }, 100);
+            // Wait for auth manager to be ready, then proceed
+            const initProfilePage = () => {
+                if (window.authManager) {
+                    console.log('🔐 Auth manager ready, checking authentication...');
 
-            // PHASE 4: LOW PRIORITY (background)
-            setTimeout(() => {
-                // Initialize admin panel (only if user is admin)
-                if (window.adminPanelManager) {
-                    window.adminPanelManager.init();
+                    // Check if user is authenticated
+                    if (!window.authManager.isAuthenticated) {
+                        console.log('❌ User not authenticated, showing login required');
+                        window.authManager.showLoginRequired();
+                        return;
+                    }
+
+                    console.log('✅ User authenticated, proceeding with profile initialization');
+
+                    // Try to populate email again from backend
+                    populateEmailImmediately();
+
+                    // Check profile completion and show appropriate view using existing system
+                    emergencyProfileCheck();
+                    initializeProfileInstantly();
+
+                    // Initialize UI components
+                    setTimeout(() => {
+                        createParticles();
+                        checkSidebarActivation();
+                        clearOldProfileData();
+
+                        // Initialize admin panel if user is admin
+                        if (window.adminPanelManager) {
+                            window.adminPanelManager.init();
+                        }
+
+                        console.log('✅ Profile page loaded successfully');
+                    }, 100);
+                } else {
+                    console.log('⏳ Waiting for auth manager...');
+                    setTimeout(initProfilePage, 100);
                 }
-            }, 500);
+            };
 
-            // PHASE 5: MAINTENANCE (much later)
-            setTimeout(() => {
-                emergencyProfileCheck(); // Final safety check
-                console.log('✅ Profile page fully loaded');
-                console.log('💡 TIP: Run testProfileLoading() in console to debug');
-            }, 2000);
+            initProfilePage();
         });
+
 
         // Function to populate email immediately when page loads
         function populateEmailImmediately() {
             console.log('🔍 Starting immediate email population...');
 
-            try {
-                const token = localStorage.getItem('token');
-                console.log('📋 Token exists:', !!token);
+            const emailField = document.getElementById('vitEmail');
+            if (!emailField) {
+                console.error('❌ CRITICAL: Email field not found in DOM');
+                alert('Email field not found! Please refresh the page.');
+                return false;
+            }
 
-                if (!token) {
-                    console.log('❌ No token found');
-                    return;
+            console.log('✅ Email field found:', emailField);
+
+            const token = localStorage.getItem('token');
+            console.log('🔑 Token exists:', !!token);
+            console.log('🔑 Token length:', token ? token.length : 0);
+
+            if (!token) {
+                console.log('❌ No token found for email population');
+                emailField.placeholder = 'Please log in first';
+                emailField.style.borderColor = '#f39c12';
+                emailField.style.backgroundColor = '#fff3cd';
+                return false;
+            }
+
+            try {
+                // Parse JWT token
+                const tokenParts = token.split('.');
+                console.log('🔑 Token parts:', tokenParts.length);
+
+                if (tokenParts.length !== 3) {
+                    console.error('❌ Invalid JWT token format');
+                    throw new Error('Invalid token format');
                 }
 
-                const payload = JSON.parse(atob(token.split('.')[1]));
-                console.log('🔍 Token payload:', payload);
-                console.log('📧 Email in payload:', payload.email);
+                const payload = JSON.parse(atob(tokenParts[1]));
+                console.log('🔍 Token payload keys:', Object.keys(payload));
+                console.log('🔍 Token payload:', JSON.stringify(payload, null, 2));
 
-                if (payload.email && payload.email.endsWith('@vitbhopal.ac.in')) {
-                    const emailField = document.getElementById('vitEmail');
-                    console.log('🎯 Email field found:', !!emailField);
+                // Try multiple possible email fields
+                let email = payload.email || payload.user?.email || payload.sub || payload.email_address || payload.preferred_username || payload.mail;
+                console.log('📧 Raw email from token:', email);
 
-                    if (emailField) {
-                        emailField.value = payload.email;
+                if (email && typeof email === 'string') {
+                    // Clean the email
+                    email = email.trim().toLowerCase();
+                    console.log('📧 Cleaned email:', email);
+
+                    // Check if it's a valid email
+                    if (email.includes('@') && (email.includes('@vitbhopal.ac.in') || email.includes('@gmail.com'))) {
+                        console.log('✅ Valid VIT/Gmail email found:', email);
+
+                        // Set the email field
+                        emailField.value = email;
                         emailField.placeholder = '';
-                        console.log('✅ Email populated immediately:', payload.email);
-
-                        // Force a visual update
+                        emailField.style.borderColor = '#2ecc71';
                         emailField.style.backgroundColor = '#f8f9fa';
-                        emailField.style.border = '2px solid #2ecc71';
                         emailField.style.color = '#2c3e50';
                         emailField.style.fontWeight = '600';
 
-                        // Update the indicator
+                        // Change loading icon to lock icon
+                        const loadingIcon = document.getElementById('emailLoadingIcon');
+                        if (loadingIcon) {
+                            loadingIcon.className = 'bx bxs-lock';
+                            loadingIcon.style.color = '#2ecc71';
+                            console.log('✅ Icon changed to lock');
+                        }
+
+                        // Show success indicator
                         const indicator = document.getElementById('googleEmailIndicator');
                         if (indicator) {
                             indicator.style.display = 'flex';
+                            console.log('✅ Success indicator shown');
                         }
+
+                        console.log('✅ Email successfully populated from token:', email);
+                        return true;
                     } else {
-                        console.log('❌ Email field not found in DOM');
+                        console.warn('⚠️ Email found but not VIT/Gmail:', email);
                     }
                 } else {
-                    console.log('❌ Invalid email in token:', payload.email);
+                    console.warn('⚠️ No email field found in token payload');
                 }
+
+                // If we get here, token doesn't have email - try backend
+                console.log('📡 Token email not found, trying backend API...');
+                populateEmailFromBackend(token, emailField);
+                return false;
+
             } catch (error) {
-                console.error('❌ Error in immediate email population:', error);
+                console.error('❌ Error parsing token:', error);
                 console.error('❌ Error details:', error.message);
+                console.error('❌ Error stack:', error.stack);
+
+                // Try backend as fallback
+                populateEmailFromBackend(token, emailField);
+                return false;
             }
         }
+
+        // Helper function to populate email from backend API
+        async function populateEmailFromBackend(token, emailField) {
+            try {
+                console.log('📡 Making backend API call for email...');
+
+                const response = await fetch('/api/v1/profile/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('📡 Backend response status:', response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📦 Backend response data:', data);
+
+                    const backendEmail = data.data?.user?.email || data.user?.email || data.email;
+                    console.log('📧 Email from backend:', backendEmail);
+
+                    if (backendEmail && backendEmail.includes('@')) {
+                        console.log('✅ Email found in backend, updating field...');
+
+                        // Only update if field is still empty or showing loading
+                        if (!emailField.value || emailField.value === '' || emailField.placeholder.includes('Loading')) {
+                            emailField.value = backendEmail;
+                            emailField.placeholder = '';
+                            emailField.style.borderColor = '#2ecc71';
+                            emailField.style.backgroundColor = '#f8f9fa';
+                            emailField.style.color = '#2c3e50';
+                            emailField.style.fontWeight = '600';
+
+                            // Show success indicator
+                            const indicator = document.getElementById('googleEmailIndicator');
+                            if (indicator) indicator.style.display = 'flex';
+
+                            console.log('✅ Email field updated from backend');
+                        } else {
+                            console.log('ℹ️ Email field already populated, skipping backend update');
+                        }
+
+                        return true;
+                    }
+                } else {
+                    console.error('❌ Backend API call failed with status:', response.status);
+                    const errorText = await response.text();
+                    console.error('❌ Backend error response:', errorText);
+                }
+            } catch (backendError) {
+                console.error('❌ Backend API call error:', backendError);
+            }
+
+            // If backend fails and field is still empty, show error
+            if (!emailField.value || emailField.placeholder.includes('Loading')) {
+                console.error('❌ CRITICAL: Could not load email from any source');
+                emailField.value = '';
+                emailField.placeholder = 'Unable to load email - please refresh page';
+                emailField.style.borderColor = '#e74c3c';
+                emailField.style.backgroundColor = '#f8d7da';
+            }
+        }
+
     </script>
 </body>
 </html>

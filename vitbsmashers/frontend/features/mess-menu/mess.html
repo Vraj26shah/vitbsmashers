@@ -6,6 +6,7 @@
     <title>Smart Mess Menu | Scholars Stack</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../../shared-admin-auth.js"></script>
     <script src="../shared-logout.js"></script>
     <style>
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
@@ -2160,7 +2161,7 @@ body {
         </div>
         
         <div class="logo">
-            <a href="../../index.html" style="text-decoration: none; display: flex; align-items: center;">
+            <a href="/index.html" style="text-decoration: none; display: flex; align-items: center;">
                 <img src="../images/logo1.png" alt="Scholars Stack Logo">
                 <div class="logo-text">
                     <h1>Scholars Stack</h1>
@@ -2172,6 +2173,7 @@ body {
         <div class="header-actions">
             <div class="user-profile">
                 <div class="user-avatar">
+                    <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
                     <span>S</span>
                 </div>
                 <div class="user-name">Student</div>
@@ -2353,12 +2355,24 @@ body {
         });
         
         document.addEventListener('click', (e) => {
-            if (sidebar.classList.contains('active') && 
-                !sidebar.contains(e.target) && 
+            if (sidebar.classList.contains('active') &&
+                !sidebar.contains(e.target) &&
                 !menuToggle.contains(e.target)) {
                 sidebar.classList.remove('active');
             }
         });
+
+        // Sidebar link active state and close on mobile after navigation
+        document.querySelectorAll('.sidebar-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
+                link.classList.add('active');
+                if (window.matchMedia('(max-width: 768px)').matches) {
+                    sidebar.classList.remove('active');
+                }
+            });
+        });
+
         // Create background particles
         function createParticles() {
             const particlesContainer = document.getElementById('bgParticles');
@@ -4083,6 +4097,24 @@ function getNextMealFromSchedule(mess) {
         window.addEventListener('DOMContentLoaded', () => {
             // Check for sidebar activation from URL
             checkSidebarActivation();
+
+            // Hide Account section for unauthorized users
+            const token = localStorage.getItem('token');
+            if (!token) {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    const titles = sidebar.querySelectorAll('.sidebar-title');
+                    titles.forEach(title => {
+                        if (title.textContent.trim().toLowerCase().includes('account')) {
+                            const nextUl = title.nextElementSibling;
+                            if (nextUl && nextUl.tagName === 'UL') {
+                                nextUl.remove();
+                            }
+                            title.remove();
+                        }
+                    });
+                }
+            }
 
             if (!searchInput || !searchResults) {
                 console.error('Required DOM elements not found. Mess menu system cannot initialize.');

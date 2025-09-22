@@ -56,20 +56,23 @@ app.use(passport.session());
 // Enable CORS for browser clients
 const corsOptions = {
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
+    // Allow requests with no origin (like mobile apps, curl requests, or same-origin requests)
     if (!origin) return callback(null, true);
 
     const allowedOrigins = [
       'http://localhost:8000',  // Frontend development server
       'http://localhost:5500',  // Alternative frontend port
+      'http://localhost:3000',  // Common development port
       'http://127.0.0.1:8000', // Alternative localhost
       'http://127.0.0.1:5500', // Alternative localhost
+      'http://127.0.0.1:3000', // Alternative localhost
       'http://localhost:4000',  // Backend itself (for internal requests)
+      'file://',                // Allow file:// protocol for direct HTML opening
       'https://vitbsmashers.vercel.app', // Production frontend
       'https://vitbsmashers-main.vercel.app' // Alternative production
     ];
 
-    if (allowedOrigins.indexOf(origin) !== -1) {
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('file://')) {
       callback(null, true);
     } else {
       console.log('CORS blocked origin:', origin);

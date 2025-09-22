@@ -53,6 +53,9 @@ class AdminAuth {
                 document.body.classList.add('logged-in');
             }
 
+            // Update user profile display
+            this.updateUserProfile();
+
             // Apply admin restrictions
             this.applyAdminRestrictions();
 
@@ -364,6 +367,52 @@ class AdminAuth {
     // Public method to get current user email
     getCurrentUserEmail() {
         return this.userEmail;
+    }
+
+    // Update user profile display in header
+    updateUserProfile() {
+        try {
+            const userNameElement = document.querySelector('.user-name');
+            if (userNameElement) {
+                let displayName = 'Student'; // Default for unauthorized users
+
+                if (this.userEmail) {
+                    // For authorized users, extract name from email or use stored data
+                    const storedUserData = localStorage.getItem('userProfile');
+                    if (storedUserData) {
+                        try {
+                            const userData = JSON.parse(storedUserData);
+                            displayName = userData.fullName || userData.username || 'Student';
+                        } catch (error) {
+                            console.warn('Failed to parse stored user data:', error);
+                        }
+                    }
+
+                    // If still 'Student', try to extract from email
+                    if (displayName === 'Student') {
+                        const emailPrefix = this.userEmail.split('@')[0];
+                        const nameParts = emailPrefix.split('.');
+                        displayName = nameParts.map(part =>
+                            part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+                        ).join(' ');
+                    }
+                }
+
+                userNameElement.textContent = displayName;
+            }
+
+            // Update user avatar initial
+            const userAvatar = document.querySelector('.user-avatar span');
+            if (userAvatar && this.userEmail) {
+                const emailPrefix = this.userEmail.split('@')[0];
+                const nameParts = emailPrefix.split('.');
+                const initial = nameParts[0].charAt(0).toUpperCase();
+                userAvatar.textContent = initial;
+            }
+
+        } catch (error) {
+            console.error('Error updating user profile:', error);
+        }
     }
 
     // Method to refresh admin status (useful after login/logout)

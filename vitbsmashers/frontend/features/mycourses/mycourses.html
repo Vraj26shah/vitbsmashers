@@ -6,7 +6,9 @@
     <title>Scholars Stack - My Courses</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../../shared-auth.js"></script>
     <script src="../../shared-admin-auth.js"></script>
+    <script src="../../shared-user-auth.js"></script>
     <script src="../../shared-logout.js"></script>
     <style>
         /* === GLOBAL STYLES === */
@@ -1080,79 +1082,7 @@
     </main>
 
     <script>
-        // Check authentication on page load
-        function checkAuthentication() {
-            const token = localStorage.getItem('token');
-            if (!token) {
-                // Show login required message
-                showLoginRequired();
-                return false;
-            }
-            return true;
-        }
 
-        // Show login required message
-        function showLoginRequired() {
-            document.body.innerHTML = `
-                <div style="
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    min-height: 100vh;
-                    background: linear-gradient(135deg, #0a1423 0%, #0f1a2a 100%);
-                    color: #ecf0f1;
-                    text-align: center;
-                    padding: 20px;
-                ">
-                    <div style="
-                        background: rgba(15, 26, 42, 0.85);
-                        backdrop-filter: blur(10px);
-                        border-radius: 20px;
-                        padding: 40px;
-                        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
-                        border: 2px solid #3498db;
-                        max-width: 500px;
-                        width: 100%;
-                    ">
-                        <i class='bx bx-lock-alt' style="
-                            font-size: 60px;
-                            color: #3498db;
-                            margin-bottom: 20px;
-                        "></i>
-                        <h1 style="
-                            font-size: 28px;
-                            margin-bottom: 15px;
-                            color: #ecf0f1;
-                        ">Access Restricted</h1>
-                        <p style="
-                            font-size: 16px;
-                            margin-bottom: 30px;
-                            color: #ddd;
-                            line-height: 1.6;
-                        ">
-                            You need to log in to access your courses page. Please sign in to view and access your purchased courses.
-                        </p>
-                        <div style="display: flex; gap: 15px; justify-content: center;">
-                            <a href="../../index.html" style="
-                                background: #3498db;
-                                color: white;
-                                padding: 12px 24px;
-                                border-radius: 10px;
-                                text-decoration: none;
-                                font-weight: 600;
-                                transition: all 0.3s ease;
-                                display: inline-flex;
-                                align-items: center;
-                                gap: 8px;
-                            " onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">
-                                <i class='bx bx-log-in'></i> Login Now
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            `;
-        }
 
         // Create background particles
         function createParticles() {
@@ -1215,11 +1145,17 @@
             });
         });
 
+        // Authentication check removed - now using shared auth manager
+
         // Load courses from backend
         async function loadCourses() {
             try {
                 const token = localStorage.getItem('token');
-                if (!token) return;
+                console.log('🔐 Token check:', token ? 'Token found' : 'No token found');
+                if (!token) {
+                    console.log('❌ No token found, cannot load courses');
+                    return;
+                }
 
                 // Show loading state
                 courseGrid.innerHTML = `
@@ -1241,6 +1177,7 @@
 
                 // Add cache-busting parameter to ensure fresh data
                 const cacheBuster = Date.now();
+                console.log('🌐 Making API call to load courses...');
                 const response = await fetch(`http://localhost:4000/api/v1/courses/my-courses?_t=${cacheBuster}`, {
                     method: 'GET',
                     headers: {
@@ -1249,14 +1186,23 @@
                         'Cache-Control': 'no-cache'
                     }
                 });
+                console.log('📡 API response status:', response.status);
 
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    if (response.status === 401) {
+                        throw new Error('Authentication failed. Please log in again.');
+                    } else if (response.status === 403) {
+                        throw new Error('Access denied. Please check your account status.');
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
                 }
 
                 const data = await response.json();
+                console.log('📦 API response data:', data);
 
                 if (data.status === 'success') {
+                    console.log('✅ Courses loaded successfully:', data.data.courses.length, 'courses');
                     displayCourses(data.data.courses);
                 } else {
                     throw new Error(data.message || 'Failed to load courses');
@@ -1291,6 +1237,7 @@
 
         // Display courses in the grid
         function displayCourses(courses) {
+            console.log('🎨 Displaying courses:', courses ? courses.length : 0, 'courses');
             if (!courses || courses.length === 0) {
                 courseGrid.innerHTML = `
                     <div style="
@@ -1504,38 +1451,102 @@
 
 
         document.addEventListener('DOMContentLoaded', async function() {
-            // Check authentication first
-            if (!checkAuthentication()) {
-                return; // Stop initialization if not authenticated
+            // Check authentication using shared auth manager or fallback to localStorage
+            const checkAuth = () => {
+                if (window.authManager) {
+                    if (!window.authManager.isAuthenticated) {
+                        window.authManager.showLoginRequired();
+                        return;
+                    }
+                    // Continue with normal page initialization
+                    initializePage();
+                } else {
+                    // Fallback: check localStorage directly
+                    const token = localStorage.getItem('token');
+                    if (!token) {
+                        // Show login required message
+                        showLoginRequired();
+                        return;
+                    }
+                    // Continue with normal page initialization
+                    initializePage();
+                }
+            };
+
+            // Show login required message
+            function showLoginRequired() {
+                document.getElementById('myCoursesGrid').innerHTML = `
+                    <div style="
+                        text-align: center;
+                        padding: 60px 20px;
+                        color: #666;
+                        background: rgba(44, 62, 80, 0.5);
+                        border-radius: 16px;
+                        border: 2px solid rgba(52, 152, 219, 0.3);
+                        max-width: 600px;
+                        margin: 0 auto;
+                    ">
+                        <i class='bx bx-lock-alt' style="font-size: 64px; color: #3498db; margin-bottom: 20px;"></i>
+                        <h2 style="color: #ecf0f1; margin-bottom: 15px; font-size: 24px;">Login Required</h2>
+                        <p style="color: #ddd; margin-bottom: 20px; font-size: 16px;">Please log in to view your purchased courses.</p>
+                        <a href="../../index.html" style="
+                            background: var(--accent-blue);
+                            color: white;
+                            padding: 12px 24px;
+                            border-radius: 10px;
+                            text-decoration: none;
+                            font-weight: 600;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 8px;
+                            transition: all 0.3s ease;
+                        " onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='var(--accent-blue)'">
+                            <i class='bx bx-log-in'></i> Login
+                        </a>
+                    </div>
+                `;
             }
 
-            createParticles();
+            // Initialize the page after authentication check
+            async function initializePage() {
+                createParticles();
 
-            // Load courses from JSON file first
-            const coursesLoaded = await loadCoursesFromJSON();
+                // Load courses from JSON file first
+                const coursesLoaded = await loadCoursesFromJSON();
 
-            if (!coursesLoaded) {
-                console.error('❌ Failed to load courses from JSON - my courses may not work properly');
-                showNotification('Failed to load course data. Please refresh the page.', 'danger');
+                if (!coursesLoaded) {
+                    console.error('❌ Failed to load courses from JSON - my courses may not work properly');
+                    showNotification('Failed to load course data. Please refresh the page.', 'danger');
+                }
+
+                // Check if user came from successful payment
+                const urlParams = new URLSearchParams(window.location.search);
+                const fromPayment = urlParams.get('payment') === 'success';
+
+                if (fromPayment) {
+                    console.log('User came from successful payment, ensuring fresh data...');
+                    // Clear any cached data and force fresh load
+                    localStorage.removeItem('courses_cache');
+                }
+
+                await loadCourses();
+
+                // Clean up URL parameters after loading
+                if (fromPayment) {
+                    const newUrl = window.location.pathname + (urlParams.get('sidebar') ? '?sidebar=active' : '');
+                    window.history.replaceState({}, document.title, newUrl);
+                }
             }
 
-            // Check if user came from successful payment
-            const urlParams = new URLSearchParams(window.location.search);
-            const fromPayment = urlParams.get('payment') === 'success';
-
-            if (fromPayment) {
-                console.log('User came from successful payment, ensuring fresh data...');
-                // Clear any cached data and force fresh load
-                localStorage.removeItem('courses_cache');
-            }
-
-            await loadCourses();
-
-            // Clean up URL parameters after loading
-            if (fromPayment) {
-                const newUrl = window.location.pathname + (urlParams.get('sidebar') ? '?sidebar=active' : '');
-                window.history.replaceState({}, document.title, newUrl);
-            }
+            // Start authentication check with timeout
+            checkAuth();
+            // Timeout after 2 seconds if auth manager doesn't load
+            setTimeout(() => {
+                if (!window.authManagerChecked) {
+                    checkAuth();
+                    window.authManagerChecked = true;
+                }
+            }, 2000);
         });
     </script>
 </body>

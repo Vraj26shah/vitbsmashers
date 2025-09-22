@@ -147,12 +147,21 @@ router.post(
             console.log('📚 Single course order - course:', order.courseId);
           }
 
+          // Ensure purchasedCourses is an array
+          if (!Array.isArray(user.purchasedCourses)) {
+            user.purchasedCourses = user.purchasedCourses ? [user.purchasedCourses] : [];
+          }
+
+          // Add new courses, ensuring uniqueness
+          const currentCourses = new Set(user.purchasedCourses);
+          courseIds.forEach(courseId => currentCourses.add(courseId));
           const newCourses = courseIds.filter(courseId => !user.purchasedCourses.includes(courseId));
+
           console.log('➕ New courses to add:', newCourses);
           console.log('📚 User current courses:', user.purchasedCourses);
 
-          if (newCourses.length > 0) {
-            user.purchasedCourses.push(...newCourses);
+          if (newCourses.length > 0 || currentCourses.size > user.purchasedCourses.length) {
+            user.purchasedCourses = Array.from(currentCourses);
             await user.save();
             console.log('✅ Courses added to user purchased courses');
             console.log('📚 User updated courses:', user.purchasedCourses);

@@ -75,6 +75,22 @@ router.get('/profile', authMiddlewareModule.protect, async (req, res) => {
   }
 });
 
+// Token validation endpoint
+router.get('/validate-token', authMiddlewareModule.protect, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select('-password -otp -otpExpires -passwordChangedAt');
+    if (!user) return res.status(404).json({ error: 'User not found', valid: false });
+
+    res.json({
+      valid: true,
+      user: user,
+      message: 'Token is valid'
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message, valid: false });
+  }
+});
+
 // Admin verification endpoint
 router.get('/admin-status', authMiddlewareModule.protect, async (req, res) => {
   try {

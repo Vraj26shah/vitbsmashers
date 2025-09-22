@@ -88,7 +88,28 @@ document.head.appendChild(style);
 
 // Initialize logout functionality when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Use MutationObserver to wait for sidebar to be loaded
+    // Check login status and hide/show Account section immediately
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+            // Hide Account section for unauthorized users
+            const titles = sidebar.querySelectorAll('.sidebar-title');
+            titles.forEach(title => {
+                if (title.textContent.trim().toLowerCase().includes('account')) {
+                    const nextUl = title.nextElementSibling;
+                    if (nextUl && nextUl.tagName === 'UL') {
+                        nextUl.remove();
+                    }
+                    title.remove();
+                }
+            });
+        }
+        // If logged in, Account section remains visible
+        // Quick Links section remains accessible for all users
+    }
+
+    // Also use MutationObserver for dynamically loaded sidebars (if any)
     const observer = new MutationObserver(() => {
         const sidebar = document.getElementById('sidebar');
         if (sidebar) {
@@ -96,17 +117,20 @@ document.addEventListener('DOMContentLoaded', function() {
             // Check login status and hide/show Account section
             const token = localStorage.getItem('token');
             if (!token) {
+                // Hide Account section for unauthorized users
                 const titles = sidebar.querySelectorAll('.sidebar-title');
-                if (titles.length > 0) {
-                    const accountTitle = titles[titles.length - 1];
-                    const nextUl = accountTitle.nextElementSibling;
-                    if (nextUl && nextUl.tagName === 'UL') {
-                        nextUl.remove();
+                titles.forEach(title => {
+                    if (title.textContent.trim().toLowerCase().includes('account')) {
+                        const nextUl = title.nextElementSibling;
+                        if (nextUl && nextUl.tagName === 'UL') {
+                            nextUl.remove();
+                        }
+                        title.remove();
                     }
-                    accountTitle.remove();
-                }
+                });
             }
             // If logged in, Account section remains visible
+            // Quick Links section remains accessible for all users
         }
     });
 

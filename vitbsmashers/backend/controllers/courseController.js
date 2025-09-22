@@ -572,6 +572,24 @@ export const getUserPurchasedCourses = async (req, res) => {
     // Import Order model for payment details
     const Order = (await import('../models/orderModel.js')).default;
 
+    // For purchased courses not found in database, create dummy course objects
+    const allFoundPids = courses.map(c => c.pid);
+    const missingCourseIds = user.purchasedCourses.filter(id => !allFoundPids.includes(id));
+
+    const dummyCourses = missingCourseIds.map(courseId => ({
+      _id: courseId,
+      pid: courseId,
+      title: `Course ${courseId}`,
+      description: `This course (${courseId}) was purchased but complete details are not available in the database. Please contact support if this issue persists.`,
+      image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80',
+      price: 0,
+      rating: 0,
+      modules: [],
+      createdBy: null
+    }));
+
+    courses.push(...dummyCourses);
+
     // Get payment details for each course
     const coursesWithPaymentInfo = await Promise.all(
       courses.map(async (course) => {
@@ -839,12 +857,18 @@ export const seedCourses = async (req, res) => {
     await Course.deleteMany({});
     console.log('🧹 Cleared existing courses');
 
-    // Add creator information
-    const coursesWithCreator = coursesData.map(course => ({
-      ...course,
-      createdBy: req.user._id,
-      updatedBy: req.user._id
-    }));
+    // Add creator information and fix modules structure
+    const coursesWithCreator = coursesData.map(course => {
+      // Extract fields, excluding the problematic modules field
+      const { modules, modulesList, ...courseFields } = course;
+      return {
+        ...courseFields,
+        modules: modulesList || [], // Use modulesList as modules array
+        modulesCount: modulesList ? modulesList.length : modules || 0,
+        createdBy: req.user._id,
+        updatedBy: req.user._id
+      };
+    });
 
     // Insert new courses
     const insertedCourses = await Course.insertMany(coursesWithCreator);

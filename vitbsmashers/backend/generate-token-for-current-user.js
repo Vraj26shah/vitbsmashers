@@ -10,9 +10,9 @@ async function generateTokenForCurrentUser() {
     await mongoose.connect(process.env.MONGO_URL || process.env.MONGODB_URI);
 
     // Get the current user who has courses
-    const user = await User.findById('68ca2f48b7be77741bbc71cc');
+    const user = await User.findOne({ purchasedCourses: { $exists: true, $ne: [] } });
     if (!user) {
-      console.log('User not found');
+      console.log('No user with purchased courses found');
       return;
     }
 

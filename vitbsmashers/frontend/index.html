@@ -516,6 +516,9 @@
 
                 // Success - User is now logged in
                 localStorage.setItem('token', data.token);
+                if (data.data && data.data.user) {
+                    localStorage.setItem('userProfile', JSON.stringify(data.data.user));
+                }
                 showToast('Welcome! Taking you to your profile...', 'success');
 
                 setTimeout(() => {
