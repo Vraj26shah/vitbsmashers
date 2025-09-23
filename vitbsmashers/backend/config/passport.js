@@ -53,10 +53,11 @@ passport.use(
           return done(null, user);
         }
 
-        // Validate that email is from VIT Bhopal
-        if (!email.endsWith('@vitbhopal.ac.in')) {
-          return done(new Error('Only VIT Bhopal email addresses are allowed. Please use your institutional email.'), null);
-        }
+        // Temporarily removed domain validation for development
+        // TODO: Re-enable after OAuth app is published for production
+        // if (!email.endsWith('@vitbhopal.ac.in')) {
+        //   return done(new Error('Only VIT Bhopal email addresses are allowed. Please use your institutional email.'), null);
+        // }
 
         // Create new user
         const newUser = await User.create({
