@@ -21,18 +21,21 @@ router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/?error=google_auth_failed' }),
   (req, res) => {
     try {
+      console.log('✅ OAuth callback reached, user:', req.user ? req.user.email : 'no user');
+
       // Successful authentication, redirect to profile page with token
       const token = req.user ? signToken(req.user._id, req.user.email) : null;
-      
+
       if (token) {
-        console.log('✅ OAuth success, redirecting to profile with token');
-        
+        console.log('✅ OAuth success, generated token, redirecting to profile');
+
         // Redirect to the same domain (Render) to avoid CORS issues
         const profileUrl = `/features/profile/profile.html?token=${token}&google_success=true&sidebar=active`;
-        
+
+        console.log('🔗 Redirecting to:', profileUrl);
         res.redirect(profileUrl);
       } else {
-        console.error('❌ Token generation failed');
+        console.error('❌ Token generation failed - no user object');
         res.redirect('/?error=token_generation_failed');
       }
     } catch (error) {

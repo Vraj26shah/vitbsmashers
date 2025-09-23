@@ -24,7 +24,12 @@ passport.use(
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
       callbackURL: process.env.GOOGLE_CALLBACK_URL || 'http://localhost:4000/api/v1/auth/google/callback',
-      scope: ['profile', 'email']
+      scope: ['openid', 'profile', 'email'],
+      authorizationParams: {
+        prompt: 'select_account',
+        access_type: 'offline',
+        hd: 'vitbhopal.ac.in' // Restrict to VIT Bhopal domain
+      }
     },
     async (accessToken, refreshToken, profile, done) => {
       try {
