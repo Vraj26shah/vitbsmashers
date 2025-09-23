@@ -5,6 +5,7 @@ dotenv.config();
 console.log('🔍 OAuth Configuration Debug');
 console.log('============================');
 console.log('GOOGLE_CLIENT_ID:', process.env.GOOGLE_CLIENT_ID ? 'Set (' + process.env.GOOGLE_CLIENT_ID.substring(0, 20) + '...)' : 'NOT SET');
+console.log('Expected Client ID: 150852944049-7lc98etm075d5t3fveff420n0l34uk2q.apps.googleusercontent.com');
 console.log('GOOGLE_CLIENT_SECRET:', process.env.GOOGLE_CLIENT_SECRET ? 'Set (length: ' + process.env.GOOGLE_CLIENT_SECRET.length + ')' : 'NOT SET');
 console.log('GOOGLE_CALLBACK_URL:', process.env.GOOGLE_CALLBACK_URL || 'NOT SET');
 console.log('NODE_ENV:', process.env.NODE_ENV || 'NOT SET');

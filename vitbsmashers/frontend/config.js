@@ -70,4 +70,7 @@ const config = {
 // Make config globally available
 window.config = config;
 
-export default config;
+// Only export as module if in module context
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = config;
+}

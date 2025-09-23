@@ -105,6 +105,10 @@ app.use(cors(corsOptions));
 // API Routes
 // app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/auth', authRouter);
+
+// Direct OAuth routes (bypass Passport.js issues)
+import directAuthRouter from './routes/directAuthRoutes.js';
+app.use('/api/v1/auth', directAuthRouter);
 // app.use('/api/v1/attendance', attendanceRouter);
 // app.use('/api/v1/gpa', gpaRouter);
 // app.use('/api/v1/timetable', timetableRouter);
