@@ -27,8 +27,9 @@ passport.use(
       scope: ['openid', 'profile', 'email'],
       authorizationParams: {
         prompt: 'select_account',
-        access_type: 'offline',
-        hd: 'vitbhopal.ac.in' // Restrict to VIT Bhopal domain
+        access_type: 'offline'
+        // Temporarily removed hd restriction for development
+        // hd: 'vitbhopal.ac.in' // Restrict to VIT Bhopal domain
       }
     },
     async (accessToken, refreshToken, profile, done) => {
