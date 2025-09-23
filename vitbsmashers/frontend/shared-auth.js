@@ -15,6 +15,18 @@ class AuthManager {
     // Check if user is authenticated and validate token
     async checkAuthentication() {
         try {
+            // First, check for token in URL parameters (from OAuth redirect)
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlToken = urlParams.get('token');
+
+            if (urlToken) {
+                console.log('🔑 Token found in URL, storing in localStorage');
+                localStorage.setItem('token', urlToken);
+                // Clean up URL
+                const newUrl = window.location.pathname + (urlParams.get('sidebar') ? '?sidebar=active' : '');
+                window.history.replaceState({}, document.title, newUrl);
+            }
+
             const token = localStorage.getItem('token');
             if (!token) {
                 this.isAuthenticated = false;
@@ -34,40 +46,8 @@ class AuthManager {
                 }
             }
 
-            // For development: assume authenticated if token exists
-            // This allows the app to work even when backend is not available or CORS issues
-            this.isAuthenticated = true;
-
-            // Set placeholder data if not loaded from storage
-            if (!this.userData) {
-                // Try to extract name from token
-                try {
-                    const token = localStorage.getItem('token');
-                    if (token) {
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        if (payload.email) {
-                            this.userEmail = payload.email;
-                            // Extract name from email (e.g., john.doe@vitbhopal.ac.in -> John Doe)
-                            const emailPrefix = payload.email.split('@')[0];
-                            const nameParts = emailPrefix.split('.');
-                            const fullName = nameParts.map(part =>
-                                part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
-                            ).join(' ');
-                            this.userData = {
-                                username: fullName,
-                                fullName: fullName,
-                                email: payload.email
-                            };
-                        }
-                    }
-                } catch (error) {
-                    console.warn('Failed to extract name from token:', error);
-                    this.userEmail = 'user@example.com';
-                    this.userData = { username: 'User', fullName: 'User', email: 'user@example.com' };
-                }
-            }
-
-            // Try to validate with backend for better user experience and updated data
+            // Try to validate with backend first
+            let backendValidationSuccessful = false;
             try {
                 // Use config for API base URL
                 const API_BASE = window.config ? window.config.AUTH_BASE : '/api/v1/auth';
@@ -83,18 +63,51 @@ class AuthManager {
                 if (response.ok) {
                     const data = await response.json();
                     if (data.valid && data.user) {
-                        // Update with real user data if validation succeeds
+                        // Backend validation successful
+                        backendValidationSuccessful = true;
+                        this.isAuthenticated = true;
                         this.userEmail = data.user.email;
                         this.userData = data.user;
                         // Update localStorage with latest data
                         localStorage.setItem('userProfile', JSON.stringify(data.user));
+                        console.log('✅ Backend validation successful');
+                        return true;
                     }
                 }
-                // If validation fails, we still keep the user authenticated with stored/placeholder data
             } catch (fetchError) {
-                console.warn('Backend validation failed, using stored token-based authentication:', fetchError);
-                // Keep authenticated with stored/placeholder data
+                console.warn('Backend validation failed:', fetchError);
             }
+
+            // If backend validation failed, try to use token payload as fallback (only in development/localhost)
+            if (!backendValidationSuccessful && (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')) {
+                console.warn('⚠️ Using token payload fallback (localhost only)');
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.email && payload.email.endsWith('@vitbhopal.ac.in')) {
+                        this.isAuthenticated = true;
+                        this.userEmail = payload.email;
+                        // Extract name from email
+                        const emailPrefix = payload.email.split('@')[0];
+                        const nameParts = emailPrefix.split('.');
+                        const fullName = nameParts.map(part =>
+                            part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+                        ).join(' ');
+                        this.userData = {
+                            username: fullName,
+                            fullName: fullName,
+                            email: payload.email
+                        };
+                        return true;
+                    }
+                } catch (error) {
+                    console.warn('Failed to extract data from token:', error);
+                }
+            }
+
+            // If we reach here, authentication failed
+            console.warn('❌ Authentication validation failed');
+            this.clearAuthData();
+            return false;
 
             return true;
 
