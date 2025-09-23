@@ -72,8 +72,12 @@ const corsOptions = {
       'https://vitbsmashers-main.vercel.app', // Alternative production
       'https://vitbsmashers.onrender.com', // Render frontend deployment
       'https://vitbsmashers-backend.onrender.com', // Render backend (if separate service)
-      // Allow any Render subdomain for flexibility
-      /^https:\/\/.*\.onrender\.com$/
+      // Allow any Vercel and Render subdomains for flexibility
+      /^https:\/\/.*\.vercel\.app$/,
+      /^https:\/\/.*\.onrender\.com$/,
+      // Allow all origins for development (temporary fix)
+      /^https?:\/\/localhost(:\d+)?$/,
+      /^https?:\/\/127\.0\.0\.1(:\d+)?$/
     ];
 
     // Check if origin matches any allowed pattern
