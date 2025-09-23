@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>FIX OAUTH NOW - Step by Step</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .step { background: #f0f8ff; padding: 15px; margin: 10px 0; border-left: 4px solid #007acc; }
+        .warning { background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; }
+        .success { background: #d4edda; padding: 15px; border-left: 4px solid #28a745; }
+        a { color: #007acc; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <h1>🚨 FIX YOUR OAUTH ERROR NOW</h1>
+
+    <div class="warning">
+        <strong>PROBLEM:</strong> Your OAuth app is in testing mode but you haven't added yourself as a test user. This is why you get the security policy error.
+    </div>
+
+    <h2>✅ SOLUTION: Add Test User (Takes 2 Minutes)</h2>
+
+    <div class="step">
+        <h3>Step 1: Open Google Cloud Console</h3>
+        <p>Click this link: <a href="https://console.cloud.google.com/" target="_blank">https://console.cloud.google.com/</a></p>
+        <p>Make sure you're logged in with the same Google account that created your OAuth app.</p>
+    </div>
+
+    <div class="step">
+        <h3>Step 2: Navigate to OAuth Consent Screen</h3>
+        <ol>
+            <li>Click on your project name in the top bar</li>
+            <li>Go to <strong>APIs & Services</strong> → <strong>OAuth consent screen</strong></li>
+            <li>Scroll down to the <strong>Test users</strong> section</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h3>Step 3: Add Your Email</h3>
+        <ol>
+            <li>Click the <strong>+ ADD USERS</strong> button</li>
+            <li>Enter your email address (the one you're trying to sign in with)</li>
+            <li>Click <strong>SAVE</strong></li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h3>Step 4: Wait & Test</h3>
+        <ol>
+            <li>Wait 2-3 minutes for Google to update</li>
+            <li>Go to: <a href="https://vitbsmashers.onrender.com" target="_blank">https://vitbsmashers.onrender.com</a></li>
+            <li>Click "Sign in with Google"</li>
+            <li><strong>IT WILL WORK NOW! ✅</strong></li>
+        </ol>
+    </div>
+
+    <div class="success">
+        <strong>AFTER ADDING TEST USER:</strong>
+        <ul>
+            <li>✅ No more security policy error</li>
+            <li>✅ OAuth redirects to Google properly</li>
+            <li>✅ Page loads after login</li>
+            <li>✅ All features work</li>
+        </ul>
+    </div>
+
+    <h2>🔍 Why This Error Happens:</h2>
+    <p>Your OAuth app is in <strong>testing mode</strong>. Google requires that only explicitly approved test users can sign in to apps in testing mode. Without adding your email to the test users list, Google blocks the authentication.</p>
+
+    <h2>⚡ Quick Test:</h2>
+    <p>After adding yourself as a test user:</p>
+    <ol>
+        <li>Clear your browser cache/cookies</li>
+        <li>Try signing in again</li>
+        <li>Should see Google OAuth page (not error)</li>
+        <li>Should redirect to profile successfully</li>
+    </ol>
+
+    <div class="warning">
+        <strong>DO THIS NOW:</strong> The OAuth error will persist until you add yourself as a test user in Google Cloud Console. All other fixes are useless without this step.
+    </div>
+
+    <p><a href="https://console.cloud.google.com/" target="_blank">👉 GO TO GOOGLE CLOUD CONSOLE NOW</a></p>
+</body>
+</html>
