@@ -71,10 +71,22 @@ const corsOptions = {
       'https://vitbsmashers.vercel.app', // Production frontend
       'https://vitbsmashers-main.vercel.app', // Alternative production
       'https://vitbsmashers.onrender.com', // Render frontend deployment
-      'https://vitbsmashers-backend.onrender.com' // Render backend (if separate service)
+      'https://vitbsmashers-backend.onrender.com', // Render backend (if separate service)
+      // Allow any Render subdomain for flexibility
+      /^https:\/\/.*\.onrender\.com$/
     ];
 
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('file://')) {
+    // Check if origin matches any allowed pattern
+    const isAllowed = allowedOrigins.some(allowed => {
+      if (typeof allowed === 'string') {
+        return allowed === origin || (allowed.startsWith('file://') && origin && origin.startsWith('file://'));
+      } else if (allowed instanceof RegExp) {
+        return allowed.test(origin);
+      }
+      return false;
+    });
+
+    if (isAllowed) {
       callback(null, true);
     } else {
       console.log('CORS blocked origin:', origin);
