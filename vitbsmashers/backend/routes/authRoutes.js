@@ -20,27 +20,61 @@ router.get('/google',
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/?error=google_auth_failed' }),
   (req, res) => {
+    console.log('🔄 OAUTH CALLBACK: ===== STARTING OAUTH CALLBACK =====');
+    console.log('📝 OAUTH CALLBACK: Request received at:', new Date().toISOString());
+    console.log('📝 OAUTH CALLBACK: Query params:', req.query);
+    console.log('📝 OAUTH CALLBACK: User object:', req.user ? {
+      id: req.user._id,
+      email: req.user.email,
+      username: req.user.username
+    } : 'null');
+
     try {
-      console.log('✅ OAuth callback reached, user:', req.user ? req.user.email : 'no user');
+      console.log('✅ OAUTH CALLBACK: Passport authentication successful');
 
-      // Successful authentication, redirect to profile page with token
-      const token = req.user ? signToken(req.user._id, req.user.email) : null;
-
-      if (token) {
-        console.log('✅ OAuth success, generated token, redirecting to profile');
-
-        // Redirect to the same domain (Render) to avoid CORS issues
-        const profileUrl = `/features/profile/profile.html?token=${token}&google_success=true&sidebar=active`;
-
-        console.log('🔗 Redirecting to:', profileUrl);
-        res.redirect(profileUrl);
-      } else {
-        console.error('❌ Token generation failed - no user object');
-        res.redirect('/?error=token_generation_failed');
+      if (!req.user) {
+        console.error('❌ OAUTH CALLBACK: No user object from passport');
+        const errorUrl = `${process.env.FRONTEND_URL || 'https://vitbsmashers.vercel.app'}?error=no_user_object`;
+        console.log('🔗 OAUTH CALLBACK: Redirecting to error page:', errorUrl);
+        return res.redirect(errorUrl);
       }
+
+      console.log('✅ OAUTH CALLBACK: User authenticated:', req.user.email);
+
+      // Generate JWT token
+      console.log('🔄 OAUTH CALLBACK: Generating JWT token...');
+      const token = signToken(req.user._id, req.user.email);
+
+      if (!token) {
+        console.error('❌ OAUTH CALLBACK: Token generation failed');
+        const errorUrl = `${process.env.FRONTEND_URL || 'https://vitbsmashers.vercel.app'}?error=token_generation_failed&email=${encodeURIComponent(req.user.email)}`;
+        console.log('🔗 OAUTH CALLBACK: Redirecting to error page:', errorUrl);
+        return res.redirect(errorUrl);
+      }
+
+      console.log('✅ OAUTH CALLBACK: JWT token generated successfully, length:', token.length);
+
+      // Redirect to frontend with token
+      const frontendUrl = process.env.FRONTEND_URL || 'https://vitbsmashers.vercel.app';
+      const profileUrl = `${frontendUrl}/features/profile/profile.html?token=${token}&google_success=true&sidebar=active&method=oauth`;
+
+      console.log('🎉 OAUTH CALLBACK: ===== AUTHENTICATION SUCCESSFUL =====');
+      console.log('📊 OAUTH CALLBACK: User:', req.user.username, 'Method: oauth_redirect');
+      console.log('🔗 OAUTH CALLBACK: Redirecting to:', profileUrl);
+
+      res.redirect(profileUrl);
+
     } catch (error) {
-      console.error('❌ OAuth callback error:', error);
-      res.redirect('/?error=oauth_callback_failed');
+      console.error('❌ OAUTH CALLBACK: ===== CALLBACK FAILED =====');
+      console.error('❌ OAUTH CALLBACK: Error message:', error.message);
+      console.error('❌ OAUTH CALLBACK: Error stack:', error.stack);
+      console.error('❌ OAUTH CALLBACK: Error details:', error);
+
+      const frontendUrl = process.env.FRONTEND_URL || 'https://vitbsmashers.vercel.app';
+      const errorUrl = `${frontendUrl}?error=oauth_callback_error&message=${encodeURIComponent(error.message)}`;
+
+      console.log('🔗 OAUTH CALLBACK: Redirecting to error page:', errorUrl);
+      res.redirect(errorUrl);
     }
   }
 );

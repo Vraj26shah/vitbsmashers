@@ -420,17 +420,41 @@ export const login = async (req, res, next) => {
 
 // Google ID Token Verification Controller (for client-side Google Sign-In)
 export const verifyGoogleToken = async (req, res, next) => {
-  console.log('🔄 GOOGLE AUTH: Starting Google token verification');
+  console.log('🚀 GOOGLE AUTH: ===== STARTING GOOGLE TOKEN VERIFICATION =====');
+  console.log('📝 GOOGLE AUTH: Request received at:', new Date().toISOString());
   console.log('📝 GOOGLE AUTH: Request body has idToken:', !!req.body.idToken);
+  console.log('📝 GOOGLE AUTH: Headers:', {
+    'content-type': req.headers['content-type'],
+    'user-agent': req.headers['user-agent']?.substring(0, 50) + '...'
+  });
 
   try {
     const { idToken } = req.body;
     if (!idToken) {
-      console.log('❌ GOOGLE AUTH: Missing ID token');
-      return next(new AppError('ID token is required', 400));
+      console.log('❌ GOOGLE AUTH: STEP 1 - Missing ID token in request body');
+      console.log('❌ GOOGLE AUTH: Request body keys:', Object.keys(req.body));
+      return res.status(400).json({
+        status: 'error',
+        message: 'ID token is required',
+        step: 'validation',
+        error: 'missing_token'
+      });
     }
 
-    console.log('🔍 GOOGLE AUTH: Verifying ID token with Google...');
+    console.log('✅ GOOGLE AUTH: STEP 1 - ID token received, length:', idToken.length);
+
+    // Validate token format
+    if (typeof idToken !== 'string' || idToken.split('.').length !== 3) {
+      console.log('❌ GOOGLE AUTH: STEP 2 - Invalid token format');
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid token format',
+        step: 'validation',
+        error: 'invalid_format'
+      });
+    }
+
+    console.log('🔍 GOOGLE AUTH: STEP 2 - Verifying ID token with Google...');
 
     // Verify the ID token with Google
     const ticket = await googleClient.verifyIdToken({
@@ -439,83 +463,123 @@ export const verifyGoogleToken = async (req, res, next) => {
     });
 
     if (!ticket) {
-      console.log('❌ GOOGLE AUTH: Google token verification failed - no ticket returned');
-      return next(new AppError('Invalid Google token. Please try signing in again.', 401));
+      console.log('❌ GOOGLE AUTH: STEP 3 - Google token verification failed - no ticket returned');
+      return res.status(401).json({
+        status: 'error',
+        message: 'Invalid Google token. Please try signing in again.',
+        step: 'google_verification',
+        error: 'no_ticket'
+      });
     }
 
     const payload = ticket.getPayload();
-    console.log('✅ GOOGLE AUTH: Token verified, extracting payload...');
+    console.log('✅ GOOGLE AUTH: STEP 3 - Token verified with Google, extracting payload...');
 
     const googleId = payload.sub;
     const email = payload.email;
     const displayName = payload.name;
     const picture = payload.picture;
 
-    console.log('📝 GOOGLE AUTH: Extracted data:', {
+    console.log('📝 GOOGLE AUTH: STEP 4 - Extracted user data:', {
       googleId: googleId ? 'present' : 'missing',
       email: email ? 'present' : 'missing',
       displayName: displayName ? 'present' : 'missing',
-      picture: picture ? 'present' : 'missing'
+      picture: picture ? 'present' : 'missing',
+      emailValue: email
     });
 
-    // Check if user already exists with this Google ID
-    console.log('🔍 GOOGLE AUTH: Checking for existing user with Google ID...');
-    let user = await User.findOne({ googleId });
-
-    if (user) {
-      console.log('✅ GOOGLE AUTH: Existing user found with Google ID:', user.username);
-      // User exists, return token
-      const token = signToken(user._id, user.email);
-      console.log('✅ GOOGLE AUTH: Token generated for existing user');
-      return res.status(200).json({
-        status: 'success',
-        token,
-        data: { user, authMethod: 'google' }
+    // Validate that email is from VIT Bhopal
+    if (!email) {
+      console.log('❌ GOOGLE AUTH: STEP 5 - No email in Google payload');
+      return res.status(401).json({
+        status: 'error',
+        message: 'No email found in your Google account. Please ensure your Google account has a valid email address.',
+        step: 'email_validation',
+        error: 'no_email'
       });
     }
 
-    console.log('🔍 GOOGLE AUTH: No user with Google ID, checking email...');
+    if (!email.endsWith('@vitbhopal.ac.in')) {
+      console.log('❌ GOOGLE AUTH: STEP 5 - Invalid email domain:', email);
+      const domain = email.split('@')[1] || 'unknown';
+      return res.status(401).json({
+        status: 'error',
+        message: `Only VIT Bhopal emails (@vitbhopal.ac.in) are allowed. You tried to sign in with: ${email}`,
+        step: 'email_validation',
+        error: 'invalid_domain',
+        providedDomain: domain
+      });
+    }
+
+    console.log('✅ GOOGLE AUTH: STEP 5 - Email domain validated for VIT Bhopal');
+
+    // Check if user already exists with this Google ID
+    console.log('🔍 GOOGLE AUTH: STEP 6 - Checking for existing user with Google ID...');
+    let user = await User.findOne({ googleId });
+
+    if (user) {
+      console.log('✅ GOOGLE AUTH: STEP 7 - Existing user found with Google ID:', user.username);
+      console.log('🔄 GOOGLE AUTH: STEP 8 - Generating authentication token...');
+      const token = signToken(user._id, user.email);
+      console.log('✅ GOOGLE AUTH: STEP 8 - Token generated successfully for existing user');
+
+      console.log('🎉 GOOGLE AUTH: ===== AUTHENTICATION SUCCESSFUL =====');
+      console.log('📊 GOOGLE AUTH: User:', user.username, 'Method: existing_google_user');
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Welcome back! Authentication successful.',
+        token,
+        data: {
+          user,
+          authMethod: 'google_existing',
+          redirectTo: '/features/profile/profile.html?sidebar=active'
+        },
+        step: 'complete'
+      });
+    }
+
+    console.log('🔍 GOOGLE AUTH: STEP 7 - No user with Google ID, checking email...');
 
     // Check if user exists with the same email
     user = await User.findOne({ email });
 
     if (user) {
-      console.log('✅ GOOGLE AUTH: Existing user found with email, linking accounts:', user.username);
-      // User exists with email but no Google ID - link the accounts
+      console.log('✅ GOOGLE AUTH: STEP 8 - Existing user found with email, linking accounts:', user.username);
+      console.log('🔄 GOOGLE AUTH: STEP 9 - Linking Google account to existing user...');
+
       user.googleId = googleId;
       user.fullName = displayName;
       user.profilePicture = picture;
       await user.save();
-      console.log('✅ GOOGLE AUTH: Accounts linked successfully');
+
+      console.log('✅ GOOGLE AUTH: STEP 9 - Accounts linked successfully');
+      console.log('🔄 GOOGLE AUTH: STEP 10 - Generating authentication token...');
       const token = signToken(user._id, user.email);
-      console.log('✅ GOOGLE AUTH: Token generated for linked account');
+      console.log('✅ GOOGLE AUTH: STEP 10 - Token generated successfully for linked account');
+
+      console.log('🎉 GOOGLE AUTH: ===== AUTHENTICATION SUCCESSFUL =====');
+      console.log('📊 GOOGLE AUTH: User:', user.username, 'Method: linked_account');
+
       return res.status(200).json({
         status: 'success',
+        message: 'Account linked successfully! Welcome back.',
         token,
-        data: { user, authMethod: 'google_linked' }
+        data: {
+          user,
+          authMethod: 'google_linked',
+          redirectTo: '/features/profile/profile.html?sidebar=active'
+        },
+        step: 'complete'
       });
     }
 
-    console.log('🔍 GOOGLE AUTH: No existing user, validating email domain...');
-
-    // Validate that email is from VIT Bhopal
-    if (!email) {
-      console.log('❌ GOOGLE AUTH: No email in Google payload');
-      return next(new AppError('❌ Authentication Error<br><strong>No email found in your Google account.</strong><br><small>Please ensure your Google account has a valid email address.</small>', 401));
-    }
-
-    if (!email.endsWith('@vitbhopal.ac.in')) {
-      console.log('❌ GOOGLE AUTH: Invalid email domain:', email);
-      const domain = email.split('@')[1] || 'unknown';
-      return next(new AppError(`❌ Invalid Account Type<br><strong>Only VIT Bhopal emails (@vitbhopal.ac.in) are allowed.</strong><br><small>You tried to sign in with: ${email}<br>Please use your institutional Google account.</small>`, 401));
-    }
-
-    console.log('✅ GOOGLE AUTH: Email domain validated');
+    console.log('🔍 GOOGLE AUTH: STEP 8 - No existing user found, creating new user...');
 
     // Create new user
-    console.log('🔄 GOOGLE AUTH: Creating new user...');
+    console.log('🔄 GOOGLE AUTH: STEP 9 - Creating new user...');
     const username = displayName.replace(/\s+/g, '').toLowerCase() + Math.floor(Math.random() * 1000);
-    console.log('📝 GOOGLE AUTH: Generated username:', username);
+    console.log('📝 GOOGLE AUTH: STEP 9 - Generated username:', username);
 
     const newUser = await User.create({
       googleId,
@@ -527,31 +591,73 @@ export const verifyGoogleToken = async (req, res, next) => {
       role: email === 'vitbsmashers@gmail.com' ? 'admin' : 'user'
     });
 
-    console.log(`✅ GOOGLE AUTH: New user ${newUser.username} created with role: ${newUser.role}`);
+    console.log(`✅ GOOGLE AUTH: STEP 9 - New user ${newUser.username} created with role: ${newUser.role}`);
 
+    console.log('🔄 GOOGLE AUTH: STEP 10 - Generating authentication token...');
     const token = signToken(newUser._id, newUser.email);
-    console.log('✅ GOOGLE AUTH: Token generated for new user');
+    console.log('✅ GOOGLE AUTH: STEP 10 - Token generated successfully for new user');
+
+    console.log('🎉 GOOGLE AUTH: ===== AUTHENTICATION SUCCESSFUL =====');
+    console.log('📊 GOOGLE AUTH: User:', newUser.username, 'Method: new_google_user');
 
     res.status(201).json({
       status: 'success',
+      message: 'Account created successfully! Welcome to Scholars Stack.',
       token,
-      data: { user: newUser, authMethod: 'google_new' }
+      data: {
+        user: newUser,
+        authMethod: 'google_new',
+        redirectTo: '/features/profile/profile.html?sidebar=active'
+      },
+      step: 'complete'
     });
+
   } catch (err) {
-    console.error('❌ GOOGLE AUTH: Unexpected error:', err.message);
+    console.error('❌ GOOGLE AUTH: ===== AUTHENTICATION FAILED =====');
+    console.error('❌ GOOGLE AUTH: Error message:', err.message);
+    console.error('❌ GOOGLE AUTH: Error stack:', err.stack);
     console.error('❌ GOOGLE AUTH: Error details:', err);
 
+    // Handle specific Google authentication errors
     if (err.message.includes('invalid_token') || err.message.includes('not a valid origin')) {
       console.log('❌ GOOGLE AUTH: Invalid token error');
-      return next(new AppError('Invalid Google token. Please try signing in again.', 401));
+      return res.status(401).json({
+        status: 'error',
+        message: 'Invalid Google token. Please try signing in again.',
+        step: 'google_verification',
+        error: 'invalid_token'
+      });
     }
 
     if (err.message.includes('Token used too late')) {
       console.log('❌ GOOGLE AUTH: Token expired');
-      return next(new AppError('Google token has expired. Please try signing in again.', 401));
+      return res.status(401).json({
+        status: 'error',
+        message: 'Google token has expired. Please try signing in again.',
+        step: 'google_verification',
+        error: 'token_expired'
+      });
     }
 
-    next(new AppError('Google authentication failed', 500));
+    if (err.message.includes('Wrong number of segments')) {
+      console.log('❌ GOOGLE AUTH: Malformed JWT token');
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid token format received.',
+        step: 'token_format',
+        error: 'malformed_token'
+      });
+    }
+
+    // Generic error
+    console.log('❌ GOOGLE AUTH: Unexpected error during authentication');
+    res.status(500).json({
+      status: 'error',
+      message: 'Google authentication failed. Please try again.',
+      step: 'unexpected_error',
+      error: 'server_error',
+      details: process.env.NODE_ENV === 'development' ? err.message : undefined
+    });
   }
 };
 
