@@ -3509,22 +3509,35 @@
             const error = urlParams.get('error');
 
             if (token && googleSuccess) {
+                console.log('🎉 Google OAuth redirect successful, storing token');
                 // Google auth successful, store token
                 localStorage.setItem('token', token);
-                showToast('Google authentication successful!', 'success');
-                // Clean URL and continue with normal initialization
-                window.history.replaceState({}, document.title, window.location.pathname);
+                showToast('Welcome! Google authentication successful!', 'success');
+                
+                // Clean URL but keep sidebar parameter if present
+                const newUrl = window.location.pathname + (urlParams.get('sidebar') ? '?sidebar=active' : '');
+                window.history.replaceState({}, document.title, newUrl);
                 return true;
             }
 
             if (error) {
+                console.error('❌ OAuth redirect error:', error);
                 if (error === 'google_auth_failed') {
                     showToast('Google authentication failed. Please try again.', 'error');
                 } else if (error === 'token_generation_failed') {
                     showToast('Authentication successful but token generation failed. Please contact support.', 'error');
+                } else if (error === 'oauth_callback_failed') {
+                    showToast('OAuth callback failed. Please try signing in again.', 'error');
                 }
-                // Clean URL
-                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                // Clean URL but keep sidebar parameter if present
+                const newUrl = window.location.pathname + (urlParams.get('sidebar') ? '?sidebar=active' : '');
+                window.history.replaceState({}, document.title, newUrl);
+                
+                // Redirect to home page after error
+                setTimeout(() => {
+                    window.location.href = '../../index.html';
+                }, 3000);
                 return true;
             }
 

@@ -18,14 +18,26 @@ router.get('/google',
 );
 
 router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: process.env.FRONTEND_URL + '/login1.html?error=google_auth_failed' }),
+  passport.authenticate('google', { failureRedirect: '/?error=google_auth_failed' }),
   (req, res) => {
-    // Successful authentication, redirect directly to profile page with token
-    const token = req.user ? signToken(req.user._id, req.user.email) : null;
-    if (token) {
-      res.redirect(`${process.env.FRONTEND_URL}/features/profile/profile.html?token=${token}&google_success=true`);
-    } else {
-      res.redirect(process.env.FRONTEND_URL + '/login1.html?error=token_generation_failed');
+    try {
+      // Successful authentication, redirect to profile page with token
+      const token = req.user ? signToken(req.user._id, req.user.email) : null;
+      
+      if (token) {
+        console.log('✅ OAuth success, redirecting to profile with token');
+        
+        // Redirect to the same domain (Render) to avoid CORS issues
+        const profileUrl = `/features/profile/profile.html?token=${token}&google_success=true&sidebar=active`;
+        
+        res.redirect(profileUrl);
+      } else {
+        console.error('❌ Token generation failed');
+        res.redirect('/?error=token_generation_failed');
+      }
+    } catch (error) {
+      console.error('❌ OAuth callback error:', error);
+      res.redirect('/?error=oauth_callback_failed');
     }
   }
 );
