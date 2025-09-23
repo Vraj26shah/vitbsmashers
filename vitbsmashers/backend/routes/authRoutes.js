@@ -18,14 +18,14 @@ router.get('/google',
 );
 
 router.get('/google/callback',
-  passport.authenticate('google', { failureRedirect: '/login1.html?error=google_auth_failed' }),
+  passport.authenticate('google', { failureRedirect: process.env.FRONTEND_URL + '/login1.html?error=google_auth_failed' }),
   (req, res) => {
-    // Successful authentication, redirect to frontend with token
+    // Successful authentication, redirect directly to profile page with token
     const token = req.user ? signToken(req.user._id, req.user.email) : null;
     if (token) {
-      res.redirect(`/login1.html?token=${token}&google_success=true`);
+      res.redirect(`${process.env.FRONTEND_URL}/features/profile/profile.html?token=${token}&google_success=true`);
     } else {
-      res.redirect('/login1.html?error=token_generation_failed');
+      res.redirect(process.env.FRONTEND_URL + '/login1.html?error=token_generation_failed');
     }
   }
 );

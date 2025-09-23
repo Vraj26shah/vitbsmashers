@@ -3460,9 +3460,82 @@
         };
 
 
+        // Show toast notification
+        function showToast(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#2ecc71' : type === 'warning' ? '#f39c12' : type === 'error' ? '#e74c3c' : '#3498db'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 400px;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // Add CSS for notification animations
+        const toastStyle = document.createElement('style');
+        toastStyle.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(toastStyle);
+
+        // Handle Google OAuth redirect
+        function handleGoogleAuthRedirect() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const googleSuccess = urlParams.get('google_success');
+            const error = urlParams.get('error');
+
+            if (token && googleSuccess) {
+                // Google auth successful, store token
+                localStorage.setItem('token', token);
+                showToast('Google authentication successful!', 'success');
+                // Clean URL and continue with normal initialization
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return true;
+            }
+
+            if (error) {
+                if (error === 'google_auth_failed') {
+                    showToast('Google authentication failed. Please try again.', 'error');
+                } else if (error === 'token_generation_failed') {
+                    showToast('Authentication successful but token generation failed. Please contact support.', 'error');
+                }
+                // Clean URL
+                window.history.replaceState({}, document.title, window.location.pathname);
+                return true;
+            }
+
+            return false;
+        }
+
         // SIMPLE AND RELIABLE INITIALIZATION - Using existing profile completion system
         document.addEventListener('DOMContentLoaded', function() {
             console.log('🚀 Starting profile page...');
+
+            // Handle Google OAuth redirect first
+            handleGoogleAuthRedirect();
 
             // IMMEDIATE EMAIL TEST - Run as soon as DOM is ready
             console.log('🧪 Running immediate email test...');
