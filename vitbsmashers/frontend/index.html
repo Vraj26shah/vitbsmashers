@@ -507,7 +507,7 @@
 
                     // Create a custom OAuth URL that forces account selection and consent
                     const clientId = '686446558105-bl2q9t63tcnei5u4ugck952tanccrpdu.apps.googleusercontent.com';
-                    const redirectUri = encodeURIComponent(window.config ? `${window.config.API_BASE}/auth/google/callback` : 'https://vitbsmashers-backend.onrender.com/api/v1/auth/google/callback');
+                    const redirectUri = encodeURIComponent('https://vitbsmashers.onrender.com/api/v1/auth/google/callback');
                     const scope = encodeURIComponent('openid email profile');
                     const state = encodeURIComponent('force_select_account_' + Date.now() + '_' + Math.random());
                     const loginHint = ''; // Empty to prevent Google from pre-filling

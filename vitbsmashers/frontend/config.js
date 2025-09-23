@@ -9,15 +9,20 @@ const config = {
       return 'http://localhost:4000/api/v1';
     }
 
-    // In production, use the actual Render backend URL
+    // In production on Render (full-stack deployment)
+    if (window.location.hostname.includes('onrender.com')) {
+      // Since backend serves frontend, use relative URLs
+      return '/api/v1';
+    }
+
+    // For other platforms (Vercel, Netlify, etc.)
     if (window.location.hostname.includes('vercel.app') ||
-        window.location.hostname.includes('onrender.com') ||
         window.location.hostname.includes('netlify.app')) {
       // Use the actual deployed Render backend URL
       return 'https://vitbsmashers.onrender.com/api/v1';
     }
 
-    // Fallback - try to use same domain (if backend serves frontend)
+    // Fallback - try to use same domain
     return '/api/v1';
   },
 
