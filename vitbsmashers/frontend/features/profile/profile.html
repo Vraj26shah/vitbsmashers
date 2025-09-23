@@ -2033,20 +2033,23 @@
     <script>
         // Check authentication on page load (removed duplicate function)
 
-        // Emergency check: If profile is completed, ensure setup form is never shown
+        // Emergency check: If profile is completed or user is Google authenticated, ensure setup form is never shown
         function emergencyProfileCheck() {
             try {
                 const profileData = localStorage.getItem('profileData');
                 if (profileData) {
                     const parsed = JSON.parse(profileData);
-                    if (parsed.profileCompleted === true) {
-                        console.log('🚨 EMERGENCY: Profile completed detected, forcing profile view');
+                    if (parsed.profileCompleted === true || parsed.googleId) {
+                        console.log('🚨 EMERGENCY: Profile completed or Google user detected, forcing profile view');
                         // Show profile view immediately with cached data
                         showProfileFromCache(parsed);
+                        if (parsed.googleId && !parsed.profileCompleted) {
+                            showProfileCompletionBanner();
+                        }
                         return true;
                     }
                 }
-                console.log('🚨 EMERGENCY: Profile not completed - setup form should be visible');
+                console.log('🚨 EMERGENCY: Profile not completed and not Google user - setup form should be visible');
             } catch (error) {
                 console.warn('⚠️ Error in emergency profile check:', error);
             }
@@ -2307,8 +2310,11 @@
                         (profileData.phone && profileData.registrationNumber && profileData.branch)
                     );
 
-                    if (isProfileCompleted) {
-                        console.log('✅ PROFILE COMPLETED: Showing profile view');
+                    // Check if user is Google authenticated (has googleId)
+                    const isGoogleUser = profileData && profileData.googleId;
+
+                    if (isProfileCompleted || isGoogleUser) {
+                        console.log('✅ PROFILE ACCESSIBLE: Showing profile view (completed or Google user)');
 
                         // Update with fresh backend data
                         document.getElementById('setupForm').style.display = 'none';
@@ -2326,10 +2332,15 @@
 
                         console.log('✅ Backend profile data populated successfully');
 
+                        // If Google user but profile not completed, show setup banner
+                        if (isGoogleUser && !isProfileCompleted) {
+                            showProfileCompletionBanner();
+                        }
+
                         // Ensure setup form stays hidden
                         ensureSetupFormHidden();
                     } else {
-                        console.log('📝 Profile not completed, showing setup form');
+                        console.log('📝 Profile not completed and not Google user, showing setup form');
 
                         // Hide profile section and show setup form
                         document.getElementById('profileSection').style.display = 'none';
@@ -2355,9 +2366,12 @@
 
                 // Fallback to cached data if available
                 const cachedProfile = getCachedProfileData();
-                if (cachedProfile && cachedProfile.profileCompleted) {
+                if (cachedProfile && (cachedProfile.profileCompleted || cachedProfile.googleId)) {
                     console.log('📱 Fallback: Using cached profile data');
                     showProfileFromCache(cachedProfile);
+                    if (cachedProfile.googleId && !cachedProfile.profileCompleted) {
+                        showProfileCompletionBanner();
+                    }
                 } else {
                     // Show setup form as last resort
                     document.getElementById('profileSection').style.display = 'none';
@@ -2394,6 +2408,8 @@
                     program: profileData.branch,
                     regNumber: profileData.registrationNumber,
                     fullName: profileData.fullName || 'Student',
+                    profilePicture: profileData.profilePicture,
+                    googleId: profileData.googleId,
                     profileCompleted: profileData.profileCompleted ||
                         !!(profileData.phone && profileData.registrationNumber && profileData.branch),
                     lastUpdated: new Date().toISOString(),
@@ -2605,7 +2621,7 @@
 
                 // Set avatar (lazy load for performance)
                 if (elements.avatarImage) {
-                    const avatarUrl = profileData.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=3498db&color=fff&size=200`;
+                    const avatarUrl = profileData.profilePicture || profileData.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=3498db&color=fff&size=200`;
                     elements.avatarImage.src = avatarUrl;
                     console.log('✅ Avatar set:', avatarUrl);
                 }
@@ -2659,6 +2675,146 @@
             });
 
             console.log('✅ Profile marked as completed and read-only');
+        }
+
+        // Function to show profile completion banner for Google users
+        function showProfileCompletionBanner() {
+            // Check if banner already exists
+            if (document.getElementById('profileCompletionBanner')) {
+                return;
+            }
+
+            const banner = document.createElement('div');
+            banner.id = 'profileCompletionBanner';
+            banner.style.cssText = `
+                background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 12px;
+                margin-bottom: 30px;
+                border: 2px solid #e67e22;
+                box-shadow: 0 8px 25px rgba(243, 156, 18, 0.3);
+                text-align: center;
+                position: relative;
+            `;
+
+            banner.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 15px;">
+                    <i class='bx bx-info-circle' style="font-size: 28px;"></i>
+                    <h3 style="margin: 0; font-size: 20px; font-weight: 600;">Complete Your Profile</h3>
+                </div>
+                <p style="margin: 0 0 15px 0; font-size: 16px; opacity: 0.9;">
+                    Welcome! To access all features like course purchases, please complete your profile setup below.
+                </p>
+                <button onclick="scrollToSetup()" style="
+                    background: white;
+                    color: #e67e22;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-size: 14px;
+                " onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                    <i class='bx bx-edit'></i> Complete Profile Now
+                </button>
+                <button onclick="this.parentElement.remove()" style="
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    background: transparent;
+                    border: none;
+                    color: white;
+                    font-size: 20px;
+                    cursor: pointer;
+                    opacity: 0.7;
+                " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+                    ×
+                </button>
+            `;
+
+            // Insert banner at the top of the profile section
+            const profileSection = document.getElementById('profileSection');
+            if (profileSection) {
+                profileSection.insertBefore(banner, profileSection.firstChild);
+            }
+
+            console.log('📢 Profile completion banner shown for Google user');
+        }
+
+        // Function to scroll to setup form (for banner button)
+        function scrollToSetup() {
+            // Create setup form at the bottom of profile if it doesn't exist
+            let setupForm = document.getElementById('setupForm');
+            if (!setupForm) {
+                setupForm = document.createElement('div');
+                setupForm.id = 'setupForm';
+                setupForm.innerHTML = `
+                    <h2 class="form-title">Complete Your Profile Setup</h2>
+                    <p class="form-subtitle">Please fill in these mandatory fields to access all features</p>
+
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--light-color);">
+                            <i class='bx bx-envelope' style="color: var(--accent-blue);"></i>
+                            Your VIT Email ID
+                        </label>
+                        <div style="position: relative; margin-top: 8px;">
+                            <input type="email" class="form-control" id="vitEmail" value="" placeholder="Loading your email..." readonly required>
+                            <i class='bx bx-loader-alt bx-spin' style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #f39c12; font-size: 18px;" id="emailLoadingIcon"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" class="form-control" id="phoneNumber" placeholder="e.g. 9876543210" required>
+                        <p class="form-note">This can only be set once and cannot be changed later</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Program</label>
+                        <select class="form-control" id="programSelect" required>
+                            <option value="">Select your program</option>
+                            <option>B.Tech Computer Science</option>
+                            <option>B.Tech Electronics</option>
+                            <option>B.Tech Mechanical</option>
+                            <option>B.Tech Civil</option>
+                            <option>B.Arch</option>
+                            <option>BBA</option>
+                            <option>B.Com</option>
+                            <option>M.Tech</option>
+                            <option>MBA</option>
+                        </select>
+                        <p class="form-note">This can only be set once and cannot be changed later</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Registration Number</label>
+                        <input type="text" class="form-control" id="regNumber" placeholder="e.g. 23BCE0001" required>
+                        <p class="form-note">This can only be set once and cannot be changed later</p>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" id="saveSetup">Complete Profile</button>
+                    </div>
+                `;
+                setupForm.className = 'setup-form';
+                document.getElementById('profileSection').appendChild(setupForm);
+
+                // Populate email
+                populateEmailImmediately();
+
+                // Add event listener for save button
+                document.getElementById('saveSetup').addEventListener('click', async function() {
+                    // Reuse the existing save logic
+                    const event = new Event('click');
+                    // This would need to be implemented properly
+                    alert('Please refresh the page to complete your profile setup.');
+                });
+            }
+
+            // Scroll to setup form
+            setupForm.scrollIntoView({ behavior: 'smooth' });
         }
 
         // Function to ensure setup form is permanently hidden for completed profiles

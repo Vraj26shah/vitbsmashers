@@ -62,6 +62,7 @@ passport.use(
           email: email,
           username: profile.displayName.replace(/\s+/g, '').toLowerCase() + Math.floor(Math.random() * 1000), // Generate unique username
           fullName: profile.displayName,
+          profilePicture: profile.photos && profile.photos.length > 0 ? profile.photos[0].value : null,
           isVerified: true, // Google accounts are pre-verified
           role: email === 'vitbsmashers@gmail.com' ? 'admin' : 'user'
         });

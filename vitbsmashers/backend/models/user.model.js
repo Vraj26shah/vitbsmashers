@@ -78,6 +78,10 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false
   },
+  profilePicture: {
+    type: String,
+    required: false
+  },
   registrationNumber: {
     type: String,
     required: false
