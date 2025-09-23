@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OAuth Troubleshooting Guide</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px; }
+        .step { background: #f0f8ff; padding: 15px; margin: 10px 0; border-left: 4px solid #007acc; }
+        .warning { background: #fff3cd; padding: 15px; border-left: 4px solid #ffc107; }
+        .error { background: #f8d7da; padding: 15px; border-left: 4px solid #dc3545; }
+        .success { background: #d4edda; padding: 15px; border-left: 4px solid #28a745; }
+        a { color: #007acc; text-decoration: none; font-weight: bold; }
+        a:hover { text-decoration: underline; }
+        .code { background: #f8f9fa; padding: 10px; font-family: monospace; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 OAuth Troubleshooting Guide</h1>
+
+    <div class="error">
+        <strong>PROBLEM:</strong> OAuth still failing even after adding test user. Let's debug this systematically.
+    </div>
+
+    <h2>🔍 Step 1: Verify Test User Setup</h2>
+
+    <div class="step">
+        <h3>Check Google Cloud Console</h3>
+        <ol>
+            <li>Go to: <a href="https://console.cloud.google.com/" target="_blank">Google Cloud Console</a></li>
+            <li>Make sure you're in the <strong>CORRECT project</strong> (check top bar)</li>
+            <li>Navigate: <strong>APIs & Services</strong> → <strong>OAuth consent screen</strong></li>
+            <li>Scroll to <strong>Test users</strong> section</li>
+            <li><strong>Verify your email is listed there</strong></li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h3>Check OAuth Consent Screen Status</h3>
+        <ol>
+            <li>In OAuth consent screen, check the top status</li>
+            <li>It should say <strong>"Testing"</strong> (not "Production")</li>
+            <li>Make sure <strong>Publishing status</strong> is "Testing"</li>
+        </ol>
+    </div>
+
+    <h2>🔍 Step 2: Clear All Caches</h2>
+
+    <div class="step">
+        <h3>Clear Browser Cache</h3>
+        <ol>
+            <li>Open browser DevTools (F12)</li>
+            <li>Right-click refresh button → "Empty Cache and Hard Reload"</li>
+            <li>Or go to Settings → Privacy → Clear browsing data</li>
+            <li>Select: Cookies, Cached images, Browsing history</li>
+            <li>Click "Clear data"</li>
+        </ol>
+    </div>
+
+    <div class="step">
+        <h3>Clear Google OAuth Cookies</h3>
+        <ol>
+            <li>In browser, go to: <code>chrome://settings/cookies</code></li>
+            <li>Search for "google" and "accounts.google.com"</li>
+            <li>Delete all Google-related cookies</li>
+            <li>Restart your browser completely</li>
+        </ol>
+    </div>
+
+    <h2>🔍 Step 3: Test OAuth Endpoint Directly</h2>
+
+    <div class="step">
+        <h3>Test the OAuth URL</h3>
+        <p>Open this URL in your browser:</p>
+        <div class="code">https://vitbsmashers.onrender.com/api/v1/auth/google</div>
+        <p><strong>What should happen:</strong></p>
+        <ul>
+            <li>✅ Should redirect to Google OAuth page (not show error)</li>
+            <li>✅ Should show "Choose an account" or similar</li>
+            <li>❌ If you see security error, test user not propagated yet</li>
+        </ul>
+    </div>
+
+    <h2>🔍 Step 4: Check Environment Variables</h2>
+
+    <div class="step">
+        <h3>Verify Render Environment</h3>
+        <p>Go to your Render dashboard and check:</p>
+        <ul>
+            <li><strong>GOOGLE_CLIENT_ID</strong> - Should be set</li>
+            <li><strong>GOOGLE_CLIENT_SECRET</strong> - Should be set</li>
+            <li><strong>GOOGLE_CALLBACK_URL</strong> - Should be: <code>https://vitbsmashers.onrender.com/api/v1/auth/google/callback</code></li>
+        </ul>
+    </div>
+
+    <h2>🔍 Step 5: Debug with Test Script</h2>
+
+    <div class="step">
+        <h3>Run Debug Script on Render</h3>
+        <p>In your Render dashboard, go to Console and run:</p>
+        <div class="code">node debug-oauth-config.js</div>
+        <p>This will show your OAuth configuration status.</p>
+    </div>
+
+    <h2>🔍 Step 6: Alternative Solutions</h2>
+
+    <div class="step">
+        <h3>If Test User Still Not Working</h3>
+        <ol>
+            <li><strong>Wait longer</strong> - Can take up to 20 minutes for Google to propagate</li>
+            <li><strong>Try different browser</strong> - Chrome, Firefox, Edge</li>
+            <li><strong>Use incognito mode</strong> - No cached data</li>
+            <li><strong>Try mobile device</strong> - Different environment</li>
+        </ol>
+    </div>
+
+    <h2>🔍 Step 7: Check for Domain Restrictions</h2>
+
+    <div class="step">
+        <h3>Verify No Domain Restrictions</h3>
+        <p>In Google Cloud Console OAuth consent screen:</p>
+        <ul>
+            <li>Make sure there are no domain restrictions set</li>
+            <li>Check if there are any additional security settings</li>
+            <li>Verify the app is not in "Production" mode</li>
+        </ul>
+    </div>
+
+    <h2>🔍 Step 8: Manual OAuth URL Test</h2>
+
+    <div class="step">
+        <h3>Construct OAuth URL Manually</h3>
+        <p>Try this URL directly in your browser:</p>
+        <div class="code">https://accounts.google.com/o/oauth2/v2/auth?client_id=YOUR_CLIENT_ID&redirect_uri=https://vitbsmashers.onrender.com/api/v1/auth/google/callback&scope=openid%20email%20profile&response_type=code&access_type=offline&prompt=select_account</div>
+        <p>Replace YOUR_CLIENT_ID with your actual client ID from Google Cloud Console.</p>
+    </div>
+
+    <h2>⚡ Quick Debug Commands</h2>
+
+    <div class="step">
+        <h3>Browser Console Commands</h3>
+        <p>Open browser console and run:</p>
+        <div class="code">// Clear all storage
+localStorage.clear();
+sessionStorage.clear();
+
+// Clear cookies for google.com
+document.cookie.split(";").forEach(cookie => {
+    const eqPos = cookie.indexOf("=");
+    const name = eqPos > -1 ? cookie.substr(0, eqPos) : cookie;
+    document.cookie = name + "=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/;";
+});
+
+// Reload page
+location.reload();</div>
+    </div>
+
+    <h2>🎯 Most Likely Causes</h2>
+
+    <div class="warning">
+        <h3>1. Test User Not Propagated (Most Common)</h3>
+        <p>Google takes time to propagate test user changes. Wait 15-20 minutes and try again.</p>
+    </div>
+
+    <div class="warning">
+        <h3>2. Wrong Google Cloud Project</h3>
+        <p>Make sure you're in the correct project where your OAuth client is configured.</p>
+    </div>
+
+    <div class="warning">
+        <h3>3. Browser Cache Issues</h3>
+        <p>Old cached OAuth responses can cause this error. Clear everything and try again.</p>
+    </div>
+
+    <h2>✅ Final Verification</h2>
+
+    <div class="success">
+        <p>After trying all steps above, your OAuth should work. If it still doesn't:</p>
+        <ol>
+            <li>Wait at least 20 minutes after adding test user</li>
+            <li>Try a completely different browser/device</li>
+            <li>Contact Google Cloud support if needed</li>
+        </ol>
+    </div>
+
+    <p><strong>Remember:</strong> The OAuth error will persist until Google fully propagates your test user addition. This can take up to 20 minutes.</p>
+</body>
+</html>
