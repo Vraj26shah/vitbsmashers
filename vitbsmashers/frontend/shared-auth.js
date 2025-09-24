@@ -18,13 +18,15 @@ class AuthManager {
             // First, check for token in URL parameters (from OAuth redirect)
             const urlParams = new URLSearchParams(window.location.search);
             const urlToken = urlParams.get('token');
+            const googleSuccess = urlParams.get('google_success');
 
-            if (urlToken) {
-                console.log('🔑 Token found in URL, storing in localStorage');
+            if (urlToken && googleSuccess) {
+                console.log('🔑 OAuth token found in URL, storing in localStorage');
                 localStorage.setItem('token', urlToken);
-                // Clean up URL
+                // Clean up URL - keep sidebar parameter if present
                 const newUrl = window.location.pathname + (urlParams.get('sidebar') ? '?sidebar=active' : '');
                 window.history.replaceState({}, document.title, newUrl);
+                console.log('✅ OAuth token stored and URL cleaned');
             }
 
             const token = localStorage.getItem('token');

@@ -3664,7 +3664,7 @@
         `;
         document.head.appendChild(toastStyle);
 
-        // Handle Google OAuth redirect
+        // Handle Google OAuth redirect - Simplified version
         function handleGoogleAuthRedirect() {
             const urlParams = new URLSearchParams(window.location.search);
             const token = urlParams.get('token');
@@ -3673,7 +3673,7 @@
 
             if (token && googleSuccess) {
                 console.log('🎉 Google OAuth redirect successful, storing token');
-                // Google auth successful, store token
+                // Store token in localStorage
                 localStorage.setItem('token', token);
                 showToast('Welcome! Google authentication successful!', 'success');
 
@@ -3693,17 +3693,14 @@
                     errorMessage = 'Authentication successful but token generation failed. Please contact support.';
                 } else if (error === 'oauth_callback_failed') {
                     errorMessage = 'OAuth callback failed. Please try signing in again.';
-                } else if (error.includes('invalid_request')) {
-                    errorMessage = 'Google OAuth configuration error. Please check your Google Cloud Console settings.';
                 }
 
                 showToast(errorMessage, 'error');
 
-                // Clean URL but keep sidebar parameter if present
+                // Clean URL and redirect to home
                 const newUrl = window.location.pathname + (urlParams.get('sidebar') ? '?sidebar=active' : '');
                 window.history.replaceState({}, document.title, newUrl);
 
-                // Redirect to home page after error
                 setTimeout(() => {
                     window.location.href = '../../index.html';
                 }, 3000);
@@ -3713,45 +3710,58 @@
             return false;
         }
 
-        // SIMPLE AND RELIABLE INITIALIZATION - Using existing profile completion system
+        // CLEAN AND RELIABLE INITIALIZATION
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('🚀 Starting profile page...');
+            console.log('🚀 Starting profile page initialization...');
 
-            // Handle Google OAuth redirect first
-            handleGoogleAuthRedirect();
+            // STEP 1: Wait for auth manager to be ready (it handles OAuth redirects)
+            const initProfilePage = () => {
+                if (!window.authManager) {
+                    console.log('⏳ Waiting for auth manager...');
+                    setTimeout(initProfilePage, 50);
+                    return;
+                }
 
-            // IMMEDIATE EMAIL TEST - Run as soon as DOM is ready
-            console.log('🧪 Running immediate email test...');
-            const emailLoaded = populateEmailImmediately();
-            console.log('🧪 Email loading result:', emailLoaded);
+                console.log('🔐 Auth manager ready, checking authentication...');
 
-            // Check if profile is already completed using existing system
-            const profileCompleted = emergencyProfileCheck();
+                // STEP 2: Check authentication status
+                if (!window.authManager.isAuthenticated) {
+                    console.log('❌ User not authenticated, showing login required');
+                    window.authManager.showLoginRequired();
+                    return;
+                }
 
-            // If profile is completed, show profile view and stop
-            if (profileCompleted) {
-                console.log('✅ Profile already completed - showing profile view');
-                // Initialize UI components for profile view
-                setTimeout(() => {
-                    createParticles();
-                    checkSidebarActivation();
-                    clearOldProfileData();
-                    if (window.adminPanelManager) {
-                        window.adminPanelManager.init();
-                    }
-                }, 100);
-                return; // Stop initialization - profile view is already shown
-            }
+                console.log('✅ User authenticated, proceeding with profile setup');
 
-            // If email loaded successfully and profile not completed, show setup form
-            if (emailLoaded) {
-                console.log('✅ Email loaded successfully and profile not completed - showing setup form only');
+                // STEP 3: Check if profile is already completed
+                const profileCompleted = emergencyProfileCheck();
+                if (profileCompleted) {
+                    console.log('✅ Profile already completed - showing profile view');
+                    // Initialize UI components for completed profile
+                    setTimeout(() => {
+                        createParticles();
+                        checkSidebarActivation();
+                        clearOldProfileData();
+                        if (window.adminPanelManager) {
+                            window.adminPanelManager.init();
+                        }
+                    }, 100);
+                    return;
+                }
 
-                // Check if this is a Google user (has google_success parameter or token indicates Google auth)
+                // STEP 4: Profile not completed - show setup form
+                console.log('📝 Profile not completed - showing setup form');
+
+                // Try to populate email immediately
+                const emailLoaded = populateEmailImmediately();
+                console.log('📧 Email loading result:', emailLoaded);
+
+                // Show Google welcome banner if this is a Google OAuth user
                 const urlParams = new URLSearchParams(window.location.search);
                 const isGoogleUser = urlParams.get('google_success') === 'true' ||
-                                   (token && (() => {
+                                   (localStorage.getItem('token') && (() => {
                                        try {
+                                           const token = localStorage.getItem('token');
                                            const payload = JSON.parse(atob(token.split('.')[1]));
                                            return payload.email && payload.email.includes('@vitbhopal.ac.in');
                                        } catch (e) {
@@ -3759,63 +3769,19 @@
                                        }
                                    })());
 
-                // Show Google welcome banner for Google users
                 if (isGoogleUser) {
                     document.getElementById('googleWelcomeBanner').style.display = 'block';
-                    console.log('🎉 Showing Google welcome banner for new Google user');
+                    console.log('🎉 Showing Google welcome banner');
                 }
 
-                // Show setup form
+                // Show setup form and hide profile section
                 document.getElementById('setupForm').style.display = 'block';
-                // Hide profile section
                 document.getElementById('profileSection').style.display = 'none';
-                console.log('✅ Setup form displayed, stopping other initialization');
-                return; // Stop all other initialization
-            }
 
-            // If email didn't load, continue with normal initialization
-            console.log('⚠️ Email not loaded from token, proceeding with normal initialization...');
-
-            // Wait for auth manager to be ready, then proceed
-            const initProfilePage = () => {
-                if (window.authManager) {
-                    console.log('🔐 Auth manager ready, checking authentication...');
-
-                    // Check if user is authenticated
-                    if (!window.authManager.isAuthenticated) {
-                        console.log('❌ User not authenticated, showing login required');
-                        window.authManager.showLoginRequired();
-                        return;
-                    }
-
-                    console.log('✅ User authenticated, proceeding with profile initialization');
-
-                    // Try to populate email again from backend
-                    populateEmailImmediately();
-
-                    // Check profile completion and show appropriate view using existing system
-                    emergencyProfileCheck();
-                    initializeProfileInstantly();
-
-                    // Initialize UI components
-                    setTimeout(() => {
-                        createParticles();
-                        checkSidebarActivation();
-                        clearOldProfileData();
-
-                        // Initialize admin panel if user is admin
-                        if (window.adminPanelManager) {
-                            window.adminPanelManager.init();
-                        }
-
-                        console.log('✅ Profile page loaded successfully');
-                    }, 100);
-                } else {
-                    console.log('⏳ Waiting for auth manager...');
-                    setTimeout(initProfilePage, 100);
-                }
+                console.log('✅ Setup form displayed, profile initialization complete');
             };
 
+            // Start initialization
             initProfilePage();
         });
 
