@@ -79,6 +79,54 @@ router.get('/google/callback',
   }
 );
 
+// Test OAuth callback endpoint (for development testing)
+router.get('/test-oauth-callback', async (req, res) => {
+  try {
+    console.log('🧪 TEST OAUTH CALLBACK: Starting test OAuth callback');
+
+    // Create a test user or use existing one
+    let testUser = await User.findOne({ email: 'test@vitbhopal.ac.in' });
+
+    if (!testUser) {
+      console.log('🧪 TEST OAUTH CALLBACK: Creating test user');
+      testUser = await User.create({
+        googleId: 'test_google_id_123',
+        email: 'test@vitbhopal.ac.in',
+        username: 'testuser',
+        fullName: 'Test User',
+        profilePicture: null,
+        isVerified: true,
+        role: 'user'
+      });
+    }
+
+    console.log('🧪 TEST OAUTH CALLBACK: Test user found/created:', testUser.email);
+
+    // Generate JWT token
+    const token = signToken(testUser._id, testUser.email);
+    if (!token) {
+      console.error('🧪 TEST OAUTH CALLBACK: Token generation failed');
+      return res.status(500).json({ error: 'Token generation failed' });
+    }
+
+    console.log('🧪 TEST OAUTH CALLBACK: Token generated successfully');
+
+    // Redirect to frontend with token
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:4000';
+    console.log('🧪 TEST OAUTH CALLBACK: FRONTEND_URL env var:', process.env.FRONTEND_URL);
+    console.log('🧪 TEST OAUTH CALLBACK: Using frontendUrl:', frontendUrl);
+    const profileUrl = `${frontendUrl}/features/profile/profile.html?token=${token}&google_success=true&sidebar=active&method=oauth&test_mode=true`;
+
+    console.log('🧪 TEST OAUTH CALLBACK: Redirecting to:', profileUrl);
+
+    res.redirect(profileUrl);
+
+  } catch (error) {
+    console.error('🧪 TEST OAUTH CALLBACK: Error:', error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // Google ID Token verification route (for client-side Google Sign-In)
 router.post('/google-token', verifyGoogleToken);
 
