@@ -9,6 +9,34 @@ const router = express.Router();
 
 
 
+// Debug endpoint to check environment variables (public for debugging)
+router.get('/debug-env', (req, res) => {
+  res.json({
+    timestamp: new Date().toISOString(),
+    environment: {
+      NODE_ENV: process.env.NODE_ENV,
+      FRONTEND_URL: process.env.FRONTEND_URL,
+      GOOGLE_CALLBACK_URL: process.env.GOOGLE_CALLBACK_URL,
+      PORT: process.env.PORT,
+      MONGO_URL: process.env.MONGO_URL ? 'Set' : 'Not set',
+      JWT_SECRET: process.env.JWT_SECRET ? 'Set' : 'Not set',
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? 'Set' : 'Not set',
+      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ? 'Set' : 'Not set'
+    },
+    request: {
+      hostname: req.hostname,
+      protocol: req.protocol,
+      url: req.url,
+      origin: req.headers.origin
+    },
+    oauth_status: {
+      callback_url_configured: !!(process.env.GOOGLE_CALLBACK_URL && process.env.GOOGLE_CALLBACK_URL.includes('onrender.com')),
+      frontend_url_configured: !!(process.env.FRONTEND_URL && process.env.FRONTEND_URL.includes('onrender.com')),
+      production_mode: process.env.NODE_ENV === 'production'
+    }
+  });
+});
+
 // Google OAuth routes
 router.get('/google',
   passport.authenticate('google', {
@@ -19,7 +47,7 @@ router.get('/google',
 
 router.get('/google/callback',
   passport.authenticate('google', { failureRedirect: '/?error=google_auth_failed' }),
-  (req, res) => {
+  async (req, res) => {
     console.log('🔄 OAUTH CALLBACK: ===== STARTING OAUTH CALLBACK =====');
     console.log('📝 OAUTH CALLBACK: Request received at:', new Date().toISOString());
     console.log('📝 OAUTH CALLBACK: Query params:', req.query);
@@ -28,13 +56,15 @@ router.get('/google/callback',
       email: req.user.email,
       username: req.user.username
     } : 'null');
+    console.log('🌐 OAUTH CALLBACK: Current FRONTEND_URL env:', process.env.FRONTEND_URL);
+    console.log('🌐 OAUTH CALLBACK: Current NODE_ENV:', process.env.NODE_ENV);
 
     try {
       console.log('✅ OAUTH CALLBACK: Passport authentication successful');
 
       if (!req.user) {
         console.error('❌ OAUTH CALLBACK: No user object from passport');
-        const errorUrl = `${process.env.FRONTEND_URL || 'https://vitbsmashers.vercel.app'}?error=no_user_object`;
+        const errorUrl = `${process.env.FRONTEND_URL || 'https://vitbsmashers.onrender.com'}?error=no_user_object`;
         console.log('🔗 OAUTH CALLBACK: Redirecting to error page:', errorUrl);
         return res.redirect(errorUrl);
       }
@@ -47,20 +77,40 @@ router.get('/google/callback',
 
       if (!token) {
         console.error('❌ OAUTH CALLBACK: Token generation failed');
-        const errorUrl = `${process.env.FRONTEND_URL || 'https://vitbsmashers.vercel.app'}?error=token_generation_failed&email=${encodeURIComponent(req.user.email)}`;
+        const errorUrl = `${process.env.FRONTEND_URL || 'https://vitbsmashers.onrender.com'}?error=token_generation_failed&email=${encodeURIComponent(req.user.email)}`;
         console.log('🔗 OAUTH CALLBACK: Redirecting to error page:', errorUrl);
         return res.redirect(errorUrl);
       }
 
       console.log('✅ OAUTH CALLBACK: JWT token generated successfully, length:', token.length);
 
-      // Redirect to frontend with token
-      const frontendUrl = process.env.FRONTEND_URL || 'https://vitbsmashers.vercel.app';
-      const profileUrl = `${frontendUrl}/features/profile/profile.html?token=${token}&google_success=true&sidebar=active&method=oauth`;
+      // Determine frontend URL with multiple fallbacks
+      let frontendUrl = process.env.FRONTEND_URL;
+
+      // Production fallbacks for Render
+      if (!frontendUrl || frontendUrl.includes('localhost')) {
+        if (process.env.NODE_ENV === 'production') {
+          frontendUrl = 'https://vitbsmashers.onrender.com';
+          console.log('🔄 OAUTH CALLBACK: Using production fallback URL:', frontendUrl);
+        } else {
+          frontendUrl = 'http://localhost:4000';
+          console.log('🔄 OAUTH CALLBACK: Using development fallback URL:', frontendUrl);
+        }
+      }
+
+      console.log('🎯 OAUTH CALLBACK: Final frontend URL:', frontendUrl);
+
+      // Create profile URL with token
+      const profileUrl = `${frontendUrl}/features/profile/profile.html?token=${encodeURIComponent(token)}&google_success=true&sidebar=active&method=oauth&timestamp=${Date.now()}`;
 
       console.log('🎉 OAUTH CALLBACK: ===== AUTHENTICATION SUCCESSFUL =====');
-      console.log('📊 OAUTH CALLBACK: User:', req.user.username, 'Method: oauth_redirect');
+      console.log('📊 OAUTH CALLBACK: User:', req.user.username || req.user.email, 'Method: oauth_redirect');
       console.log('🔗 OAUTH CALLBACK: Redirecting to:', profileUrl);
+
+      // Ensure the redirect happens
+      res.set('Cache-Control', 'no-cache, no-store, must-revalidate');
+      res.set('Pragma', 'no-cache');
+      res.set('Expires', '0');
 
       res.redirect(profileUrl);
 
@@ -70,8 +120,8 @@ router.get('/google/callback',
       console.error('❌ OAUTH CALLBACK: Error stack:', error.stack);
       console.error('❌ OAUTH CALLBACK: Error details:', error);
 
-      const frontendUrl = process.env.FRONTEND_URL || 'https://vitbsmashers.vercel.app';
-      const errorUrl = `${frontendUrl}?error=oauth_callback_error&message=${encodeURIComponent(error.message)}`;
+      const frontendUrl = process.env.FRONTEND_URL || 'https://vitbsmashers.onrender.com';
+      const errorUrl = `${frontendUrl}?error=oauth_callback_error&message=${encodeURIComponent(error.message)}&timestamp=${Date.now()}`;
 
       console.log('🔗 OAUTH CALLBACK: Redirecting to error page:', errorUrl);
       res.redirect(errorUrl);
