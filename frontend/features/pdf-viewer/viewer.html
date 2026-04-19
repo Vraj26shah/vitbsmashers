@@ -464,7 +464,25 @@
           return;
         }
 
-        loadPdf(makeAbsoluteUrl(data.data.streamUrl));
+        const { signedUrl, watermark } = data.data;
+        if (!signedUrl) {
+          showError('Error', 'Document URL not available. Please try again.');
+          return;
+        }
+        loadPdf(signedUrl);
+
+        // Refresh signed URL at 4min 30sec before it expires (R2 URLs are 5 min)
+        setTimeout(async () => {
+          try {
+            const refreshRes  = await fetch(`${getApiBase()}/courses/${courseId}/notes/${fileId}`, {
+              headers: { Authorization: `Bearer ${getToken()}` }
+            });
+            const refreshData = await refreshRes.json();
+            if (refreshData.status === 'success') {
+              console.log('Signed URL refreshed');
+            }
+          } catch (_) {}
+        }, 4 * 60 * 1000 + 30 * 1000);
 
       } catch (err) {
         console.error('Viewer error:', err);

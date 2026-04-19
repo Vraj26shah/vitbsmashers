@@ -15,11 +15,15 @@ import paymentRouter     from './routes/paymentRoutes.js';
 import eventRouter       from './routes/eventRoutes.js';
 import adminRouter       from './routes/adminRoutes.js';
 import notesRouter       from './routes/notesRoutes.js';
+import messRouter        from './routes/messRoutes.js';
+import timetableRouter   from './routes/timetableRoutes.js';
+import attendanceRouter  from './routes/attendanceRoutes.js';
+import gpaRouter         from './routes/gpaRoutes.js';
+import marketplaceRouter from './routes/marketplaceRoutes.js';
 import { errorHandler, notFound } from './middleware/authMiddleware.js';
 
 const app = express();
 
-app.use(express.json());
 app.use(cookieParser());
 
 const corsOptions = {
@@ -60,32 +64,41 @@ const corsOptions = {
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
   optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
 
-// API Routes
-app.use('/api/v1/auth',    authRouter);
-app.use('/api/v1/courses', courseRouter);
-app.use('/api/v1/courses', notesRouter);
-app.use('/api/v1/faculty', facultyRouter);
-app.use('/api/v1/profile', profileRouter);
-app.use('/api/v1/payment', paymentRouter);
-app.use('/api/v1/events',  eventRouter);
-app.use('/api/v1/admin',   adminRouter);
+// Webhook must receive raw body — register before express.json()
+app.use('/api/v1/payment/webhook', express.raw({ type: 'application/json' }));
 
-// Frontend compatibility
-app.use('/api/payments', paymentRouter);
+app.use(express.json());
 
-// Resolve frontend directory path
+// ── API Routes ────────────────────────────────────────────────────────────────
+app.use('/api/v1/auth',        authRouter);
+app.use('/api/v1/profile',     profileRouter);
+app.use('/api/v1/courses',     courseRouter);
+app.use('/api/v1/courses',     notesRouter);
+app.use('/api/v1/faculty',     facultyRouter);
+app.use('/api/v1/payment',     paymentRouter);
+app.use('/api/v1/events',      eventRouter);
+app.use('/api/v1/mess',        messRouter);
+app.use('/api/v1/timetable',   timetableRouter);
+app.use('/api/v1/attendance',  attendanceRouter);
+app.use('/api/v1/gpa',         gpaRouter);
+app.use('/api/v1/marketplace', marketplaceRouter);
+app.use('/api/v1/admin',       adminRouter);
+
+// Frontend compatibility aliases
+app.use('/api/payments',       paymentRouter);
+
+// ── Frontend Static Files ─────────────────────────────────────────────────────
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);
 const frontendDir = path.resolve(__dirname, '../frontend');
 
-// Map frontend feature pages
 const featurePages = [
   'profile/profile.html',
   'attendance/attendance.html',
@@ -106,11 +119,21 @@ featurePages.forEach(page => {
   });
 });
 
+// Serve auth callback page
+app.get('/auth/callback', (req, res) => {
+  res.sendFile(path.resolve(frontendDir, 'auth/callback.html'));
+});
+
 app.use('/features', express.static(path.join(frontendDir, 'features')));
 app.use(express.static(frontendDir));
 
 app.get('/', (req, res) => {
   res.sendFile(path.join(frontendDir, 'index.html'));
+});
+
+// Health check
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 app.use(notFound);

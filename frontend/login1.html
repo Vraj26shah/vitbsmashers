@@ -934,7 +934,7 @@
             }
         }
     </style>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
     <div class="bg-particles">
@@ -1003,14 +1003,14 @@
                     <label>VIT Email</label>
                     <i class='bx bxs-envelope'></i>
                 </div>
-                <p class="otp-note animation" style="--i:20; --j:3;">Verification OTP will be sent to your VIT email</p>
+                <p class="otp-note animation" style="--i:20; --j:3;">A confirmation link will be sent to your VIT email</p>
                 
                 <div class="input-box animation" style="--i:21; --j:4;"> 
                     <input type="password" id="registerPassword" placeholder=" " required>
                     <label>Password</label>
                     <i class='bx bxs-lock-alt'></i>
                 </div>
-                <button type="submit" class="btn animation" style="--i:22; --j:5;">Send OTP</button>
+                <button type="submit" class="btn animation" style="--i:22; --j:5;">Sign Up</button>
                 
                 <div class="or-divider animation" style="--i:23; --j:6;">
                     <span>or</span>
@@ -1028,37 +1028,22 @@
             <h2 class="animation" style="--i:17; --j:0;">Hello There!</h2>
             <p class="animation" style="--i:18; --j:1;">Sign Up to continue.</p>
             <p class="animation" style="--i:19; --j:2;">Use your VIT email for verification</p>
-            <p class="animation" style="--i:20; --j:3;">OTP will be sent to your email</p>
+            <p class="animation" style="--i:20; --j:3;">Confirm via the link sent to your email</p>
         </div>
     </div>
     
-    <!-- OTP Verification Modal -->
+    <!-- Email Confirmation Modal -->
     <div id="otpModal" class="modal">
         <div class="modal-content">
             <div class="modal-icon">
-                <i class='bx bx-key'></i>
+                <i class='bx bx-envelope'></i>
             </div>
-            <h2>OTP Verification</h2>
-            <p>We've sent a 6-digit OTP to your email:</p>
+            <h2>Check Your Email</h2>
+            <p>We've sent a confirmation link to:</p>
             <p class="user-email"><strong id="otpEmail"></strong></p>
-            
-            <div class="otp-container">
-                <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 1)">
-                <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 2)">
-                <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 3)">
-                <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 4)">
-                <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 5)">
-                <input type="text" class="otp-input" maxlength="1" oninput="moveToNext(this, 6)">
-            </div>
-            
-            <p class="otp-note">Enter the 6-digit code sent to your email</p>
-            
-            <button class="btn verify-otp-btn" id="verifyOtpBtn">Verify OTP</button>
-            
-            <div class="resend-section">
-                <p>Didn't receive the OTP? <a href="#" id="resendOtpBtn">Resend</a></p>
-                <p id="otpCountdown">Resend available in <span id="countdownSeconds">30</span> seconds</p>
-            </div>
+            <p>Click the link in the email to verify your account. Once verified, you can log in with your credentials.</p>
+            <p class="note">Check your spam folder if you don't see it within a few minutes. Only @vitbhopal.ac.in emails are allowed.</p>
+            <button class="btn" onclick="document.getElementById('otpModal').style.display='none'" style="margin-top:15px;">Close</button>
         </div>
     </div>
     
@@ -1081,12 +1066,7 @@
         const registerForm = document.getElementById('registerForm');
         const registerEmail = document.getElementById('registerEmail');
         const loginForm = document.getElementById('loginForm');
-        const resendOtpBtn = document.getElementById('resendOtpBtn');
-        const verifyOtpBtn = document.getElementById('verifyOtpBtn');
-        const otpCountdown = document.getElementById('otpCountdown');
-        const countdownSeconds = document.getElementById('countdownSeconds');
         const googleBtns = document.querySelectorAll('.google-btn');
-        const otpInputs = document.querySelectorAll('.otp-input');
         const toast = document.getElementById('toast');
         const toastMessage = document.getElementById('toast-message');
         const mobileNavToggle = document.querySelector('.mobile-nav-toggle');
@@ -1114,22 +1094,12 @@
             showToast('Switched to login form', 'success');
         }
 
-        let googleAuthInstance = null;
+        const SUPABASE_URL = 'https://gunogitcgaietobakvbl.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_2i0qvEuWXv5KQEzYZ2X1sA_rJLIyZF6';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         function initGoogleSignIn() {
-            // Initialize Google Sign-In with ID token flow
-            googleAuthInstance = google.accounts.id.initialize({
-                client_id: '150852944049-1kljh7jhlubn7kpmrss0nccqkm61jv7u.apps.googleusercontent.com',
-                callback: handleGoogleSignIn,
-                auto_select: false,
-                cancel_on_tap_outside: false,
-                context: 'signin',
-                ux_mode: 'popup'
-            });
-
-            // Instead of rendering Google buttons, make our containers clickable
             googleBtns.forEach(btn => {
-                // Clear any existing content and set up our custom button
                 btn.innerHTML = `
                     <div class="google-icon">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="20px" height="20px">
@@ -1141,63 +1111,20 @@
                     </div>
                     <span class="google-text">${btn.classList.contains('signup') ? 'Sign Up with Google' : 'Continue with Google'}</span>
                 `;
-
-                // Make the entire button clickable
-                btn.addEventListener('click', (e) => {
+                btn.addEventListener('click', async (e) => {
                     e.preventDefault();
                     e.stopPropagation();
-
-                    if (googleAuthInstance) {
-                        // Trigger Google sign-in popup
-                        google.accounts.id.prompt();
-                    } else {
-                        showToast('Google sign-in not ready. Please try again.', 'error');
-                    }
+                    await supabaseClient.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: { redirectTo: `${window.location.origin}/auth/callback` }
+                    });
                 });
-            });
-        }
-
-        function handleGoogleSignIn(response) {
-            const idToken = response.credential;
-            if (!idToken) {
-                showToast('Google sign-in failed. Please try again.', 'error');
-                return;
-            }
-
-            // Send ID token to backend for verification
-            fetch(`${API_BASE}/google-token`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ idToken })
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (!data.token) {
-                    throw new Error(data.message || 'Authentication failed');
-                }
-                localStorage.setItem('token', data.token);
-                if (data.data && data.data.user) {
-                    localStorage.setItem('userProfile', JSON.stringify(data.data.user));
-                }
-                showToast('Google authentication successful! Redirecting...', 'success');
-                setTimeout(() => {
-                    window.location.href = '/features/profile/profile.html?sidebar=active';
-                }, 1200);
-            })
-            .catch(err => {
-                showToast(err.message || 'Google authentication failed', 'error');
             });
         }
 
         // Initialize Google Sign-In when DOM is loaded
         document.addEventListener('DOMContentLoaded', () => {
-            if (window.google && window.google.accounts) {
-                initGoogleSignIn();
-            } else {
-                // Fallback if script not loaded
-                setTimeout(initGoogleSignIn, 1000);
-            }
+            initGoogleSignIn();
         });
 
         // Email verification for registration
@@ -1220,6 +1147,10 @@
                 return;
             }
 
+            const btn = this.querySelector('.btn');
+            btn.innerHTML = '<div class="spinner"></div> Signing up...';
+            btn.disabled = true;
+
             try {
                 const res = await fetch(`${API_BASE}/signup`, {
                     method: 'POST',
@@ -1231,13 +1162,12 @@
 
                 otpEmail.textContent = email;
                 otpModal.style.display = 'flex';
-                startOtpCountdown();
-                if (data.development && data.development.otp) {
-                    showToast(`Dev OTP: ${data.development.otp}`, 'success');
-                }
-                showToast(data.message || 'OTP sent to your email', 'success');
+                showToast(data.message || 'Confirmation email sent! Check your inbox.', 'success');
             } catch (err) {
                 showToast(err.message, 'error');
+            } finally {
+                btn.textContent = 'Sign Up';
+                btn.disabled = false;
             }
         });
         // Login form submission
@@ -1279,101 +1209,6 @@
             }
         });
 
-        // Verify OTP
-        verifyOtpBtn.addEventListener('click', async function() {
-            const otp = Array.from(otpInputs).map(input => input.value).join('');
-            const email = otpEmail.textContent.trim();
-            if (otp.length !== 6) {
-                showToast('Please enter a 6-digit OTP code', 'error');
-                return;
-            }
-
-            try {
-                verifyOtpBtn.innerHTML = '<div class="spinner"></div> Verifying...';
-                verifyOtpBtn.disabled = true;
-
-                const res = await fetch(`${API_BASE}/verify-otp`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    credentials: 'include',
-                    body: JSON.stringify({ email, otp })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'OTP verification failed');
-
-                localStorage.setItem('token', data.token);
-                if (data.data && data.data.user) {
-                    localStorage.setItem('userProfile', JSON.stringify(data.data.user));
-                }
-                showToast('OTP verified successfully!', 'success');
-                setTimeout(() => {
-                    otpModal.style.display = 'none';
-                    showToast('Account created! Redirecting...', 'success');
-                    setTimeout(() => { window.location.href = '/features/profile/profile.html?sidebar=active'; }, 1200);
-                }, 800);
-            } catch (err) {
-                showToast(err.message, 'error');
-            } finally {
-                verifyOtpBtn.textContent = 'Verify OTP';
-                verifyOtpBtn.disabled = false;
-            }
-        });
-
-        // Resend OTP
-        resendOtpBtn.addEventListener('click', async function(e) {
-            e.preventDefault();
-            const email = otpEmail.textContent.trim();
-            try {
-                const res = await fetch(`${API_BASE}/resend-otp`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email })
-                });
-                const data = await res.json();
-                if (!res.ok) throw new Error(data.message || 'Failed to resend OTP');
-                startOtpCountdown();
-                if (data.development && data.development.otp) {
-                    showToast(`Dev OTP: ${data.development.otp}`, 'success');
-                }
-                showToast(data.message || 'OTP has been resent to your email', 'success');
-            } catch (err) {
-                showToast(err.message, 'error');
-            }
-        });
-
-        // Start countdown for OTP resend
-        function startOtpCountdown() {
-            let seconds = 30;
-            otpCountdown.style.display = 'block';
-            resendOtpBtn.classList.add('disabled');
-            countdownSeconds.textContent = seconds;
-            
-            const countdownInterval = setInterval(() => {
-                seconds--;
-                countdownSeconds.textContent = seconds;
-                
-                if (seconds <= 0) {
-                    
-                    clearInterval(countdownInterval);
-                    otpCountdown.style.display = 'none';
-                    resendOtpBtn.classList.remove('disabled');
-                }
-            }, 1000);
-        }
-
-        // Move to next OTP input
-        function moveToNext(current, nextIndex) {
-            if (current.value.length === 1) {
-                if (nextIndex <= 6) {
-                    otpInputs[nextIndex - 1].focus();
-                }
-                
-                // Add filled class for styling
-                current.classList.add('filled');
-            } else {
-                current.classList.remove('filled');
-            }
-        }
 
         // Show toast notification
         function showToast(message, type) {
@@ -1394,20 +1229,6 @@
             }
         });
 
-        // Focus first OTP input when modal opens
-        otpModal.addEventListener('shown', function() {
-            otpInputs[0].focus();
-        });
-        
-        // Initialize OTP inputs
-        otpInputs.forEach((input, index) => {
-            input.addEventListener('input', () => {
-                if (input.value.length === 1 && index < 5) {
-                    otpInputs[index + 1].focus();
-                }
-                input.classList.add('filled');
-            });
-        });
 
         // Support URL mode toggling (?mode=login|register)
         function applyModeFromUrl() {

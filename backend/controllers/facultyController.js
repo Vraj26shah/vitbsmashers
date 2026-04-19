@@ -1,419 +1,134 @@
-// Faculty Controller
-import Faculty from '../models/faculty.model.js';
-import PendingFacultyUpdate from '../models/pendingFacultyUpdate.model.js';
-import User from '../models/user.model.js';
-import AppError from '../utils/appError.js';
-import sendEmail from '../utils/email.js';
+import { supabase }       from '../lib/supabase.js';
+import { getR2SignedUrl } from '../lib/r2.js';
 
-export const getFaculty = async (req, res, next) => {
+// ── GET /api/v1/faculty ───────────────────────────────────────────────────────
+export const getFaculty = async (req, res) => {
   try {
     const { department, search } = req.query;
-    let query = {};
+    let query = supabase.schema('content').from('faculty')
+      .select('id, name, email, department, designation, phone, office, specialization, availability, bio, photo_r2_key')
+      .eq('is_active', true).order('name');
 
-    if (department) {
-      query.department = department;
-    }
+    if (department) query = query.eq('department', department);
+    if (search)     query = query.ilike('name', `%${search}%`);
 
-    if (search) {
-      query.$or = [
-        { name: { $regex: search, $options: 'i' } },
-        { bio: { $regex: search, $options: 'i' } }
-      ];
-    }
+    const { data, error } = await query;
+    if (error) return res.status(500).json({ status: 'error', message: error.message });
 
-    const faculty = await Faculty.find(query).select('-__v').sort({ name: 1 });
-    
-    res.status(200).json({
-      status: 'success',
-      results: faculty.length,
-      data: { faculty }
-    });
-  } catch (error) {
-    next(new AppError('Failed to retrieve faculty list', 500));
+    // Attach signed photo URLs (1-hour validity)
+    const withPhotos = await Promise.all(data.map(async f => {
+      if (!f.photo_r2_key) return { ...f, photoUrl: null };
+      try {
+        const photoUrl = await getR2SignedUrl(f.photo_r2_key, 3600);
+        return { ...f, photoUrl };
+      } catch {
+        return { ...f, photoUrl: null };
+      }
+    }));
+
+    return res.status(200).json({ status: 'success', results: withPhotos.length, data: { faculty: withPhotos } });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to retrieve faculty list' });
   }
 };
 
-export const getFacultyById = async (req, res, next) => {
+// ── GET /api/v1/faculty/:id ───────────────────────────────────────────────────
+export const getFacultyById = async (req, res) => {
   try {
-    const faculty = await Faculty.findById(req.params.id).select('-__v');
-    if (!faculty) {
-      return next(new AppError('Faculty not found', 404));
+    const { data, error } = await supabase.schema('content').from('faculty')
+      .select('*').eq('id', req.params.id).single();
+    if (error || !data) return res.status(404).json({ status: 'error', message: 'Faculty not found' });
+
+    let result = { ...data };
+    if (data.photo_r2_key) {
+      try { result.photoUrl = await getR2SignedUrl(data.photo_r2_key, 3600); } catch {}
     }
-    res.status(200).json({
-      status: 'success',
-      data: { faculty }
-    });
-  } catch (error) {
-    if (error.name === 'CastError') {
-      return next(new AppError('Invalid faculty ID', 400));
-    }
-    next(new AppError('Failed to retrieve faculty details', 500));
+    return res.status(200).json({ status: 'success', data: { faculty: result } });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to retrieve faculty' });
   }
 };
 
-export const getFacultyByDepartment = async (req, res, next) => {
+// ── GET /api/v1/faculty/department/:dept ─────────────────────────────────────
+export const getFacultyByDepartment = async (req, res) => {
   try {
-    const faculty = await Faculty.find({ department: req.params.dept }).select('-__v').sort({ name: 1 });
-    res.status(200).json({
-      status: 'success',
-      results: faculty.length,
-      data: { faculty }
-    });
-  } catch (error) {
-    next(new AppError('Failed to retrieve faculty by department', 500));
+    const { data, error } = await supabase.schema('content').from('faculty')
+      .select('*').eq('department', req.params.dept).eq('is_active', true).order('name');
+    if (error) return res.status(500).json({ status: 'error', message: error.message });
+    return res.status(200).json({ status: 'success', results: data.length, data: { faculty: data } });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to retrieve faculty by department' });
   }
 };
 
-export const contactFaculty = async (req, res, next) => {
+// ── POST /api/v1/faculty (admin) ─────────────────────────────────────────────
+export const createFaculty = async (req, res) => {
   try {
-    const { facultyId, message, senderEmail, senderName } = req.body;
-
-    // Find faculty to get contact email
-    const faculty = await Faculty.findById(facultyId).select('email name');
-    if (!faculty) {
-      return next(new AppError('Faculty not found', 404));
-    }
-
-    // Send email to faculty
-    const emailMessage = `
-      Subject: Student Contact Request - ${senderName}
-      
-      Dear ${faculty.name},
-      
-      You have received a contact request from ${senderName} (${senderEmail}).
-      
-      Message:
-      ${message}
-      
-      Best regards,
-      VIT Bhopal Student Portal
-    `;
-
-    await sendEmail({
-      email: faculty.email,
-      subject: `Student Contact Request - ${senderName}`,
-      message: emailMessage
-    });
-
-    res.status(201).json({
-      status: 'success',
-      message: 'Contact message sent successfully'
-    });
-  } catch (error) {
-    next(new AppError('Failed to send contact message', 500));
+    const { data, error } = await supabase.schema('content').from('faculty')
+      .insert(req.body).select().single();
+    if (error) return res.status(400).json({ status: 'error', message: error.message });
+    return res.status(201).json({ status: 'success', data: { faculty: data } });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to create faculty' });
   }
 };
 
-export const getFacultySchedule = async (req, res, next) => {
+// ── PUT /api/v1/faculty/:id (admin) ──────────────────────────────────────────
+export const updateFaculty = async (req, res) => {
   try {
-    const faculty = await Faculty.findById(req.params.id).select('schedule name');
-    if (!faculty) {
-      return next(new AppError('Faculty not found', 404));
-    }
-    res.status(200).json({
-      status: 'success',
-      data: { faculty }
-    });
-  } catch (error) {
-    if (error.name === 'CastError') {
-      return next(new AppError('Invalid faculty ID', 400));
-    }
-    next(new AppError('Failed to retrieve faculty schedule', 500));
+    const { data, error } = await supabase.schema('content').from('faculty')
+      .update({ ...req.body, updated_at: new Date().toISOString() })
+      .eq('id', req.params.id).select().single();
+    if (error) return res.status(400).json({ status: 'error', message: error.message });
+    return res.status(200).json({ status: 'success', data: { faculty: data } });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to update faculty' });
   }
 };
 
-// Admin-only CRUD operations
-export const createFaculty = async (req, res, next) => {
+// ── DELETE /api/v1/faculty/:id (admin) ───────────────────────────────────────
+export const deleteFaculty = async (req, res) => {
   try {
-    const faculty = await Faculty.create({
-      name: req.body.name,
-      email: req.body.email,
-      department: req.body.department,
-      designation: req.body.designation,
-      phone: req.body.phone,
-      office: req.body.office,
-      specialization: req.body.specialization,
-      image: req.body.image,
-      bio: req.body.bio,
-      schedule: req.body.schedule
-    });
-
-    res.status(201).json({
-      status: 'success',
-      data: { faculty }
-    });
-  } catch (error) {
-    if (error.code === 11000) {
-      return next(new AppError('Faculty email already exists', 400));
-    }
-    next(new AppError('Failed to create faculty', 500));
+    await supabase.schema('content').from('faculty')
+      .update({ is_active: false }).eq('id', req.params.id);
+    return res.status(200).json({ status: 'success', message: 'Faculty deactivated' });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to delete faculty' });
   }
 };
 
-// Get pending faculty additions (originalFacultyId: null)
-export const getPendingAdditions = async (req, res, next) => {
+// ── POST /api/v1/faculty/contact ─────────────────────────────────────────────
+export const contactFaculty = async (req, res) => {
+  return res.status(200).json({ status: 'success', message: 'Contact request received. Email functionality coming soon.' });
+};
+
+// ── GET /api/v1/faculty/schedule/:id ─────────────────────────────────────────
+export const getFacultySchedule = async (req, res) => {
   try {
-    const pendingAdditions = await PendingFacultyUpdate.find({
-      originalFacultyId: null,
-      status: 'pending'
-    }).populate('submittedBy', 'username email').sort({ submittedAt: -1 });
-
-    res.status(200).json({
-      status: 'success',
-      results: pendingAdditions.length,
-      data: { pendingAdditions }
-    });
-  } catch (error) {
-    next(new AppError('Failed to retrieve pending additions', 500));
+    const { data, error } = await supabase.schema('content').from('faculty')
+      .select('id, name, availability').eq('id', req.params.id).single();
+    if (error || !data) return res.status(404).json({ status: 'error', message: 'Faculty not found' });
+    return res.status(200).json({ status: 'success', data: { faculty: data } });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to retrieve schedule' });
   }
 };
 
-// Get pending faculty updates (originalFacultyId exists)
-export const getPendingUpdates = async (req, res, next) => {
-  try {
-    const pendingUpdates = await PendingFacultyUpdate.find({
-      originalFacultyId: { $ne: null },
-      status: 'pending'
-    }).populate('submittedBy', 'username email').sort({ submittedAt: -1 });
+// User submission stubs
+export const getPendingAdditions = async (req, res) =>
+  res.status(200).json({ status: 'success', data: { pendingAdditions: [] } });
 
-    res.status(200).json({
-      status: 'success',
-      results: pendingUpdates.length,
-      data: { pendingUpdates }
-    });
-  } catch (error) {
-    next(new AppError('Failed to retrieve pending updates', 500));
-  }
-};
+export const getPendingUpdates = async (req, res) =>
+  res.status(200).json({ status: 'success', data: { pendingUpdates: [] } });
 
-// Approve faculty addition
-export const approveAddition = async (req, res, next) => {
-  try {
-    const { pendingUpdateId } = req.body;
+export const approveAddition = async (req, res) =>
+  res.status(200).json({ status: 'success', message: 'Use POST /api/v1/faculty to create directly' });
 
-    const pendingUpdate = await PendingFacultyUpdate.findById(pendingUpdateId);
-    if (!pendingUpdate) {
-      return next(new AppError('Pending addition not found', 404));
-    }
+export const rejectAddition = async (req, res) =>
+  res.status(200).json({ status: 'success', message: 'Rejected' });
 
-    // Extract new values from changes (old is null for additions)
-    const newFacultyData = {};
-    Object.entries(pendingUpdate.changes).forEach(([field, values]) => {
-      newFacultyData[field] = values.new;
-    });
+export const approveUpdate = async (req, res) =>
+  res.status(200).json({ status: 'success', message: 'Use PUT /api/v1/faculty/:id to update directly' });
 
-    // Create faculty
-    const faculty = await Faculty.create(newFacultyData);
-
-    // Mark pending as approved
-    pendingUpdate.status = 'approved';
-    pendingUpdate.reviewedAt = Date.now();
-    pendingUpdate.reviewedBy = req.user._id;
-    await pendingUpdate.save();
-
-    // Send approval email to submitter
-    const submitter = await User.findById(pendingUpdate.submittedBy).select('email');
-    if (submitter) {
-      await sendEmail({
-        email: submitter.email,
-        subject: `Faculty Addition Approved: ${newFacultyData.name}`,
-        message: `Your faculty addition for ${newFacultyData.name} has been approved and is now live.`
-      });
-    }
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Faculty addition approved and created',
-      data: { faculty }
-    });
-  } catch (error) {
-    next(new AppError('Failed to approve faculty addition', 500));
-  }
-};
-
-// Reject faculty addition
-export const rejectAddition = async (req, res, next) => {
-  try {
-    const { pendingUpdateId } = req.body;
-
-    const pendingUpdate = await PendingFacultyUpdate.findByIdAndUpdate(
-      pendingUpdateId,
-      {
-        status: 'rejected',
-        reviewedAt: Date.now(),
-        reviewedBy: req.user._id
-      },
-      { new: true }
-    );
-
-    if (!pendingUpdate) {
-      return next(new AppError('Pending addition not found', 404));
-    }
-
-    // Send rejection email to submitter
-    const submitter = await User.findById(pendingUpdate.submittedBy).select('email');
-    if (submitter) {
-      await sendEmail({
-        email: submitter.email,
-        subject: 'Faculty Addition Request Rejected',
-        message: 'Your faculty addition request has been reviewed but not approved. Please contact admin for details.'
-      });
-    }
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Faculty addition request rejected'
-    });
-  } catch (error) {
-    next(new AppError('Failed to reject faculty addition', 500));
-  }
-};
-
-// Approve faculty update
-export const approveUpdate = async (req, res, next) => {
-  try {
-    const { pendingUpdateId } = req.body;
-
-    const pendingUpdate = await PendingFacultyUpdate.findById(pendingUpdateId);
-    if (!pendingUpdate) {
-      return next(new AppError('Pending update not found', 404));
-    }
-
-    const { originalFacultyId } = pendingUpdate;
-
-    // Apply changes to existing faculty
-    const updateData = {};
-    Object.entries(pendingUpdate.changes).forEach(([field, values]) => {
-      updateData[field] = values.new;
-    });
-
-    const faculty = await Faculty.findByIdAndUpdate(
-      originalFacultyId,
-      updateData,
-      { new: true, runValidators: true }
-    ).select('-__v');
-
-    if (!faculty) {
-      return next(new AppError('Faculty not found', 404));
-    }
-
-    // Mark pending as approved
-    pendingUpdate.status = 'approved';
-    pendingUpdate.reviewedAt = Date.now();
-    pendingUpdate.reviewedBy = req.user._id;
-    await pendingUpdate.save();
-
-    // Send approval email to faculty
-    await sendEmail({
-      email: faculty.email,
-      subject: `Faculty Update Approved: ${faculty.name}`,
-      message: `Your faculty information updates have been approved and are now live.`
-    });
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Faculty update approved and applied',
-      data: { faculty }
-    });
-  } catch (error) {
-    if (error.code === 11000) {
-      return next(new AppError('Faculty email already exists', 400));
-    }
-    next(new AppError('Failed to approve faculty update', 500));
-  }
-};
-
-// Reject faculty update
-export const rejectUpdate = async (req, res, next) => {
-  try {
-    const { pendingUpdateId } = req.body;
-
-    const pendingUpdate = await PendingFacultyUpdate.findByIdAndUpdate(
-      pendingUpdateId,
-      {
-        status: 'rejected',
-        reviewedAt: Date.now(),
-        reviewedBy: req.user._id
-      },
-      { new: true }
-    );
-
-    if (!pendingUpdate) {
-      return next(new AppError('Pending update not found', 404));
-    }
-
-    // Send rejection email to submitter
-    const submitter = await User.findById(pendingUpdate.submittedBy).select('email');
-    if (submitter) {
-      await sendEmail({
-        email: submitter.email,
-        subject: 'Faculty Update Request Rejected',
-        message: 'Your faculty update request has been reviewed but not approved. Please contact admin for details.'
-      });
-    }
-
-    res.status(200).json({
-      status: 'success',
-      message: 'Faculty update request rejected'
-    });
-  } catch (error) {
-    next(new AppError('Failed to reject faculty update', 500));
-  }
-};
-
-export const updateFaculty = async (req, res, next) => {
-  try {
-    const faculty = await Faculty.findByIdAndUpdate(
-      req.params.id,
-      {
-        name: req.body.name,
-        email: req.body.email,
-        department: req.body.department,
-        designation: req.body.designation,
-        phone: req.body.phone,
-        office: req.body.office,
-        specialization: req.body.specialization,
-        image: req.body.image,
-        bio: req.body.bio,
-        schedule: req.body.schedule
-      },
-      { new: true, runValidators: true }
-    ).select('-__v');
-
-    if (!faculty) {
-      return next(new AppError('Faculty not found', 404));
-    }
-
-    res.status(200).json({
-      status: 'success',
-      data: { faculty }
-    });
-  } catch (error) {
-    if (error.code === 11000) {
-      return next(new AppError('Faculty email already exists', 400));
-    }
-    if (error.name === 'CastError') {
-      return next(new AppError('Invalid faculty ID', 400));
-    }
-    next(new AppError('Failed to update faculty', 500));
-  }
-};
-
-export const deleteFaculty = async (req, res, next) => {
-  try {
-    const faculty = await Faculty.findByIdAndDelete(req.params.id);
-    if (!faculty) {
-      return next(new AppError('Faculty not found', 404));
-    }
-
-    res.status(204).json({
-      status: 'success',
-      data: null
-    });
-  } catch (error) {
-    if (error.name === 'CastError') {
-      return next(new AppError('Invalid faculty ID', 400));
-    }
-    next(new AppError('Failed to delete faculty', 500));
-  }
-};
+export const rejectUpdate = async (req, res) =>
+  res.status(200).json({ status: 'success', message: 'Rejected' });

@@ -1,229 +1,95 @@
-// Profile Controller
-import User from '../models/user.model.js';
-import AppError from '../utils/appError.js';
+import { supabase } from '../lib/supabase.js';
 
+// ── GET /api/v1/profile/me  OR  GET /api/v1/profile/:userId ─────────────────
 export const getProfile = async (req, res) => {
   try {
-    const { userId } = req.params;
+    const targetId = req.params.userId === 'me' || !req.params.userId
+      ? req.user.id
+      : req.params.userId;
 
-    // If requesting own profile, use authenticated user
-    const profileUserId = userId === 'me' ? req.user._id : userId;
+    const { data, error } = await supabase
+      .schema('business').from('users').select('*').eq('id', targetId).single();
 
-    const user = await User.findById(profileUserId).select('-password -otp -otpExpires -passwordChangedAt');
+    if (error || !data)
+      return res.status(404).json({ status: 'error', message: 'User not found' });
 
-    if (!user) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'User not found'
-      });
-    }
-
-    // Ensure profile completion status is up to date
-    const isComplete = user.isProfileComplete();
-    console.log('🔍 Profile retrieval for user:', user.email, {
-      profileCompleted: user.profileCompleted,
-      hasPhone: !!user.phone,
-      hasRegistration: !!user.registrationNumber,
-      hasBranch: !!user.branch,
-      isProfileComplete: isComplete
-    });
-
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
       data: {
-        user,
-        profileComplete: isComplete
-      }
+        user: data,
+        profileComplete: !!(data.phone && data.registration_number && data.branch),
+      },
     });
-  } catch (error) {
-    console.error('Profile retrieval error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to retrieve profile'
-    });
+  } catch (err) {
+    console.error('getProfile error:', err.message);
+    return res.status(500).json({ status: 'error', message: 'Server error' });
   }
 };
 
+// ── PUT /api/v1/profile/update ───────────────────────────────────────────────
 export const updateProfile = async (req, res) => {
   try {
-    const { fullName, phone, registrationNumber, branch, year, email } = req.body;
-    const userId = req.user._id;
+    const userId = req.user.id;
+    const { full_name, phone, registration_number, branch, year } = req.body;
 
-    // Get current user to validate email if provided
-    const currentUser = await User.findById(userId);
-    if (!currentUser) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'User not found',
-        errors: { general: 'User account not found' }
-      });
-    }
+    if (phone && !/^\d{10}$/.test(phone.replace(/\s+/g, '')))
+      return res.status(400).json({ status: 'error', message: 'Phone must be 10 digits' });
 
-    // Check if profile is already completed
-    if (currentUser.isProfileComplete()) {
+    if (registration_number && !/^\d{2}[A-Z]{3}\d{5}$/.test(registration_number.toUpperCase()))
       return res.status(400).json({
         status: 'error',
-        message: 'Profile is already completed and cannot be modified',
-        errors: { general: 'Your profile has already been completed. Contact support if you need to make changes.' }
+        message: 'Invalid registration number (e.g. 23BCE00001)',
       });
-    }
 
-    // Validate email if provided (should match existing email)
-    if (email && email !== currentUser.email) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Email validation failed',
-        errors: { email: 'Email cannot be changed and must match your authenticated account' }
-      });
-    }
+    const today = new Date().toISOString().slice(0, 10);
+    const user  = req.user;
+    const newCount = user.last_profile_update === today ? (user.profile_update_count || 0) + 1 : 1;
 
-    // Validate required fields
-    const errors = {};
+    const profileComplete = !!(
+      (full_name || user.full_name) &&
+      (phone || user.phone) &&
+      (registration_number || user.registration_number) &&
+      (branch || user.branch)
+    );
 
-    if (!phone || phone.trim() === '') {
-      errors.phone = 'Phone number is required';
-    } else if (!/^\d{10}$/.test(phone.replace(/\s+/g, ''))) {
-      errors.phone = 'Phone number must be exactly 10 digits';
-    }
+    const { data, error } = await supabase.schema('business').from('users')
+      .update({
+        full_name:            full_name   || user.full_name,
+        phone:                phone       ? phone.replace(/\s+/g, '') : user.phone,
+        registration_number:  registration_number ? registration_number.toUpperCase() : user.registration_number,
+        branch:               branch      || user.branch,
+        year:                 year        || user.year,
+        profile_completed:    profileComplete,
+        last_profile_update:  today,
+        profile_update_count: newCount,
+        updated_at:           new Date().toISOString(),
+      })
+      .eq('id', userId)
+      .select()
+      .single();
 
-    if (!registrationNumber || registrationNumber.trim() === '') {
-      errors.registrationNumber = 'Registration number is required';
-    } else if (!/^\d{2}[A-Z]{3}\d{5}$/.test(registrationNumber.toUpperCase())) {
-      errors.registrationNumber = 'Registration number must be in format: 23BCE00001';
-    }
+    if (error)
+      return res.status(400).json({ status: 'error', message: error.message });
 
-    if (!branch || branch.trim() === '') {
-      errors.branch = 'Program/Branch is required';
-    }
-
-    if (!email || email.trim() === '') {
-      errors.email = 'Email is required';
-    } else if (!email.endsWith('@vitbhopal.ac.in')) {
-      errors.email = 'Email must be a valid VIT Bhopal email (@vitbhopal.ac.in)';
-    }
-
-    // If there are validation errors, return them
-    if (Object.keys(errors).length > 0) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Profile validation failed',
-        errors: errors
-      });
-    }
-
-    // Update user profile
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        fullName: fullName || 'Student',
-        phone: phone.replace(/\s+/g, ''), // Clean phone number
-        registrationNumber: registrationNumber.toUpperCase(), // Ensure uppercase
-        branch,
-        year
-      },
-      { new: true, runValidators: true }
-    ).select('-password -otp -otpExpires -passwordChangedAt');
-
-    if (!updatedUser) {
-      return res.status(404).json({
-        status: 'error',
-        message: 'Failed to update user profile',
-        errors: { general: 'User profile could not be updated' }
-      });
-    }
-
-    // Recalculate profile completion status based on final user state
-    const wasCompleted = updatedUser.isProfileComplete();
-    updatedUser.profileCompleted = !!(updatedUser.phone && updatedUser.registrationNumber && updatedUser.branch);
-    await updatedUser.save();
-
-    console.log('✅ Profile updated successfully for user:', updatedUser.email, {
-      hasPhone: !!updatedUser.phone,
-      hasRegistration: !!updatedUser.registrationNumber,
-      hasBranch: !!updatedUser.branch,
-      profileCompleted: updatedUser.profileCompleted,
-      wasAlreadyComplete: wasCompleted,
-      isNowComplete: updatedUser.isProfileComplete()
-    });
-
-    res.status(200).json({
+    return res.status(200).json({
       status: 'success',
-      data: {
-        user: updatedUser,
-        profileComplete: updatedUser.isProfileComplete()
-      },
-      message: 'Profile completed successfully'
+      message: 'Profile updated successfully',
+      data: { user: data, profileComplete },
     });
-  } catch (error) {
-    console.error('Profile update error:', error);
-
-    if (error.name === 'ValidationError') {
-      const validationErrors = {};
-      for (let field in error.errors) {
-        validationErrors[field] = error.errors[field].message;
-      }
-      return res.status(400).json({
-        status: 'error',
-        message: 'Profile validation failed',
-        errors: validationErrors
-      });
-    }
-
-    if (error.code === 11000) {
-      return res.status(400).json({
-        status: 'error',
-        message: 'Duplicate data found',
-        errors: { registrationNumber: 'This registration number is already registered' }
-      });
-    }
-
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to update profile. Please try again.',
-      errors: { general: 'An unexpected error occurred. Please try again later.' }
-    });
+  } catch (err) {
+    console.error('updateProfile error:', err.message);
+    return res.status(500).json({ status: 'error', message: 'Server error' });
   }
 };
 
 export const uploadAvatar = async (req, res) => {
-  try {
-    res.status(200).json({
-      status: 'success',
-      data: { message: 'Avatar uploaded successfully' }
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to upload avatar'
-    });
-  }
+  return res.status(200).json({ status: 'success', message: 'Avatar upload coming soon' });
 };
 
 export const getAchievements = async (req, res) => {
-  try {
-    const { userId } = req.params;
-    res.status(200).json({
-      status: 'success',
-      data: { userId, message: 'Achievements retrieved successfully' }
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to retrieve achievements'
-    });
-  }
+  return res.status(200).json({ status: 'success', data: [] });
 };
 
 export const addAchievement = async (req, res) => {
-  try {
-    res.status(201).json({
-      status: 'success',
-      data: { message: 'Achievement added successfully' }
-    });
-  } catch (error) {
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to add achievement'
-    });
-  }
+  return res.status(201).json({ status: 'success', message: 'Achievement added' });
 };

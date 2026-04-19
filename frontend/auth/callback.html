@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Authenticating... | VIT Bhopal Scholars Stack</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0a1423 0%, #0f1a2a 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #ecf0f1;
+    }
+    .card {
+      background: rgba(15, 26, 42, 0.85);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+      border: 2px solid #3498db;
+      max-width: 400px; width: 100%;
+      text-align: center;
+    }
+    .spinner {
+      width: 50px; height: 50px;
+      border: 4px solid rgba(52,152,219,0.3);
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      margin: 0 auto 20px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    h2 { font-size: 22px; margin-bottom: 10px; }
+    p  { font-size: 14px; color: #aaa; }
+    .error { color: #e74c3c; font-size: 14px; margin-top: 15px; }
+    .btn {
+      display: inline-block; margin-top: 20px;
+      background: #3498db; color: white;
+      padding: 10px 24px; border-radius: 10px;
+      text-decoration: none; font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+<div class="card">
+  <div class="spinner" id="spinner"></div>
+  <h2 id="status">Authenticating…</h2>
+  <p id="sub">Please wait while we verify your Google account.</p>
+  <div id="error" class="error" style="display:none;"></div>
+  <a href="/login1.html" id="loginLink" class="btn" style="display:none;">Back to Login</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+  const SUPABASE_URL     = 'https://gunogitcgaietobakvbl.supabase.co';
+  const SUPABASE_ANON_KEY = 'sb_publishable_2i0qvEuWXv5KQEzYZ2X1sA_rJLIyZF6';
+
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function showError(msg) {
+    document.getElementById('spinner').style.display = 'none';
+    document.getElementById('status').textContent = 'Authentication Failed';
+    document.getElementById('sub').textContent = '';
+    const err = document.getElementById('error');
+    err.style.display = 'block';
+    err.textContent = msg;
+    document.getElementById('loginLink').style.display = 'inline-block';
+  }
+
+  async function handleSession(session) {
+    if (!session || !session.access_token) {
+      showError('No session found. Please try logging in again.');
+      return;
+    }
+
+    document.getElementById('status').textContent = 'Verifying with server…';
+
+    try {
+      const API_BASE = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1')
+        ? 'http://localhost:4000/api/v1'
+        : '/api/v1';
+
+      const res = await fetch(`${API_BASE}/auth/google-token`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          access_token:  session.access_token,
+          refresh_token: session.refresh_token,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (data.status === 'success') {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userProfile', JSON.stringify(data.data?.user || {}));
+
+        document.getElementById('status').textContent = 'Success! Redirecting…';
+        document.getElementById('sub').textContent = `Welcome, ${data.data?.user?.full_name || data.data?.user?.username || 'student'}!`;
+
+        setTimeout(() => {
+          window.location.href = '/index.html';
+        }, 1000);
+      } else {
+        showError(data.message || 'Server verification failed. Only VIT Bhopal emails are allowed.');
+      }
+    } catch (err) {
+      showError('Network error. Please check your connection and try again.');
+    }
+  }
+
+  // Listen for the auth state change that Supabase fires after OAuth redirect
+  client.auth.onAuthStateChange(async (event, session) => {
+    if (event === 'SIGNED_IN' && session) {
+      await handleSession(session);
+    } else if (event === 'SIGNED_OUT') {
+      showError('Sign-in was cancelled or failed.');
+    }
+  });
+
+  // Also try to get session directly (handles hash fragment tokens)
+  (async () => {
+    try {
+      const { data: { session }, error } = await client.auth.getSession();
+      if (session) {
+        await handleSession(session);
+      } else if (error) {
+        showError('Authentication error: ' + error.message);
+      } else {
+        // Wait for onAuthStateChange to fire
+        setTimeout(() => {
+          const errorEl = document.getElementById('error');
+          if (errorEl.style.display === 'none') {
+            showError('Authentication timed out. Please try again.');
+          }
+        }, 8000);
+      }
+    } catch (err) {
+      showError('Unexpected error during authentication.');
+    }
+  })();
+</script>
+</body>
+</html>

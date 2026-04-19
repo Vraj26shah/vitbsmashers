@@ -488,105 +488,25 @@
         </div>
     </footer>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="config.js"></script>
     <script>
-        // API Configuration - Point to backend server
-        const API_BASE = window.config ? window.config.AUTH_BASE : '/api/v1/auth';
+        const SUPABASE_URL = 'https://gunogitcgaietobakvbl.supabase.co';
+        const SUPABASE_ANON_KEY = 'sb_publishable_2i0qvEuWXv5KQEzYZ2X1sA_rJLIyZF6';
+        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // Custom Google Sign-In implementation with forced account selection
         function initGoogleSignIn() {
-            console.log('🚀 Initializing Custom Google Sign-In...');
-
             const customButton = document.getElementById('customGoogleSignIn');
             if (customButton) {
-                customButton.addEventListener('click', function(e) {
+                customButton.addEventListener('click', async function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-
-                    window.location.href = window.config ? `${window.config.AUTH_BASE}/google` : '/api/v1/auth/google';
+                    await supabaseClient.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: { redirectTo: `${window.location.origin}/auth/callback` }
+                    });
                 });
-
-                console.log('✅ Custom Google Sign-In button initialized with forced account selection');
-            } else {
-                console.error('❌ Custom Google Sign-In button not found');
             }
-        }
-
-        function handleGoogleSignIn(response) {
-            console.log('📨 Google sign-in response received');
-
-            if (!response.credential) {
-                console.error('❌ No credential received');
-                showToast('Google sign-in failed. Please try again.', 'error');
-                return;
-            }
-
-            // Decode JWT to get email for validation
-            try {
-                const payload = JSON.parse(atob(response.credential.split('.')[1]));
-                const email = payload.email;
-
-                if (!email || !email.endsWith('@vitbhopal.ac.in')) {
-                    console.error('❌ Non-VIT email detected:', email);
-                    showToast('Please use your VIT Bhopal University email (@vitbhopal.ac.in) to sign in.', 'error');
-                    return;
-                }
-
-                console.log('✅ VIT email verified:', email);
-            } catch (error) {
-                console.error('❌ Error decoding JWT:', error);
-                showToast('Authentication failed. Please try again.', 'error');
-                return;
-            }
-
-            console.log('✅ ID token received, sending to backend...');
-            showToast('Signing you in...', 'info');
-
-            // Send ID token to backend
-            fetch(`${API_BASE}/google-token`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({ idToken: response.credential })
-            })
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-                }
-                return res.json();
-            })
-            .then(data => {
-                console.log('✅ Backend response:', data);
-
-                if (!data.token) {
-                    throw new Error(data.message || 'Authentication failed');
-                }
-
-                // Success - User is now logged in
-                localStorage.setItem('token', data.token);
-                if (data.data && data.data.user) {
-                    localStorage.setItem('userProfile', JSON.stringify(data.data.user));
-                }
-                showToast('Welcome! Taking you to your profile...', 'success');
-
-                setTimeout(() => {
-                    window.location.href = 'features/profile/profile.html?sidebar=active';
-                }, 1500);
-            })
-            .catch(err => {
-                console.error('❌ Authentication error:', err);
-                let errorMessage = 'Authentication failed. Please try again.';
-
-                if (err.message.includes('VIT Bhopal')) {
-                    errorMessage = err.message;
-                } else if (err.message.includes('network') || err.message.includes('fetch')) {
-                    errorMessage = 'Unable to connect to server. Please check your internet connection.';
-                }
-
-                showToast(errorMessage, 'error');
-            });
         }
 
         function showToast(message, type = 'info') {

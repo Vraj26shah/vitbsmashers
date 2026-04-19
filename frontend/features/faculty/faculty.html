@@ -1429,57 +1429,15 @@
 
         async function fetchFaculty() {
             try {
-                const response = await fetch('http://localhost:4000/api/v1/faculty');
+                const response = await fetch('/api/v1/faculty');
                 const data = await response.json();
                 if (response.ok) {
-                    faculty = data.data.faculty;
+                    faculty = data.data;
                 } else {
                     console.error('Failed to fetch faculty:', data.message);
                 }
             } catch (error) {
                 console.error('Error fetching faculty:', error);
-            }
-        }
-
-        // Pending faculty data from API
-        let pendingFaculty = [];
-        let pendingUpdates = [];
-
-        async function fetchPendingFaculty() {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await fetch('http://localhost:4000/api/v1/faculty/pending-additions', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    pendingFaculty = data.data.pendingAdditions;
-                } else {
-                    console.error('Failed to fetch pending faculty:', data.message);
-                }
-            } catch (error) {
-                console.error('Error fetching pending faculty:', error);
-            }
-        }
-
-        async function fetchPendingUpdates() {
-            try {
-                const token = localStorage.getItem('token');
-                const response = await fetch('http://localhost:4000/api/v1/faculty/pending-updates', {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                const data = await response.json();
-                if (response.ok) {
-                    pendingUpdates = data.data.pendingUpdates;
-                } else {
-                    console.error('Failed to fetch pending updates:', data.message);
-                }
-            } catch (error) {
-                console.error('Error fetching pending updates:', error);
             }
         }
 

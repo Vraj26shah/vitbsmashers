@@ -1,113 +1,116 @@
 import express from 'express';
 import { protect, adminOnly } from '../middleware/authMiddleware.js';
-import User from '../models/user.model.js';
-import Course from '../models/course.model.js';
-import Order from '../models/orderModel.js';
+import { supabase } from '../lib/supabase.js';
 
 const router = express.Router();
 
-// Protect all admin routes
 router.use(protect);
 router.use(adminOnly);
 
-// Payment processing endpoints
-router.post('/process-pending-orders', async (req, res) => {
-  try {
-    const { default: paymentProcessor } = await import('../service/paymentProcessor.js');
-
-    console.log('🔄 Admin: Processing all pending orders...');
-    const result = await paymentProcessor.processAllPendingOrders();
-
-    res.json({
-      status: 'success',
-      message: `Processed ${result.processed} orders successfully, ${result.failed} failed`,
-      data: result
-    });
-  } catch (error) {
-    console.error('Admin process pending orders error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to process pending orders',
-      error: error.message
-    });
-  }
-});
-
-router.post('/process-order/:orderId', async (req, res) => {
-  try {
-    const { orderId } = req.params;
-    const { default: paymentProcessor } = await import('../service/paymentProcessor.js');
-
-    console.log(`🔄 Admin: Processing order ${orderId}...`);
-    await paymentProcessor.processOrder(orderId);
-
-    res.json({
-      status: 'success',
-      message: `Order ${orderId} processed successfully`
-    });
-  } catch (error) {
-    console.error(`Admin process order error for ${req.params.orderId}:`, error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to process order',
-      error: error.message
-    });
-  }
-});
-
-router.post('/process-user-orders/:userId', async (req, res) => {
-  try {
-    const { userId } = req.params;
-    const { default: paymentProcessor } = await import('../service/paymentProcessor.js');
-
-    console.log(`🔄 Admin: Processing orders for user ${userId}...`);
-    const processed = await paymentProcessor.processUserOrders(userId);
-
-    res.json({
-      status: 'success',
-      message: `Processed ${processed} orders for user ${userId}`,
-      data: { processed }
-    });
-  } catch (error) {
-    console.error(`Admin process user orders error for ${req.params.userId}:`, error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to process user orders',
-      error: error.message
-    });
-  }
-});
-
-// Get system status
+// ── GET /api/v1/admin/system-status ──────────────────────────────────────────
 router.get('/system-status', async (req, res) => {
   try {
-    const pendingOrders = await Order.countDocuments({ status: 'pending' });
-    const totalOrders = await Order.countDocuments();
-    const completedOrders = await Order.countDocuments({ status: 'completed' });
-    const totalUsers = await User.countDocuments();
-    const usersWithCourses = await User.countDocuments({ purchasedCourses: { $exists: true, $ne: [] } });
+    const [
+      { count: totalOrders },
+      { count: completedOrders },
+      { count: totalUsers },
+      { count: totalCourses },
+    ] = await Promise.all([
+      supabase.schema('business').from('razorpay_orders').select('*', { count: 'exact', head: true }),
+      supabase.schema('business').from('purchases').select('*', { count: 'exact', head: true }),
+      supabase.schema('business').from('users').select('*', { count: 'exact', head: true }),
+      supabase.schema('business').from('courses').select('*', { count: 'exact', head: true }).eq('status', 'active'),
+    ]);
 
-    res.json({
+    return res.json({
       status: 'success',
       data: {
-        orders: {
-          total: totalOrders,
-          pending: pendingOrders,
-          completed: completedOrders
-        },
-        users: {
-          total: totalUsers,
-          withCourses: usersWithCourses
-        }
-      }
+        orders:  { total: totalOrders, completed: completedOrders },
+        users:   { total: totalUsers },
+        courses: { total: totalCourses },
+      },
     });
-  } catch (error) {
-    console.error('System status error:', error);
-    res.status(500).json({
-      status: 'error',
-      message: 'Failed to get system status',
-      error: error.message
-    });
+  } catch (err) {
+    console.error('System status error:', err.message);
+    return res.status(500).json({ status: 'error', message: 'Failed to get system status' });
+  }
+});
+
+// ── GET /api/v1/admin/users ───────────────────────────────────────────────────
+router.get('/users', async (req, res) => {
+  try {
+    const { page = 1, limit = 50 } = req.query;
+    const offset = (parseInt(page) - 1) * parseInt(limit);
+
+    const { data, error, count } = await supabase.schema('business').from('users')
+      .select('id, email, username, full_name, role, is_banned, profile_completed, created_at', { count: 'exact' })
+      .range(offset, offset + parseInt(limit) - 1)
+      .order('created_at', { ascending: false });
+
+    if (error) return res.status(500).json({ status: 'error', message: error.message });
+    return res.json({ status: 'success', total: count, data });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to get users' });
+  }
+});
+
+// ── POST /api/v1/admin/ban-user ───────────────────────────────────────────────
+router.post('/ban-user', async (req, res) => {
+  try {
+    const { userId, reason } = req.body;
+    const { data, error } = await supabase.schema('business').from('users')
+      .update({ is_banned: true, ban_reason: reason || 'Banned by admin' })
+      .eq('id', userId).select().single();
+
+    if (error) return res.status(400).json({ status: 'error', message: error.message });
+    return res.json({ status: 'success', data });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to ban user' });
+  }
+});
+
+// ── POST /api/v1/admin/unban-user ────────────────────────────────────────────
+router.post('/unban-user', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    const { data, error } = await supabase.schema('business').from('users')
+      .update({ is_banned: false, ban_reason: null }).eq('id', userId).select().single();
+
+    if (error) return res.status(400).json({ status: 'error', message: error.message });
+    return res.json({ status: 'success', data });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to unban user' });
+  }
+});
+
+// ── POST /api/v1/admin/set-role ───────────────────────────────────────────────
+router.post('/set-role', async (req, res) => {
+  try {
+    const { userId, role } = req.body;
+    if (!['student', 'admin'].includes(role))
+      return res.status(400).json({ status: 'error', message: 'Role must be student or admin' });
+
+    const { data, error } = await supabase.schema('business').from('users')
+      .update({ role }).eq('id', userId).select().single();
+
+    if (error) return res.status(400).json({ status: 'error', message: error.message });
+    return res.json({ status: 'success', data });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to set role' });
+  }
+});
+
+// ── GET /api/v1/admin/purchases ───────────────────────────────────────────────
+router.get('/purchases', async (req, res) => {
+  try {
+    const { data, error } = await supabase.schema('business').from('purchases')
+      .select('*, user:users(email, username), course:courses(pid, title)')
+      .order('purchased_at', { ascending: false }).limit(100);
+
+    if (error) return res.status(500).json({ status: 'error', message: error.message });
+    return res.json({ status: 'success', data });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to get purchases' });
   }
 });
 

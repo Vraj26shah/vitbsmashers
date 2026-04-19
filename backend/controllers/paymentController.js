@@ -1,173 +1,226 @@
-import paymentService from '../service/paymentService.js';
-import crypto from 'crypto';
-import Order from '../models/orderModel.js';
-import User from '../models/user.model.js';
+import Razorpay     from 'razorpay';
+import crypto       from 'crypto';
+import { supabase } from '../lib/supabase.js';
 
-// Function to check user status for payment
-export const checkUserStatusForPayment = async (userId) => {
-  try {
-    const user = await User.findById(userId).select('email phone registrationNumber branch isVerified');
+const razorpay = new Razorpay({
+  key_id:     process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
-    if (!user) {
-      return {
-        status: 'user_not_found',
-        canProceed: false,
-        message: 'User account not found',
-        redirect: '/login'
-      };
-    }
-
-    // Check if email exists (user is authenticated)
-    if (!user.email) {
-      return {
-        status: 'not_authenticated',
-        canProceed: false,
-        message: 'Please log in to proceed with payment',
-        redirect: '/login'
-      };
-    }
-
-    // Check if user is verified
-    if (!user.isVerified) {
-      return {
-        status: 'not_verified',
-        canProceed: false,
-        message: 'Please verify your email before making purchases',
-        redirect: '/verify-email'
-      };
-    }
-
-    // Check profile completion (only phone, registrationNumber, and branch required)
-    const hasPhone = !!(user.phone && user.phone.trim());
-    const hasRegistrationNumber = !!(user.registrationNumber && user.registrationNumber.trim());
-    const hasBranch = !!(user.branch && user.branch.trim());
-
-    const isProfileComplete = hasPhone && hasRegistrationNumber && hasBranch;
-
-    if (!isProfileComplete) {
-      return {
-        status: 'profile_incomplete',
-        canProceed: false,
-        message: 'Please complete your profile before purchasing courses',
-        redirect: '/features/profile/profile.html',
-        missingFields: {
-          phone: !hasPhone,
-          registrationNumber: !hasRegistrationNumber,
-          branch: !hasBranch
-        }
-      };
-    }
-
-    return {
-      status: 'ready_for_payment',
-      canProceed: true,
-      message: 'Profile is complete and verified'
-    };
-  } catch (error) {
-    console.error('User status check error:', error);
-    return {
-      status: 'error',
-      canProceed: false,
-      message: 'Error checking user status',
-      redirect: '/login'
-    };
-  }
-};
-
-export const createCheckoutSession = async (req, res) => {
+// ── POST /api/v1/payment/create-order ────────────────────────────────────────
+export const createOrder = async (req, res) => {
   try {
     const { courseId, subject, amount, items } = req.body;
-    const userId = req.user._id;
+    const userId = req.user.id;
 
-    // Check comprehensive user status for payment
-    const userStatus = await checkUserStatusForPayment(userId);
+    // Single course purchase
+    if (courseId) {
+      // Resolve course (supports UUID or PID)
+      let resolvedCourseId = courseId;
+      let course;
 
-    if (!userStatus.canProceed) {
-      const statusCode = userStatus.status === 'not_authenticated' ? 401 :
-                        userStatus.status === 'not_verified' ? 403 :
-                        userStatus.status === 'profile_incomplete' ? 403 : 500;
-
-      return res.status(statusCode).json({
-        status: 'error',
-        error: userStatus.status,
-        message: userStatus.message,
-        redirect: userStatus.redirect,
-        ...(userStatus.missingFields && { missingFields: userStatus.missingFields })
-      });
-    }
-
-    // Handle single course payment
-    if (courseId && amount) {
-      const orderData = await paymentService.createSingleCourseOrder(userId, courseId, subject, amount);
-      return res.status(200).json({
-        status: 'success',
-        message: 'Checkout session created successfully',
-        ...orderData
-      });
-    }
-
-    // Handle cart-based payment
-    if (items && Array.isArray(items) && items.length > 0) {
-      const orderData = await paymentService.createCartOrder(userId, items);
-      return res.status(200).json({
-        status: 'success',
-        message: 'Checkout session created successfully',
-        ...orderData
-      });
-    }
-
-    return res.status(400).json({
-      status: 'error',
-      error: 'invalid_payment_request',
-      message: 'Invalid payment request'
-    });
-  } catch (err) {
-    console.error('Payment controller error:', err);
-    const isValidationError = /required|invalid/i.test(err.message);
-    res.status(isValidationError ? 400 : 500).json({
-      status: 'error',
-      error: isValidationError ? 'invalid_payment_request' : 'payment_session_creation_failed',
-      message: err.message
-    });
-  }
-};
-
-export const webhook = (req, res) => {
-  // Razorpay webhook handling
-  const secret = process.env.RAZORPAY_WEBHOOK_SECRET;
-  const signature = req.headers['x-razorpay-signature'];
-
-  try {
-    // Verify webhook signature if secret is configured
-    if (secret && signature) {
-      const expectedSignature = crypto
-        .createHmac('sha256', secret)
-        .update(JSON.stringify(req.body))
-        .digest('hex');
-
-      if (signature !== expectedSignature) {
-        console.warn('⚠️ Webhook signature verification failed');
-        return res.status(400).json({ error: 'Invalid signature' });
+      if (!/^[0-9a-f-]{36}$/i.test(courseId)) {
+        const { data: c } = await supabase.schema('business').from('courses')
+          .select('id, title, price').eq('pid', courseId.toUpperCase()).maybeSingle();
+        course = c;
+        if (c) resolvedCourseId = c.id;
+      } else {
+        const { data: c } = await supabase.schema('business').from('courses')
+          .select('id, title, price').eq('id', courseId).maybeSingle();
+        course = c;
       }
-      console.log('✅ Webhook signature verified');
-    } else if (secret && !signature) {
-      console.warn('⚠️ Webhook secret configured but no signature provided');
-      return res.status(400).json({ error: 'Signature required' });
-    } else {
-      console.log('ℹ️ Webhook signature verification skipped (no secret configured)');
+
+      if (!course) return res.status(404).json({ status: 'error', message: 'Course not found' });
+
+      // Check already purchased
+      const { data: existing } = await supabase.schema('business').from('purchases')
+        .select('id').eq('user_id', userId).eq('course_id', resolvedCourseId).maybeSingle();
+      if (existing)
+        return res.status(409).json({ status: 'error', message: 'Course already purchased' });
+
+      const coursePrice = amount ? parseFloat(amount) : course.price;
+      const amountPaise = Math.round(coursePrice * 100);
+
+      const rzpOrder = await razorpay.orders.create({
+        amount:   amountPaise,
+        currency: 'INR',
+        receipt:  `rcpt_${userId.slice(0, 8)}_${resolvedCourseId.slice(0, 8)}`,
+      });
+
+      await supabase.schema('business').from('razorpay_orders').insert({
+        user_id:           userId,
+        course_id:         resolvedCourseId,
+        razorpay_order_id: rzpOrder.id,
+        amount:            coursePrice,
+      });
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Checkout session created successfully',
+        orderId:    rzpOrder.id,
+        amount:     amountPaise,
+        currency:   'INR',
+        courseId:   resolvedCourseId,
+        courseName: subject || course.title,
+        key:        process.env.RAZORPAY_KEY_ID,
+      });
     }
 
-    // Process the webhook
-    paymentService.handleWebhook(req.body);
-    res.status(200).json({ received: true });
+    // Cart-based (multiple items) — create one order for total
+    if (items && Array.isArray(items) && items.length > 0) {
+      const totalAmount = items.reduce((s, i) => s + parseFloat(i.amount || 0), 0);
+      const amountPaise = Math.round(totalAmount * 100);
+
+      const rzpOrder = await razorpay.orders.create({
+        amount:   amountPaise,
+        currency: 'INR',
+        receipt:  `rcpt_cart_${userId.slice(0, 8)}_${Date.now()}`,
+      });
+
+      // Store one row per item in razorpay_orders for each course
+      for (const item of items) {
+        let cid = item.courseId;
+        if (!/^[0-9a-f-]{36}$/i.test(cid)) {
+          const { data: c } = await supabase.schema('business').from('courses')
+            .select('id').eq('pid', cid.toUpperCase()).maybeSingle();
+          if (c) cid = c.id;
+        }
+        if (cid && /^[0-9a-f-]{36}$/i.test(cid)) {
+          await supabase.schema('business').from('razorpay_orders').insert({
+            user_id:           userId,
+            course_id:         cid,
+            razorpay_order_id: rzpOrder.id,
+            amount:            parseFloat(item.amount || 0),
+          }).catch(() => {});
+        }
+      }
+
+      return res.status(200).json({
+        status: 'success',
+        message: 'Checkout session created successfully',
+        orderId:   rzpOrder.id,
+        amount:    amountPaise,
+        currency:  'INR',
+        key:       process.env.RAZORPAY_KEY_ID,
+      });
+    }
+
+    return res.status(400).json({ status: 'error', message: 'Invalid payment request' });
   } catch (err) {
-    console.error('❌ Webhook error:', err);
-    res.status(500).json({ error: 'Webhook processing failed' });
+    console.error('createOrder error:', err.message);
+    return res.status(500).json({ status: 'error', message: 'Failed to create order' });
   }
 };
 
-// Default export with all payment controller functions
-export default {
-  createCheckoutSession,
-  webhook
+// alias for old route name
+export const createCheckoutSession = createOrder;
+
+// ── POST /api/v1/payment/verify ──────────────────────────────────────────────
+export const verifyPayment = async (req, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature,
+            order_id, payment_id, signature } = req.body;
+    const userId = req.user.id;
+
+    const orderId    = razorpay_order_id || order_id;
+    const paymentId  = razorpay_payment_id || payment_id;
+    const sig        = razorpay_signature || signature;
+
+    // Verify signature
+    const body     = `${orderId}|${paymentId}`;
+    const expected = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(body).digest('hex');
+
+    const isValid = expected === sig;
+
+    // In development, allow even if signature doesn't match (test mode)
+    if (!isValid && process.env.NODE_ENV === 'production')
+      return res.status(400).json({ success: false, status: 'error', message: 'Payment signature invalid' });
+
+    // Fetch all orders for this razorpay_order_id
+    const { data: orders } = await supabase.schema('business').from('razorpay_orders')
+      .select('course_id, amount, user_id').eq('razorpay_order_id', orderId);
+
+    if (!orders || orders.length === 0)
+      return res.status(404).json({ success: false, status: 'error', message: 'Order not found' });
+
+    // Mark all matching orders as paid
+    await supabase.schema('business').from('razorpay_orders')
+      .update({ status: 'paid' }).eq('razorpay_order_id', orderId);
+
+    // Create purchase record for each course
+    const purchases = [];
+    for (const order of orders) {
+      const { data: p, error: pe } = await supabase.schema('business').from('purchases').upsert({
+        user_id:             userId,
+        course_id:           order.course_id,
+        razorpay_payment_id: paymentId,
+        razorpay_order_id:   orderId,
+        amount_paid:         order.amount,
+      }, { onConflict: 'user_id,course_id', ignoreDuplicates: true }).select().single();
+
+      if (p) purchases.push(p);
+    }
+
+    return res.status(200).json({ success: true, status: 'success', message: 'Payment verified', data: purchases });
+  } catch (err) {
+    console.error('verifyPayment error:', err.message);
+    return res.status(500).json({ success: false, status: 'error', message: 'Payment verification failed' });
+  }
 };
+
+// ── GET /api/v1/payment/session/:orderId ─────────────────────────────────────
+export const getOrder = async (req, res) => {
+  try {
+    const { data, error } = await supabase.schema('business').from('razorpay_orders')
+      .select('*').eq('razorpay_order_id', req.params.orderId).eq('user_id', req.user.id).maybeSingle();
+    if (error || !data) return res.status(404).json({ status: 'error', message: 'Order not found' });
+    return res.status(200).json({ status: 'success', order: data });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to get order' });
+  }
+};
+
+// ── POST /api/v1/payment/webhook ─────────────────────────────────────────────
+export const webhook = async (req, res) => {
+  try {
+    const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
+    const sig = req.headers['x-razorpay-signature'];
+
+    if (webhookSecret && sig) {
+      const body     = JSON.stringify(req.body);
+      const expected = crypto.createHmac('sha256', webhookSecret).update(body).digest('hex');
+      if (expected !== sig)
+        return res.status(400).send('Invalid webhook signature');
+    }
+
+    const event = req.body;
+    if (event.event === 'payment.captured') {
+      const { order_id, id: payment_id, amount } = event.payload.payment.entity;
+
+      const { data: orders } = await supabase.schema('business').from('razorpay_orders')
+        .select('user_id, course_id, amount').eq('razorpay_order_id', order_id);
+
+      if (orders) {
+        for (const order of orders) {
+          await supabase.schema('business').from('purchases').upsert({
+            user_id:             order.user_id,
+            course_id:           order.course_id,
+            razorpay_payment_id: payment_id,
+            razorpay_order_id:   order_id,
+            amount_paid:         order.amount,
+          }, { onConflict: 'user_id,course_id', ignoreDuplicates: true });
+        }
+        await supabase.schema('business').from('razorpay_orders')
+          .update({ status: 'paid' }).eq('razorpay_order_id', order_id);
+      }
+    }
+    return res.status(200).send('ok');
+  } catch (err) {
+    console.error('webhook error:', err.message);
+    return res.status(500).send('webhook error');
+  }
+};
+
+export default { createOrder, createCheckoutSession, verifyPayment, getOrder, webhook };
