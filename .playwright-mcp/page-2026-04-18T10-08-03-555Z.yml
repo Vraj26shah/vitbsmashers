@@ -1,0 +1,278 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e8]:
+    - generic [ref=e9]:
+      - link "Scholars Stack Logo Scholars Stack Premium Academic Resources" [ref=e10] [cursor=pointer]:
+        - /url: index.html
+        - img "Scholars Stack Logo" [ref=e11]
+        - generic [ref=e12]:
+          - heading "Scholars Stack" [level=1] [ref=e13]
+          - paragraph [ref=e14]: Premium Academic Resources
+      - text: 
+      - navigation [ref=e15]:
+        - list [ref=e16]:
+          - listitem [ref=e17]:
+            - link "Why Join?" [ref=e18] [cursor=pointer]:
+              - /url: "#why-join"
+          - listitem [ref=e19]:
+            - link "Testimonials" [ref=e20] [cursor=pointer]:
+              - /url: "#testimonials"
+          - listitem [ref=e21]:
+            - link "Resources" [ref=e22] [cursor=pointer]:
+              - /url: features/marketplace/market.html?sidebar=active
+          - listitem [ref=e23]:
+            - link " Get Started" [ref=e24] [cursor=pointer]:
+              - /url: features/marketplace/market.html?sidebar=active
+              - generic [ref=e25]: 
+              - text: Get Started
+  - generic [ref=e28]:
+    - generic [ref=e29]:
+      - heading "Transform Your Academic Performance at VIT Bhopal" [level=1] [ref=e30]
+      - paragraph [ref=e31]: Access premium study materials from 9-pointer students, curated resources, and powerful tools designed to maximize your GPA and minimize your effort.
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - generic [ref=e34]: "38"
+          - generic [ref=e35]: "% Success Rate"
+        - generic [ref=e36]:
+          - generic [ref=e37]: 3+
+          - generic [ref=e38]: Avg. GPA
+        - generic [ref=e39]:
+          - generic [ref=e40]: 200+
+          - generic [ref=e41]: Students
+      - generic [ref=e43]:
+        - button "Sign in with Google" [ref=e44] [cursor=pointer]:
+          - img [ref=e45]
+          - text: Sign in with Google
+        - generic [ref=e50]:
+          - generic [ref=e51]: 
+          - generic [ref=e52]:
+            - strong [ref=e53]: Exclusive for VIT Bhopal University students
+            - generic [ref=e54]:
+              - text: Please use your
+              - strong [ref=e55]: "@vitbhopal.ac.in"
+              - text: Google account to sign in
+    - generic [ref=e57]:
+      - generic [ref=e58]:
+        - heading "Features" [level=2] [ref=e59]
+        - paragraph [ref=e60]: Premium academic resources curated by top-performing students
+      - generic [ref=e61]:
+        - link "Upcoming  Map Map of Vit-bhopal with its looks Access Now " [ref=e62] [cursor=pointer]:
+          - /url: features/maps/maps.html?sidebar=active
+          - generic: Upcoming
+          - generic [ref=e64]: 
+          - heading "Map" [level=3] [ref=e65]
+          - paragraph [ref=e66]: Map of Vit-bhopal with its looks
+          - generic [ref=e67]:
+            - generic [ref=e68]: Access Now
+            - generic [ref=e69]: 
+        - link " Timetable Maker Custom study schedules Access Now " [ref=e70] [cursor=pointer]:
+          - /url: features/ttmaker/ttmaker1.html?sidebar=active
+          - generic [ref=e72]: 
+          - heading "Timetable Maker" [level=3] [ref=e73]
+          - paragraph [ref=e74]: Custom study schedules
+          - generic [ref=e75]:
+            - generic [ref=e76]: Access Now
+            - generic [ref=e77]: 
+        - link " Attendance Calculator Track and predict your attendance for all classes Access Now " [ref=e78] [cursor=pointer]:
+          - /url: features/attendance/attendance.html?sidebar=active
+          - generic [ref=e80]: 
+          - heading "Attendance Calculator" [level=3] [ref=e81]
+          - paragraph [ref=e82]: Track and predict your attendance for all classes
+          - generic [ref=e83]:
+            - generic [ref=e84]: Access Now
+            - generic [ref=e85]: 
+        - link " Mess Menus Official menus of all messes and canteens Access Now " [ref=e86] [cursor=pointer]:
+          - /url: features/mess-menu/mess.html?sidebar=active
+          - generic [ref=e88]: 
+          - heading "Mess Menus" [level=3] [ref=e89]
+          - paragraph [ref=e90]: Official menus of all messes and canteens
+          - generic [ref=e91]:
+            - generic [ref=e92]: Access Now
+            - generic [ref=e93]: 
+        - link " CGPA Calculator Track and predict your GPA Access Now " [ref=e94] [cursor=pointer]:
+          - /url: features/gpa-calculator/cgpa.html?sidebar=active
+          - generic [ref=e96]: 
+          - heading "CGPA Calculator" [level=3] [ref=e97]
+          - paragraph [ref=e98]: Track and predict your GPA
+          - generic [ref=e99]:
+            - generic [ref=e100]: Access Now
+            - generic [ref=e101]: 
+        - link " Faculty Info All Faculty details of vit bhopal Access Now " [ref=e102] [cursor=pointer]:
+          - /url: features/faculty/faculty.html?sidebar=active
+          - generic [ref=e104]: 
+          - heading "Faculty Info" [level=3] [ref=e105]
+          - paragraph [ref=e106]: All Faculty details of vit bhopal
+          - generic [ref=e107]:
+            - generic [ref=e108]: Access Now
+            - generic [ref=e109]: 
+        - link " Events All the events status Access Now " [ref=e110] [cursor=pointer]:
+          - /url: features/event/event.html?sidebar=active
+          - generic [ref=e112]: 
+          - heading "Events" [level=3] [ref=e113]
+          - paragraph [ref=e114]: All the events status
+          - generic [ref=e115]:
+            - generic [ref=e116]: Access Now
+            - generic [ref=e117]: 
+        - link " Handwritten Notes Curated notes from top-performing students Access Now " [ref=e118] [cursor=pointer]:
+          - /url: features/marketplace/market.html?sidebar=active
+          - generic [ref=e120]: 
+          - heading "Handwritten Notes" [level=3] [ref=e121]
+          - paragraph [ref=e122]: Curated notes from top-performing students
+          - generic [ref=e123]:
+            - generic [ref=e124]: Access Now
+            - generic [ref=e125]: 
+  - generic [ref=e127]:
+    - generic [ref=e128]:
+      - heading "Why Join Scholars Stack?" [level=2] [ref=e129]
+      - paragraph [ref=e130]: Premium benefits for academic excellence at VIT Bhopal
+    - generic [ref=e131]:
+      - generic [ref=e132]:
+        - generic [ref=e133]:
+          - generic [ref=e135]: 
+          - heading "Elite Materials" [level=3] [ref=e136]
+          - paragraph [ref=e137]: Study resources from 9-pointer students
+        - generic [ref=e138]:
+          - generic [ref=e140]: 
+          - heading "Curated Resources" [level=3] [ref=e141]
+          - paragraph [ref=e142]: Perfectly organized for every course
+        - generic [ref=e143]:
+          - generic [ref=e145]: 
+          - heading "Smart Calculators" [level=3] [ref=e146]
+          - paragraph [ref=e147]: CGPA and attendance trackers
+      - generic [ref=e148]:
+        - generic [ref=e149]:
+          - generic [ref=e151]: 
+          - heading "Personalized Guidance" [level=3] [ref=e152]
+          - paragraph [ref=e153]: Study recommendations tailored for you
+        - generic [ref=e154]:
+          - generic [ref=e156]: 
+          - heading "Priority Support" [level=3] [ref=e157]
+          - paragraph [ref=e158]: Direct help from top students
+        - generic [ref=e159]:
+          - generic [ref=e161]: 
+          - heading "Exam Strategies" [level=3] [ref=e162]
+          - paragraph [ref=e163]: Proven techniques for better scores
+      - generic [ref=e164]:
+        - heading "Join hundreds of VITB students achieving academic excellence" [level=3] [ref=e165]
+        - paragraph [ref=e166]: "Average GPA increase: 1.2 points within first semester"
+        - link " Join Elite Students" [ref=e167] [cursor=pointer]:
+          - /url: https://chat.whatsapp.com/GBLnFekrdLGCfW2Vc4MnUc?mode=ac_c
+          - generic [ref=e168]: 
+          - text: Join Elite Students
+  - generic [ref=e170]:
+    - generic [ref=e171]:
+      - heading "Student Success Stories" [level=2] [ref=e172]
+      - paragraph [ref=e173]: Hear from VITB students who transformed their academic journey
+    - generic [ref=e174]:
+      - generic [ref=e175]:
+        - text: "\""
+        - paragraph [ref=e177]: Honestly, I was drowning in notes and random YouTube videos before this. Your curated stuff saved me SO much time – finally found explanations that actually made sense! The timetable feature? Lifesaver. Went from barely passing to an A- in organic chem. Can't believe I waited this long.
+        - generic [ref=e179]:
+          - heading "Parth Patel" [level=4] [ref=e180]
+          - paragraph [ref=e181]: "CSE 3rd Year | GPA: 9.16"
+      - generic [ref=e182]:
+        - text: "\""
+        - paragraph [ref=e184]: I was skeptical about 'bought notes' but wow. These aren't just summaries – they're structured like a tutor planned them. Paired with the timetable tool? Finally stopped cramming. Went from B's to straight A's this semester. Seriously, if you're struggling to organize, just try it.
+        - generic [ref=e186]:
+          - heading "Priyanshu Sharma" [level=4] [ref=e187]
+          - paragraph [ref=e188]: "AI 2nd Year | GPA: 8.89"
+      - generic [ref=e189]:
+        - text: "\""
+        - paragraph [ref=e191]: Dude, the fluid dynamics notes + linked videos? Spot on. Explained concepts my prof couldn't. But the attendance calculator was low-key genius – took so much stress off my shoulders. Actually had time to breathe between labs. 10/10 would recommend for any overloaded eng student.
+        - generic [ref=e193]:
+          - heading "Sonu Pastagia" [level=4] [ref=e194]
+          - paragraph [ref=e195]: "CSE 3th Year | GPA: 9.23"
+  - generic [ref=e198]:
+    - heading "Ready to Transform Your Academic Journey?" [level=2] [ref=e199]
+    - paragraph [ref=e200]: Join hundreds of VITB students who are using our premium resources to maximize their academic performance and achieve their GPA goals.
+    - link " Get Started Now" [ref=e201] [cursor=pointer]:
+      - /url: features/marketplace/market.html?sidebar=active
+      - generic [ref=e202]: 
+      - text: Get Started Now
+    - paragraph [ref=e203]: "Average GPA increase: 1.2 points within first semester"
+  - contentinfo [ref=e204]:
+    - generic [ref=e205]:
+      - generic [ref=e206]:
+        - generic [ref=e207]:
+          - heading "Scholars Stack" [level=3] [ref=e208]
+          - paragraph [ref=e209]: Providing premium academic resources curated by top-performing students to help you excel in your courses.
+          - generic [ref=e210]:
+            - link "" [ref=e211] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e212]: 
+            - link "" [ref=e213] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e214]: 
+            - link "" [ref=e215] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e216]: 
+        - generic [ref=e217]:
+          - heading "Quick Links" [level=3] [ref=e218]
+          - list [ref=e219]:
+            - listitem [ref=e220]:
+              - link " Home" [ref=e221] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e222]: 
+                - text: Home
+            - listitem [ref=e223]:
+              - link " Marketplace" [ref=e224] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e225]: 
+                - text: Marketplace
+            - listitem [ref=e226]:
+              - link " My Courses" [ref=e227] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e228]: 
+                - text: My Courses
+            - listitem [ref=e229]:
+              - link " CGPA Calculator" [ref=e230] [cursor=pointer]:
+                - /url: features/gpa-calculator/cgpa.html?sidebar=active
+                - generic [ref=e231]: 
+                - text: CGPA Calculator
+            - listitem [ref=e232]:
+              - link " Marketplace" [ref=e233] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - generic [ref=e234]: 
+                - text: Marketplace
+        - generic [ref=e235]:
+          - heading "Resources" [level=3] [ref=e236]
+          - list [ref=e237]:
+            - listitem [ref=e238]:
+              - link " Handwritten Notes" [ref=e239] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e240]: 
+                - text: Handwritten Notes
+            - listitem [ref=e241]:
+              - link " Teacher's Materials" [ref=e242] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e243]: 
+                - text: Teacher's Materials
+            - listitem [ref=e244]:
+              - link " Previous Year Papers" [ref=e245] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e246]: 
+                - text: Previous Year Papers
+            - listitem [ref=e247]:
+              - link " Video Resources" [ref=e248] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e249]: 
+                - text: Video Resources
+            - listitem [ref=e250]:
+              - link " Timetable Maker" [ref=e251] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e252]: 
+                - text: Timetable Maker
+        - generic [ref=e253]:
+          - heading "Contact" [level=3] [ref=e254]
+          - list [ref=e255]:
+            - listitem [ref=e256]:
+              - generic [ref=e257]: 
+              - text: vitbsmashers@gmail.com
+            - listitem [ref=e258]:
+              - generic [ref=e259]: 
+              - text: +91 7984182948
+            - listitem [ref=e260]:
+              - generic [ref=e261]: 
+              - text: VIT Bhopal Campus
+            - listitem [ref=e262]: Bhopal-Indore Highway
+            - listitem [ref=e263]: Madhya Pradesh
+      - paragraph [ref=e265]: © 2025 Scholars Stack. All Rights Reserved.

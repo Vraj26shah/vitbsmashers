@@ -1,0 +1,5 @@
+[     644ms] [LOG] 🌐 Frontend Config: Detected localhost environment, using localhost API @ http://localhost:4000/config.js:8
+[     880ms] [LOG] 🚀 DOM loaded, initializing Custom Google Sign-In... @ http://localhost:4000/:643
+[     880ms] [LOG] 🚀 Initializing Custom Google Sign-In... @ http://localhost:4000/:497
+[     883ms] [LOG] ✅ Custom Google Sign-In button initialized with forced account selection @ http://localhost:4000/:527
+[    1710ms] [ERROR] Failed to load resource: the server responded with a status of 404 (Not Found) @ http://localhost:4000/favicon.ico:0

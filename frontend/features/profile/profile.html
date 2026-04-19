@@ -1,0 +1,4003 @@
+<!DOCTYPE html>
+<html lang="en">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scholars Stack - Student Profile</title>
+<link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<!-- <script src="../../shared-admin-auth.js"></script>
+    <script src="../../admin-panel-manager.js"></script> -->
+<script src="../../config.js"></script>
+<script src="../../shared-auth.js"></script>
+<script src="../../shared-user-auth.js"></script>
+<script src="../../shared-logout.js"></script>
+<script>
+    // Initialize authentication check when DOM is loaded
+    document.addEventListener('DOMContentLoaded', async function () {
+        // Wait for authManager and its async init to fully complete
+        const waitForAuth = () => new Promise(resolve => {
+            const check = () => window.authManager ? resolve(window.authManager) : setTimeout(check, 50);
+            check();
+        });
+        const mgr = await waitForAuth();
+        await mgr.initPromise;
+        if (!mgr.isAuthenticated) {
+            mgr.showLoginRequired();
+        }
+    });
+</script>
+<style>
+    /* === GLOBAL STYLES === */
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@700&display=swap');
+
+    :root {
+        --primary-dark: #0f1a2a;
+        --primary-blue: #1e3a5f;
+        --accent-blue: #3498db;
+        --accent-teal: #2ecc71;
+        --light-color: #ecf0f1;
+        --light-color1: #d6d6d6;
+        --dark-color: #2c3e50;
+        --glass-bg: rgba(15, 26, 42, 0.7);
+        /* Increased transparency */
+        --success-color: #2ecc71;
+        --warning-color: #f39c12;
+        --danger-color: #e74c3c;
+        --premium-color: #9b59b6;
+        --sidebar-width: 280px;
+        --header-height: 90px;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: 'Poppins', sans-serif;
+    }
+
+    body {
+        background: linear-gradient(135deg, #0a1423 0%, var(--primary-dark) 100%);
+        color: var(--light-color);
+        min-height: 100vh;
+        overflow-x: hidden;
+        position: relative;
+        font-size: 16px;
+    }
+
+    /* Background particles */
+    .bg-particles {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: -1;
+        overflow: hidden;
+    }
+
+    .particle {
+        position: absolute;
+        border-radius: 50%;
+        background: rgba(52, 152, 219, 0.2);
+        animation: float 15s infinite linear;
+    }
+
+    @keyframes float {
+        0% {
+            transform: translateY(0) translateX(0) rotate(0deg);
+        }
+
+        25% {
+            transform: translateY(-20px) translateX(20px) rotate(90deg);
+        }
+
+        50% {
+            transform: translateY(0) translateX(40px) rotate(180deg);
+        }
+
+        75% {
+            transform: translateY(20px) translateX(20px) rotate(270deg);
+        }
+
+        100% {
+            transform: translateY(0) translateX(0) rotate(360deg);
+        }
+    }
+
+    /* Header styles */
+    .header {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: var(--header-height);
+        background: transparent;
+        backdrop-filter: blur(10px);
+        display: flex;
+        align-items: center;
+        padding: 0 25px;
+        z-index: 1000;
+        box-shadow: 5px 0 30px rgba(0, 0, 0, 0.4);
+        border-bottom: 2px solid var(--accent-blue);
+    }
+
+    .menu-toggle {
+        width: 48px;
+        height: 48px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        cursor: pointer;
+        margin-right: 20px;
+        transition: all 0.3s ease;
+    }
+
+    .menu-toggle span {
+        display: block;
+        width: 30px;
+        height: 4px;
+        background: var(--light-color);
+        margin: 3px 0;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+    }
+
+    .logo img {
+        height: 60px;
+        width: auto;
+        margin-right: 20px;
+    }
+
+    .logo-text {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .logo-text h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--light-color);
+    }
+
+    .logo-text span {
+        font-size: 16px;
+        color: var(--accent-teal);
+    }
+
+    .header-actions {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .user-profile {
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        padding: 6px 18px;
+        border-radius: 30px;
+        background: rgba(52, 152, 219, 0.2);
+        transition: all 0.3s ease;
+    }
+
+    .user-profile:hover {
+        background: var(--accent-blue);
+    }
+
+    .user-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: var(--accent-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 20px;
+        margin-right: 12px;
+        border: 2px solid var(--light-color);
+        overflow: hidden;
+    }
+
+    .user-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .user-name {
+        font-weight: 500;
+        font-size: 18px;
+    }
+
+    .map-access {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background-color: rgba(52, 152, 219, 0.2);
+        color: var(--light-color);
+        font-size: 24px;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        z-index: 1002;
+    }
+
+    .map-access:hover {
+        background: var(--accent-blue);
+    }
+
+    /* Sidebar styles */
+    .sidebar {
+        position: fixed;
+        top: var(--header-height);
+        left: calc(-1 * var(--sidebar-width));
+        width: var(--sidebar-width);
+        height: calc(100vh - var(--header-height));
+        background: transparent;
+        backdrop-filter: blur(10px);
+        z-index: 900;
+        transition: all 0.3s ease;
+        border-right: 2px solid var(--accent-blue);
+        box-shadow: 5px 0 30px rgba(0, 0, 0, 0.4);
+        overflow-y: auto;
+        padding: 20px 0;
+    }
+
+    .sidebar.active {
+        left: 0;
+    }
+
+    .sidebar-title {
+        padding: 18px 20px 8px;
+        font-size: 15px;
+        color: var(--accent-blue);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .sidebar-menu {
+        list-style: none;
+    }
+
+    .sidebar-menu li {
+        margin-bottom: 5px;
+    }
+
+    .sidebar-menu a {
+        display: flex;
+        align-items: center;
+        padding: 14px 20px;
+        color: var(--light-color);
+        text-decoration: none;
+        font-size: 15px;
+        transition: all 0.3s ease;
+        border-left: 3px solid transparent;
+    }
+
+    .sidebar-menu a:hover,
+    .sidebar-menu a.active {
+        background: rgba(52, 152, 219, 0.2);
+        border-left: 3px solid var(--accent-blue);
+    }
+
+    .sidebar-menu i {
+        font-size: 20px;
+        margin-right: 12px;
+        width: 22px;
+        text-align: center;
+        color: var(--accent-blue);
+    }
+
+    /* Main content */
+    .main-content {
+        flex: 1;
+        padding: calc(var(--header-height) + 30px) 40px 40px;
+        transition: margin-left 0.3s ease;
+        margin: 0 auto;
+        max-width: 1500px;
+    }
+
+    .sidebar.active+.main-content {
+        margin-left: var(--sidebar-width);
+    }
+
+    .page-title {
+        font-size: 40px;
+        margin-bottom: 25px;
+        color: var(--light-color);
+        position: relative;
+        padding-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .page-title i {
+        color: var(--accent-teal);
+        font-size: 1.2em;
+    }
+
+    .page-title::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100px;
+        height: 5px;
+        background: var(--accent-blue);
+        border-radius: 3px;
+    }
+
+    /* Mobile overlay */
+    .mobile-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 800;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+    }
+
+    .mobile-overlay.active {
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Profile specific styles */
+    .profile-section {
+        display: none;
+        opacity: 0;
+        transform: translateY(20px);
+        transition: all 0.5s ease;
+    }
+
+    .profile-section.active {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    .profile-card {
+        background: var(--glass-bg);
+        /* More transparent */
+        backdrop-filter: blur(10px);
+        border-radius: 14px;
+        padding: 25px;
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+        border: 2px solid var(--accent-blue);
+        transition: all 0.4s ease;
+        margin-bottom: 30px;
+    }
+
+    .profile-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .profile-avatar {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        background: var(--accent-blue);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 40px;
+        margin-bottom: 20px;
+        border: 4px solid var(--light-color);
+        overflow: hidden;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .profile-avatar img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .avatar-edit {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: rgba(0, 0, 0, 0.7);
+        text-align: center;
+        padding: 8px;
+        font-size: 12px;
+        opacity: 0;
+        transition: all 0.3s ease;
+    }
+
+    .profile-avatar:hover .avatar-edit {
+        opacity: 1;
+    }
+
+    .profile-info h2 {
+        font-size: 28px;
+        margin-bottom: 8px;
+        color: var(--light-color);
+    }
+
+    .profile-info p {
+        font-size: 16px;
+        color: var(--accent-teal);
+        margin-bottom: 15px;
+    }
+
+    .profile-stats {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 15px;
+        margin-top: 15px;
+        width: 100%;
+    }
+
+    .stat-item {
+        text-align: center;
+        background: rgba(52, 152, 219, 0.2);
+        padding: 12px 15px;
+        border-radius: 12px;
+        min-width: 110px;
+        flex: 1;
+        max-width: 140px;
+        transition: all 0.3s ease;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: var(--accent-teal);
+    }
+
+    .stat-label {
+        font-size: 14px;
+        color: var(--light-color);
+    }
+
+    .profile-details {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .detail-card {
+        background: rgba(44, 62, 80, 0.5);
+        /* More transparent */
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid var(--accent-blue);
+        transition: all 0.4s ease;
+    }
+
+    .detail-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    .detail-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        border-bottom: 1px solid rgba(236, 240, 241, 0.2);
+        padding-bottom: 12px;
+    }
+
+    .detail-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--accent-teal);
+    }
+
+    .edit-btn {
+        background: rgba(52, 152, 219, 0.2);
+        border: none;
+        color: var(--accent-blue);
+        width: 34px;
+        height: 34px;
+        border-radius: 50%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .edit-btn:hover {
+        background: var(--accent-blue);
+        color: white;
+        transform: rotate(15deg);
+    }
+
+    .detail-content {
+        line-height: 1.6;
+    }
+
+    .detail-item {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+        border-bottom: 1px dashed rgba(236, 240, 241, 0.1);
+    }
+
+    .detail-label {
+        font-weight: 500;
+        color: var(--light-color);
+        font-size: 14px;
+        margin-bottom: 4px;
+    }
+
+    .detail-value {
+        color: #ddd;
+        font-size: 14px;
+    }
+
+    .fixed-field {
+        color: var(--accent-teal);
+        font-weight: 600;
+        font-size: 14px;
+        position: relative;
+    }
+
+    .fixed-field::after {
+        content: '🔒';
+        font-size: 10px;
+        margin-left: 5px;
+        opacity: 0.7;
+    }
+
+    .edit-form {
+        display: none;
+        margin-top: 15px;
+        padding-top: 15px;
+        border-top: 1px dashed rgba(236, 240, 241, 0.2);
+    }
+
+    .time-schedule {
+        margin-top: 20px;
+        padding-top: 20px;
+        border-top: 1px dashed rgba(236, 240, 241, 0.2);
+    }
+
+    .schedule-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+        margin-top: 15px;
+    }
+
+    .schedule-item {
+        background: rgba(44, 62, 80, 0.6);
+        border-radius: 8px;
+        padding: 15px;
+        border: 1px solid rgba(52, 152, 219, 0.3);
+        position: relative;
+        transition: all 0.3s ease;
+    }
+
+    .schedule-item:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .schedule-item .delete-btn {
+        position: absolute;
+        top: 5px;
+        right: 5px;
+        background: rgba(231, 76, 60, 0.3);
+        color: white;
+        border: none;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+
+    .schedule-item .delete-btn:hover {
+        background: var(--danger-color);
+    }
+
+    .schedule-time {
+        font-weight: 600;
+        color: var(--accent-blue);
+        margin-bottom: 8px;
+        font-size: 16px;
+    }
+
+    .schedule-subject {
+        font-size: 16px;
+        color: var(--light-color);
+    }
+
+    .purchased-courses-section {
+        margin-top: 30px;
+    }
+
+    .purchased-courses-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+    }
+
+    .refresh-btn {
+        background: rgba(52, 152, 219, 0.2);
+        color: var(--accent-blue);
+        border: none;
+        padding: 8px 12px;
+        border-radius: 30px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 14px;
+    }
+
+    .refresh-btn:hover {
+        background: var(--accent-blue);
+        color: white;
+    }
+
+    .purchased-courses-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .purchased-course-card {
+        background: rgba(44, 62, 80, 0.7);
+        border-radius: 12px;
+        padding: 20px;
+        border: 1px solid rgba(52, 152, 219, 0.3);
+        transition: all 0.4s ease;
+    }
+
+    .purchased-course-card:hover {
+        transform: translateY(-8px);
+        border-color: var(--accent-blue);
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.25);
+    }
+
+    .purchased-course-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        cursor: pointer;
+    }
+
+    .purchased-course-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--accent-blue);
+        margin-bottom: 10px;
+    }
+
+    .expand-btn {
+        display: flex;
+        align-items: center;
+        background: transparent;
+        border: none;
+        color: var(--accent-blue);
+        font-size: 24px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+    }
+
+    .expand-btn:hover {
+        transform: scale(1.1);
+    }
+
+    .expand-btn.expanded {
+        transform: rotate(180deg);
+    }
+
+    .purchased-course-info {
+        font-size: 14px;
+        color: #ddd;
+        margin-bottom: 15px;
+    }
+
+    .course-subjects {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease;
+    }
+
+    .course-subjects.expanded {
+        max-height: 400px;
+    }
+
+    .subject-item {
+        padding: 10px 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        display: flex;
+        align-items: center;
+        font-size: 14px;
+    }
+
+    .subject-item:last-child {
+        border-bottom: none;
+    }
+
+    .subject-item i {
+        color: var(--accent-blue);
+        margin-right: 8px;
+        font-size: 16px;
+    }
+
+    .subject-name {
+        flex: 1;
+    }
+
+    .access-btn {
+        background: var(--accent-blue);
+        color: white;
+        border: none;
+        padding: 6px 12px;
+        border-radius: 6px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 12px;
+    }
+
+    .access-btn:hover {
+        background: var(--primary-blue);
+        transform: translateY(-2px);
+    }
+
+    .purchased-course-link {
+        display: inline-block;
+        padding: 10px 20px;
+        background: rgba(52, 152, 219, 0.2);
+        color: var(--accent-blue);
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        width: 100%;
+        text-align: center;
+        margin-top: 12px;
+        font-size: 14px;
+    }
+
+    .purchased-course-link:hover {
+        background: var(--accent-blue);
+        color: white;
+        transform: translateY(-3px);
+    }
+
+    .setup-form {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border-radius: 14px;
+        padding: 25px;
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+        border: 2px solid var(--warning-color);
+        margin-bottom: 30px;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .form-title {
+        font-size: 22px;
+        color: var(--warning-color);
+        margin-bottom: 15px;
+        text-align: center;
+    }
+
+    .form-subtitle {
+        color: #ddd;
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 16px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--light-color);
+        font-size: 14px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 14px 15px;
+        background: rgba(44, 62, 80, 0.8);
+        border: 1px solid rgba(52, 152, 219, 0.3);
+        border-radius: 10px;
+        color: var(--light-color);
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: var(--accent-teal);
+        box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.3);
+    }
+
+    /* Email field with lock icon styling */
+    .form-control[readonly] {
+        position: relative;
+        padding-right: 40px;
+        /* Make room for lock icon */
+    }
+
+    .email-lock-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #2ecc71;
+        font-size: 16px;
+        pointer-events: none;
+        z-index: 5;
+    }
+
+    .form-note {
+        color: var(--warning-color);
+        font-size: 12px;
+        margin-top: 6px;
+        font-style: italic;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 20px;
+    }
+
+    .btn {
+        padding: 16px 25px;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-align: center;
+        font-size: 16px;
+    }
+
+    .btn-primary {
+        background: var(--accent-blue);
+        color: white;
+    }
+
+    .btn-primary:hover {
+        background: #1e7ab3;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(52, 152, 219, 0.6);
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 2px solid var(--accent-blue);
+        color: var(--accent-blue);
+    }
+
+    .btn-outline:hover {
+        background: var(--accent-blue);
+        color: white;
+    }
+
+    .success-animation {
+        text-align: center;
+        padding: 30px;
+        display: none;
+    }
+
+    .success-animation i {
+        font-size: 60px;
+        color: var(--success-color);
+        margin-bottom: 15px;
+        animation: bounce 1s ease infinite;
+    }
+
+    @keyframes bounce {
+
+        0%,
+        20%,
+        50%,
+        80%,
+        100% {
+            transform: translateY(0);
+        }
+
+        40% {
+            transform: translateY(-20px);
+        }
+
+        60% {
+            transform: translateY(-10px);
+        }
+    }
+
+    .success-animation h2 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .query-section {
+        background: var(--glass-bg);
+        backdrop-filter: blur(10px);
+        border-radius: 14px;
+        padding: 25px;
+        box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+        border: 2px solid var(--accent-blue);
+        margin-top: 40px;
+    }
+
+    .query-form .form-group {
+        margin-bottom: 20px;
+    }
+
+    textarea.form-control {
+        min-height: 150px;
+        resize: vertical;
+    }
+
+    .success-message {
+        background: rgba(46, 204, 113, 0.2);
+        border: 2px solid var(--success-color);
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 20px;
+        text-align: center;
+        display: none;
+    }
+
+    .success-message i {
+        font-size: 42px;
+        color: var(--success-color);
+        margin-bottom: 15px;
+    }
+
+    .success-message h3 {
+        font-size: 20px;
+        color: var(--light-color);
+        margin-bottom: 10px;
+    }
+
+    .success-message p {
+        color: #ddd;
+        font-size: 14px;
+    }
+
+    .form-row {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+
+    .form-row .form-group {
+        flex: 1;
+        margin-bottom: 0;
+    }
+
+    /* Error message styles */
+    .field-error {
+        color: #e74c3c !important;
+        font-size: 12px !important;
+        margin-top: 5px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        font-weight: 500 !important;
+    }
+
+    .field-error i {
+        font-size: 14px !important;
+    }
+
+    .general-error {
+        background: rgba(231, 76, 60, 0.1) !important;
+        border: 1px solid #e74c3c !important;
+        border-radius: 8px !important;
+        padding: 12px !important;
+        margin-bottom: 20px !important;
+        color: #e74c3c !important;
+        font-weight: 500 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+    }
+
+    .general-error i {
+        font-size: 16px !important;
+    }
+
+    /* Profile completion indicator */
+    .profile-completed-indicator {
+        background: rgba(46, 204, 113, 0.1) !important;
+        border: 1px solid #2ecc71 !important;
+        border-radius: 20px !important;
+        padding: 4px 12px !important;
+        font-size: 12px !important;
+        color: #2ecc71 !important;
+        font-weight: 600 !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 5px !important;
+        margin-left: 10px !important;
+    }
+
+    .profile-completed-indicator i {
+        font-size: 14px !important;
+    }
+
+    /* Responsive Design */
+    @media (min-width: 576px) {
+        .profile-header {
+            flex-direction: row;
+            text-align: left;
+            align-items: flex-start;
+        }
+
+        .profile-avatar {
+            margin-right: 25px;
+            margin-bottom: 0;
+        }
+
+        .profile-stats {
+            justify-content: flex-start;
+        }
+
+        .detail-item {
+            flex-direction: row;
+        }
+
+        .detail-label {
+            min-width: 140px;
+            margin-bottom: 0;
+        }
+
+        .form-row {
+            flex-direction: row;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .profile-details {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .purchased-courses-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    @media (min-width: 992px) {
+        .profile-details {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .purchased-courses-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    /* Admin Panel Styles */
+    .admin-section {
+        margin-top: 30px;
+        padding: 20px;
+        background: var(--glass-bg);
+        border-radius: 15px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(52, 152, 219, 0.3);
+    }
+
+    .admin-panel {
+        background: rgba(15, 26, 42, 0.8);
+        border-radius: 10px;
+        padding: 25px;
+        border: 1px solid var(--accent-blue);
+    }
+
+    .admin-title {
+        color: var(--accent-blue);
+        font-size: 24px;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .admin-subtitle {
+        color: var(--light-color1);
+        margin-bottom: 20px;
+    }
+
+    .admin-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+
+    .admin-tab-btn {
+        background: rgba(52, 152, 219, 0.1);
+        border: 1px solid var(--accent-blue);
+        color: var(--accent-blue);
+        padding: 10px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .admin-tab-btn:hover {
+        background: var(--accent-blue);
+        color: white;
+    }
+
+    .admin-tab-btn.active {
+        background: var(--accent-blue);
+        color: white;
+    }
+
+    .admin-content {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 8px;
+        padding: 20px;
+        min-height: 200px;
+    }
+
+    .admin-tab-content h3 {
+        color: var(--accent-blue);
+        margin-bottom: 10px;
+    }
+
+    .admin-tab-content p {
+        color: var(--light-color1);
+        margin-bottom: 15px;
+    }
+
+    .access-denied-message {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+    .status-card {
+        background: var(--glass-bg);
+        border-radius: 15px;
+        padding: 30px;
+        backdrop-filter: blur(10px);
+        border: 1px solid var(--danger-color);
+    }
+
+    @media (max-width: 1200px) {
+        .main-content {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+    }
+
+    @media (max-width: 992px) {
+        .sidebar {
+            width: 240px;
+            left: -240px;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .logo img {
+            height: 70px;
+        }
+    }
+
+    @media (max-width: 768px) {
+        :root {
+            --header-height: 60px;
+            --sidebar-width: 100%;
+        }
+
+        .header {
+            padding: 0 12px;
+        }
+
+        .menu-toggle {
+            width: 34px;
+            height: 34px;
+            margin-right: 10px;
+        }
+
+        .menu-toggle span {
+            width: 22px;
+            height: 2.5px;
+            margin: 2px 0;
+        }
+
+        .logo img {
+            height: 40px;
+            margin-right: 10px;
+        }
+
+        .logo-text h1 {
+            font-size: 18px;
+        }
+
+        .logo-text span {
+            font-size: 12px;
+        }
+
+        .user-name {
+            display: none;
+        }
+
+        .user-profile {
+            padding: 4px;
+        }
+
+        .user-avatar {
+            width: 34px;
+            height: 34px;
+            font-size: 14px;
+            margin-right: 0;
+            border-width: 1px;
+        }
+
+        .map-access {
+            width: 34px;
+            height: 34px;
+            font-size: 16px;
+        }
+
+        .sidebar {
+            top: var(--header-height);
+            left: -100%;
+            width: var(--sidebar-width);
+            height: calc(100vh - var(--header-height));
+            transition: left 0.3s ease;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .main-content {
+            padding: calc(var(--header-height) + 15px) 15px 20px;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+
+        .sidebar.active+.main-content {
+            margin-left: 0;
+        }
+
+        .page-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .profile-card {
+            padding: 15px;
+        }
+
+        .detail-card {
+            padding: 15px;
+        }
+
+        .purchased-course-card {
+            padding: 15px;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            font-size: 30px;
+        }
+
+        .profile-info h2 {
+            font-size: 22px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+        }
+
+        .detail-title {
+            font-size: 16px;
+        }
+
+        .detail-label,
+        .detail-value {
+            font-size: 12px;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            font-size: 12px;
+        }
+
+        .setup-form {
+            padding: 15px;
+        }
+
+        .form-title {
+            font-size: 18px;
+        }
+
+        .form-subtitle {
+            font-size: 14px;
+        }
+
+        input,
+        select,
+        .form-control {
+            padding: 10px;
+            font-size: 14px;
+        }
+
+        .purchased-courses-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    @media (max-width: 576px) {
+        :root {
+            --header-height: 65px;
+        }
+
+        .header {
+            padding: 0 15px;
+        }
+
+        .menu-toggle {
+            width: 36px;
+            height: 36px;
+            margin-right: 12px;
+        }
+
+        .menu-toggle span {
+            width: 24px;
+            height: 3px;
+        }
+
+        .logo img {
+            height: 42px;
+            margin-right: 12px;
+        }
+
+        .logo-text h1 {
+            font-size: 18px;
+        }
+
+        .logo-text span {
+            font-size: 12px;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            font-size: 15px;
+        }
+
+        .map-access {
+            width: 36px;
+            height: 36px;
+            font-size: 18px;
+        }
+
+        .main-content {
+            padding: calc(var(--header-height) + 12px) 12px 15px;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+
+        .page-title {
+            font-size: 22px;
+            padding-bottom: 10px;
+        }
+
+        .btn {
+            padding: 12px 20px;
+            font-size: 14px;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .page-title {
+            font-size: 18px;
+        }
+
+        .detail-title {
+            font-size: 16px;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            font-size: 24px;
+        }
+
+        .profile-info h2 {
+            font-size: 18px;
+        }
+
+        .stat-item {
+            min-width: 80px;
+            padding: 8px 10px;
+        }
+
+        .stat-value {
+            font-size: 16px;
+        }
+
+        .stat-label {
+            font-size: 10px;
+        }
+
+        .detail-item {
+            flex-direction: column;
+        }
+
+        .detail-label {
+            min-width: auto;
+            margin-bottom: 4px;
+        }
+
+        .form-row {
+            flex-direction: column;
+        }
+
+        .btn {
+            padding: 8px 15px;
+            font-size: 12px;
+        }
+    }
+
+    @media (max-width: 400px) {
+        .logo-text h1 {
+            font-size: 14px;
+        }
+
+        .logo-text span {
+            font-size: 10px;
+        }
+
+        .page-title {
+            font-size: 20px;
+        }
+
+        .map-access {
+            width: 30px;
+            height: 30px;
+            font-size: 14px;
+        }
+    }
+
+    @media (min-width: 769px) {
+        :root {
+            --header-height: 90px;
+            --sidebar-width: 280px;
+        }
+
+        .sidebar {
+            left: calc(-1 * var(--sidebar-width));
+            width: var(--sidebar-width);
+            transition: all 0.3s ease;
+        }
+
+        .sidebar.active {
+            left: 0;
+        }
+
+        .main-content {
+            margin: 0 auto;
+            max-width: 1500px;
+        }
+
+        .logo img {
+            height: 60px;
+        }
+
+        .logo-text h1 {
+            font-size: 28px;
+        }
+
+        .logo-text span {
+            font-size: 16px;
+        }
+
+        .user-name {
+            display: block;
+        }
+
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            font-size: 20px;
+            margin-right: 12px;
+            border-width: 2px;
+        }
+
+        .map-access {
+            width: 48px;
+            height: 48px;
+            font-size: 24px;
+        }
+
+        .menu-toggle {
+            display: flex;
+        }
+    }
+
+    @media (min-width: 992px) {
+        .header {
+            padding: 0 30px;
+        }
+
+        .logo img {
+            height: 70px;
+        }
+
+        .logo-text h1 {
+            font-size: 28px;
+        }
+
+        .logo-text span {
+            font-size: 16px;
+        }
+
+        .user-name {
+            font-size: 18px;
+        }
+    }
+
+    @media (min-width: 1200px) {
+        .main-content {
+            padding: calc(var(--header-height) + 40px) 40px 40px;
+            margin: 0 auto;
+            max-width: 1500px;
+        }
+    }
+</style>
+</head>
+
+<body>
+    <!-- Background Particles -->
+    <div class="bg-particles" id="bgParticles"></div>
+
+    <!-- Header with Menu Toggle -->
+    <header class="header">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+
+        <div class="logo">
+            <a href="../../index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="../images/logo1.png" alt="Scholars Stack Logo">
+                <div class="logo-text">
+                    <h1>Scholars Stack</h1>
+                    <span>Student Profile</span>
+                </div>
+            </a>
+        </div>
+
+        <div class="header-actions">
+            <div class="user-profile">
+                <div class="user-avatar">
+                    <span>S</span>
+                </div>
+                <div class="user-name">Student</div>
+            </div>
+            <a href="#" class="map-access" title="Campus Map" aria-label="View Campus Map">
+                <i class='bx bxs-map'></i>
+            </a>
+        </div>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Main Navigation</div>
+        <ul class="sidebar-menu">
+            <!-- <li><a href="#"><i class='bx bxs-dashboard'></i> Dashboard</a></li> -->
+            <li><a href="../profile/profile.html" class="active"><i class='bx bxs-user'></i> Profile</a></li>
+            <li><a href="../attendance/attendance.html"><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+            <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+            <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+        </ul>
+
+        <div class="sidebar-title">Resources</div>
+        <ul class="sidebar-menu">
+            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+            <li><a href="#"><i class='bx bxs-group'></i> Club Info</a></li>
+            <li><a href="../faculty/faculty.html"><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+        </ul>
+
+        <div class="sidebar-title">Quick Links</div>
+        <ul class="sidebar-menu">
+            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
+            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+        </ul>
+
+        <div class="sidebar-title">Account</div>
+        <ul class="sidebar-menu">
+            <!-- <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li> -->
+            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+        </ul>
+    </nav>
+    <!-- Main Content Area -->
+    <main class="main-content" id="mainContent">
+        <div class="setup-form" id="setupForm">
+            <div id="googleWelcomeBanner"
+                style="display: none; background: linear-gradient(135deg, #4285F4 0%, #34A853 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
+                <i class='bx bxs-check-circle' style="font-size: 48px; margin-bottom: 15px; color: white;"></i>
+                <h3 style="margin: 0 0 10px 0; font-size: 24px;">Welcome to Scholars Stack!</h3>
+                <p style="margin: 0; font-size: 16px; opacity: 0.9;">You've successfully signed in with Google. Complete
+                    your profile to unlock all features.</p>
+            </div>
+            <h2 class="form-title">Complete Your Profile Setup</h2>
+            <p class="form-subtitle">Please fill in these mandatory fields to access your Scholars Stack profile</p>
+
+            <div class="form-group">
+                <label
+                    style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--light-color);">
+                    <i class='bx bx-envelope' style="color: var(--accent-blue);"></i>
+                    Your VIT Email ID
+                </label>
+                <div style="position: relative; margin-top: 8px;">
+                    <input type="email" class="form-control" id="vitEmail" value="" placeholder="Loading your email..."
+                        readonly required style="
+                        background-color: #fff3cd !important;
+                        cursor: not-allowed !important;
+                        border: 2px solid #f39c12 !important;
+                        color: #856404 !important;
+                        font-weight: 600 !important;
+                        font-size: 16px !important;
+                        padding-right: 50px !important;
+                        text-align: center !important;
+                        letter-spacing: 0.5px !important;
+                    ">
+                    <i class='bx bx-loader-alt bx-spin' style="
+                        position: absolute;
+                        right: 15px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        color: #f39c12;
+                        font-size: 18px;
+                        pointer-events: none;
+                        z-index: 5;
+                    " id="emailLoadingIcon"></i>
+                    <div id="emailLoadingIndicator" style="
+                        position: absolute;
+                        left: 15px;
+                        top: 50%;
+                        transform: translateY(-50%);
+                        color: #3498db;
+                        font-size: 14px;
+                        display: none;
+                    ">
+                        <i class='bx bx-loader-alt bx-spin'></i> Loading...
+                    </div>
+                </div>
+                <div
+                    style="background: rgba(46, 204, 113, 0.1); border: 1px solid #2ecc71; border-radius: 8px; padding: 12px; margin-top: 10px;">
+                    <div id="googleEmailIndicator"
+                        style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 8px;">
+                        <i class='bx bxs-check-circle' style="color: #2ecc71; font-size: 18px;"></i>
+                        <strong style="color: #2ecc71; font-weight: 600;">Successfully logged in with Google</strong>
+                    </div>
+                    <div style="text-align: center;">
+                        <small style="color: #2ecc71; font-weight: 500; font-size: 13px;">
+                            🔒 This email is locked and cannot be changed - it matches your Google account
+                        </small>
+                        <br>
+                        <button id="refreshEmailBtn" onclick="forceEmailPopulation()" style="
+                            background: rgba(52, 152, 219, 0.2);
+                            border: 1px solid #3498db;
+                            color: #3498db;
+                            padding: 4px 8px;
+                            border-radius: 4px;
+                            cursor: pointer;
+                            font-size: 11px;
+                            margin-top: 5px;
+                            display: none;
+                        ">
+                            <i class='bx bx-refresh'></i> Refresh Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number</label>
+                <input type="tel" class="form-control" id="phoneNumber" placeholder="e.g. 9876543210" required>
+                <p class="form-note">This can only be set once and cannot be changed later</p>
+            </div>
+
+            <div class="form-group">
+                <label>Program</label>
+                <select class="form-control" id="programSelect" required>
+                    <option value="">Select your program</option>
+                    <option>B.Tech Computer Science</option>
+                    <option>B.Tech Electronics</option>
+                    <option>B.Tech Mechanical</option>
+                    <option>B.Tech Civil</option>
+                    <option>B.Arch</option>
+                    <option>BBA</option>
+                    <option>B.Com</option>
+                    <option>M.Tech</option>
+                    <option>MBA</option>
+                </select>
+                <p class="form-note">This can only be set once and cannot be changed later</p>
+            </div>
+
+            <div class="form-group">
+                <label>Registration Number</label>
+                <input type="text" class="form-control" id="regNumber" placeholder="e.g. 23BCE0001" required>
+                <p class="form-note">This can only be set once and cannot be changed later</p>
+            </div>
+
+            <div class="form-actions">
+                <button class="btn btn-primary" id="saveSetup">Complete Profile</button>
+            </div>
+        </div>
+
+        <div class="success-animation" id="successAnimation">
+            <i class='bx bxs-check-circle'></i>
+            <h2>Profile Setup Complete!</h2>
+            <p>Redirecting to your profile...</p>
+        </div>
+
+        <div class="profile-section" id="profileSection">
+            <h1 class="page-title">
+                <i class='bx bxs-user'></i> Student Profile
+            </h1>
+
+            <div class="profile-card">
+                <div class="profile-header">
+                    <div class="profile-avatar" id="profileAvatar">
+                        <img src="" alt="Profile" id="avatarImage">
+                        <div class="avatar-edit">Change Photo</div>
+                    </div>
+
+                    <div class="profile-info">
+                        <h2 id="userFullName">Student</h2>
+                        <p id="userProgram">Program not specified</p>
+                        <p id="userReg">Registration: Not specified</p>
+
+                        <div class="profile-stats">
+                            <div class="stat-item">
+                                <div class="stat-value" id="headerCGPA">0.00</div>
+                                <div class="stat-label">CGPA</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-value" id="headerSemester">1</div>
+                                <div class="stat-label">Semester</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="profile-details">
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <h3 class="detail-title">Personal Information</h3>
+                            <button class="edit-btn" data-target="personalForm">
+                                <i class='bx bxs-edit'></i>
+                            </button>
+                        </div>
+
+                        <div class="detail-content">
+                            <div class="detail-item">
+                                <div class="detail-label">Full Name:</div>
+                                <div class="detail-value" id="editableName">Not specified</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Email:</div>
+                                <div class="detail-value fixed-field" id="userEmail">Not specified</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Phone:</div>
+                                <div class="detail-value fixed-field" id="userPhone">Not specified</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Date of Birth:</div>
+                                <div class="detail-value" id="userDOB">Not specified</div>
+                            </div>
+                        </div>
+
+                        <div class="edit-form" id="personalForm">
+                            <div class="form-group">
+                                <label>Full Name</label>
+                                <input type="text" class="form-control" id="nameInput"
+                                    placeholder="Enter your full name">
+                            </div>
+                            <div class="form-group">
+                                <label>Date of Birth</label>
+                                <input type="date" class="form-control" id="dobInput">
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="savePersonal">Save</button>
+                                <button class="btn btn-outline" id="cancelPersonal">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <h3 class="detail-title">Academic Information</h3>
+                            <button class="edit-btn" data-target="academicForm">
+                                <i class='bx bxs-edit'></i>
+                            </button>
+                        </div>
+
+                        <div class="detail-content">
+                            <div class="detail-item">
+                                <div class="detail-label">Program:</div>
+                                <div class="detail-value fixed-field" id="userProgramText">Not specified</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Registration ID:</div>
+                                <div class="detail-value fixed-field" id="userRegText">Not specified</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">Current Semester:</div>
+                                <div class="detail-value" id="userSemester">Not specified</div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">CGPA:</div>
+                                <div class="detail-value" id="userCGPA">Not specified</div>
+                            </div>
+                        </div>
+
+                        <div class="edit-form" id="academicForm">
+                            <div class="form-group">
+                                <label>Current Semester</label>
+                                <select class="form-control" id="semesterInput">
+                                    <option value="">Select semester</option>
+                                    <option>1st Semester</option>
+                                    <option>2nd Semester</option>
+                                    <option>3rd Semester</option>
+                                    <option>4th Semester</option>
+                                    <option>5th Semester</option>
+                                    <option>6th Semester</option>
+                                    <option>7th Semester</option>
+                                    <option>8th Semester</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>CGPA</label>
+                                <input type="number" step="0.01" min="0" max="10" class="form-control" id="cgpaInput"
+                                    placeholder="Enter your CGPA">
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="saveAcademic">Save</button>
+                                <button class="btn btn-outline" id="cancelAcademic">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="detail-card">
+                        <div class="detail-header">
+                            <h3 class="detail-title">Time Schedule</h3>
+                            <button class="edit-btn" data-target="scheduleForm">
+                                <i class='bx bxs-edit'></i>
+                            </button>
+                        </div>
+
+                        <div class="detail-content">
+                            <div class="time-schedule">
+                                <h4>Weekly Study Plan</h4>
+                                <div class="schedule-grid" id="scheduleContainer">
+                                    <!-- Schedule items will be added here dynamically -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="edit-form" id="scheduleForm">
+                            <div class="form-group">
+                                <label>Day of Week</label>
+                                <select class="form-control" id="scheduleDay">
+                                    <option value="">Select day</option>
+                                    <option>Monday</option>
+                                    <option>Tuesday</option>
+                                    <option>Wednesday</option>
+                                    <option>Thursday</option>
+                                    <option>Friday</option>
+                                    <option>Saturday</option>
+                                    <option>Sunday</option>
+                                </select>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label>Start Time</label>
+                                    <input type="time" class="form-control" id="scheduleStart">
+                                </div>
+                                <div class="form-group">
+                                    <label>End Time</label>
+                                    <input type="time" class="form-control" id="scheduleEnd">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Subject</label>
+                                <input type="text" class="form-control" id="scheduleSubject"
+                                    placeholder="Enter subject name">
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="addSchedule">Add to Schedule</button>
+                                <button class="btn btn-outline" id="cancelSchedule">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="purchased-courses-section" id="purchased-courses">
+                <div class="purchased-courses-header">
+                    <h3 class="detail-title">My Purchased Courses</h3>
+                    <button class="refresh-btn" id="refreshCourses">
+                        <i class='bx bx-refresh'></i> Refresh
+                    </button>
+                </div>
+
+                <div class="purchased-courses-grid" id="coursesContainer">
+                    <!-- Courses will be added here dynamically -->
+                </div>
+            </div>
+        </div>
+
+        <div class="query-section">
+            <h2 class="section-title">Submit a Query</h2>
+            <p style="margin-bottom: 25px; color: #ddd;">Have questions or need assistance? Submit your query below and
+                our team will get back to you.</p>
+
+            <form class="query-form" id="queryForm">
+                <div class="form-group">
+                    <label>Subject</label>
+                    <input type="text" class="form-control" placeholder="Enter query subject" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Category</label>
+                    <select class="form-control" required>
+                        <option value="">Select category</option>
+                        <option>Academic</option>
+                        <option>Administrative</option>
+                        <option>Technical Support</option>
+                        <option>Payment</option>
+                        <option>Other</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Your Message</label>
+                    <textarea class="form-control" placeholder="Describe your query in detail" required
+                        minlength="20"></textarea>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Submit Query</button>
+                    <button type="reset" class="btn btn-outline">Clear Form</button>
+                </div>
+            </form>
+
+            <div class="success-message" id="successMessage">
+                <i class='bx bxs-check-circle'></i>
+                <h3>Query Submitted Successfully!</h3>
+                <p>Our support team will review your query and get back to you within 24 hours.</p>
+            </div>
+        </div>
+
+        <!-- Admin Panel Section (Only visible to admins) -->
+        <div class="admin-section" data-admin-only style="display: none;">
+            <div class="admin-panel">
+                <h2 class="admin-title">
+                    <i class='bx bxs-shield'></i> Admin Control Panel
+                </h2>
+                <p class="admin-subtitle">Manage system settings and user data</p>
+
+                <div class="admin-tabs">
+                    <button class="admin-tab-btn active" onclick="showAdminTab('users')">
+                        <i class='bx bxs-user'></i> User Management
+                    </button>
+                    <button class="admin-tab-btn" onclick="showAdminTab('content')">
+                        <i class='bx bxs-file'></i> Content Management
+                    </button>
+                    <button class="admin-tab-btn" onclick="showAdminTab('settings')">
+                        <i class='bx bxs-cog'></i> System Settings
+                    </button>
+                    <button class="admin-tab-btn" onclick="showAdminTab('analytics')">
+                        <i class='bx bxs-bar-chart'></i> Analytics
+                    </button>
+                </div>
+
+                <div class="admin-content" id="adminContent">
+                    <div class="admin-tab-content" id="usersTab">
+                        <h3>User Management</h3>
+                        <p>Manage user accounts and permissions</p>
+                        <button class="btn btn-primary" onclick="loadUsers()">Load Users</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Access Denied Message (Only visible to non-admins) -->
+        <div class="access-denied-message" data-admin-access-denied style="display: none;">
+            <div class="status-card">
+                <h3 style="color: var(--danger-color); margin-bottom: 15px;">
+                    <i class='bx bxs-shield-x'></i> Admin Access Required
+                </h3>
+                <p>This section is only accessible to authorized administrators.</p>
+                <p>Contact system administrator for access.</p>
+            </div>
+        </div>
+    </main>
+
+    <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
+
+    <script>
+        // Check authentication on page load (removed duplicate function)
+
+        // Emergency check: If profile is completed or user is Google authenticated, ensure setup form is never shown
+        function emergencyProfileCheck() {
+            try {
+                const profileData = localStorage.getItem('profileData');
+                if (profileData) {
+                    const parsed = JSON.parse(profileData);
+                    if (parsed.profileCompleted === true || parsed.googleId) {
+                        console.log('🚨 EMERGENCY: Profile completed or Google user detected, forcing profile view');
+                        // Show profile view immediately with cached data
+                        showProfileFromCache(parsed);
+                        if (parsed.googleId && !parsed.profileCompleted) {
+                            showProfileCompletionBanner();
+                        }
+                        return true;
+                    }
+                }
+                console.log('🚨 EMERGENCY: Profile not completed and not Google user - setup form should be visible');
+            } catch (error) {
+                console.warn('⚠️ Error in emergency profile check:', error);
+            }
+            return false;
+        }
+
+
+        // Create background particles (optimized)
+        function createParticles() {
+            const particlesContainer = document.getElementById('bgParticles');
+            if (!particlesContainer) return;
+
+            // Reduce particle count for better performance
+            const particleCount = 12;
+
+            // Use document fragment for better performance
+            const fragment = document.createDocumentFragment();
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+
+                // Random size (smaller for performance)
+                const size = Math.random() * 40 + 15;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+
+                // Random position
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.left = `${Math.random() * 100}%`;
+
+                // Random animation delay
+                particle.style.animationDelay = `${Math.random() * 8}s`;
+
+                // Random opacity
+                particle.style.opacity = Math.random() * 0.4 + 0.2;
+
+                fragment.appendChild(particle);
+            }
+
+            particlesContainer.appendChild(fragment);
+        }
+
+        // Setup menu toggle
+        const menuToggle = document.getElementById('menuToggle');
+        const sidebar = document.getElementById('sidebar');
+
+        menuToggle.addEventListener('click', () => {
+            sidebar.classList.toggle('active');
+        });
+
+        document.addEventListener('click', (e) => {
+            if (sidebar.classList.contains('active') &&
+                !sidebar.contains(e.target) &&
+                !menuToggle.contains(e.target)) {
+                sidebar.classList.remove('active');
+            }
+        });
+
+        // Load user profile from backend
+        async function loadUserProfile() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return null;
+
+                const response = await fetch('/api/v1/profile/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('🔍 Backend response received:', data);
+
+                    if (data.data && data.data.user) {
+                        // Add profile completion status to the user object
+                        const user = data.data.user;
+                        user.profileCompleted = data.data.profileComplete || false;
+                        console.log('✅ Profile loaded successfully:', {
+                            email: user.email,
+                            phone: user.phone,
+                            branch: user.branch,
+                            registrationNumber: user.registrationNumber,
+                            fullName: user.fullName,
+                            profileCompleted: user.profileCompleted,
+                            hasRequiredFields: !!(user.phone && user.registrationNumber && user.branch)
+                        });
+                        return user;
+                    } else {
+                        console.warn('⚠️ Backend response missing user data:', data);
+                    }
+                } else {
+                    console.warn('⚠️ Backend response not OK:', response.status, response.statusText);
+                }
+                return null;
+            } catch (error) {
+                console.error('Failed to load profile:', error);
+                return null;
+            }
+        }
+
+        // Get user data from backend (for email population)
+        async function getUserData() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.log('❌ No token available for user data fetch');
+                    return null;
+                }
+
+                console.log('🔄 Fetching user data from backend...');
+                const response = await fetch('/api/v1/profile/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('✅ User data received:', data);
+                    return data.data && data.data.user ? data.data.user : null;
+                } else {
+                    console.log('❌ Failed to fetch user data, status:', response.status);
+                    return null;
+                }
+            } catch (error) {
+                console.error('❌ Error fetching user data:', error);
+                return null;
+            }
+        }
+
+        // Function to ensure email is properly displayed
+        function displayUserEmail(email) {
+            const emailField = document.getElementById('vitEmail');
+            if (emailField && email) {
+                emailField.value = email;
+                emailField.placeholder = '';
+                console.log('📧 Email displayed to user:', email);
+
+                // Add success styling
+                emailField.style.boxShadow = '0 0 0 3px rgba(46, 204, 113, 0.3)';
+                setTimeout(() => {
+                    emailField.style.boxShadow = '';
+                }, 2000);
+
+                return true;
+            }
+            return false;
+        }
+
+        // Load purchased courses from backend
+        async function loadPurchasedCourses() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return;
+
+                // For now, we'll show a message that courses will be loaded from backend
+                const coursesContainer = document.getElementById('coursesContainer');
+                coursesContainer.innerHTML = `
+                    <div style="
+                        text-align: center;
+                        padding: 40px;
+                        color: #666;
+                        background: rgba(44, 62, 80, 0.5);
+                        border-radius: 12px;
+                        border: 1px solid rgba(52, 152, 219, 0.3);
+                    ">
+                        <i class='bx bx-book' style="font-size: 48px; color: #3498db; margin-bottom: 15px;"></i>
+                        <h3 style="color: #ecf0f1; margin-bottom: 10px;">Your Purchased Courses</h3>
+                        <p style="color: #ddd;">Courses will be loaded from your account data.</p>
+                        <p style="color: #aaa; font-size: 14px;">This feature will be fully implemented with backend integration.</p>
+                    </div>
+                `;
+            } catch (error) {
+                console.error('Failed to load courses:', error);
+            }
+        }
+
+
+        // ULTRA-SIMPLE INITIALIZATION: Show profile immediately
+        function initializeProfileInstantly() {
+            console.log('⚡ SIMPLE INIT: Starting profile...');
+
+            // STEP 1: Check localStorage FIRST (instant)
+            const cachedProfile = getCachedProfileData();
+            console.log('📦 Cached profile data:', cachedProfile);
+
+            if (cachedProfile && cachedProfile.profileCompleted) {
+                console.log('🚀 INSTANT: Showing cached profile data');
+                showProfileFromCache(cachedProfile);
+                // Start background sync with backend
+                syncWithBackendInBackground();
+                return;
+            }
+
+            console.log('📝 No valid cached data, proceeding with backend load');
+
+            // STEP 2: Show profile section immediately (no loading)
+            showProfileSection();
+
+            // STEP 3: Load from backend and update
+            loadProfileFromBackend();
+        }
+
+        // Show profile from cached data (instant)
+        function showProfileFromCache(cachedProfile) {
+            console.log('📱 Showing cached profile instantly');
+
+            // Hide setup form immediately
+            document.getElementById('setupForm').style.display = 'none';
+
+            // Show profile section
+            document.getElementById('profileSection').style.display = 'block';
+            document.getElementById('profileSection').classList.add('active');
+
+            // Populate with cached data instantly
+            populateCompleteProfile(cachedProfile);
+
+            // Load courses later (non-blocking)
+            setTimeout(() => loadPurchasedCourses(), 200);
+
+            // Ensure setup form stays hidden
+            ensureSetupFormHidden();
+
+            console.log('✅ Cached profile displayed instantly');
+        }
+
+        // Simple function to show profile section immediately
+        function showProfileSection() {
+            console.log('📱 Showing profile section immediately');
+
+            // Hide setup form
+            document.getElementById('setupForm').style.display = 'none';
+
+            // Show profile section
+            const profileSection = document.getElementById('profileSection');
+            profileSection.style.display = 'block';
+            profileSection.classList.add('active');
+
+            // Ensure setup form stays hidden
+            ensureSetupFormHidden();
+        }
+
+        // Load profile from backend (after showing cache or loading state)
+        async function loadProfileFromBackend() {
+            console.log('🔄 Loading profile from backend...');
+
+            try {
+                const profileData = await loadUserProfile();
+
+                if (profileData) {
+                    console.log('📊 Backend profile data loaded');
+
+                    // Check if profile is completed
+                    const isProfileCompleted = profileData && (
+                        profileData.profileCompleted === true ||
+                        (profileData.phone && profileData.registrationNumber && profileData.branch)
+                    );
+
+                    // Check if user is Google authenticated (has googleId)
+                    const isGoogleUser = profileData && profileData.googleId;
+
+                    if (isProfileCompleted || isGoogleUser) {
+                        console.log('✅ PROFILE ACCESSIBLE: Showing profile view (completed or Google user)');
+
+                        // Update with fresh backend data
+                        document.getElementById('setupForm').style.display = 'none';
+                        document.getElementById('profileSection').style.display = 'block';
+                        document.getElementById('profileSection').classList.add('active');
+
+                        // Populate with backend data
+                        populateCompleteProfile(profileData);
+
+                        // Load courses after profile is shown (deferred)
+                        setTimeout(() => loadPurchasedCourses(), 300);
+
+                        // Update localStorage with fresh data
+                        updateLocalStorageWithBackendData(profileData);
+
+                        console.log('✅ Backend profile data populated successfully');
+
+                        // If Google user but profile not completed, show setup banner
+                        if (isGoogleUser && !isProfileCompleted) {
+                            showProfileCompletionBanner();
+                            // Also show Google welcome banner in setup form
+                            document.getElementById('googleWelcomeBanner').style.display = 'block';
+                        }
+
+                        // Ensure setup form stays hidden
+                        ensureSetupFormHidden();
+                    } else {
+                        console.log('📝 Profile not completed and not Google user, showing setup form');
+
+                        // Hide profile section and show setup form
+                        document.getElementById('profileSection').style.display = 'none';
+                        document.getElementById('setupForm').style.display = 'block';
+
+                        // Populate email from backend data if available, otherwise from token
+                        if (profileData && profileData.email) {
+                            displayUserEmail(profileData.email);
+                        } else {
+                            populateEmailForSetup();
+                        }
+                    }
+                } else {
+                    console.log('❌ No profile data from backend');
+                    // Show setup form if no data
+                    document.getElementById('profileSection').style.display = 'none';
+                    document.getElementById('setupForm').style.display = 'block';
+                    populateEmailForSetup();
+                }
+
+            } catch (error) {
+                console.error('❌ Error loading profile from backend:', error);
+
+                // Fallback to cached data if available
+                const cachedProfile = getCachedProfileData();
+                if (cachedProfile && (cachedProfile.profileCompleted || cachedProfile.googleId)) {
+                    console.log('📱 Fallback: Using cached profile data');
+                    showProfileFromCache(cachedProfile);
+                    if (cachedProfile.googleId && !cachedProfile.profileCompleted) {
+                        showProfileCompletionBanner();
+                    }
+                } else {
+                    // Show setup form as last resort
+                    document.getElementById('profileSection').style.display = 'none';
+                    document.getElementById('setupForm').style.display = 'block';
+                    populateEmailForSetup();
+                }
+            }
+        }
+
+        // Background sync with backend (non-blocking)
+        function syncWithBackendInBackground() {
+            console.log('🔄 Starting background sync...');
+            setTimeout(async () => {
+                try {
+                    const profileData = await loadUserProfile();
+                    if (profileData) {
+                        // Silently update with fresh data
+                        populateCompleteProfile(profileData);
+                        updateLocalStorageWithBackendData(profileData);
+                        console.log('🔄 Background sync completed');
+                    }
+                } catch (error) {
+                    console.log('⚠️ Background sync failed (non-critical)');
+                }
+            }, 1000); // Wait 1 second before background sync
+        }
+
+        // Update localStorage with backend data
+        function updateLocalStorageWithBackendData(profileData) {
+            try {
+                const localProfileData = {
+                    email: profileData.email,
+                    phone: profileData.phone,
+                    program: profileData.branch,
+                    regNumber: profileData.registrationNumber,
+                    fullName: profileData.fullName || 'Student',
+                    profilePicture: profileData.profilePicture,
+                    googleId: profileData.googleId,
+                    profileCompleted: profileData.profileCompleted ||
+                        !!(profileData.phone && profileData.registrationNumber && profileData.branch),
+                    lastUpdated: new Date().toISOString(),
+                    schedule: getStoredSchedule()
+                };
+                localStorage.setItem('profileData', JSON.stringify(localProfileData));
+            } catch (error) {
+                console.warn('⚠️ Failed to update localStorage with backend data');
+            }
+        }
+
+        // Populate email for setup form
+        function populateEmailForSetup() {
+            console.log('🔄 Populating email for setup form...');
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.email) {
+                        displayUserEmail(payload.email);
+                        console.log('✅ Email populated for setup from token');
+                    } else {
+                        console.log('⚠️ No email in token for setup');
+                    }
+                } else {
+                    console.log('❌ No token available for setup email population');
+                }
+            } catch (error) {
+                console.warn('⚠️ Error populating email for setup:', error);
+            }
+        }
+
+        // Get cached profile data from localStorage
+        function getCachedProfileData() {
+            try {
+                const cached = localStorage.getItem('profileData');
+                console.log('🔍 Raw localStorage data:', cached);
+
+                if (cached) {
+                    const profileData = JSON.parse(cached);
+                    console.log('📦 Parsed cached profile data:', profileData);
+
+                    // Check if cache is recent (within 24 hours)
+                    if (profileData.lastUpdated) {
+                        const cacheAge = new Date() - new Date(profileData.lastUpdated);
+                        const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+                        console.log('⏱️ Cache age:', cacheAge, 'ms (max allowed:', oneDay, 'ms)');
+
+                        if (cacheAge < oneDay) {
+                            console.log('📅 Using recent cached profile data');
+                            return profileData;
+                        } else {
+                            console.log('⏰ Cached profile data is too old, ignoring');
+                            localStorage.removeItem('profileData');
+                        }
+                    } else {
+                        console.log('⚠️ No lastUpdated timestamp in cached data');
+                        // Still use it if it exists but has no timestamp
+                        return profileData;
+                    }
+                } else {
+                    console.log('❌ No cached profile data in localStorage');
+                }
+            } catch (error) {
+                console.warn('⚠️ Error reading cached profile data:', error);
+                localStorage.removeItem('profileData'); // Clear corrupted data
+            }
+            return null;
+        }
+
+        // Get stored schedule data from localStorage
+        function getStoredSchedule() {
+            try {
+                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                return profileData.schedule || [];
+            } catch (error) {
+                console.warn('⚠️ Error reading stored schedule:', error);
+                return [];
+            }
+        }
+
+        // FAST PROFILE POPULATION: Optimized for speed
+        function populateCompleteProfile(profileData) {
+            if (!profileData) {
+                console.warn('⚠️ No profile data provided to populateCompleteProfile');
+                return;
+            }
+
+            console.log('📊 Populating profile with data:', profileData);
+
+            // Use requestAnimationFrame for smooth DOM updates
+            requestAnimationFrame(() => {
+                // Batch DOM reads first (more efficient)
+                const elements = {
+                    userEmail: document.getElementById('userEmail'),
+                    userPhone: document.getElementById('userPhone'),
+                    userProgram: document.getElementById('userProgram'),
+                    userReg: document.getElementById('userReg'),
+                    userProgramText: document.getElementById('userProgramText'),
+                    userRegText: document.getElementById('userRegText'),
+                    userFullName: document.getElementById('userFullName'),
+                    editableName: document.getElementById('editableName'),
+                    avatarImage: document.getElementById('avatarImage'),
+                    userSemester: document.getElementById('userSemester'),
+                    userCGPA: document.getElementById('userCGPA'),
+                    headerCGPA: document.getElementById('headerCGPA'),
+                    headerSemester: document.getElementById('headerSemester'),
+                    userDOB: document.getElementById('userDOB')
+                };
+
+                // Get email from profile data or token
+                let userEmail = profileData.email;
+                if (!userEmail) {
+                    // Fallback to token if email not in profile data
+                    try {
+                        const token = localStorage.getItem('token');
+                        if (token) {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            userEmail = payload.email;
+                        }
+                    } catch (error) {
+                        console.warn('⚠️ Error getting email from token in profile view');
+                    }
+                }
+
+                // Extract user data with fallbacks
+                let fullName = profileData.fullName || profileData.username || 'Student';
+
+                // If fullName is still 'Student', try to get from AuthManager or extract from email
+                if (fullName === 'Student' && window.authManager && window.authManager.userData) {
+                    fullName = window.authManager.userData.fullName || window.authManager.userData.username || 'Student';
+                }
+
+                // If still 'Student', try to extract from email
+                if (fullName === 'Student') {
+                    try {
+                        const token = localStorage.getItem('token');
+                        if (token) {
+                            const payload = JSON.parse(atob(token.split('.')[1]));
+                            if (payload.email) {
+                                const emailPrefix = payload.email.split('@')[0];
+                                const nameParts = emailPrefix.split('.');
+                                fullName = nameParts.map(part =>
+                                    part.charAt(0).toUpperCase() + part.slice(1).toLowerCase()
+                                ).join(' ');
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('Failed to extract name from token in profile:', error);
+                    }
+                }
+
+                const phone = profileData.phone || 'Not specified';
+                const program = profileData.branch || profileData.program || 'Not specified';
+                const regNumber = profileData.registrationNumber || profileData.regNumber || 'Not specified';
+                const semester = profileData.semester || 'Not specified';
+                const cgpa = profileData.cgpa || 'Not specified';
+                const dob = profileData.dob || 'Not specified';
+
+                console.log('📝 Extracted user data:', {
+                    fullName, phone, program, regNumber, semester, cgpa, dob, userEmail
+                });
+
+                // Batch DOM writes (much faster)
+                if (elements.userEmail) {
+                    elements.userEmail.textContent = userEmail || 'Not specified';
+                    console.log('✅ Email populated:', userEmail);
+                }
+                if (elements.userPhone) {
+                    elements.userPhone.textContent = phone;
+                    console.log('✅ Phone populated:', phone);
+                }
+                if (elements.userProgram) {
+                    elements.userProgram.textContent = program;
+                    console.log('✅ Program populated:', program);
+                }
+                if (elements.userReg) {
+                    elements.userReg.textContent = `Registration: ${regNumber}`;
+                    console.log('✅ Registration populated:', regNumber);
+                }
+                if (elements.userProgramText) {
+                    elements.userProgramText.textContent = program;
+                }
+                if (elements.userRegText) {
+                    elements.userRegText.textContent = regNumber;
+                }
+                if (elements.userFullName) {
+                    elements.userFullName.textContent = fullName;
+                    console.log('✅ Full name populated:', fullName);
+                }
+                if (elements.editableName) {
+                    elements.editableName.textContent = fullName;
+                }
+                if (elements.userSemester) {
+                    elements.userSemester.textContent = semester;
+                }
+                if (elements.userCGPA) {
+                    elements.userCGPA.textContent = cgpa;
+                }
+                if (elements.headerCGPA) {
+                    elements.headerCGPA.textContent = cgpa;
+                }
+                if (elements.headerSemester) {
+                    elements.headerSemester.textContent = semester.split(' ')[0] || '1';
+                }
+                if (elements.userDOB) {
+                    elements.userDOB.textContent = dob;
+                }
+
+                // Set avatar (lazy load for performance)
+                if (elements.avatarImage) {
+                    const avatarUrl = profileData.profilePicture || profileData.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=3498db&color=fff&size=200`;
+                    elements.avatarImage.src = avatarUrl;
+                    console.log('✅ Avatar set:', avatarUrl);
+                }
+
+                // Mark profile as completed (deferred)
+                setTimeout(() => markProfileAsCompleted(), 50);
+
+                console.log('✅ Profile population completed');
+            });
+        }
+
+        // Function to mark profile fields as completed and read-only
+        function markProfileAsCompleted() {
+            // Add visual indicators that profile is completed
+            const profileCard = document.querySelector('.profile-card');
+            if (profileCard) {
+                profileCard.style.borderColor = '#2ecc71';
+                profileCard.style.boxShadow = '0 12px 25px rgba(46, 204, 113, 0.3)';
+            }
+
+            // Add completion badge to page title
+            const pageTitle = document.querySelector('.page-title');
+            if (pageTitle) {
+                const completionBadge = document.createElement('span');
+                completionBadge.className = 'profile-completed-indicator';
+                completionBadge.innerHTML = '<i class="bx bxs-check-circle"></i> Profile Completed';
+                pageTitle.appendChild(completionBadge);
+            }
+
+            // Hide edit buttons for core profile fields (email, phone, program, registration)
+            const editButtons = document.querySelectorAll('.edit-btn[data-target]');
+            editButtons.forEach(button => {
+                const target = button.getAttribute('data-target');
+                // Only hide edit buttons for core profile information, not schedule
+                if (target !== 'scheduleForm') {
+                    button.style.display = 'none';
+                }
+            });
+
+            // Add read-only styling to fixed fields
+            const fixedFields = document.querySelectorAll('.fixed-field');
+            fixedFields.forEach(field => {
+                field.style.position = 'relative';
+                if (!field.querySelector('.readonly-indicator')) {
+                    const indicator = document.createElement('span');
+                    indicator.className = 'readonly-indicator';
+                    indicator.innerHTML = ' <i class="bx bx-lock-alt" style="font-size: 10px; opacity: 0.7;"></i>';
+                    indicator.style.cssText = 'color: #2ecc71; font-weight: 600;';
+                    field.appendChild(indicator);
+                }
+            });
+
+            console.log('✅ Profile marked as completed and read-only');
+        }
+
+        // Function to show profile completion banner for Google users
+        function showProfileCompletionBanner() {
+            // Check if banner already exists
+            if (document.getElementById('profileCompletionBanner')) {
+                return;
+            }
+
+            const banner = document.createElement('div');
+            banner.id = 'profileCompletionBanner';
+            banner.style.cssText = `
+                background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+                color: white;
+                padding: 20px;
+                border-radius: 12px;
+                margin-bottom: 30px;
+                border: 2px solid #e67e22;
+                box-shadow: 0 8px 25px rgba(243, 156, 18, 0.3);
+                text-align: center;
+                position: relative;
+            `;
+
+            banner.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 15px;">
+                    <i class='bx bx-info-circle' style="font-size: 28px;"></i>
+                    <h3 style="margin: 0; font-size: 20px; font-weight: 600;">Complete Your Profile</h3>
+                </div>
+                <p style="margin: 0 0 15px 0; font-size: 16px; opacity: 0.9;">
+                    Welcome! To access all features like course purchases, please complete your profile setup below.
+                </p>
+                <button onclick="scrollToSetup()" style="
+                    background: white;
+                    color: #e67e22;
+                    border: none;
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    font-size: 14px;
+                " onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
+                    <i class='bx bx-edit'></i> Complete Profile Now
+                </button>
+                <button onclick="this.parentElement.remove()" style="
+                    position: absolute;
+                    top: 10px;
+                    right: 10px;
+                    background: transparent;
+                    border: none;
+                    color: white;
+                    font-size: 20px;
+                    cursor: pointer;
+                    opacity: 0.7;
+                " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+                    ×
+                </button>
+            `;
+
+            // Insert banner at the top of the profile section
+            const profileSection = document.getElementById('profileSection');
+            if (profileSection) {
+                profileSection.insertBefore(banner, profileSection.firstChild);
+            }
+
+            console.log('📢 Profile completion banner shown for Google user');
+        }
+
+        // Function to scroll to setup form (for banner button)
+        function scrollToSetup() {
+            // Create setup form at the bottom of profile if it doesn't exist
+            let setupForm = document.getElementById('setupForm');
+            if (!setupForm) {
+                setupForm = document.createElement('div');
+                setupForm.id = 'setupForm';
+                setupForm.innerHTML = `
+                    <h2 class="form-title">Complete Your Profile Setup</h2>
+                    <p class="form-subtitle">Please fill in these mandatory fields to access all features</p>
+
+                    <div class="form-group">
+                        <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--light-color);">
+                            <i class='bx bx-envelope' style="color: var(--accent-blue);"></i>
+                            Your VIT Email ID
+                        </label>
+                        <div style="position: relative; margin-top: 8px;">
+                            <input type="email" class="form-control" id="vitEmail" value="" placeholder="Loading your email..." readonly required>
+                            <i class='bx bx-loader-alt bx-spin' style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #f39c12; font-size: 18px;" id="emailLoadingIcon"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" class="form-control" id="phoneNumber" placeholder="e.g. 9876543210" required>
+                        <p class="form-note">This can only be set once and cannot be changed later</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Program</label>
+                        <select class="form-control" id="programSelect" required>
+                            <option value="">Select your program</option>
+                            <option>B.Tech Computer Science</option>
+                            <option>B.Tech Electronics</option>
+                            <option>B.Tech Mechanical</option>
+                            <option>B.Tech Civil</option>
+                            <option>B.Arch</option>
+                            <option>BBA</option>
+                            <option>B.Com</option>
+                            <option>M.Tech</option>
+                            <option>MBA</option>
+                        </select>
+                        <p class="form-note">This can only be set once and cannot be changed later</p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Registration Number</label>
+                        <input type="text" class="form-control" id="regNumber" placeholder="e.g. 23BCE0001" required>
+                        <p class="form-note">This can only be set once and cannot be changed later</p>
+                    </div>
+
+                    <div class="form-actions">
+                        <button class="btn btn-primary" id="saveSetup">Complete Profile</button>
+                    </div>
+                `;
+                setupForm.className = 'setup-form';
+                document.getElementById('profileSection').appendChild(setupForm);
+
+                // Populate email
+                populateEmailImmediately();
+
+                // Add event listener for save button
+                document.getElementById('saveSetup').addEventListener('click', async function () {
+                    // Reuse the existing save logic
+                    const event = new Event('click');
+                    // This would need to be implemented properly
+                    alert('Please refresh the page to complete your profile setup.');
+                });
+            }
+
+            // Scroll to setup form
+            setupForm.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Function to ensure setup form is permanently hidden for completed profiles
+        function ensureSetupFormHidden() {
+            const setupForm = document.getElementById('setupForm');
+            const profileSection = document.getElementById('profileSection');
+
+            if (setupForm && profileSection) {
+                // Force hide setup form
+                setupForm.style.display = 'none';
+                setupForm.style.visibility = 'hidden';
+                setupForm.style.opacity = '0';
+
+                // Force show profile section
+                profileSection.style.display = 'block';
+                profileSection.style.visibility = 'visible';
+                profileSection.style.opacity = '1';
+                profileSection.classList.add('active');
+
+                console.log('🔒 Setup form permanently hidden, profile view enforced');
+            }
+        }
+
+        // Load purchased courses (placeholder - will be implemented with backend)
+        function loadPurchasedCourses() {
+            const coursesContainer = document.getElementById('coursesContainer');
+            coursesContainer.innerHTML = `
+                <div style="
+                    text-align: center;
+                    padding: 40px;
+                    color: #666;
+                    background: rgba(44, 62, 80, 0.5);
+                    border-radius: 12px;
+                    border: 1px solid rgba(52, 152, 219, 0.3);
+                ">
+                    <i class='bx bx-book' style="font-size: 48px; color: #3498db; margin-bottom: 15px;"></i>
+                    <h3 style="color: #ecf0f1; margin-bottom: 10px;">Your Purchased Courses</h3>
+                    <p style="color: #ddd;">Courses will be loaded from your account data.</p>
+                    <p style="color: #aaa; font-size: 14px;">This feature will be fully implemented with backend integration.</p>
+                </div>
+            `;
+        }
+
+        // Refresh courses button
+        document.getElementById('refreshCourses').addEventListener('click', function () {
+            const refreshBtn = this;
+            const originalText = refreshBtn.innerHTML;
+            refreshBtn.innerHTML = '<i class="bx bx-loader bx-spin"></i> Loading...';
+
+            setTimeout(() => {
+                refreshBtn.innerHTML = originalText;
+                loadPurchasedCourses();
+            }, 1000);
+        });
+
+        // Save profile setup
+        document.getElementById('saveSetup').addEventListener('click', async function () {
+            // Clear any previous error messages
+            clearFieldErrors();
+
+            // Get email from the locked field (which is already populated from backend/token)
+            const vitEmail = document.getElementById('vitEmail').value;
+
+            if (!vitEmail) {
+                showFieldError('vitEmail', 'Email not found. Please refresh the page and try again.');
+                return;
+            }
+
+            const phone = document.getElementById('phoneNumber').value;
+            const program = document.getElementById('programSelect').value;
+            const regNumber = document.getElementById('regNumber').value;
+
+            // Basic client-side validation
+            let hasClientErrors = false;
+
+            if (!phone || phone.trim() === '') {
+                showFieldError('phoneNumber', 'Phone number is required');
+                hasClientErrors = true;
+            }
+
+            if (!program || program.trim() === '') {
+                showFieldError('programSelect', 'Program selection is required');
+                hasClientErrors = true;
+            }
+
+            if (!regNumber || regNumber.trim() === '') {
+                showFieldError('regNumber', 'Registration number is required');
+                hasClientErrors = true;
+            }
+
+            if (hasClientErrors) {
+                return;
+            }
+
+            // Clean phone number (remove any spaces or +91 prefix if accidentally added)
+            const cleanPhone = phone.replace(/\s+/g, '').replace(/^\+91/, '');
+
+            // Show loading state
+            const saveBtn = document.getElementById('saveSetup');
+            const originalText = saveBtn.textContent;
+            saveBtn.textContent = 'Saving...';
+            saveBtn.disabled = true;
+
+            try {
+                // Call backend API to update profile
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    showGeneralError('Please log in first');
+                    window.location.href = '../index.html';
+                    return;
+                }
+
+                const response = await fetch('/api/v1/profile/update', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        fullName: 'Student', // Default name, can be changed later
+                        phone: cleanPhone,
+                        registrationNumber: regNumber,
+                        branch: program,
+                        email: vitEmail // Include email to ensure it's properly stored
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    // Handle detailed error messages from backend
+                    if (data.errors) {
+                        // Show specific field errors
+                        Object.keys(data.errors).forEach(field => {
+                            if (field === 'general') {
+                                showGeneralError(data.errors[field]);
+                            } else {
+                                showFieldError(field, data.errors[field]);
+                            }
+                        });
+                    } else {
+                        showGeneralError(data.message || 'Failed to save profile. Please try again.');
+                    }
+                    return;
+                }
+
+                // Success - profile completed
+                console.log('✅ Profile completed successfully:', data);
+
+                // Save complete profile data to localStorage for offline access and consistency
+                try {
+                    const profileData = {
+                        email: vitEmail,
+                        phone: cleanPhone,
+                        program: program,
+                        regNumber: regNumber,
+                        fullName: 'Student',
+                        profileCompleted: true,
+                        lastUpdated: new Date().toISOString(),
+                        schedule: getStoredSchedule() // Preserve any existing schedule data
+                    };
+
+                    localStorage.setItem('profileData', JSON.stringify(profileData));
+                    console.log('💾 Profile data saved to localStorage successfully');
+
+                    // INSTANT NOTIFICATION TO MARKETPLACE - CRITICAL FOR IMMEDIATE RECOGNITION
+                    console.log('📢 INSTANT: Notifying marketplace of profile completion...');
+
+                    // Set global flag for instant recognition across all tabs/windows
+                    window.profileCompletedInstantly = true;
+                    localStorage.setItem('profileCompleted', 'true');
+
+                    // Dispatch custom event for same-window marketplace
+                    window.dispatchEvent(new CustomEvent('profileCompleted'));
+
+                    // Also notify parent window if in iframe
+                    if (window.parent && window.parent !== window) {
+                        try {
+                            window.parent.profileCompletedInstantly = true;
+                            window.parent.dispatchEvent(new CustomEvent('profileCompleted'));
+                            console.log('📢 INSTANT: Notified parent window');
+                        } catch (error) {
+                            console.warn('⚠️ Could not notify parent window:', error);
+                        }
+                    }
+
+                    console.log('📢 INSTANT: Profile completion notification sent to all listeners');
+
+                } catch (error) {
+                    console.warn('⚠️ Failed to save profile to localStorage:', error);
+                    // Continue with the flow even if localStorage fails
+                }
+
+                document.getElementById('setupForm').style.display = 'none';
+                document.getElementById('successAnimation').style.display = 'block';
+
+                setTimeout(() => {
+                    document.getElementById('successAnimation').style.display = 'none';
+                    document.getElementById('profileSection').style.display = 'block';
+
+                    setTimeout(() => {
+                        document.getElementById('profileSection').classList.add('active');
+
+                        // Populate complete profile with data from backend response
+                        if (data.data && data.data.user) {
+                            console.log('📊 Populating with backend response data:', data.data.user);
+                            populateCompleteProfile(data.data.user);
+                        } else {
+                            // Fallback to local data
+                            console.log('📱 Falling back to local profile data:', profileData);
+                            populateCompleteProfile(profileData);
+                        }
+
+                        // Load purchased courses
+                        loadPurchasedCourses();
+                    }, 100);
+                }, 2000);
+
+            } catch (error) {
+                console.error('Profile update error:', error);
+                showGeneralError('Network error. Please check your connection and try again.');
+            } finally {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            }
+        });
+
+        // Function to show field-specific error messages
+        function showFieldError(fieldId, message) {
+            const field = document.getElementById(fieldId);
+            if (!field) return;
+
+            // Remove any existing error for this field
+            const existingError = field.parentNode.querySelector('.field-error');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Create error message element
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'field-error';
+            errorDiv.innerHTML = `<i class='bx bx-error-circle'></i> ${message}`;
+            errorDiv.style.cssText = `
+                color: #e74c3c;
+                font-size: 12px;
+                margin-top: 5px;
+                display: flex;
+                align-items: center;
+                gap: 5px;
+                font-weight: 500;
+            `;
+
+            // Insert error message after the field
+            field.parentNode.insertBefore(errorDiv, field.nextSibling);
+
+            // Highlight the field
+            field.style.borderColor = '#e74c3c';
+            field.style.boxShadow = '0 0 0 3px rgba(231, 76, 60, 0.3)';
+
+            console.log(`❌ Field error for ${fieldId}:`, message);
+        }
+
+        // Function to show general error message
+        function showGeneralError(message) {
+            // Remove any existing general error
+            const existingError = document.querySelector('.general-error');
+            if (existingError) {
+                existingError.remove();
+            }
+
+            // Create general error message
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'general-error';
+            errorDiv.innerHTML = `<i class='bx bx-error'></i> ${message}`;
+            errorDiv.style.cssText = `
+                background: rgba(231, 76, 60, 0.1);
+                border: 1px solid #e74c3c;
+                border-radius: 8px;
+                padding: 12px;
+                margin-bottom: 20px;
+                color: #e74c3c;
+                font-weight: 500;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            `;
+
+            // Insert at the top of the form
+            const form = document.getElementById('setupForm');
+            form.insertBefore(errorDiv, form.firstChild);
+
+            console.log('❌ General error:', message);
+        }
+
+        // Function to clear all field errors
+        function clearFieldErrors() {
+            // Remove field errors
+            document.querySelectorAll('.field-error').forEach(error => error.remove());
+
+            // Reset field styles
+            const fields = ['vitEmail', 'phoneNumber', 'programSelect', 'regNumber'];
+            fields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.style.borderColor = '';
+                    field.style.boxShadow = '';
+                }
+            });
+
+            // Remove general error
+            const generalError = document.querySelector('.general-error');
+            if (generalError) {
+                generalError.remove();
+            }
+        }
+
+        // Edit personal information
+        document.getElementById('savePersonal').addEventListener('click', function (e) {
+            e.preventDefault();
+            const fullName = document.getElementById('nameInput').value;
+            const dob = document.getElementById('dobInput').value;
+
+            if (!fullName && !dob) {
+                alert('Please fill in at least one field');
+                return;
+            }
+
+            let formattedDOB = '';
+            if (dob) {
+                const dobDate = new Date(dob);
+                formattedDOB = dobDate.toLocaleDateString('en-GB', {
+                    day: 'numeric', month: 'long', year: 'numeric'
+                });
+            }
+
+            if (fullName) {
+                document.getElementById('userFullName').textContent = fullName;
+                document.getElementById('editableName').textContent = fullName;
+            }
+
+            if (dob) {
+                document.getElementById('userDOB').textContent = formattedDOB;
+            }
+
+            document.getElementById('personalForm').style.display = 'none';
+
+            // Save to localStorage with error handling
+            try {
+                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                if (fullName) profileData.fullName = fullName;
+                if (dob) profileData.dob = formattedDOB;
+                profileData.lastUpdated = new Date().toISOString();
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+                console.log('💾 Personal info updated in localStorage');
+            } catch (error) {
+                console.warn('⚠️ Failed to update personal info in localStorage:', error);
+            }
+
+            // Update avatar if name changed
+            if (fullName) {
+                const defaultAvatar = "https://ui-avatars.com/api/?name=" +
+                    encodeURIComponent(fullName) +
+                    "&background=3498db&color=fff&size=200";
+                document.getElementById('avatarImage').src = defaultAvatar;
+
+                // Update avatar in localStorage
+                try {
+                    const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                    profileData.avatar = defaultAvatar;
+                    profileData.lastUpdated = new Date().toISOString();
+                    localStorage.setItem('profileData', JSON.stringify(profileData));
+                } catch (error) {
+                    console.warn('⚠️ Failed to update avatar in localStorage:', error);
+                }
+            }
+        });
+
+        document.getElementById('cancelPersonal').addEventListener('click', function (e) {
+            e.preventDefault();
+            document.getElementById('personalForm').style.display = 'none';
+        });
+
+        // Edit academic information
+        document.getElementById('saveAcademic').addEventListener('click', function (e) {
+            e.preventDefault();
+            const semester = document.getElementById('semesterInput').value;
+            const cgpa = document.getElementById('cgpaInput').value;
+
+            if (!semester && !cgpa) {
+                alert('Please fill in at least one field');
+                return;
+            }
+
+            if (semester) {
+                document.getElementById('userSemester').textContent = semester;
+                document.getElementById('headerSemester').textContent = semester.split(' ')[0];
+            }
+
+            if (cgpa) {
+                document.getElementById('userCGPA').textContent = cgpa;
+                document.getElementById('headerCGPA').textContent = cgpa;
+            }
+
+            document.getElementById('academicForm').style.display = 'none';
+
+            // Save to localStorage with error handling
+            try {
+                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                if (semester) profileData.semester = semester;
+                if (cgpa) profileData.cgpa = cgpa;
+                profileData.lastUpdated = new Date().toISOString();
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+                console.log('💾 Academic info updated in localStorage');
+            } catch (error) {
+                console.warn('⚠️ Failed to update academic info in localStorage:', error);
+            }
+        });
+
+        document.getElementById('cancelAcademic').addEventListener('click', function (e) {
+            e.preventDefault();
+            document.getElementById('academicForm').style.display = 'none';
+        });
+
+        // Add schedule item
+        document.getElementById('addSchedule').addEventListener('click', function (e) {
+            e.preventDefault();
+            const day = document.getElementById('scheduleDay').value;
+            const start = document.getElementById('scheduleStart').value;
+            const end = document.getElementById('scheduleEnd').value;
+            const subject = document.getElementById('scheduleSubject').value;
+
+            if (!day || !start || !end || !subject) {
+                alert('Please fill in all schedule fields');
+                return;
+            }
+
+            const formattedStart = formatTime(start);
+            const formattedEnd = formatTime(end);
+
+            const scheduleItem = {
+                day: day,
+                start: start,
+                end: end,
+                subject: subject,
+                display: `${day}, ${formattedStart} - ${formattedEnd}`
+            };
+
+            addScheduleToUI(scheduleItem);
+
+            // Save to localStorage with error handling
+            try {
+                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                if (!profileData.schedule) profileData.schedule = [];
+                profileData.schedule.push(scheduleItem);
+                profileData.lastUpdated = new Date().toISOString();
+                localStorage.setItem('profileData', JSON.stringify(profileData));
+                console.log('💾 Schedule item added to localStorage');
+            } catch (error) {
+                console.warn('⚠️ Failed to save schedule to localStorage:', error);
+            }
+
+            // Clear form
+            document.getElementById('scheduleDay').value = '';
+            document.getElementById('scheduleStart').value = '';
+            document.getElementById('scheduleEnd').value = '';
+            document.getElementById('scheduleSubject').value = '';
+        });
+
+        // Add schedule item to UI
+        function addScheduleToUI(item) {
+            const scheduleContainer = document.getElementById('scheduleContainer');
+            const scheduleItem = document.createElement('div');
+            scheduleItem.className = 'schedule-item';
+            scheduleItem.innerHTML = `
+                <button class="delete-btn" data-id="${item.display}">×</button>
+                <div class="schedule-time">${item.display}</div>
+                <div class="schedule-subject">${item.subject}</div>
+            `;
+            scheduleContainer.appendChild(scheduleItem);
+
+            // Add delete functionality
+            scheduleItem.querySelector('.delete-btn').addEventListener('click', function () {
+                scheduleItem.remove();
+
+                // Remove from localStorage with error handling
+                try {
+                    const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                    if (profileData.schedule) {
+                        profileData.schedule = profileData.schedule.filter(s => s.display !== this.dataset.id);
+                        profileData.lastUpdated = new Date().toISOString();
+                        localStorage.setItem('profileData', JSON.stringify(profileData));
+                        console.log('💾 Schedule item removed from localStorage');
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Failed to remove schedule from localStorage:', error);
+                }
+            });
+        }
+
+        // Format time to 12-hour format
+        function formatTime(timeString) {
+            const [hours, minutes] = timeString.split(':');
+            let period = 'AM';
+            let hour = parseInt(hours);
+
+            if (hour >= 12) {
+                period = 'PM';
+                if (hour > 12) hour -= 12;
+            }
+
+            if (hour === 0) hour = 12;
+
+            return `${hour}:${minutes} ${period}`;
+        }
+
+        document.getElementById('cancelSchedule').addEventListener('click', function (e) {
+            e.preventDefault();
+            document.getElementById('scheduleForm').style.display = 'none';
+        });
+
+        // Query form submission
+        const queryForm = document.getElementById('queryForm');
+        queryForm.addEventListener('submit', function (e) {
+            e.preventDefault();
+
+            document.getElementById('successMessage').style.display = 'block';
+
+            setTimeout(() => {
+                queryForm.reset();
+                setTimeout(() => {
+                    document.getElementById('successMessage').style.display = 'none';
+                }, 5000);
+            }, 1000);
+        });
+
+        // Avatar upload functionality
+        const avatarUpload = document.getElementById('avatarUpload');
+        const profileAvatar = document.getElementById('profileAvatar');
+
+        profileAvatar.addEventListener('click', function () {
+            avatarUpload.click();
+        });
+
+        avatarUpload.addEventListener('change', function (e) {
+            const file = e.target.files[0];
+            if (file) {
+                // Validate file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('Please select an image smaller than 5MB');
+                    return;
+                }
+
+                // Validate file type
+                if (!file.type.startsWith('image/')) {
+                    alert('Please select a valid image file');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function (event) {
+                    document.getElementById('avatarImage').src = event.target.result;
+
+                    // Save to localStorage with error handling
+                    try {
+                        const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                        profileData.avatar = event.target.result;
+                        profileData.lastUpdated = new Date().toISOString();
+                        localStorage.setItem('profileData', JSON.stringify(profileData));
+                        console.log('💾 Avatar updated in localStorage');
+                    } catch (error) {
+                        console.warn('⚠️ Failed to save avatar to localStorage:', error);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Function to clear old localStorage data (cleanup utility)
+        function clearOldProfileData() {
+            try {
+                const profileData = localStorage.getItem('profileData');
+                if (profileData) {
+                    const parsed = JSON.parse(profileData);
+                    // Check if data is older than 30 days
+                    if (parsed.lastUpdated) {
+                        const dataAge = new Date() - new Date(parsed.lastUpdated);
+                        const thirtyDays = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
+                        if (dataAge > thirtyDays) {
+                            console.log('🧹 Clearing old profile data from localStorage');
+                            localStorage.removeItem('profileData');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('⚠️ Error clearing old profile data:', error);
+                // Clear corrupted data
+                localStorage.removeItem('profileData');
+            }
+        }
+
+        // Function to sync profile data with backend
+        async function syncProfileWithBackend() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return false;
+
+                const response = await fetch('/api/v1/profile/me', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.data && data.data.user) {
+                        const backendProfile = data.data.user;
+
+                        // Update localStorage with fresh backend data
+                        try {
+                            const localProfileData = {
+                                email: backendProfile.email,
+                                phone: backendProfile.phone,
+                                program: backendProfile.branch,
+                                regNumber: backendProfile.registrationNumber,
+                                fullName: backendProfile.fullName || 'Student',
+                                profileCompleted: backendProfile.isProfileComplete(),
+                                lastUpdated: new Date().toISOString(),
+                                schedule: getStoredSchedule() // Preserve existing schedule
+                            };
+                            localStorage.setItem('profileData', JSON.stringify(localProfileData));
+                            console.log('🔄 Profile data synced with backend');
+                            return true;
+                        } catch (error) {
+                            console.warn('⚠️ Failed to sync profile data to localStorage:', error);
+                        }
+                    }
+                }
+            } catch (error) {
+                console.warn('⚠️ Failed to sync profile with backend:', error);
+            }
+            return false;
+        }
+
+        // Edit button functionality
+        const editButtons = document.querySelectorAll('.edit-btn');
+        editButtons.forEach(button => {
+            button.addEventListener('click', (e) => {
+                const targetId = button.getAttribute('data-target');
+                const editForm = document.getElementById(targetId);
+
+                if (editForm) {
+                    editForm.style.display = editForm.style.display === 'block' ? 'none' : 'block';
+
+                    if (editForm.style.display === 'block') {
+                        button.style.transform = 'rotate(45deg)';
+                        button.style.background = 'var(--accent-blue)';
+                        button.style.color = 'white';
+                    } else {
+                        button.style.transform = 'rotate(0)';
+                        button.style.background = '';
+                        button.style.color = '';
+                    }
+                }
+            });
+        });
+
+        // Admin Panel Functions
+        function showAdminTab(tabName) {
+            // Remove active class from all tabs
+            document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Add active class to clicked tab
+            event.target.classList.add('active');
+
+            // Show corresponding content
+            const content = document.getElementById('adminContent');
+            let contentHtml = '';
+
+            switch (tabName) {
+                case 'users':
+                    contentHtml = `
+                        <div class="admin-tab-content">
+                            <h3><i class='bx bxs-user'></i> User Management</h3>
+                            <p>Manage user accounts and permissions</p>
+                            <button class="btn btn-primary" onclick="loadUsers()">Load Users</button>
+                            <div id="usersList" class="mt-3"></div>
+                        </div>
+                    `;
+                    break;
+                case 'content':
+                    contentHtml = `
+                        <div class="admin-tab-content">
+                            <h3><i class='bx bxs-file'></i> Content Management</h3>
+                            <p>Manage system content and resources</p>
+                            <button class="btn btn-primary" onclick="loadContent()">Load Content</button>
+                        </div>
+                    `;
+                    break;
+                case 'settings':
+                    contentHtml = `
+                        <div class="admin-tab-content">
+                            <h3><i class='bx bxs-cog'></i> System Settings</h3>
+                            <p>Configure system parameters</p>
+                            <button class="btn btn-primary" onclick="loadSettings()">Load Settings</button>
+                        </div>
+                    `;
+                    break;
+                case 'analytics':
+                    contentHtml = `
+                        <div class="admin-tab-content">
+                            <h3><i class='bx bxs-bar-chart'></i> Analytics & Reports</h3>
+                            <p>View system usage and performance metrics</p>
+                            <button class="btn btn-primary" onclick="loadAnalytics()">Load Analytics</button>
+                        </div>
+                    `;
+                    break;
+            }
+
+            content.innerHTML = contentHtml;
+        }
+
+        async function loadUsers() {
+            try {
+                const response = await fetch('/api/v1/admin/users', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('usersList').innerHTML = `
+                        <div class="alert alert-success">
+                            <i class='bx bxs-check-circle'></i> Users loaded successfully!
+                        </div>
+                    `;
+                } else {
+                    throw new Error('Failed to load users');
+                }
+            } catch (error) {
+                document.getElementById('usersList').innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class='bx bxs-error'></i> Error loading users: ${error.message}
+                    </div>
+                `;
+            }
+        }
+
+        function loadContent() {
+            alert('Content management feature coming soon!');
+        }
+
+        function loadSettings() {
+            alert('System settings feature coming soon!');
+        }
+
+        function loadAnalytics() {
+            alert('Analytics feature coming soon!');
+        }
+
+
+        // Check URL parameters for sidebar activation
+        function checkSidebarActivation() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('sidebar') === 'active') {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar) {
+                    sidebar.classList.add('active');
+                }
+            }
+        }
+
+        // DEBUG FUNCTION: Manual email population test
+        window.testEmailPopulation = function () {
+            console.log('🧪 MANUAL EMAIL POPULATION TEST');
+            alert('Testing email population...');
+            return populateEmailImmediately();
+        };
+
+        // DEBUG FUNCTION: Check token content
+        window.checkToken = function () {
+            const token = localStorage.getItem('token');
+            console.log('🔑 Token exists:', !!token);
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    console.log('🔍 Token payload:', payload);
+                    alert('Token payload: ' + JSON.stringify(payload, null, 2));
+                    return payload;
+                } catch (error) {
+                    console.error('❌ Token parsing error:', error);
+                    alert('Token parsing error: ' + error.message);
+                }
+            } else {
+                alert('No token found!');
+            }
+            return null;
+        };
+
+
+        // Show toast notification
+        function showToast(message, type) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: ${type === 'success' ? '#2ecc71' : type === 'warning' ? '#f39c12' : type === 'error' ? '#e74c3c' : '#3498db'};
+                color: white;
+                padding: 15px 20px;
+                border-radius: 10px;
+                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                z-index: 10000;
+                font-weight: 500;
+                max-width: 400px;
+                animation: slideIn 0.3s ease;
+            `;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+
+            setTimeout(() => {
+                notification.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => notification.remove(), 300);
+            }, 4000);
+        }
+
+        // Add CSS for notification animations
+        const toastStyle = document.createElement('style');
+        toastStyle.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(toastStyle);
+
+        // Handle Google OAuth redirect - Simplified version
+        function handleGoogleAuthRedirect() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const token = urlParams.get('token');
+            const googleSuccess = urlParams.get('google_success');
+            const error = urlParams.get('error');
+
+            if (token && googleSuccess) {
+                console.log('🎉 Google OAuth redirect successful, storing token');
+                // Store token in localStorage
+                localStorage.setItem('token', token);
+                showToast('Welcome! Google authentication successful!', 'success');
+
+                // Clean URL but keep sidebar parameter if present
+                const newUrl = window.location.pathname + (urlParams.get('sidebar') ? '?sidebar=active' : '');
+                window.history.replaceState({}, document.title, newUrl);
+                return true;
+            }
+
+            if (error) {
+                console.error('❌ OAuth redirect error:', error);
+                let errorMessage = 'Authentication failed. Please try again.';
+
+                if (error === 'google_auth_failed') {
+                    errorMessage = 'Google authentication failed. Please try again.';
+                } else if (error === 'token_generation_failed') {
+                    errorMessage = 'Authentication successful but token generation failed. Please contact support.';
+                } else if (error === 'oauth_callback_failed') {
+                    errorMessage = 'OAuth callback failed. Please try signing in again.';
+                }
+
+                showToast(errorMessage, 'error');
+
+                // Clean URL and redirect to home
+                const newUrl = window.location.pathname + (urlParams.get('sidebar') ? '?sidebar=active' : '');
+                window.history.replaceState({}, document.title, newUrl);
+
+                setTimeout(() => {
+                    window.location.href = '../../index.html';
+                }, 3000);
+                return true;
+            }
+
+            return false;
+        }
+
+        // CLEAN AND RELIABLE INITIALIZATION
+        document.addEventListener('DOMContentLoaded', function () {
+            console.log('🚀 Starting profile page initialization...');
+
+            // STEP 1: Wait for auth manager to be ready (it handles OAuth redirects)
+            const initProfilePage = () => {
+                if (!window.authManager) {
+                    console.log('⏳ Waiting for auth manager...');
+                    setTimeout(initProfilePage, 50);
+                    return;
+                }
+
+                window.authManager.initPromise.then(() => {
+                    console.log('🔐 Auth manager ready, checking authentication...');
+
+                    // STEP 2: Check authentication status
+                    if (!window.authManager.isAuthenticated) {
+                        console.log('❌ User not authenticated, showing login required');
+                        window.authManager.showLoginRequired();
+                        return;
+                    }
+
+                    console.log('✅ User authenticated, proceeding with profile setup');
+
+                    // STEP 3: Check if profile is already completed
+                    const profileCompleted = emergencyProfileCheck();
+                    if (profileCompleted) {
+                        console.log('✅ Profile already completed - showing profile view');
+                        // Initialize UI components for completed profile
+                        setTimeout(() => {
+                            createParticles();
+                            checkSidebarActivation();
+                            clearOldProfileData();
+                            if (window.adminPanelManager) {
+                                window.adminPanelManager.init();
+                            }
+                        }, 100);
+                        return;
+                    }
+
+                    // STEP 4: Profile not completed - show setup form
+                    console.log('📝 Profile not completed - showing setup form');
+
+                    // Try to populate email immediately
+                    const emailLoaded = populateEmailImmediately();
+                    console.log('📧 Email loading result:', emailLoaded);
+
+                    // Show Google welcome banner if this is a Google OAuth user
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const isGoogleUser = urlParams.get('google_success') === 'true' ||
+                        (localStorage.getItem('token') && (() => {
+                            try {
+                                const token = localStorage.getItem('token');
+                                const payload = JSON.parse(atob(token.split('.')[1]));
+                                return payload.email && payload.email.includes('@vitbhopal.ac.in');
+                            } catch (e) {
+                                return false;
+                            }
+                        })());
+
+                    if (isGoogleUser) {
+                        document.getElementById('googleWelcomeBanner').style.display = 'block';
+                        console.log('🎉 Showing Google welcome banner');
+                    }
+
+                    // Show setup form and hide profile section
+                    document.getElementById('setupForm').style.display = 'block';
+                    document.getElementById('profileSection').style.display = 'none';
+
+                    console.log('✅ Setup form displayed, profile initialization complete');
+                }).catch(error => {
+                    console.error('❌ Profile auth initialization failed:', error);
+                    window.authManager.showLoginRequired();
+                });
+            };
+
+            // Start initialization
+            initProfilePage();
+        });
+
+
+        // Function to populate email immediately when page loads
+        function populateEmailImmediately() {
+            console.log('🔍 Starting immediate email population...');
+
+            const emailField = document.getElementById('vitEmail');
+            if (!emailField) {
+                console.error('❌ CRITICAL: Email field not found in DOM');
+                alert('Email field not found! Please refresh the page.');
+                return false;
+            }
+
+            console.log('✅ Email field found:', emailField);
+
+            const token = localStorage.getItem('token');
+            console.log('🔑 Token exists:', !!token);
+            console.log('🔑 Token length:', token ? token.length : 0);
+
+            if (!token) {
+                console.log('❌ No token found for email population');
+                emailField.placeholder = 'Please log in first';
+                emailField.style.borderColor = '#f39c12';
+                emailField.style.backgroundColor = '#fff3cd';
+                return false;
+            }
+
+            try {
+                // Parse JWT token
+                const tokenParts = token.split('.');
+                console.log('🔑 Token parts:', tokenParts.length);
+
+                if (tokenParts.length !== 3) {
+                    console.error('❌ Invalid JWT token format');
+                    throw new Error('Invalid token format');
+                }
+
+                const payload = JSON.parse(atob(tokenParts[1]));
+                console.log('🔍 Token payload keys:', Object.keys(payload));
+                console.log('🔍 Token payload:', JSON.stringify(payload, null, 2));
+
+                // Try multiple possible email fields
+                let email = payload.email || payload.user?.email || payload.sub || payload.email_address || payload.preferred_username || payload.mail;
+                console.log('📧 Raw email from token:', email);
+
+                if (email && typeof email === 'string') {
+                    // Clean the email
+                    email = email.trim().toLowerCase();
+                    console.log('📧 Cleaned email:', email);
+
+                    // Check if it's a valid email
+                    if (email.includes('@') && (email.includes('@vitbhopal.ac.in') || email.includes('@gmail.com'))) {
+                        console.log('✅ Valid VIT/Gmail email found:', email);
+
+                        // Set the email field
+                        emailField.value = email;
+                        emailField.placeholder = '';
+                        emailField.style.borderColor = '#2ecc71';
+                        emailField.style.backgroundColor = '#f8f9fa';
+                        emailField.style.color = '#2c3e50';
+                        emailField.style.fontWeight = '600';
+
+                        // Change loading icon to lock icon
+                        const loadingIcon = document.getElementById('emailLoadingIcon');
+                        if (loadingIcon) {
+                            loadingIcon.className = 'bx bxs-lock';
+                            loadingIcon.style.color = '#2ecc71';
+                            console.log('✅ Icon changed to lock');
+                        }
+
+                        // Show success indicator
+                        const indicator = document.getElementById('googleEmailIndicator');
+                        if (indicator) {
+                            indicator.style.display = 'flex';
+                            console.log('✅ Success indicator shown');
+                        }
+
+                        console.log('✅ Email successfully populated from token:', email);
+                        return true;
+                    } else {
+                        console.warn('⚠️ Email found but not VIT/Gmail:', email);
+                    }
+                } else {
+                    console.warn('⚠️ No email field found in token payload');
+                }
+
+                // If we get here, token doesn't have email - try backend
+                console.log('📡 Token email not found, trying backend API...');
+                populateEmailFromBackend(token, emailField);
+                return false;
+
+            } catch (error) {
+                console.error('❌ Error parsing token:', error);
+                console.error('❌ Error details:', error.message);
+                console.error('❌ Error stack:', error.stack);
+
+                // Try backend as fallback
+                populateEmailFromBackend(token, emailField);
+                return false;
+            }
+        }
+
+        // Helper function to populate email from backend API
+        async function populateEmailFromBackend(token, emailField) {
+            try {
+                console.log('📡 Making backend API call for email...');
+
+                const response = await fetch('/api/v1/profile/me', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                console.log('📡 Backend response status:', response.status);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('📦 Backend response data:', data);
+
+                    const backendEmail = data.data?.user?.email || data.user?.email || data.email;
+                    console.log('📧 Email from backend:', backendEmail);
+
+                    if (backendEmail && backendEmail.includes('@')) {
+                        console.log('✅ Email found in backend, updating field...');
+
+                        // Only update if field is still empty or showing loading
+                        if (!emailField.value || emailField.value === '' || emailField.placeholder.includes('Loading')) {
+                            emailField.value = backendEmail;
+                            emailField.placeholder = '';
+                            emailField.style.borderColor = '#2ecc71';
+                            emailField.style.backgroundColor = '#f8f9fa';
+                            emailField.style.color = '#2c3e50';
+                            emailField.style.fontWeight = '600';
+
+                            // Show success indicator
+                            const indicator = document.getElementById('googleEmailIndicator');
+                            if (indicator) indicator.style.display = 'flex';
+
+                            console.log('✅ Email field updated from backend');
+                        } else {
+                            console.log('ℹ️ Email field already populated, skipping backend update');
+                        }
+
+                        return true;
+                    }
+                } else {
+                    console.error('❌ Backend API call failed with status:', response.status);
+                    const errorText = await response.text();
+                    console.error('❌ Backend error response:', errorText);
+                }
+            } catch (backendError) {
+                console.error('❌ Backend API call error:', backendError);
+            }
+
+            // If backend fails and field is still empty, show error
+            if (!emailField.value || emailField.placeholder.includes('Loading')) {
+                console.error('❌ CRITICAL: Could not load email from any source');
+                emailField.value = '';
+                emailField.placeholder = 'Unable to load email - please refresh page';
+                emailField.style.borderColor = '#e74c3c';
+                emailField.style.backgroundColor = '#f8d7da';
+            }
+        }
+
+    </script>
+</body>
+
+</html>

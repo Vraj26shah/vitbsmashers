@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scholars Stack - Premium Academic Resources</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
+    <meta name="google-signin-client_id" content="150852944049-1kljh7jhlubn7kpmrss0nccqkm61jv7u.apps.googleusercontent.com">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .custom-google-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            background: #fff;
+            color: #3c4043;
+            border: 1px solid #dadce0;
+            border-radius: 50px;
+            padding: 14px 28px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            min-height: 52px;
+            width: 100%;
+            max-width: 320px;
+            margin: 0 auto;
+            text-decoration: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .custom-google-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(66, 133, 244, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .custom-google-btn:hover::before {
+            left: 100%;
+        }
+
+        .custom-google-btn:hover {
+            background: #f8f9fa;
+            box-shadow: 0 4px 20px rgba(66, 133, 244, 0.3);
+            transform: translateY(-2px);
+            border-color: #c4c7c5;
+        }
+
+        .custom-google-btn:active {
+            background: #f1f3f4;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transform: translateY(0);
+        }
+
+        .google-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .auth-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .auth-note {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            text-align: left;
+            font-size: 14px;
+            color: #ecf0f1;
+            margin-top: 20px;
+            max-width: 420px;
+            padding: 16px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 12px;
+            border: 1px solid rgba(52, 152, 219, 0.3);
+            backdrop-filter: blur(10px);
+        }
+
+        .auth-note i {
+            color: #3498db;
+            font-size: 18px;
+            margin-top: 2px;
+            flex-shrink: 0;
+        }
+
+        .auth-note-content {
+            line-height: 1.5;
+        }
+
+        .auth-note-content strong {
+            color: #3498db;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body>
+    <!-- Animated Background -->
+    <div class="bg-particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <!-- Header -->
+    <header id="mainHeader">
+        <div class="container header-content">
+            <a href ="index.html" class="logo" id="mainLogo">
+                            <img src="features/images/logo1.png" alt="Scholars Stack Logo">
+
+                <div class="logo-text">
+                    <h1>Scholars <span>Stack</span></h1>
+                    <p>Premium Academic Resources</p>
+                </div>
+            </a>
+            
+            <button class="mobile-toggle" id="mobileToggle" aria-label="Toggle navigation menu">
+                <i class="fas fa-bars" id="menuIcon"></i>
+            </button>
+            
+            <nav id="mainNav">
+                <ul>
+                    <li><a href="#why-join" class="nav-link">Why Join?</a></li>
+                    <li><a href="#testimonials" class="nav-link">Testimonials</a></li>
+                    <li><a href="features/marketplace/market.html?sidebar=active" class="nav-link">Resources</a></li>
+                    <li><a href="features/marketplace/market.html?sidebar=active" class="nav-btn"><i class="fas fa-rocket"></i> Get Started</a></li>
+                </ul>
+            </nav>
+        </div>
+        
+        <div class="nav-overlay" id="navOverlay"></div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <!-- Hero Text -->
+                <div class="hero-text">
+                    <h1>Transform Your Academic Performance at VIT Bhopal</h1>
+                    <p>Access premium study materials from 9-pointer students, curated resources, and powerful tools designed to maximize your GPA and minimize your effort.</p>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-number">97 </div>
+                            <div class="stat-label">% Success Rate</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">9+</div>
+                            <div class="stat-label">Avg. GPA</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">500+</div>
+                            <div class="stat-label">Students</div>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-btns">
+                        <div class="auth-section">
+                            <button id="customGoogleSignIn" class="custom-google-btn">
+                                <svg class="google-icon" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                Sign in with Google
+                            </button>
+                            <div class="auth-note">
+                                <i class="fas fa-university"></i>
+                                <div class="auth-note-content">
+                                    <strong>Exclusive for VIT Bhopal University students</strong>
+                                    <br>
+                                    <span>Please use your <strong>@vitbhopal.ac.in</strong> Google account to sign in</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Compact Feature Cards -->
+<!-- Feature Cards Section -->
+<section class="features-section">
+    <div class="container">
+        <div class="section-title">
+            <h2>Features</h2>
+            <p>Premium academic resources curated by top-performing students</p>
+        </div>
+        
+        <div class="compact-features-grid">
+            <!-- Feature Card 1 -->
+             <a class="feature-card" href="features/maps/maps.html?sidebar=active">
+                                <span class="upcoming-tag">Upcoming</span>
+
+                <div class="feature-icon">
+                    <i class="fas fa-map"></i>
+                </div>
+                <h3>Map</h3>
+                <p>Map of Vit-bhopal with its looks</p>
+                <div class="access-now">
+                    <span>Access Now</span>
+                    <i class="fas fa-arrow-right"></i>
+                </div>
+            </a>
+            
+            
+             <a class="feature-card" href="features/ttmaker/ttmaker1.html?sidebar=active">
+                 <div class="feature-icon">
+                     <i class="fas fa-calendar-alt"></i>
+                 </div>
+                 <h3>Timetable Maker</h3>
+                 <p>Custom study schedules</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+
+             <a class="feature-card" href="features/attendance/attendance.html?sidebar=active">
+                 <div class="feature-icon">
+                     <i class="fas fa-calculator"></i>
+                 </div>
+                 <h3>Attendance Calculator</h3>
+                 <p>Track and predict your attendance for all classes</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+             <!-- Repeat for other 7 features with unique icons -->
+             <a class="feature-card" href="features/mess-menu/mess.html?sidebar=active">
+                 <div class="feature-icon">
+                     <i class="fas fa-file-alt"></i>
+                 </div>
+                 <h3>Mess Menus</h3>
+                 <p>Official menus of all messes and canteens</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+             <a class="feature-card" href="features/gpa-calculator/cgpa.html?sidebar=active">
+                 <div class="feature-icon">
+                     <i class="fas fa-calculator"></i>
+                 </div>
+                 <h3>CGPA Calculator</h3>
+                 <p>Track and predict your GPA </p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+
+             <a class="feature-card" href="features/faculty/faculty.html?sidebar=active">
+                 <div class="feature-icon">
+                 <i class="fas fa-chalkboard-teacher"></i>
+                 </div>
+                 <h3>Faculty Info</h3>
+                 <p>All Faculty details of vit bhopal</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+
+             <a class="feature-card" href="features/event/event.html?sidebar=active">
+                 <div class="feature-icon">
+                     <i class="fas fa-video"></i>
+                 </div>
+                 <h3>Events</h3>
+                 <p>All the events status</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+
+
+             <a class="feature-card" href="features/marketplace/market.html?sidebar=active">
+                 <div class="feature-icon">
+                     <i class="fas fa-pencil-alt"></i>
+                 </div>
+                 <h3>Handwritten Notes</h3>
+                 <p>Curated notes from top-performing students</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+        </div>
+    </div>
+</section>            </div>
+        </div>
+    </section>
+
+    <!-- Why Join Section (Full Width) -->
+<section class="why-join" id="why-join">
+    <div class="container">
+        <div class="section-title centered">
+            <h2>Why Join Scholars Stack?</h2>
+            <p>Premium benefits for academic excellence at VIT Bhopal</p>
+        </div>
+        
+        <div class="benefits-container">
+            <div class="benefit-row">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3>Elite Materials</h3>
+                    <p>Study resources from 9-pointer students</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-book"></i>
+                    </div>
+                    <h3>Curated Resources</h3>
+                    <p>Perfectly organized for every course</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-calculator"></i>
+                    </div>
+                    <h3>Smart Calculators</h3>
+                    <p>CGPA and attendance trackers</p>
+                </div>
+            </div>
+            
+            <div class="benefit-row">
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3>Personalized Guidance</h3>
+                    <p>Study recommendations tailored for you</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <h3>Priority Support</h3>
+                    <p>Direct help from top students</p>
+                </div>
+                <div class="benefit-card">
+                    <div class="benefit-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Exam Strategies</h3>
+                    <p>Proven techniques for better scores</p>
+                </div>
+            </div>
+            
+            <div class="benefit-cta">
+                <h3>Join hundreds of VITB students achieving academic excellence</h3>
+                <p>Average GPA increase: 1.2 points within first semester</p>
+                <a href="https://chat.whatsapp.com/GBLnFekrdLGCfW2Vc4MnUc?mode=ac_c" class="btn btn-primary1">
+                    <i class="fas fa-rocket"></i> Join Elite Students
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+    <!-- Testimonials -->
+    <section id="testimonials" class="testimonials">
+        <div class="container">
+            <div class="section-title">
+                <h2>Student Success Stories</h2>
+                <p>Hear from VITB students who transformed their academic journey</p>
+            </div>
+            <div class="testimonial-grid">
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>Honestly, I was drowning in notes and random YouTube videos before this. Your curated stuff saved me SO much time – finally found explanations that actually made sense! The timetable feature? Lifesaver. Went from barely passing to an A- in organic chem. Can't believe I waited this long.</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-info">
+                            <h4>Parth Patel</h4>
+                            <p>CSE 3rd Year | GPA: 9.16</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>I was skeptical about 'bought notes' but wow. These aren't just summaries – they're structured like a tutor planned them. Paired with the timetable tool? Finally stopped cramming. Went from B's to straight A's this semester. Seriously, if you're struggling to organize, just try it.</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-info">
+                            <h4>Priyanshu Sharma</h4>
+                            <p>AI 2nd Year | GPA: 8.89</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card">
+                    <div class="testimonial-content">
+                        <p>Dude, the fluid dynamics notes + linked videos? Spot on. Explained concepts my prof couldn't. But the attendance calculator was low-key genius – took so much stress off my shoulders. Actually had time to breathe between labs. 10/10 would recommend for any overloaded eng student.</p>
+                    </div>
+                    <div class="testimonial-author">
+                        <div class="author-info">
+                            <h4>Sonu Pastagia</h4>
+                            <p>CSE 3th Year | GPA: 9.23</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Ready to Transform Your Academic Journey?</h2>
+                <p>Join hundreds of VITB students who are using our premium resources to maximize their academic performance and achieve their GPA goals.</p>
+                <a href="features/marketplace/market.html?sidebar=active" class="btn btn-primary btn-light">
+                    <i class="fas fa-rocket"></i> Get Started Now
+                </a>
+                <p class="cta-note" style="margin-top: 20px; font-size: 0.9rem;">Average GPA increase: 1.2 points within first semester</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-column">
+                    <h3>Scholars Stack</h3>
+                    <p>Providing premium academic resources curated by top-performing students to help you excel in your courses.</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+                <div class="footer-column">
+                    <h3>Quick Links</h3>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Home</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Marketplace</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> My Courses</a></li>
+                        <li><a href="features/gpa-calculator/cgpa.html?sidebar=active"><i class="fas fa-chevron-right"></i> CGPA Calculator</a></li>
+                        <li><a href="features/marketplace/market.html?sidebar=active"><i class="fas fa-chevron-right"></i> Marketplace</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Handwritten Notes</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Teacher's Materials</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Previous Year Papers</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Video Resources</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Timetable Maker</a></li>
+                    </ul>
+                </div>
+                <div class="footer-column">
+                    <h3>Contact</h3>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> vitbsmashers@gmail.com</li>
+                        <li><i class="fas fa-phone"></i> +91 7984182948</li>
+                        <li><i class="fas fa-map-marker-alt"></i> VIT Bhopal Campus</li>
+                        <li>Bhopal-Indore Highway</li>
+                        <li>Madhya Pradesh</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="copyright">
+                <p>&copy; 2025 Scholars Stack. All Rights Reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="config.js"></script>
+    <script>
+        // API Configuration - Point to backend server
+        const API_BASE = window.config ? window.config.AUTH_BASE : '/api/v1/auth';
+
+        // Custom Google Sign-In implementation with forced account selection
+        function initGoogleSignIn() {
+            console.log('🚀 Initializing Custom Google Sign-In...');
+
+            const customButton = document.getElementById('customGoogleSignIn');
+            if (customButton) {
+                customButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    window.location.href = window.config ? `${window.config.AUTH_BASE}/google` : '/api/v1/auth/google';
+                });
+
+                console.log('✅ Custom Google Sign-In button initialized with forced account selection');
+            } else {
+                console.error('❌ Custom Google Sign-In button not found');
+            }
+        }
+
+        function handleGoogleSignIn(response) {
+            console.log('📨 Google sign-in response received');
+
+            if (!response.credential) {
+                console.error('❌ No credential received');
+                showToast('Google sign-in failed. Please try again.', 'error');
+                return;
+            }
+
+            // Decode JWT to get email for validation
+            try {
+                const payload = JSON.parse(atob(response.credential.split('.')[1]));
+                const email = payload.email;
+
+                if (!email || !email.endsWith('@vitbhopal.ac.in')) {
+                    console.error('❌ Non-VIT email detected:', email);
+                    showToast('Please use your VIT Bhopal University email (@vitbhopal.ac.in) to sign in.', 'error');
+                    return;
+                }
+
+                console.log('✅ VIT email verified:', email);
+            } catch (error) {
+                console.error('❌ Error decoding JWT:', error);
+                showToast('Authentication failed. Please try again.', 'error');
+                return;
+            }
+
+            console.log('✅ ID token received, sending to backend...');
+            showToast('Signing you in...', 'info');
+
+            // Send ID token to backend
+            fetch(`${API_BASE}/google-token`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({ idToken: response.credential })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+                }
+                return res.json();
+            })
+            .then(data => {
+                console.log('✅ Backend response:', data);
+
+                if (!data.token) {
+                    throw new Error(data.message || 'Authentication failed');
+                }
+
+                // Success - User is now logged in
+                localStorage.setItem('token', data.token);
+                if (data.data && data.data.user) {
+                    localStorage.setItem('userProfile', JSON.stringify(data.data.user));
+                }
+                showToast('Welcome! Taking you to your profile...', 'success');
+
+                setTimeout(() => {
+                    window.location.href = 'features/profile/profile.html?sidebar=active';
+                }, 1500);
+            })
+            .catch(err => {
+                console.error('❌ Authentication error:', err);
+                let errorMessage = 'Authentication failed. Please try again.';
+
+                if (err.message.includes('VIT Bhopal')) {
+                    errorMessage = err.message;
+                } else if (err.message.includes('network') || err.message.includes('fetch')) {
+                    errorMessage = 'Unable to connect to server. Please check your internet connection.';
+                }
+
+                showToast(errorMessage, 'error');
+            });
+        }
+
+        function showToast(message, type = 'info') {
+            // Remove existing toasts
+            const existingToasts = document.querySelectorAll('.auth-toast');
+            existingToasts.forEach(toast => toast.remove());
+
+            // Create new toast
+            const toast = document.createElement('div');
+            toast.className = `auth-toast ${type}`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+
+            document.body.appendChild(toast);
+
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            // Auto-hide after 4 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 DOM loaded, initializing Custom Google Sign-In...');
+            initGoogleSignIn();
+        });
+    </script>
+    <script src="script.js"></script>
+</body>
+</html>

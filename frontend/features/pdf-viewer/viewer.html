@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Notes — Scholars Stack</title>
+  <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+  <script src="../../config.js"></script>
+  <!-- PDF.js — renders PDFs as canvas, bypasses all browser iframe/embed blocking -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+    :root {
+      --primary-dark: #0f1a2a;
+      --accent-blue:  #3498db;
+      --accent-teal:  #2ecc71;
+      --light-color:  #ecf0f1;
+      --danger-color: #e74c3c;
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+
+    body {
+      background: linear-gradient(135deg, #0a1423 0%, var(--primary-dark) 100%);
+      color: var(--light-color);
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .viewer-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 20px;
+      height: 60px;
+      flex-shrink: 0;
+      background: rgba(15, 26, 42, 0.95);
+      border-bottom: 2px solid var(--accent-blue);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+      z-index: 200;
+      position: relative;
+    }
+
+    .btn-back {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: transparent;
+      border: 1px solid rgba(52, 152, 219, 0.4);
+      color: #aaa;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-family: 'Poppins', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .btn-back:hover { border-color: var(--accent-blue); color: var(--light-color); }
+
+    .file-name {
+      flex: 1;
+      font-weight: 600;
+      font-size: 15px;
+      color: var(--light-color);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .protection-badge {
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      color: var(--accent-teal);
+      background: rgba(46, 204, 113, 0.1);
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 1px solid rgba(46, 204, 113, 0.25);
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    /* ── States ── */
+    .state-overlay {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 16px;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .state-icon { font-size: 56px; }
+    .state-overlay h2 { font-size: 1.4rem; }
+    .state-overlay p {
+      color: #aaa;
+      max-width: 420px;
+      line-height: 1.6;
+      font-size: 14px;
+    }
+
+    .spinner {
+      width: 48px;
+      height: 48px;
+      border: 3px solid rgba(52, 152, 219, 0.15);
+      border-top-color: var(--accent-blue);
+      border-radius: 50%;
+      animation: spin 0.75s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    #loading-progress {
+      font-size: 13px;
+      color: #aaa;
+      margin-top: -8px;
+    }
+
+    .btn-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 10px 22px;
+      background: var(--accent-blue);
+      color: #fff;
+      text-decoration: none;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      transition: opacity 0.15s;
+    }
+    .btn-primary:hover { opacity: 0.85; }
+
+    /* ── PDF Viewer ── */
+    #viewer-wrapper {
+      flex: 1;
+      position: relative;
+      overflow-y: auto;
+      overflow-x: hidden;
+      background: #525659;
+      transition: filter 0.3s ease;
+    }
+
+    /* Blurred when tab is hidden or window loses focus */
+    #viewer-wrapper.blurred {
+      filter: blur(18px);
+    }
+
+    #pdf-pages {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px 0;
+      gap: 12px;
+    }
+
+    #pdf-pages canvas {
+      display: block;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+      max-width: calc(100vw - 40px);
+      /* Prevents text selection and drag */
+      -webkit-user-select: none;
+      -moz-user-select: none;
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    /* Watermark fixed so it always covers viewport regardless of scroll */
+    #watermark-canvas {
+      position: fixed;
+      top: 60px;
+      left: 0;
+      width: 100%;
+      height: calc(100vh - 60px);
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    /* ── Print: hide everything ── */
+    @media print {
+      * { display: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <div class="viewer-header">
+    <button class="btn-back" onclick="window.close()">
+      <i class='bx bx-arrow-back'></i> Back
+    </button>
+    <span id="file-name" class="file-name">Loading...</span>
+    <div class="protection-badge">
+      <i class='bx bxs-lock-alt'></i> Protected Content
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div id="loading-state" class="state-overlay">
+    <div class="spinner"></div>
+    <h2>Verifying Access…</h2>
+    <p>Checking your purchase and loading the document securely.</p>
+    <div id="loading-progress"></div>
+  </div>
+
+  <!-- Error state -->
+  <div id="error-state" class="state-overlay" style="display:none;">
+    <div class="state-icon">🚫</div>
+    <h2 id="error-title" style="color: var(--danger-color);">Access Denied</h2>
+    <p id="error-message">You do not have permission to view this file.</p>
+    <a href="/features/mycourses/mycourses.html" class="btn-primary">
+      <i class='bx bx-book'></i> Back to My Courses
+    </a>
+  </div>
+
+  <!-- PDF viewer — canvas-based, no iframe, no browser blocking -->
+  <div id="viewer-wrapper" style="display:none;">
+    <canvas id="watermark-canvas"></canvas>
+    <div id="pdf-pages"></div>
+  </div>
+
+  <script>
+    // ── PDF.js worker setup ──
+    pdfjsLib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+    // ── URL params ──
+    const params   = new URLSearchParams(window.location.search);
+    const courseId = params.get('courseId');
+    const fileId   = params.get('fileId');
+    const fileName = params.get('fileName') || 'Course Notes';
+
+    document.getElementById('file-name').textContent = fileName;
+    document.title = `${fileName} — Scholars Stack`;
+
+    function getApiBase() {
+      return window.config ? window.config.API_BASE : '/api/v1';
+    }
+
+    function makeAbsoluteUrl(path) {
+      if (!path || path.startsWith('http')) return path;
+      try { return new URL(getApiBase()).origin + path; }
+      catch { return path; }
+    }
+
+    function getToken()    { return localStorage.getItem('token'); }
+
+    function getUserEmail() {
+      try {
+        const u = JSON.parse(localStorage.getItem('user') || '{}');
+        return u.email || u.username || null;
+      } catch { return null; }
+    }
+
+    function setProgress(text) {
+      document.getElementById('loading-progress').textContent = text;
+    }
+
+    function showError(title, message) {
+      document.getElementById('loading-state').style.display  = 'none';
+      document.getElementById('viewer-wrapper').style.display = 'none';
+      document.getElementById('error-state').style.display    = 'flex';
+      document.getElementById('error-title').textContent      = title;
+      document.getElementById('error-message').textContent    = message;
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  PROTECTION LAYER 1 — Keyboard shortcut blocking
+    // ═══════════════════════════════════════════════════════════════
+    document.addEventListener('keydown', e => {
+      const ctrl = e.ctrlKey || e.metaKey;
+
+      // Block PrintScreen
+      if (e.key === 'PrintScreen') {
+        e.preventDefault();
+        // Overwrite clipboard with empty string (Chrome/Edge)
+        try { navigator.clipboard.writeText(''); } catch (_) {}
+        return;
+      }
+
+      // Block F12 (DevTools)
+      if (e.key === 'F12') { e.preventDefault(); return; }
+
+      // Block Ctrl/Cmd + Shift + I/J/C (DevTools)
+      if (ctrl && e.shiftKey && ['I','J','C'].includes(e.key.toUpperCase())) {
+        e.preventDefault(); return;
+      }
+
+      // Block Ctrl/Cmd + U (View Source)
+      if (ctrl && e.key.toUpperCase() === 'U') { e.preventDefault(); return; }
+
+      // Block Ctrl/Cmd + S (Save Page)
+      if (ctrl && e.key.toUpperCase() === 'S') { e.preventDefault(); return; }
+
+      // Block Ctrl/Cmd + P (Print)
+      if (ctrl && e.key.toUpperCase() === 'P') { e.preventDefault(); return; }
+
+      // Block Ctrl/Cmd + A (Select All — inside viewer)
+      if (ctrl && e.key.toUpperCase() === 'A') { e.preventDefault(); return; }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    //  PROTECTION LAYER 2 — Print event interception
+    // ═══════════════════════════════════════════════════════════════
+    window.addEventListener('beforeprint', e => { e.preventDefault(); });
+    window.onbeforeprint = () => false;
+
+    // ═══════════════════════════════════════════════════════════════
+    //  PROTECTION LAYER 3 — Blur content when tab is hidden
+    //  This catches most screen-recording setups that switch tabs
+    //  or put the window in a screen-share stream before recording.
+    // ═══════════════════════════════════════════════════════════════
+    const viewerWrapper = document.getElementById('viewer-wrapper');
+
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        viewerWrapper.classList.add('blurred');
+      } else {
+        // Small delay so a re-focus screenshot can't catch the un-blur frame
+        setTimeout(() => viewerWrapper.classList.remove('blurred'), 300);
+      }
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    //  PROTECTION LAYER 4 — Right-click / context menu block
+    // ═══════════════════════════════════════════════════════════════
+    document.addEventListener('contextmenu', e => {
+      if (e.target.closest('#viewer-wrapper')) e.preventDefault();
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    //  PROTECTION LAYER 5 — Drag prevention on canvases
+    // ═══════════════════════════════════════════════════════════════
+    document.addEventListener('dragstart', e => {
+      if (e.target.tagName === 'CANVAS') e.preventDefault();
+    });
+
+    // ═══════════════════════════════════════════════════════════════
+    //  WATERMARK — Fixed overlay with user email, repaints on resize
+    //  The email watermark is the strongest protection:
+    //  even if someone screenshots it, the leak is traceable back to them.
+    // ═══════════════════════════════════════════════════════════════
+    function drawWatermark(email) {
+      const canvas = document.getElementById('watermark-canvas');
+
+      function paint() {
+        canvas.width  = window.innerWidth;
+        canvas.height = window.innerHeight - 60;
+        const ctx  = canvas.getContext('2d');
+        const text = `${email} — Scholars Stack — Personal use only`;
+        const size = Math.max(11, Math.min(15, canvas.width / 55));
+
+        ctx.save();
+        ctx.globalAlpha = 0.12;
+        ctx.fillStyle   = '#ffffff';
+        ctx.font        = `${size}px Poppins, Arial, sans-serif`;
+        ctx.translate(canvas.width / 2, canvas.height / 2);
+        ctx.rotate(-28 * Math.PI / 180);
+
+        const sp   = 190;
+        const cols = Math.ceil(canvas.width  / sp) + 4;
+        const rows = Math.ceil(canvas.height / sp) + 4;
+        for (let i = -cols; i <= cols; i++)
+          for (let j = -rows; j <= rows; j++)
+            ctx.fillText(text, i * sp, j * sp);
+
+        ctx.restore();
+      }
+
+      paint();
+      window.addEventListener('resize', paint);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    //  PDF RENDERER — PDF.js canvas, no iframe, no Brave blocking
+    // ═══════════════════════════════════════════════════════════════
+    async function loadPdf(streamUrl) {
+      try {
+        setProgress('Downloading document…');
+        const res = await fetch(streamUrl);
+        if (!res.ok) throw new Error(`Stream error ${res.status}`);
+
+        setProgress('Preparing viewer…');
+        const arrayBuffer = await res.arrayBuffer();
+
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const pdf         = await loadingTask.promise;
+        const totalPages  = pdf.numPages;
+
+        const container = document.getElementById('pdf-pages');
+        const wrapperEl = document.getElementById('viewer-wrapper');
+        const pageWidth = Math.min(wrapperEl.clientWidth - 40, 1000);
+        const dpr       = window.devicePixelRatio || 1;
+
+        for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+          setProgress(`Rendering page ${pageNum} of ${totalPages}…`);
+
+          const page      = await pdf.getPage(pageNum);
+          const naturalVP = page.getViewport({ scale: 1 });
+          const scale     = pageWidth / naturalVP.width;
+          const viewport  = page.getViewport({ scale });
+
+          const canvas         = document.createElement('canvas');
+          canvas.width         = Math.floor(viewport.width  * dpr);
+          canvas.height        = Math.floor(viewport.height * dpr);
+          canvas.style.width   = Math.floor(viewport.width)  + 'px';
+          canvas.style.height  = Math.floor(viewport.height) + 'px';
+
+          const ctx = canvas.getContext('2d');
+          ctx.scale(dpr, dpr);
+
+          await page.render({ canvasContext: ctx, viewport }).promise;
+          container.appendChild(canvas);
+        }
+
+        document.getElementById('loading-state').style.display = 'none';
+        wrapperEl.style.display = 'block';
+
+        const email = getUserEmail();
+        if (email) drawWatermark(email);
+
+      } catch (err) {
+        console.error('PDF render error:', err);
+        showError('Load Error', 'Failed to load the document. Please check your connection and try again.');
+      }
+    }
+
+    // ── Main init ──
+    async function init() {
+      const token = getToken();
+      if (!token) { window.location.href = '/login1.html'; return; }
+
+      if (!courseId || !fileId) {
+        showError('Invalid Link', 'This viewer link is missing required parameters. Please go back to My Courses and try again.');
+        return;
+      }
+
+      try {
+        const res  = await fetch(`${getApiBase()}/courses/${courseId}/notes/${fileId}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          const msgs = {
+            not_purchased:          'You have not purchased this course. Buy it first to access the notes.',
+            file_not_in_course:     'This file does not belong to the requested course.',
+            file_not_found:         'This file could not be found. Please contact support.',
+            service_not_configured: 'The notes system is being set up. Please check back soon.'
+          };
+          showError(
+            res.status === 403 ? 'Access Denied' : 'Error',
+            msgs[data.error] || data.message || 'Unable to load this document.'
+          );
+          return;
+        }
+
+        loadPdf(makeAbsoluteUrl(data.data.streamUrl));
+
+      } catch (err) {
+        console.error('Viewer error:', err);
+        showError('Network Error', 'Failed to load the document. Please check your internet connection and try again.');
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
