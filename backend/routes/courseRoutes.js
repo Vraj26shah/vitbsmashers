@@ -13,6 +13,7 @@ import {
   getCourseStats,
   bulkUpdateCourses,
   seedCourses,
+  seedBranches,
   getMyCourses,
   getUserPurchasedCourses,
   getCourseModules,
@@ -40,7 +41,8 @@ router.get('/',    getCourses);
 
 // Admin only
 router.post('/',      protect, adminOnly, createCourse);
-router.post('/seed',  protect, adminOnly, seedCourses);
+router.post('/seed',         protect, adminOnly, seedCourses);
+router.post('/seed-branches', protect, adminOnly, seedBranches);
 router.put('/bulk',   protect, adminOnly, bulkUpdateCourses);
 router.put('/:id',    protect, adminOnly, updateCourse);
 router.delete('/:id', protect, adminOnly, deleteCourse);

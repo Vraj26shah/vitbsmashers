@@ -13,10 +13,11 @@ const router = express.Router();
 router.use(protect);
 
 router.get('/me',                    getProfile);
-router.get('/:userId',               getProfile);
 router.put('/update',                updateProfile);
 router.post('/upload-avatar',        uploadAvatar);
 router.get('/achievements/:userId',  getAchievements);
 router.post('/achievements',         addAchievement);
+// Keep /:userId last to avoid shadowing named routes above
+router.get('/:userId',               getProfile);
 
 export default router;

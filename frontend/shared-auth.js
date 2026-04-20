@@ -49,11 +49,26 @@ class AuthManager {
                 const headers = { 'Content-Type': 'application/json' };
                 if (token) headers['Authorization'] = `Bearer ${token}`;
 
-                const response = await fetch(`${API_BASE}/validate-token`, {
+                let response = await fetch(`${API_BASE}/validate-token`, {
                     method: 'GET',
                     headers,
                     credentials: 'include'
                 });
+
+                // If 401 and we have a refresh token, attempt one refresh then retry
+                if (response.status === 401) {
+                    const refreshed = await this._tryRefreshToken(API_BASE);
+                    if (refreshed) {
+                        const newToken = localStorage.getItem('token');
+                        const retryHeaders = { 'Content-Type': 'application/json' };
+                        if (newToken) retryHeaders['Authorization'] = `Bearer ${newToken}`;
+                        response = await fetch(`${API_BASE}/validate-token`, {
+                            method: 'GET',
+                            headers: retryHeaders,
+                            credentials: 'include'
+                        });
+                    }
+                }
 
                 if (response.ok) {
                     const data = await response.json();
@@ -62,8 +77,6 @@ class AuthManager {
                         this.userEmail = data.user.email;
                         this.userData = data.user;
                         localStorage.setItem('userProfile', JSON.stringify(data.user));
-                        // Store token in localStorage so all page-level API calls work
-                        if (data.token) localStorage.setItem('token', data.token);
                         return true;
                     }
                 }
@@ -102,9 +115,34 @@ class AuthManager {
         }
     }
 
+    // Attempt to refresh the access token using the stored refresh token
+    async _tryRefreshToken(apiBase) {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) return false;
+        try {
+            const res = await fetch(`${apiBase}/refresh-token`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ refresh_token: refreshToken }),
+            });
+            if (!res.ok) return false;
+            const data = await res.json();
+            if (data.status === 'success' && data.token) {
+                localStorage.setItem('token', data.token);
+                if (data.refresh) localStorage.setItem('refreshToken', data.refresh);
+                return true;
+            }
+            return false;
+        } catch {
+            return false;
+        }
+    }
+
     // Clear authentication data
     clearAuthData() {
         localStorage.removeItem('token');
+        localStorage.removeItem('refreshToken');
         localStorage.removeItem('cart');
         localStorage.removeItem('userProfile');
         this.isAuthenticated = false;
@@ -152,6 +190,7 @@ class AuthManager {
         userProfiles.forEach(profile => {
             if (this.isAuthenticated && this.userData) {
                 profile.style.display = 'flex';
+                const displayName = this.getDisplayName(this.userData);
 
                 // Update avatar
                 const avatar = profile.querySelector('.user-avatar');
@@ -162,7 +201,7 @@ class AuthManager {
                     }
                     const avatarSpan = avatar.querySelector('span');
                     if (avatarSpan) {
-                        avatarSpan.textContent = this.getInitials(this.userData.fullName || this.userData.username || 'User');
+                        avatarSpan.textContent = this.getInitials(displayName);
                         avatarSpan.style.display = 'block';
                     }
                 }
@@ -170,12 +209,44 @@ class AuthManager {
                 // Update name
                 const nameElement = profile.querySelector('.user-name');
                 if (nameElement) {
-                    nameElement.textContent = this.userData.fullName || this.userData.username || 'Student';
+                    nameElement.textContent = displayName;
                 }
             } else {
                 profile.style.display = 'none';
             }
         });
+    }
+
+    getDisplayName(userData) {
+        if (!userData) return 'Student';
+
+        const explicitName =
+            userData.fullName ||
+            userData.full_name ||
+            userData.name ||
+            null;
+
+        if (explicitName && explicitName.trim()) {
+            return explicitName.trim();
+        }
+
+        const username = userData.username || '';
+        if (username && !username.includes('@')) {
+            return username.trim();
+        }
+
+        const email = userData.email || username;
+        if (email && email.includes('@')) {
+            const emailPrefix = email.split('@')[0];
+            const nameParts = emailPrefix.split(/[._-]+/).filter(Boolean);
+            if (nameParts.length > 0) {
+                return nameParts
+                    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+                    .join(' ');
+            }
+        }
+
+        return 'Student';
     }
 
     // Get user initials for avatar
@@ -245,7 +316,7 @@ class AuthManager {
                         You need to log in to access this page. Please sign in to view your profile and courses.
                     </p>
                     <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
-                        <a href="../../index.html" style="
+                        <a href="/index.html" style="
                             background: #3498db;
                             color: white;
                             padding: 12px 24px;
@@ -299,7 +370,7 @@ class AuthManager {
         this.showNotification('Logged out successfully', 'success');
 
         setTimeout(() => {
-            window.location.href = '../index.html';
+            window.location.href = '/index.html';
         }, 1000);
     }
 

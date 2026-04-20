@@ -5,8 +5,8 @@
       "title": "Advanced Technical Communication",
       "image": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
-      "tags": "",
-      "description": "Master professional writing, presentation, and communication skills required for engineering careers. Covers technical reports, proposals, group discussions, and business correspondence.",
+      "tags": "lang",
+      "description": "Master professional writing, presentation, and communication skills required for engineering careers. Covers technical reports, proposals, group discussions, and business correspondence. Includes previous year exam questions.",
       "modulesList": [
         { "title": "Module 1", "topics": "Vocabulary — antonyms, synonyms, idioms, one-word substitution" },
         { "title": "Module 2", "topics": "Grammar — subject-verb agreement, tenses, sentence correction" },
@@ -14,24 +14,60 @@
         { "title": "Module 4", "topics": "Listening skills — academic listening and note-taking strategies" },
         { "title": "Module 5 & 7", "topics": "Rapport building, technical writing, and proposal drafting" }
       ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year semester exam questions for ENG2005." }
-      ],
+      "pyqs": [{ "title": "PYQs", "topics": "Previous year semester exam questions for ENG2005." }],
       "referenceBooks": []
     },
-    "MAT3002": {
-      "id": "MAT3002",
-      "title": "Applied Linear Algebra",
-      "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=600&q=80",
+    "ENG1004": {
+      "id": "ENG1004",
+      "title": "Effective Technical Communication",
+      "image": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
-      "tags": "math",
-      "description": "Comprehensive study of vector spaces, linear transformations, eigenvalues, and matrix decomposition with engineering applications.",
+      "tags": "lang",
+      "description": "Build reading, writing, and speaking skills for academic and professional technical contexts. Covers comprehension, formal writing, presentations, and interview preparation. Study notes and module slides included.",
       "modulesList": [
-        { "title": "Module 1", "topics": "Vectors, matrices, determinants, and systems of linear equations" },
-        { "title": "Module 2", "topics": "Vector spaces, subspaces, basis, and dimension" },
-        { "title": "Module 3", "topics": "Linear transformations, kernel, range, and matrix representation" },
-        { "title": "Module 4", "topics": "Eigenvalues, eigenvectors, and diagonalization" },
-        { "title": "Module 5", "topics": "Inner product spaces, orthogonality, and SVD" }
+        { "title": "Module 1", "topics": "Reading comprehension, vocabulary, and grammar fundamentals" },
+        { "title": "Module 2", "topics": "Writing skills — emails, reports, and technical documents" },
+        { "title": "Module 3", "topics": "Speaking skills — presentations and group discussions" },
+        { "title": "Module 4", "topics": "Listening comprehension and academic note-taking" },
+        { "title": "Module 5", "topics": "Interview preparation and workplace communication" },
+        { "title": "Module 6", "topics": "Technical proposals and research writing" },
+        { "title": "Module 7", "topics": "Soft skills, cross-cultural communication, and professional ethics" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "HUM1002": {
+      "id": "HUM1002",
+      "title": "Emotional Intelligence",
+      "image": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "lang",
+      "description": "Develop self-awareness, empathy, and interpersonal skills. Covers emotional regulation, social skills, leadership, and workplace psychology. Includes previous year questions.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Introduction to emotional intelligence, self-awareness, and self-regulation" },
+        { "title": "Module 2", "topics": "Motivation, empathy, and social skills development" },
+        { "title": "Module 3", "topics": "Conflict resolution, team dynamics, and leadership" },
+        { "title": "Module 4", "topics": "Stress management, mindfulness, and workplace well-being" },
+        { "title": "Module 5", "topics": "EI in professional settings, assessment tools, and case studies" }
+      ],
+      "pyqs": [{ "title": "PYQs", "topics": "Previous year questions for Emotional Intelligence (HUM1002)." }],
+      "referenceBooks": []
+    },
+    "SST1003": {
+      "id": "SST1003",
+      "title": "Professional Communication Skills for Engineers",
+      "image": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "lang bcg bsa mim",
+      "description": "Develop workplace communication skills — email writing, technical presentations, group discussions, and interview preparation for engineering careers.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Business writing — emails, memos, letters, and reports" },
+        { "title": "Module 2", "topics": "Technical presentation skills and visual communication" },
+        { "title": "Module 3", "topics": "Group discussions, meetings, and negotiation skills" },
+        { "title": "Module 4", "topics": "Interview preparation — aptitude, HR, and technical rounds" },
+        { "title": "Module 5", "topics": "Workplace ethics and cross-cultural communication" },
+        { "title": "Module 6", "topics": "Technical writing — manuals, proposals, and documentation" },
+        { "title": "Module 7", "topics": "Soft skills and professional networking strategies" }
       ],
       "pyqs": [],
       "referenceBooks": []
@@ -42,7 +78,7 @@
       "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
       "tags": "math",
-      "description": "Core calculus topics including limits, differentiation, integration, multiple integrals, and Laplace transforms with solved examples and reference textbooks.",
+      "description": "Core calculus topics including limits, differentiation, integration, multiple integrals, and Laplace transforms. Includes 15 study files and reference textbooks (B.S. Grewal, Kreyszig).",
       "modulesList": [
         { "title": "Module 1", "topics": "Limits, continuity, and differential calculus fundamentals" },
         { "title": "Module 2", "topics": "Multiple integrals — double and triple integrals with applications" },
@@ -51,80 +87,21 @@
         { "title": "Module 5", "topics": "Laplace transforms, inverse transforms, and convolution" }
       ],
       "pyqs": [],
-      "referenceBooks": [
-        { "title": "Reference Books", "topics": "Higher Engineering Mathematics by B.S. Grewal; Advanced Engineering Mathematics by Erwin Kreyszig; Thomas Calculus." }
-      ]
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Higher Engineering Mathematics by B.S. Grewal; Advanced Engineering Mathematics by Erwin Kreyszig — PDF copies included." }]
     },
-    "CSE2003": {
-      "id": "CSE2003",
-      "title": "Computer Architecture and Organization",
-      "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80",
+    "MAT1003": {
+      "id": "MAT1003",
+      "title": "Calculus",
+      "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
-      "tags": "cs",
-      "description": "In-depth coverage of processor design, memory hierarchy, instruction sets, pipelining, and I/O organization. Includes previous year questions with solutions.",
+      "tags": "math",
+      "description": "Core single and multi-variable calculus with limits, differentiation, integration, and vector calculus. Lecture notes and module slides included.",
       "modulesList": [
-        { "title": "Module 1", "topics": "Digital logic, number systems, Boolean algebra, and combinational circuits" },
-        { "title": "Module 2", "topics": "Instruction set architecture, addressing modes, and assembly language" },
-        { "title": "Module 3", "topics": "CPU organization, ALU design, control unit, and microprogramming" },
-        { "title": "Module 4", "topics": "Pipelining, hazards, superscalar, and parallel processing" },
-        { "title": "Module 5", "topics": "Memory hierarchy, cache, virtual memory, and I/O organization" }
-      ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year exam questions covering all modules of CSE2003." }
-      ],
-      "referenceBooks": []
-    },
-    "CSD3009": {
-      "id": "CSD3009",
-      "title": "Data Structures and Analysis of Algorithms",
-      "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80",
-      "price": "₹499",
-      "tags": "cs",
-      "description": "Advanced data structures and algorithm design with complexity analysis. Covers trees, graphs, dynamic programming, and greedy algorithms with problem-solving strategies.",
-      "modulesList": [
-        { "title": "Module 1", "topics": "Arrays, linked lists, stacks, queues, and complexity analysis" },
-        { "title": "Module 2", "topics": "Trees — BST, AVL, heaps, B-trees, and traversal algorithms" },
-        { "title": "Module 3", "topics": "Graph algorithms — BFS, DFS, shortest paths, and MST" },
-        { "title": "Module 4", "topics": "Sorting and searching — merge sort, quick sort, and hashing" },
-        { "title": "Module 5", "topics": "Dynamic programming, greedy algorithms, and NP-completeness" }
-      ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year exam questions for CSD3009." }
-      ],
-      "referenceBooks": []
-    },
-    "CSE3001": {
-      "id": "CSE3001",
-      "title": "Database Management Systems",
-      "image": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=600&q=80",
-      "price": "₹499",
-      "tags": "cs",
-      "description": "Complete DBMS course covering relational model, SQL, normalization, transaction management, concurrency control, and indexing. Includes PYQs with solutions.",
-      "modulesList": [
-        { "title": "Module 1", "topics": "DBMS basics, relational model, keys, and SQL introduction" },
-        { "title": "Module 2", "topics": "DDL, DML, joins, subqueries, and advanced SQL queries" },
-        { "title": "Module 3", "topics": "ER diagrams, normalization (1NF to BCNF), and schema design" },
-        { "title": "Module 4", "topics": "Transactions, ACID properties, concurrency control, and recovery" },
-        { "title": "Module 5", "topics": "Indexing, B+ trees, query optimization, and NoSQL overview" }
-      ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "VIT Bhopal semester papers for Database Management Systems." }
-      ],
-      "referenceBooks": []
-    },
-    "CSE3004": {
-      "id": "CSE3004",
-      "title": "Design and Analysis of Algorithms",
-      "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
-      "price": "₹499",
-      "tags": "cs",
-      "description": "Algorithm design paradigms including divide and conquer, dynamic programming, greedy, backtracking, and branch & bound with time complexity analysis.",
-      "modulesList": [
-        { "title": "Module 1", "topics": "Algorithm analysis, asymptotic notation, and recurrence relations" },
-        { "title": "Module 2", "topics": "Divide and conquer — merge sort, quick sort, and Strassen's matrix" },
-        { "title": "Module 3", "topics": "Greedy algorithms — Kruskal, Prim, Dijkstra, and Huffman coding" },
-        { "title": "Module 4", "topics": "Dynamic programming — LCS, 0/1 knapsack, and Floyd-Warshall" },
-        { "title": "Module 5", "topics": "Backtracking, branch & bound, NP-completeness, and approximation" }
+        { "title": "Module 1", "topics": "Limits, continuity, differentiation, and maxima/minima" },
+        { "title": "Module 2", "topics": "Integration techniques and definite integrals" },
+        { "title": "Module 3", "topics": "Multiple integrals — double, triple integrals and applications" },
+        { "title": "Module 4", "topics": "Vector calculus — Green's, Stokes', and Gauss' theorems" },
+        { "title": "Module 5", "topics": "Series solutions, Taylor, and Maclaurin expansions" }
       ],
       "pyqs": [],
       "referenceBooks": []
@@ -135,7 +112,7 @@
       "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
       "tags": "math",
-      "description": "Comprehensive coverage of ordinary and partial differential equations, difference equations, and their engineering applications.",
+      "description": "Comprehensive coverage of ordinary and partial differential equations, difference equations, and their engineering applications. Includes previous year exam questions.",
       "modulesList": [
         { "title": "Module 1", "topics": "First-order ODEs — separable, linear, exact, and Bernoulli equations" },
         { "title": "Module 2", "topics": "Higher-order ODEs — constant coefficients and variation of parameters" },
@@ -143,28 +120,7 @@
         { "title": "Module 4", "topics": "Partial differential equations — heat, wave, and Laplace equations" },
         { "title": "Module 5", "topics": "Difference equations, Z-transforms, and applications" }
       ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year exam questions for MAT2001." }
-      ],
-      "referenceBooks": []
-    },
-    "ECE2002": {
-      "id": "ECE2002",
-      "title": "Digital Logic Design",
-      "image": "https://images.unsplash.com/photo-1562408590-e32931084e23?auto=format&fit=crop&w=600&q=80",
-      "price": "₹499",
-      "tags": "eng",
-      "description": "Complete digital logic course covering Boolean algebra, combinational circuits, sequential circuits, and programmable logic devices. Rich set of PYQs included.",
-      "modulesList": [
-        { "title": "Module 1", "topics": "Number systems, Boolean algebra, logic gates, and minimization" },
-        { "title": "Module 2", "topics": "Combinational circuits — adders, subtractors, MUX, DEMUX, encoders" },
-        { "title": "Module 3", "topics": "Sequential circuits — flip-flops, registers, and counters" },
-        { "title": "Module 4", "topics": "State machines, ASM charts, and sequence detectors" },
-        { "title": "Module 5", "topics": "Memory, PLDs, FPGAs, and digital design methodologies" }
-      ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year semester papers for Digital Logic Design." }
-      ],
+      "pyqs": [{ "title": "PYQs", "topics": "Previous year exam questions for MAT2001." }],
       "referenceBooks": []
     },
     "MAT2002": {
@@ -172,8 +128,8 @@
       "title": "Discrete Mathematics and Graph Theory",
       "image": "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
-      "tags": "cs math",
-      "description": "Foundations of discrete math including logic, set theory, relations, functions, combinatorics, and graph theory essential for CS students.",
+      "tags": "math cs bsa mim",
+      "description": "Foundations of discrete math including logic, set theory, relations, functions, combinatorics, and graph theory. Includes PYQs, reference book, and additional topic notes.",
       "modulesList": [
         { "title": "Module 1", "topics": "Propositional logic, predicates, quantifiers, and proof techniques" },
         { "title": "Module 2", "topics": "Sets, relations, functions, and partial orders" },
@@ -181,96 +137,74 @@
         { "title": "Module 4", "topics": "Graph theory — paths, cycles, trees, and spanning trees" },
         { "title": "Module 5", "topics": "Graph coloring, planar graphs, Euler/Hamilton paths, and networks" }
       ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year exam papers for Discrete Mathematics." }
-      ],
-      "referenceBooks": []
+      "pyqs": [{ "title": "PYQs", "topics": "Previous year exam papers for Discrete Mathematics (MAT2002)." }],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Discrete Mathematics and Its Applications by Kenneth Rosen." }],
+      "extras": [{ "title": "Additional Topic Notes", "topics": "Supplementary notes covering advanced graph theory and combinatorics problems." }]
     },
-    "EEE1001": {
-      "id": "EEE1001",
-      "title": "Electric Circuits and Systems",
-      "image": "https://images.unsplash.com/photo-1593642632599-e993fe1d1eb8?auto=format&fit=crop&w=600&q=80",
+    "MAT2003": {
+      "id": "MAT2003",
+      "title": "Applied Numerical Methods",
+      "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
-      "tags": "eng",
-      "description": "Fundamentals of electrical circuits including Kirchhoff's laws, network theorems, AC analysis, resonance, and two-port networks.",
+      "tags": "math bey",
+      "description": "Root finding, interpolation, numerical integration, and ODE solvers with engineering applications and computational examples. Lecture notes included.",
       "modulesList": [
-        { "title": "Module 1", "topics": "Circuit elements, Ohm's law, KVL, KCL, and mesh/node analysis" },
-        { "title": "Module 2", "topics": "Network theorems — Thevenin, Norton, superposition, and maximum power" },
-        { "title": "Module 3", "topics": "Transient analysis — RL, RC, and RLC circuits" },
-        { "title": "Module 4", "topics": "AC circuits — phasors, impedance, resonance, and power factor" },
-        { "title": "Module 5", "topics": "Two-port networks, Laplace analysis, and Fourier series" }
+        { "title": "Module 1", "topics": "Errors and root finding — bisection, Newton-Raphson, secant method" },
+        { "title": "Module 2", "topics": "Interpolation — Lagrange, Newton's forward/backward differences" },
+        { "title": "Module 3", "topics": "Numerical integration — Simpson's rule, Gaussian quadrature" },
+        { "title": "Module 4", "topics": "Numerical ODEs — Euler, Runge-Kutta, and predictor-corrector" },
+        { "title": "Module 5", "topics": "Numerical linear algebra — Gauss elimination and LU decomposition" }
       ],
       "pyqs": [],
       "referenceBooks": []
     },
-    "HUM1002": {
-      "id": "HUM1002",
-      "title": "Emotional Intelligence",
-      "image": "https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80",
+    "MAT3002": {
+      "id": "MAT3002",
+      "title": "Applied Linear Algebra",
+      "image": "https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
-      "tags": "",
-      "description": "Develop self-awareness, empathy, and interpersonal skills. Covers emotional regulation, social skills, leadership, and workplace psychology.",
+      "tags": "math bai bce bcg",
+      "description": "Comprehensive study of vector spaces, linear transformations, eigenvalues, and matrix decomposition with engineering applications. Module notes included.",
       "modulesList": [
-        { "title": "Module 1", "topics": "Introduction to emotional intelligence, self-awareness, and self-regulation" },
-        { "title": "Module 2", "topics": "Motivation, empathy, and social skills development" },
-        { "title": "Module 3", "topics": "Conflict resolution, team dynamics, and leadership" },
-        { "title": "Module 4", "topics": "Stress management, mindfulness, and workplace well-being" },
-        { "title": "Module 5", "topics": "EI in professional settings, assessment tools, and case studies" }
-      ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year questions for Emotional Intelligence (HUM1002)." }
-      ],
-      "referenceBooks": []
-    },
-    "MEE2014": {
-      "id": "MEE2014",
-      "title": "Engineering Design and Modelling",
-      "image": "https://images.unsplash.com/photo-1537462715879-360eeb61a0ad?auto=format&fit=crop&w=600&q=80",
-      "price": "₹499",
-      "tags": "eng",
-      "description": "Product design process, engineering drawing standards, CAD modelling, and design thinking methodologies for mechanical engineering students.",
-      "modulesList": [
-        { "title": "Module 1", "topics": "Design process, engineering drawing standards, and orthographic projection" },
-        { "title": "Module 2", "topics": "Sectional views, auxiliary views, and dimensioning standards" },
-        { "title": "Module 3", "topics": "CAD fundamentals — solid modelling and parametric design" },
-        { "title": "Module 4", "topics": "Design thinking, prototyping, and product lifecycle" },
-        { "title": "Module 5", "topics": "Manufacturing processes, material selection, and GD&T" }
-      ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year exam questions for MEE2014." }
-      ],
-      "referenceBooks": []
-    },
-    "CHY1006": {
-      "id": "CHY1006",
-      "title": "Environmental Sustainability",
-      "image": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=600&q=80",
-      "price": "₹499",
-      "tags": "sci",
-      "description": "Study of ecosystems, pollution, renewable energy, climate change, and sustainable development goals with a focus on engineering responsibility.",
-      "modulesList": [
-        { "title": "Module 1", "topics": "Ecosystem ecology, biodiversity, and natural resource management" },
-        { "title": "Module 2", "topics": "Air, water, and soil pollution — causes, effects, and control" },
-        { "title": "Module 3", "topics": "Climate change, greenhouse gases, and global warming" },
-        { "title": "Module 4", "topics": "Renewable energy — solar, wind, hydro, and biomass" },
-        { "title": "Module 5", "topics": "Sustainable development, environmental laws, and SDGs" }
+        { "title": "Module 1", "topics": "Vectors, matrices, determinants, and systems of linear equations" },
+        { "title": "Module 2", "topics": "Vector spaces, subspaces, basis, and dimension" },
+        { "title": "Module 3", "topics": "Linear transformations, kernel, range, and matrix representation" },
+        { "title": "Module 4", "topics": "Eigenvalues, eigenvectors, and diagonalization" },
+        { "title": "Module 5", "topics": "Inner product spaces, orthogonality, and SVD" }
       ],
       "pyqs": [],
       "referenceBooks": []
     },
-    "CHY1005": {
-      "id": "CHY1005",
-      "title": "Introduction to Computational Chemistry",
-      "image": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=600&q=80",
+    "MAT3003": {
+      "id": "MAT3003",
+      "title": "Probability, Statistics and Reliability",
+      "image": "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "math",
+      "description": "Probability theory, random variables, statistical inference, hypothesis testing, regression, and reliability engineering. Includes 6 previous year exam papers and reference book.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Probability axioms, conditional probability, and Bayes' theorem" },
+        { "title": "Module 2", "topics": "Random variables, distributions — binomial, Poisson, and normal" },
+        { "title": "Module 3", "topics": "Sampling distributions, estimation, and confidence intervals" },
+        { "title": "Module 4", "topics": "Hypothesis testing, chi-square, ANOVA, and regression analysis" },
+        { "title": "Module 5", "topics": "Reliability engineering, failure models, and queuing theory" }
+      ],
+      "pyqs": [{ "title": "PYQs", "topics": "6 previous year exam papers for Probability, Statistics & Reliability (MAT3003)." }],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Probability and Statistics for Engineering by Jay Devore." }]
+    },
+    "PHY1001": {
+      "id": "PHY1001",
+      "title": "Engineering Physics",
+      "image": "https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
       "tags": "sci",
-      "description": "Introduction to molecular modelling, quantum chemical calculations, molecular dynamics, and computational tools for chemical problem solving.",
+      "description": "Quantum mechanics, wave optics, electromagnetic theory, solid state physics, and modern physics applications for engineering students. Module slides included.",
       "modulesList": [
-        { "title": "Module 1", "topics": "Quantum chemistry basics and molecular orbital theory" },
-        { "title": "Module 2", "topics": "Computational methods — HF, DFT, and semi-empirical approaches" },
-        { "title": "Module 3", "topics": "Molecular mechanics, force fields, and energy minimization" },
-        { "title": "Module 4", "topics": "Molecular dynamics simulations and Monte Carlo methods" },
-        { "title": "Module 5", "topics": "Software tools — Gaussian, GAMESS, and visualization" }
+        { "title": "Module 1", "topics": "Quantum mechanics — wave-particle duality and Schrödinger equation" },
+        { "title": "Module 2", "topics": "Optics — interference, diffraction, and polarization" },
+        { "title": "Module 3", "topics": "Electromagnetic theory — Maxwell's equations and EM waves" },
+        { "title": "Module 4", "topics": "Solid state physics — crystal structure, band theory, and semiconductors" },
+        { "title": "Module 5", "topics": "Lasers, fiber optics, superconductivity, and nanotechnology" }
       ],
       "pyqs": [],
       "referenceBooks": []
@@ -281,7 +215,7 @@
       "image": "https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
       "tags": "sci",
-      "description": "Numerical methods and computational techniques applied to physics problems. Covers simulation of physical systems with programming examples.",
+      "description": "Numerical methods and computational techniques applied to physics problems. Covers simulation of physical systems with programming examples. Includes PYQs and reference textbook.",
       "modulesList": [
         { "title": "Module 1", "topics": "Numerical methods — root finding, interpolation, and differentiation" },
         { "title": "Module 2", "topics": "Numerical integration and solving ODEs" },
@@ -289,10 +223,218 @@
         { "title": "Module 4", "topics": "Computational electrodynamics and quantum mechanics" },
         { "title": "Module 5", "topics": "Statistical mechanics simulations and molecular dynamics" }
       ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year exam questions for PHY1003." }
+      "pyqs": [{ "title": "PYQs", "topics": "Previous year exam questions for PHY1003." }],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Computational Physics by Nicholas Giordano." }]
+    },
+    "PHY1005": {
+      "id": "PHY1005",
+      "title": "Physics of Game Development",
+      "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "sci bcg",
+      "description": "Classical mechanics, collision detection, rigid body dynamics, and physics simulation techniques applied to game development. Lecture notes and slides included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Classical mechanics — kinematics, dynamics, and rigid body motion" },
+        { "title": "Module 2", "topics": "Collision detection and response — AABB, sphere, and polygon methods" },
+        { "title": "Module 3", "topics": "Game physics engines — constraint solving and simulation" },
+        { "title": "Module 4", "topics": "Optics, rendering physics, and ray tracing concepts" },
+        { "title": "Module 5", "topics": "Sound physics, fluid simulation, and AI movement" }
       ],
+      "pyqs": [],
       "referenceBooks": []
+    },
+    "CHY1001": {
+      "id": "CHY1001",
+      "title": "Engineering Chemistry",
+      "image": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "sci",
+      "description": "Chemical bonding, electrochemistry, polymers, fuels, and water treatment — core chemistry concepts with engineering applications. Module slides included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Chemical bonding, molecular structure, and thermodynamics" },
+        { "title": "Module 2", "topics": "Electrochemistry — cells, corrosion, and protective coatings" },
+        { "title": "Module 3", "topics": "Polymers — classification, synthesis, and applications" },
+        { "title": "Module 4", "topics": "Fuels and energy — combustion, calorimetry, and lubricants" },
+        { "title": "Module 5", "topics": "Water treatment, nanomaterials, and engineering materials" },
+        { "title": "Module 6", "topics": "Spectroscopy, analytical techniques, and problem solving" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "CHY1005": {
+      "id": "CHY1005",
+      "title": "Introduction to Computational Chemistry",
+      "image": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "sci",
+      "description": "Introduction to molecular modelling, quantum chemical calculations, molecular dynamics, and computational tools for chemical problem solving. Study materials included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Quantum chemistry basics and molecular orbital theory" },
+        { "title": "Module 2", "topics": "Computational methods — HF, DFT, and semi-empirical approaches" },
+        { "title": "Module 3", "topics": "Molecular mechanics, force fields, and energy minimization" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "CHY1006": {
+      "id": "CHY1006",
+      "title": "Environmental Sustainability",
+      "image": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "sci bey",
+      "description": "Study of ecosystems, pollution, renewable energy, climate change, and sustainable development goals with a focus on engineering responsibility. Study materials included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Ecosystem ecology, biodiversity, and natural resource management" },
+        { "title": "Module 2", "topics": "Air, water, and soil pollution — causes, effects, and control" },
+        { "title": "Module 3", "topics": "Climate change, greenhouse gases, and global warming" },
+        { "title": "Module 4", "topics": "Renewable energy — solar, wind, hydro, and biomass" },
+        { "title": "Module 5", "topics": "Sustainable development, environmental laws, and SDGs" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "CHY1007": {
+      "id": "CHY1007",
+      "title": "Forensic Chemistry and Applications",
+      "image": "https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "sci",
+      "description": "Analytical techniques for forensic investigation — drug analysis, toxicology, arson investigation, and DNA forensics with legal framework. Module notes included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Introduction to forensic science and evidence collection" },
+        { "title": "Module 2", "topics": "Analytical techniques — chromatography and spectroscopy" },
+        { "title": "Module 3", "topics": "Drug analysis — identification and quantification methods" },
+        { "title": "Module 4", "topics": "Toxicology — poisons, heavy metals, and arson investigation" },
+        { "title": "Module 5", "topics": "DNA forensics, explosives analysis, and legal framework" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "EEE1001": {
+      "id": "EEE1001",
+      "title": "Electric Circuits and Systems",
+      "image": "https://images.unsplash.com/photo-1593642632599-e993fe1d1eb8?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "eng",
+      "description": "Fundamentals of electrical circuits including Kirchhoff's laws, network theorems, AC analysis, resonance, and two-port networks. Module slides included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Circuit elements, Ohm's law, KVL, KCL, and mesh/node analysis" },
+        { "title": "Module 2", "topics": "Network theorems — Thevenin, Norton, superposition, and maximum power" },
+        { "title": "Module 3", "topics": "Transient analysis — RL, RC, and RLC circuits" },
+        { "title": "Module 4", "topics": "AC circuits — phasors, impedance, resonance, and power factor" },
+        { "title": "Module 5", "topics": "Two-port networks, Laplace analysis, and Fourier series" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "EEE2001": {
+      "id": "EEE2001",
+      "title": "Network Analysis",
+      "image": "https://images.unsplash.com/photo-1593642632599-e993fe1d1eb8?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "eng",
+      "description": "Advanced circuit analysis — network theorems, AC circuits, resonance, two-port networks, and Laplace transform applications. Module slides included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Circuit theorems — KVL, KCL, Thevenin, Norton, and superposition" },
+        { "title": "Module 2", "topics": "AC circuit analysis — phasors, impedance, and power calculations" },
+        { "title": "Module 3", "topics": "Resonance — series and parallel resonance circuits" },
+        { "title": "Module 4", "topics": "Two-port networks — Z, Y, h, and ABCD parameters" },
+        { "title": "Module 5", "topics": "Laplace transform applications and transient analysis" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "EAC1002": {
+      "id": "EAC1002",
+      "title": "Analog Electronics",
+      "image": "https://images.unsplash.com/photo-1562408590-e32931084e23?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "eng",
+      "description": "Diode circuits, BJTs, FETs, operational amplifiers, and oscillator design — fundamentals of analog electronic circuits. Module slides included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Diodes — characteristics, clippers, clampers, and rectifiers" },
+        { "title": "Module 2", "topics": "Bipolar junction transistors — biasing and amplifier circuits" },
+        { "title": "Module 3", "topics": "FETs — JFET and MOSFET operation and amplifier applications" },
+        { "title": "Module 4", "topics": "Operational amplifiers — characteristics and linear applications" },
+        { "title": "Module 5", "topics": "Oscillators, power amplifiers, and feedback circuits" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "ECE2002": {
+      "id": "ECE2002",
+      "title": "Digital Logic Design",
+      "image": "https://images.unsplash.com/photo-1562408590-e32931084e23?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "eng",
+      "description": "Complete digital logic course covering Boolean algebra, combinational circuits, sequential circuits, and PLDs. Includes 6 PYQ papers, reference book, handwritten notes, and lab files.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Number systems, Boolean algebra, logic gates, and minimization" },
+        { "title": "Module 2", "topics": "Combinational circuits — adders, subtractors, MUX, DEMUX, encoders" },
+        { "title": "Module 3", "topics": "Sequential circuits — flip-flops, registers, and counters" },
+        { "title": "Module 4", "topics": "State machines, ASM charts, and sequence detectors" },
+        { "title": "Module 5", "topics": "Memory, PLDs, FPGAs, and digital design methodologies" }
+      ],
+      "pyqs": [{ "title": "PYQs", "topics": "6 previous year TEE papers for Digital Logic Design (ECE2002)." }],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Digital Design by Morris Mano; Fundamentals of Digital Logic by Brown & Vranesic." }],
+      "extras": [
+        { "title": "Handwritten Notes", "topics": "Student handwritten notes covering key topics and solved problems." },
+        { "title": "Lab Files", "topics": "Complete lab file with experiments for Digital Logic Design practical." }
+      ]
+    },
+    "ECE2003": {
+      "id": "ECE2003",
+      "title": "Signals and Systems",
+      "image": "https://images.unsplash.com/photo-1573164574472-797cdf4a583a?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "eng",
+      "description": "Continuous and discrete time signals and systems — Fourier series, Fourier transform, Laplace transform, and Z-transform. Includes PYQs, reference book, and revision notes.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Signals and systems — classification, properties, and operations" },
+        { "title": "Module 2", "topics": "Fourier series — continuous and discrete time representation" },
+        { "title": "Module 3", "topics": "Fourier transform and its properties for signal analysis" },
+        { "title": "Module 4", "topics": "Laplace transform — system analysis and transfer functions" },
+        { "title": "Module 5", "topics": "Z-transform, DFT, and discrete-time system analysis" }
+      ],
+      "pyqs": [{ "title": "PYQs", "topics": "Previous year papers for Signals and Systems (ECE2003)." }],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Signals and Systems by Oppenheim & Willsky." }],
+      "extras": [
+        { "title": "Revision Notes", "topics": "Concise revision notes covering all modules with key formulas and derivations." }
+      ]
+    },
+    "ECE3004": {
+      "id": "ECE3004",
+      "title": "Microprocessors and Microcontrollers",
+      "image": "https://images.unsplash.com/photo-1562408590-e32931084e23?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "eng",
+      "description": "8085/8086 architecture, assembly programming, microcontroller interfacing, and embedded systems design. Module slides and lecture notes included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "8085/8086 architecture — registers, instruction set, and timing" },
+        { "title": "Module 2", "topics": "Assembly language programming and memory interfacing" },
+        { "title": "Module 3", "topics": "Microcontrollers — 8051/Arduino architecture and I/O ports" },
+        { "title": "Module 4", "topics": "Peripheral interfacing — ADC, DAC, LCD, keypad, and interrupts" },
+        { "title": "Module 5", "topics": "Embedded systems design and real-time applications" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "MEE2014": {
+      "id": "MEE2014",
+      "title": "Engineering Design and Modelling",
+      "image": "https://images.unsplash.com/photo-1537462715879-360eeb61a0ad?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "eng bce",
+      "description": "Product design process, engineering drawing standards, CAD modelling, and design thinking methodologies. Includes PYQs and reference book (Dieter & Schmidt).",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Design process, engineering drawing standards, and orthographic projection" },
+        { "title": "Module 2", "topics": "Sectional views, auxiliary views, and dimensioning standards" },
+        { "title": "Module 3", "topics": "CAD fundamentals — solid modelling and parametric design" },
+        { "title": "Module 4", "topics": "Design thinking, prototyping, and product lifecycle" },
+        { "title": "Module 5", "topics": "Manufacturing processes, material selection, and GD&T" }
+      ],
+      "pyqs": [{ "title": "PYQs", "topics": "Previous year exam questions for Engineering Design and Modelling (MEE2014)." }],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Engineering Design by Dieter & Schmidt." }]
     },
     "CSE1021": {
       "id": "CSE1021",
@@ -300,7 +442,7 @@
       "image": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
       "tags": "cs",
-      "description": "First programming course covering problem-solving techniques, flowcharts, pseudocode, and Python/C programming fundamentals with PYQs.",
+      "description": "First programming course covering problem-solving techniques, flowcharts, pseudocode, and Python/C programming fundamentals. Study materials and solved examples included.",
       "modulesList": [
         { "title": "Module 1", "topics": "Problem-solving process, flowcharts, and pseudocode design" },
         { "title": "Module 2", "topics": "Variables, data types, operators, and control flow" },
@@ -308,9 +450,7 @@
         { "title": "Module 4", "topics": "Arrays, strings, and file handling" },
         { "title": "Module 5", "topics": "Pointers, structures, and introduction to OOP concepts" }
       ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year papers for CSE1021 — Introduction to Programming." }
-      ],
+      "pyqs": [],
       "referenceBooks": []
     },
     "CSE2001": {
@@ -318,8 +458,8 @@
       "title": "Object Oriented Programming with C++",
       "image": "https://images.unsplash.com/photo-1555949963-aa79dcee981c?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
-      "tags": "cs",
-      "description": "Comprehensive C++ and OOP course covering classes, inheritance, polymorphism, templates, STL, and design patterns. Includes 5 PYQ papers.",
+      "tags": "cs bai bce",
+      "description": "Comprehensive C++ and OOP course covering classes, inheritance, polymorphism, templates, and STL. Includes 5 PYQ TEE papers, Stroustrup reference book, and handwritten notes.",
       "modulesList": [
         { "title": "Module 1", "topics": "OOP concepts, classes, objects, constructors, and destructors" },
         { "title": "Module 2", "topics": "Inheritance — single, multiple, and virtual base classes" },
@@ -327,81 +467,60 @@
         { "title": "Module 4", "topics": "Templates, exception handling, and file streams" },
         { "title": "Module 5", "topics": "STL — vectors, maps, sets, algorithms, and iterators" }
       ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "5 previous year exam papers for OOP with C++." }
+      "pyqs": [{ "title": "PYQs", "topics": "5 previous year TEE papers for OOP with C++ (CSE2001) — C++ Tee 1 through 5." }],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "The C++ Programming Language by Bjarne Stroustrup." }],
+      "extras": [
+        { "title": "Handwritten Notes", "topics": "Student handwritten notes with solved examples and exam tips." }
+      ]
+    },
+    "CSE2002": {
+      "id": "CSE2002",
+      "title": "Data Structures and Algorithms",
+      "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs bce bcg bey mim",
+      "description": "Core data structures — arrays, linked lists, trees, graphs, and sorting algorithms with time and space complexity analysis. Module slides included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Arrays, linked lists, stacks, queues, and complexity analysis" },
+        { "title": "Module 2", "topics": "Trees — binary trees, BST, AVL trees, and traversal algorithms" },
+        { "title": "Module 3", "topics": "Graphs — BFS, DFS, shortest paths, and MST algorithms" },
+        { "title": "Module 4", "topics": "Sorting — merge sort, quick sort, heap sort, and counting sort" },
+        { "title": "Module 5", "topics": "Hashing, advanced data structures, and algorithm paradigms" }
       ],
+      "pyqs": [],
       "referenceBooks": []
     },
-    "CSE3003": {
-      "id": "CSE3003",
-      "title": "Operating Systems",
-      "image": "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80",
+    "CSE2003": {
+      "id": "CSE2003",
+      "title": "Computer Architecture and Organization",
+      "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs bey mim",
+      "description": "In-depth coverage of processor design, memory hierarchy, instruction sets, pipelining, and I/O organization. Includes 9 PYQ papers (4 midterm + 5 TEE) and reference textbook.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Digital logic, number systems, Boolean algebra, and combinational circuits" },
+        { "title": "Module 2", "topics": "Instruction set architecture, addressing modes, and assembly language" },
+        { "title": "Module 3", "topics": "CPU organization, ALU design, control unit, and microprogramming" },
+        { "title": "Module 4", "topics": "Pipelining, hazards, superscalar, and parallel processing" },
+        { "title": "Module 5", "topics": "Memory hierarchy, cache, virtual memory, and I/O organization" },
+        { "title": "Module 6", "topics": "Advanced architectures — RISC, CISC, multiprocessors" }
+      ],
+      "pyqs": [{ "title": "PYQs", "topics": "9 papers: 4 mid-term + 5 TEE papers for Computer Architecture (CSE2003)." }],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Computer Organization and Architecture by William Stallings." }]
+    },
+    "CSE2004": {
+      "id": "CSE2004",
+      "title": "Theory of Computation and Compiler Design",
+      "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
       "tags": "cs",
-      "description": "Complete OS course covering process management, CPU scheduling, deadlocks, memory management, file systems, and concurrency. Includes PYQs.",
+      "description": "Automata theory, formal languages, Turing machines, and compiler phases from lexical analysis to code generation and optimization. Module slides included.",
       "modulesList": [
-        { "title": "Module 1", "topics": "OS structure, system calls, processes, and threads" },
-        { "title": "Module 2", "topics": "CPU scheduling — FCFS, SJF, round-robin, and priority algorithms" },
-        { "title": "Module 3", "topics": "Synchronization, semaphores, monitors, and deadlock handling" },
-        { "title": "Module 4", "topics": "Memory management — paging, segmentation, and virtual memory" },
-        { "title": "Module 5", "topics": "File systems, disk scheduling, I/O, and protection" }
-      ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year papers for Operating Systems (CSE3003)." }
-      ],
-      "referenceBooks": []
-    },
-    "CSD1001": {
-      "id": "CSD1001",
-      "title": "Principles of Digital Forensics",
-      "image": "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&w=600&q=80",
-      "price": "₹499",
-      "tags": "cs",
-      "description": "Introduction to digital forensics techniques, evidence acquisition, file system analysis, network forensics, and legal frameworks.",
-      "modulesList": [
-        { "title": "Module 1", "topics": "Digital forensics overview, legal aspects, and evidence handling" },
-        { "title": "Module 2", "topics": "File systems — FAT, NTFS, ext4 analysis and data recovery" },
-        { "title": "Module 3", "topics": "Email, browser, and mobile forensics" },
-        { "title": "Module 4", "topics": "Network forensics, packet analysis, and intrusion detection" },
-        { "title": "Module 5", "topics": "Forensic tools — Autopsy, FTK, Wireshark, and reporting" }
-      ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year questions for Principles of Digital Forensics." }
-      ],
-      "referenceBooks": []
-    },
-    "MAT3003": {
-      "id": "MAT3003",
-      "title": "Probability, Statistics and Reliability",
-      "image": "https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=600&q=80",
-      "price": "₹499",
-      "tags": "math",
-      "description": "Probability theory, random variables, statistical inference, hypothesis testing, regression, and reliability engineering with PYQs.",
-      "modulesList": [
-        { "title": "Module 1", "topics": "Probability axioms, conditional probability, and Bayes' theorem" },
-        { "title": "Module 2", "topics": "Random variables, distributions — binomial, Poisson, and normal" },
-        { "title": "Module 3", "topics": "Sampling distributions, estimation, and confidence intervals" },
-        { "title": "Module 4", "topics": "Hypothesis testing, chi-square, ANOVA, and regression analysis" },
-        { "title": "Module 5", "topics": "Reliability engineering, failure models, and queuing theory" }
-      ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year exam papers for MAT3003." }
-      ],
-      "referenceBooks": []
-    },
-    "SST1003": {
-      "id": "SST1003",
-      "title": "Professional Communication Skills for Engineers",
-      "image": "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=600&q=80",
-      "price": "₹499",
-      "tags": "",
-      "description": "Develop workplace communication skills — email writing, technical presentations, group discussions, and interview preparation for engineering careers.",
-      "modulesList": [
-        { "title": "Module 1", "topics": "Business writing — emails, memos, letters, and reports" },
-        { "title": "Module 2", "topics": "Technical presentation skills and visual communication" },
-        { "title": "Module 3", "topics": "Group discussions, meetings, and negotiation skills" },
-        { "title": "Module 4", "topics": "Interview preparation — aptitude, HR, and technical rounds" },
-        { "title": "Module 5", "topics": "Workplace ethics, cross-cultural communication, and case studies" }
+        { "title": "Module 1", "topics": "Finite automata — DFA, NFA, and regular expressions" },
+        { "title": "Module 2", "topics": "Context-free grammars, parsing, and pushdown automata" },
+        { "title": "Module 3", "topics": "Turing machines, computability, and decidability" },
+        { "title": "Module 4", "topics": "Compiler phases — lexical analysis, parsing, and syntax trees" },
+        { "title": "Module 5", "topics": "Semantic analysis, intermediate code, and code generation/optimization" }
       ],
       "pyqs": [],
       "referenceBooks": []
@@ -411,8 +530,8 @@
       "title": "Programming in Java",
       "image": "https://images.unsplash.com/photo-1516116216624-53e697fedbea?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
-      "tags": "cs",
-      "description": "Complete Java programming course covering OOP, collections, exception handling, multithreading, JDBC, and GUI development.",
+      "tags": "cs bce bey",
+      "description": "Complete Java programming course covering OOP, collections, exception handling, multithreading, JDBC, and GUI development. Includes reference book (Cay Horstmann).",
       "modulesList": [
         { "title": "Module 1", "topics": "Java basics — data types, operators, control flow, and arrays" },
         { "title": "Module 2", "topics": "OOP — classes, inheritance, interfaces, and abstract classes" },
@@ -421,6 +540,142 @@
         { "title": "Module 5", "topics": "Multithreading, JDBC, Swing GUI, and Java 8 features" }
       ],
       "pyqs": [],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Core Java Volume I & II by Cay Horstmann." }]
+    },
+    "CSA2001": {
+      "id": "CSA2001",
+      "title": "Fundamentals in AI and ML",
+      "image": "https://images.unsplash.com/photo-1581094794329-16d1f0d22b6c?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs bce mim",
+      "description": "Introduction to artificial intelligence, intelligent agents, search strategies, machine learning algorithms, and neural network fundamentals. Module slides included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Introduction to AI — history, intelligent agents, and problem formulation" },
+        { "title": "Module 2", "topics": "Search algorithms — uninformed, heuristic, and adversarial search" },
+        { "title": "Module 3", "topics": "Machine learning — supervised, unsupervised, and reinforcement learning" },
+        { "title": "Module 4", "topics": "Neural networks — perceptron, backpropagation, and deep learning basics" },
+        { "title": "Module 5", "topics": "Natural language processing, computer vision, and AI applications" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "CCA2002": {
+      "id": "CCA2002",
+      "title": "Cloud Architecture and Services",
+      "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs bsa",
+      "description": "Cloud computing fundamentals, AWS services, microservices architecture, DevOps on cloud, and cloud security. Module slides and study materials included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Cloud computing fundamentals — IaaS, PaaS, SaaS, and deployment models" },
+        { "title": "Module 2", "topics": "AWS core services — EC2, S3, VPC, and IAM" },
+        { "title": "Module 3", "topics": "Cloud architecture — microservices, serverless, and containers" },
+        { "title": "Module 4", "topics": "DevOps on cloud — CI/CD pipelines and Kubernetes" },
+        { "title": "Module 5", "topics": "Cloud security, cost optimization, and compliance frameworks" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "CSD1001": {
+      "id": "CSD1001",
+      "title": "Principles of Digital Forensics",
+      "image": "https://images.unsplash.com/photo-1614064641938-3bbee52942c7?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs",
+      "description": "Introduction to digital forensics techniques, evidence acquisition, file system analysis, network forensics, and legal frameworks. Includes PYQs and reference textbook.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Digital forensics overview, legal aspects, and evidence handling" },
+        { "title": "Module 2", "topics": "File systems — FAT, NTFS, ext4 analysis and data recovery" },
+        { "title": "Module 3", "topics": "Email, browser, and mobile forensics" },
+        { "title": "Module 4", "topics": "Network forensics, packet analysis, and intrusion detection" },
+        { "title": "Module 5", "topics": "Forensic tools — Autopsy, FTK, Wireshark, and reporting" }
+      ],
+      "pyqs": [{ "title": "PYQs", "topics": "Previous year questions for Principles of Digital Forensics (CSD1001)." }],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Digital Forensics and Investigations by Jason Sachowski." }]
+    },
+    "CSD3009": {
+      "id": "CSD3009",
+      "title": "Data Structures and Analysis of Algorithms",
+      "image": "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs bai bsa",
+      "description": "Advanced data structures and algorithm design with complexity analysis. Covers trees, graphs, dynamic programming, and greedy algorithms. Includes 1 PYQ paper and CLRS reference.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Arrays, linked lists, stacks, queues, and complexity analysis" },
+        { "title": "Module 2", "topics": "Trees — BST, AVL, heaps, B-trees, and traversal algorithms" },
+        { "title": "Module 3", "topics": "Graph algorithms — BFS, DFS, shortest paths, and MST" },
+        { "title": "Module 4", "topics": "Sorting and searching — merge sort, quick sort, and hashing" },
+        { "title": "Module 5", "topics": "Dynamic programming, greedy algorithms, and NP-completeness" }
+      ],
+      "pyqs": [{ "title": "PYQs", "topics": "1 previous year exam paper for Data Structures & Analysis of Algorithms (CSD3009)." }],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Introduction to Algorithms by Cormen (CLRS)." }]
+    },
+    "CDS3005": {
+      "id": "CDS3005",
+      "title": "Foundations of Data Science",
+      "image": "https://images.unsplash.com/photo-1581094794329-16d1f0d22b6c?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs bai",
+      "description": "Data science workflows, statistical analysis, data wrangling, machine learning, and visualization using Python — Pandas, NumPy, and Matplotlib. Module slides included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Data science workflow — CRISP-DM and exploratory data analysis" },
+        { "title": "Module 2", "topics": "Statistics for data science — hypothesis testing and distributions" },
+        { "title": "Module 3", "topics": "Data wrangling — Pandas, missing values, and feature engineering" },
+        { "title": "Module 4", "topics": "Machine learning — regression, classification, and clustering" },
+        { "title": "Module 5", "topics": "Data visualization and model evaluation metrics" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "CSE3001": {
+      "id": "CSE3001",
+      "title": "Database Management Systems",
+      "image": "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs bce bey",
+      "description": "Complete DBMS course covering relational model, SQL, normalization, transaction management, concurrency control, and indexing. Includes PYQs and Silberschatz reference textbook.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "DBMS basics, relational model, keys, and SQL introduction" },
+        { "title": "Module 2", "topics": "DDL, DML, joins, subqueries, and advanced SQL queries" },
+        { "title": "Module 3", "topics": "ER diagrams, normalization (1NF to BCNF), and schema design" },
+        { "title": "Module 4", "topics": "Transactions, ACID properties, concurrency control, and recovery" },
+        { "title": "Module 5", "topics": "Indexing, B+ trees, query optimization, and NoSQL overview" }
+      ],
+      "pyqs": [{ "title": "PYQs", "topics": "Previous year semester papers for Database Management Systems (CSE3001)." }],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Database System Concepts by Silberschatz, Korth & Sudarshan." }]
+    },
+    "CSE3003": {
+      "id": "CSE3003",
+      "title": "Operating Systems",
+      "image": "https://images.unsplash.com/photo-1509228468518-180dd4864904?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs bai bcg bsa",
+      "description": "Complete OS course covering process management, CPU scheduling, deadlocks, memory management, file systems, and concurrency. Includes PYQs and Silberschatz Dinosaur Book reference.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "OS structure, system calls, processes, and threads" },
+        { "title": "Module 2", "topics": "CPU scheduling — FCFS, SJF, round-robin, and priority algorithms" },
+        { "title": "Module 3", "topics": "Synchronization, semaphores, monitors, and deadlock handling" },
+        { "title": "Module 4", "topics": "Memory management — paging, segmentation, and virtual memory" },
+        { "title": "Module 5", "topics": "File systems, disk scheduling, I/O, and protection" }
+      ],
+      "pyqs": [{ "title": "PYQs", "topics": "Previous year papers for Operating Systems (CSE3003)." }],
+      "referenceBooks": [{ "title": "Reference Books", "topics": "Operating System Concepts by Silberschatz (Dinosaur Book)." }]
+    },
+    "CSE3004": {
+      "id": "CSE3004",
+      "title": "Design and Analysis of Algorithms",
+      "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs",
+      "description": "Algorithm design paradigms including divide and conquer, dynamic programming, greedy, backtracking, and branch & bound with time complexity analysis. Includes previous year exam questions.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Algorithm analysis, asymptotic notation, and recurrence relations" },
+        { "title": "Module 2", "topics": "Divide and conquer — merge sort, quick sort, and Strassen's matrix" },
+        { "title": "Module 3", "topics": "Greedy algorithms — Kruskal, Prim, Dijkstra, and Huffman coding" },
+        { "title": "Module 4", "topics": "Dynamic programming — LCS, 0/1 knapsack, and Floyd-Warshall" },
+        { "title": "Module 5", "topics": "Backtracking, branch & bound, NP-completeness, and approximation" }
+      ],
+      "pyqs": [{ "title": "PYQs", "topics": "Previous year exam questions for Design and Analysis of Algorithms (CSE3004)." }],
       "referenceBooks": []
     },
     "CSE3011": {
@@ -429,7 +684,7 @@
       "image": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
       "tags": "cs",
-      "description": "Comprehensive Python course covering core language features, data structures, OOP, file handling, libraries, and data science fundamentals. Includes PYQs.",
+      "description": "Comprehensive Python course covering core language features, data structures, OOP, file handling, and data science fundamentals. Includes previous year exam questions.",
       "modulesList": [
         { "title": "Module 1", "topics": "Python basics — variables, data types, operators, and control flow" },
         { "title": "Module 2", "topics": "Functions, modules, packages, and lambda expressions" },
@@ -437,28 +692,92 @@
         { "title": "Module 4", "topics": "OOP in Python — classes, inheritance, and magic methods" },
         { "title": "Module 5", "topics": "File I/O, exceptions, NumPy, Pandas, and Matplotlib basics" }
       ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year exam questions for Python Programming (CSE3011)." }
-      ],
+      "pyqs": [{ "title": "PYQs", "topics": "Previous year exam questions for Python Programming (CSE3011)." }],
       "referenceBooks": []
     },
-    "ECE2003": {
-      "id": "ECE2003",
-      "title": "Signals and Systems",
-      "image": "https://images.unsplash.com/photo-1573164574472-797cdf4a583a?auto=format&fit=crop&w=600&q=80",
+    "CSE3015": {
+      "id": "CSE3015",
+      "title": "AWS Cloud Practitioner",
+      "image": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
-      "tags": "eng",
-      "description": "Continuous and discrete time signals and systems analysis including Fourier series, Fourier transform, Laplace transform, and Z-transform. Includes PYQs.",
+      "tags": "cs",
+      "description": "AWS Cloud Practitioner certification prep — cloud concepts, core AWS services, security, billing, and the Well-Architected Framework. Module slides included.",
       "modulesList": [
-        { "title": "Module 1", "topics": "Signals and systems — classification, properties, and operations" },
-        { "title": "Module 2", "topics": "Fourier series — continuous and discrete time representation" },
-        { "title": "Module 3", "topics": "Fourier transform and its properties for signal analysis" },
-        { "title": "Module 4", "topics": "Laplace transform — system analysis and transfer functions" },
-        { "title": "Module 5", "topics": "Z-transform, DFT, and discrete-time system analysis" }
+        { "title": "Module 1", "topics": "Cloud concepts — AWS global infrastructure and value proposition" },
+        { "title": "Module 2", "topics": "Security and compliance — IAM, encryption, and shared responsibility" },
+        { "title": "Module 3", "topics": "Technology — compute (EC2, Lambda), storage (S3), and networking" },
+        { "title": "Module 4", "topics": "Billing, pricing, and support — cost management and AWS plans" },
+        { "title": "Module 5", "topics": "Migration strategies and AWS Well-Architected Framework" }
       ],
-      "pyqs": [
-        { "title": "PYQs", "topics": "Previous year papers for Signals and Systems (ECE2003)." }
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "CSE4001": {
+      "id": "CSE4001",
+      "title": "Internet and Web Programming",
+      "image": "https://images.unsplash.com/photo-1461749280684-dccba630e2f6?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs",
+      "description": "HTML5, CSS3, JavaScript, server-side programming, REST APIs, and web security — comprehensive full-stack web development fundamentals. Module slides included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "HTML5, CSS3, and responsive design with Flexbox and Grid" },
+        { "title": "Module 2", "topics": "JavaScript — DOM manipulation, events, and AJAX" },
+        { "title": "Module 3", "topics": "Server-side programming — Node.js or PHP fundamentals" },
+        { "title": "Module 4", "topics": "Databases for web — SQL, REST APIs, and JSON" },
+        { "title": "Module 5", "topics": "Web security, deployment, and modern frameworks overview" }
       ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "CSG2006": {
+      "id": "CSG2006",
+      "title": "Game Programming using Unity",
+      "image": "https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs bcg",
+      "description": "Unity game engine, C# scripting, physics simulation, animation, UI, audio, and game publishing — from basics to a complete game build. Module slides included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Unity editor — GameObjects, components, scenes, and prefabs" },
+        { "title": "Module 2", "topics": "C# scripting — MonoBehaviour, events, coroutines, and input" },
+        { "title": "Module 3", "topics": "Physics — Rigidbody, colliders, triggers, and joints" },
+        { "title": "Module 4", "topics": "UI, audio, animation system, and particle effects" },
+        { "title": "Module 5", "topics": "Game publishing, optimization, profiling, and multiplayer basics" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "PLA1004": {
+      "id": "PLA1004",
+      "title": "Competitive Coding Practice",
+      "image": "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "cs",
+      "description": "Algorithms and data structures for competitive programming — arrays, graphs, dynamic programming, and problem-solving strategies for coding interviews. Study materials included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Time complexity, arrays, strings, and two-pointer techniques" },
+        { "title": "Module 2", "topics": "Linked lists, stacks, queues, and sliding window" },
+        { "title": "Module 3", "topics": "Binary search, sorting algorithms, and greedy strategies" },
+        { "title": "Module 4", "topics": "Dynamic programming — classic problems and memoization patterns" },
+        { "title": "Module 5", "topics": "Graphs, trees, disjoint sets, and competitive problem solving" }
+      ],
+      "pyqs": [],
+      "referenceBooks": []
+    },
+    "MGT1002": {
+      "id": "MGT1002",
+      "title": "Principles of Management and Organizational Behaviour",
+      "image": "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=600&q=80",
+      "price": "₹499",
+      "tags": "lang",
+      "description": "Management theories, planning, leadership, organizational behaviour, and control systems — essential management principles for engineering students. Module slides included.",
+      "modulesList": [
+        { "title": "Module 1", "topics": "Management theories — classical, neoclassical, and modern approaches" },
+        { "title": "Module 2", "topics": "Planning, organizing, and managerial decision making" },
+        { "title": "Module 3", "topics": "Leadership, motivation theories, and team dynamics" },
+        { "title": "Module 4", "topics": "Organizational structure, culture, and change management" },
+        { "title": "Module 5", "topics": "Control systems, performance management, and business ethics" }
+      ],
+      "pyqs": [],
       "referenceBooks": []
     },
     "MGT2003": {
@@ -466,8 +785,8 @@
       "title": "Technology Entrepreneurship",
       "image": "https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&w=600&q=80",
       "price": "₹499",
-      "tags": "",
-      "description": "Introduction to startup ecosystems, innovation, business model canvas, funding, intellectual property, and building tech ventures.",
+      "tags": "lang",
+      "description": "Introduction to startup ecosystems, innovation, business model canvas, funding, intellectual property, and building tech ventures. Study materials included.",
       "modulesList": [
         { "title": "Module 1", "topics": "Entrepreneurship mindset, opportunity recognition, and ideation" },
         { "title": "Module 2", "topics": "Business model canvas, value proposition, and customer segments" },

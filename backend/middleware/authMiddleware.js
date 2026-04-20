@@ -48,10 +48,30 @@ export const protect = async (req, res, next) => {
       });
     }
 
-    const { data: profile, error: profileError } = await supabase
+    let { data: profile, error: profileError } = await supabase
       .schema('business').from('users').select('*').eq('id', user.id).single();
 
-    if (profileError || !profile) {
+    // Auto-create profile for valid auth users whose business.users row is missing
+    // (happens when Google OAuth upsert failed on first login)
+    if (!profile && user.email) {
+      const { data: created, error: createError } = await supabase
+        .schema('business').from('users').insert({
+          id:          user.id,
+          email:       user.email.toLowerCase(),
+          username:    user.email.split('@')[0].toLowerCase(),
+          full_name:   user.user_metadata?.full_name || null,
+          avatar_url:  user.user_metadata?.avatar_url || null,
+          role:        'student',
+          is_verified: true,
+        }).select().single();
+
+      if (!createError && created) {
+        profile = created;
+        profileError = null;
+      }
+    }
+
+    if (!profile) {
       return res.status(401).json({
         error: 'User not found',
         message: 'User profile not found.',
@@ -78,8 +98,10 @@ export const adminOnly = (req, res, next) => {
 };
 
 export const requireCompleteProfile = (req, res, next) => {
+  const hasValue = (value) => typeof value === 'string' ? value.trim().length > 0 : !!value;
   const { phone, registration_number, branch } = req.user;
-  if (!phone || !registration_number || !branch) {
+
+  if (!hasValue(phone) || !hasValue(registration_number) || !hasValue(branch)) {
     return res.status(403).json({
       status: 'error',
       error: 'incomplete_profile',

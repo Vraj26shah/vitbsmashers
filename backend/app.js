@@ -4,8 +4,12 @@ dotenv.config();
 import express from 'express';
 import cookieParser from 'cookie-parser';
 import cors from 'cors';
+import compression from 'compression';
+import helmet from 'helmet';
 import path from 'path';
 import { fileURLToPath } from 'url';
+
+import { trustProxyIfNeeded } from './middleware/securityMiddleware.js';
 
 import authRouter        from './routes/authRoutes.js';
 import courseRouter      from './routes/courseRoutes.js';
@@ -23,7 +27,12 @@ import marketplaceRouter from './routes/marketplaceRoutes.js';
 import { errorHandler, notFound } from './middleware/authMiddleware.js';
 
 const app = express();
+trustProxyIfNeeded(app);
 
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: false,
+}));
 app.use(cookieParser());
 
 const corsOptions = {
@@ -64,12 +73,38 @@ const corsOptions = {
     }
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept', 'Origin', 'X-Requested-With'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH', 'HEAD'],
+  allowedHeaders: [
+    'Content-Type',
+    'Authorization',
+    'Accept',
+    'Origin',
+    'X-Requested-With',
+    'Range',
+    'If-Range',
+  ],
+  exposedHeaders: ['Content-Range', 'Accept-Ranges', 'Content-Length', 'ETag'],
   optionsSuccessStatus: 200,
 };
 
 app.use(cors(corsOptions));
+
+// Enable compression for better performance
+app.use(compression({
+  level: 6, // Good balance between compression and speed
+  threshold: 1024, // Only compress responses larger than 1KB
+  filter: (req, res) => {
+    if (req.headers['x-no-compression']) {
+      return false;
+    }
+    // Never compress streamed PDF bytes — breaks binary / confuses pdf.js
+    const url = req.originalUrl || '';
+    if (url.includes('/notes/') && url.includes('/stream')) {
+      return false;
+    }
+    return compression.filter(req, res);
+  }
+}));
 
 // Webhook must receive raw body — register before express.json()
 app.use('/api/v1/payment/webhook', express.raw({ type: 'application/json' }));

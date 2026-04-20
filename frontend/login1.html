@@ -1196,6 +1196,7 @@
                 if (!res.ok) throw new Error(data.message || 'Login failed');
 
                 localStorage.setItem('token', data.token);
+                if (data.refresh) localStorage.setItem('refreshToken', data.refresh);
                 if (data.data && data.data.user) {
                     localStorage.setItem('userProfile', JSON.stringify(data.data.user));
                 }

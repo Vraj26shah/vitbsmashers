@@ -6,6 +6,8 @@
     <title>Scholars Stack - Faculty Info</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../../config.js"></script>
+    <script src="../../shared-auth.js"></script>
     <script src="../../shared-admin-auth.js"></script>
     <script src="../../shared-logout.js"></script>
     <style>
@@ -1499,7 +1501,7 @@
 
                     // Verify token is valid by making a test request
                     try {
-                        const response = await fetch('/api/v1/auth/dashboard', {
+                        const response = await fetch('/api/v1/profile/me', {
                             method: 'GET',
                             headers: {
                                 'Authorization': `Bearer ${token}`,
@@ -1544,153 +1546,26 @@
             // Removed call and directions actions as per new design
         }
 
-        // Render pending faculty for admin
+        // Pending faculty/updates - no longer used (approval workflow replaced by direct admin CRUD)
         async function renderPendingFaculty() {
-            await fetchPendingFaculty();
-            const pendingFacultyContainer = document.getElementById('pendingFaculty');
-            pendingFacultyContainer.innerHTML = '';
-
-            if (pendingFaculty.length === 0) {
-                pendingFacultyContainer.innerHTML = '<p>No pending faculty additions at this time.</p>';
-                return;
-            }
-
-            pendingFaculty.forEach(f => {
-                const pendingFacultyCard = document.createElement('div');
-                pendingFacultyCard.className = 'pending-faculty-card';
-
-                pendingFacultyCard.innerHTML = `
-                    <div class="pending-faculty-details">
-                        <h3 class="pending-faculty-title">${f.changes.name.new}</h3>
-                        <div class="pending-faculty-meta">
-                            <div class="status-indicator status-pending">
-                                <i class='bx bxs-time'></i> Pending Approval
-                            </div>
-                        </div>
-                        <div class="meta-item">
-                            <i class='bx bxs-envelope'></i>
-                            <span>${f.changes.email.new}</span>
-                        </div>
-
-                        <div class="meta-item">
-                            <i class='bx bxs-building'></i>
-                            <span>${f.changes.cabin.new}</span>
-                        </div>
-                        <div class="pending-faculty-actions">
-                            <button class="action-btn approve-btn" data-id="${f._id}">
-                                <i class='bx bx-check'></i> Approve
-                            </button>
-                            <button class="action-btn reject-btn" data-id="${f._id}">
-                                <i class='bx bx-x'></i> Reject
-                            </button>
-                        </div>
-                    </div>
-                `;
-                pendingFacultyContainer.appendChild(pendingFacultyCard);
-            });
-            
-            // Add event listeners to action buttons
-            document.querySelectorAll('.approve-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const token = localStorage.getItem('token');
-                    if (!token) {
-                        showLoginRequiredMessage();
-                        return;
-                    }
-                    const pendingUpdateId = btn.dataset.id;
-                    try {
-                        const response = await fetch('http://localhost:4000/api/v1/faculty/approve-addition', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ pendingUpdateId })
-                        });
-                        const data = await response.json();
-                        if (response.ok) {
-                            alert('Faculty addition approved');
-                            renderPendingFaculty();
-                            renderFaculty(); // Refresh faculty list
-                        } else {
-                            alert('Failed to approve: ' + data.message);
-                        }
-                    } catch (error) {
-                        console.error('Approve error:', error);
-                    }
-                });
-            });
-
-            document.querySelectorAll('.reject-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const token = localStorage.getItem('token');
-                    if (!token) {
-                        showLoginRequiredMessage();
-                        return;
-                    }
-                    const pendingUpdateId = btn.dataset.id;
-                    try {
-                        const response = await fetch('http://localhost:4000/api/v1/faculty/reject-addition', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ pendingUpdateId })
-                        });
-                        const data = await response.json();
-                        if (response.ok) {
-                            alert('Faculty addition rejected');
-                            renderPendingFaculty();
-                        } else {
-                            alert('Failed to reject: ' + data.message);
-                        }
-                    } catch (error) {
-                        console.error('Reject error:', error);
-                    }
-                });
-            });
+            const el = document.getElementById('pendingFaculty');
+            if (el) el.innerHTML = '<p>Faculty can now be added directly by admins via the API.</p>';
         }
-        
-        // Render pending updates for admin
+
         async function renderPendingUpdates() {
-            await fetchPendingUpdates();
-            const pendingUpdatesContainer = document.getElementById('pendingUpdates');
-            pendingUpdatesContainer.innerHTML = '';
+            const el = document.getElementById('pendingUpdates');
+            if (el) el.innerHTML = '<p>Faculty updates can now be applied directly by admins via the API.</p>';
+        }
 
-            if (pendingUpdates.length === 0) {
-                pendingUpdatesContainer.innerHTML = '<p>No pending faculty updates at this time.</p>';
-                return;
-            }
-
+        // — dead code placeholder below kept to preserve HTML structure —
+        async function _deadCode() {
+            const pendingUpdates = [];
             pendingUpdates.forEach(update => {
                 const pendingUpdateCard = document.createElement('div');
-                pendingUpdateCard.className = 'pending-update-card';
-
                 pendingUpdateCard.innerHTML = `
-                    <div class="pending-update-details">
-                        <h3 class="pending-update-title">${update.originalFacultyId.name || 'Faculty'} - Update Request</h3>
-                        <div class="pending-update-meta">
-                            <div class="status-indicator status-pending">
-                                <i class='bx bxs-time'></i> Pending Approval
-                            </div>
-                            <div class="meta-item">
-                                <i class='bx bxs-user'></i>
-                                <span>Submitted by: ${update.submittedBy.username || 'User'}</span>
-                            </div>
-                            <div class="meta-item">
-                                <i class='bx bxs-calendar'></i>
-                                <span>${new Date(update.submittedAt).toLocaleDateString()}</span>
-                            </div>
-                        </div>
-
-                        <div class="update-changes">
-                            <h4><i class='bx bx-revision'></i> Proposed Changes</h4>
-                            ${Object.entries(update.changes).map(([field, values]) => `
-                                <div class="change-item">
-                                    <div class="change-field">${formatFieldName(field)}:</div>
-                                    <div class="change-old">${values.old || 'N/A'}</div>
-                                    <div class="change-new">${values.new || 'N/A'}</div>
+                    <div>
+                        <div class="change-old">N/A</div>
+                        <div class="change-new">N/A</div>
                                 </div>
                             `).join('')}
                         </div>
@@ -1708,210 +1583,28 @@
                         </div>
                     </div>
                 `;
-                pendingUpdatesContainer.appendChild(pendingUpdateCard);
             });
-            
-            // Add event listeners to action buttons
-            document.querySelectorAll('.pending-update .approve-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const token = localStorage.getItem('token');
-                    if (!token) {
-                        showLoginRequiredMessage();
-                        return;
-                    }
-                    const pendingUpdateId = btn.dataset.id;
-                    try {
-                        const response = await fetch('http://localhost:4000/api/v1/faculty/approve-update', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ pendingUpdateId })
-                        });
-                        const data = await response.json();
-                        if (response.ok) {
-                            alert('Faculty update approved');
-                            renderPendingUpdates();
-                            renderFaculty(); // Refresh faculty list
-                        } else {
-                            alert('Failed to approve: ' + data.message);
-                        }
-                    } catch (error) {
-                        console.error('Approve error:', error);
-                    }
-                });
-            });
+        } // end _deadCode
 
-            document.querySelectorAll('.pending-update .reject-btn').forEach(btn => {
-                btn.addEventListener('click', async () => {
-                    const token = localStorage.getItem('token');
-                    if (!token) {
-                        showLoginRequiredMessage();
-                        return;
-                    }
-                    const pendingUpdateId = btn.dataset.id;
-                    try {
-                        const response = await fetch('http://localhost:4000/api/v1/faculty/reject-update', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify({ pendingUpdateId })
-                        });
-                        const data = await response.json();
-                        if (response.ok) {
-                            alert('Faculty update rejected');
-                            renderPendingUpdates();
-                        } else {
-                            alert('Failed to reject: ' + data.message);
-                        }
-                    } catch (error) {
-                        console.error('Reject error:', error);
-                    }
-                });
-            });
-        }
-        
-        // Format field names for display
-        function formatFieldName(field) {
-            const names = {
-                'name': 'Name',
-                'email': 'Email',
-                'phone': 'Phone Number',
-                'cabin': 'Cabin Number'
-            };
-            return names[field] || field;
-        }
-
-        // Approve faculty
-        function approveFaculty(facultyId) {
-            const pendingIndex = pendingFaculty.findIndex(f => f.id === facultyId);
-            if (pendingIndex !== -1) {
-                const approvedFaculty = pendingFaculty[pendingIndex];
-                approvedFaculty.status = 'approved';
-                
-                faculty.push(approvedFaculty);
-                
-                pendingFaculty.splice(pendingIndex, 1);
-                
-                sendApprovalEmail(approvedFaculty.email, approvedFaculty.name);
-                
-                renderFaculty();
-                renderPendingFaculty();
-                populateFacultySelect();
-                
-                alert(`Faculty "${approvedFaculty.name}" has been approved and added to the public listing.`);
-            }
-        }
-
-        // Reject faculty
-        function rejectFaculty(facultyId) {
-            const pendingIndex = pendingFaculty.findIndex(f => f.id === facultyId);
-            if (pendingIndex !== -1) {
-                const rejectedFaculty = pendingFaculty[pendingIndex];
-                
-                sendRejectionEmail(rejectedFaculty.email, rejectedFaculty.name);
-                
-                pendingFaculty.splice(pendingIndex, 1);
-                
-                renderPendingFaculty();
-                
-                alert(`Faculty "${rejectedFaculty.name}" has been rejected.`);
-            }
-        }
-        
-        // Approve update
-        function approveUpdate(updateId) {
-            const updateIndex = pendingUpdates.findIndex(update => update.id === updateId);
-            if (updateIndex !== -1) {
-                const update = pendingUpdates[updateIndex];
-                const facultyIndex = faculty.findIndex(f => f.id === update.facultyId);
-                
-                if (facultyIndex !== -1) {
-                    const f = faculty[facultyIndex];
-                    Object.entries(update.changes).forEach(([field, values]) => {
-                        f[field] = values.new;
-                    });
-                    
-                    sendUpdateApprovalEmail(f.email, f.name);
-                    
-                    pendingUpdates.splice(updateIndex, 1);
-                    
-                    renderFaculty();
-                    renderPendingUpdates();
-                    populateFacultySelect();
-                    
-                    alert(`Updates for "${f.name}" have been approved and applied.`);
-                }
-            }
-        }
-        
-        // Reject update
-        function rejectUpdate(updateId) {
-            const updateIndex = pendingUpdates.findIndex(update => update.id === updateId);
-            if (updateIndex !== -1) {
-                const update = pendingUpdates[updateIndex];
-                
-                sendUpdateRejectionEmail(update.submittedBy, update.facultyName);
-                
-                pendingUpdates.splice(updateIndex, 1);
-                
-                renderPendingUpdates();
-                
-                alert(`Update request for "${update.facultyName}" has been rejected.`);
-            }
-        }
-
-        // Simulate sending approval email
-        function sendApprovalEmail(email, facultyName) {
-            console.log(`Sending approval email to ${email}`);
-            console.log(`Subject: Your Faculty Addition for "${facultyName}" Has Been Approved!`);
-            console.log(`Body: Congratulations! Your faculty addition for "${facultyName}" has been approved and is now listed on the Scholars Stack platform.`);
-        }
-
-        // Simulate sending rejection email
-        function sendRejectionEmail(email, facultyName) {
-            console.log(`Sending rejection email to ${email}`);
-            console.log(`Subject: Your Faculty Addition for "${facultyName}"`);
-            console.log(`Body: Thank you for your faculty addition. After review, we've decided not to approve "${facultyName}" at this time. Please contact us for more information.`);
-        }
-        
-        // Simulate sending update approval email
-        function sendUpdateApprovalEmail(email, facultyName) {
-            console.log(`Sending update approval email to ${email}`);
-            console.log(`Subject: Faculty Update Approved for "${facultyName}"`);
-            console.log(`Body: Your requested updates for "${facultyName}" have been approved and are now live on the Scholars Stack platform.`);
-        }
-        
-        // Simulate sending update rejection email
-        function sendUpdateRejectionEmail(email, facultyName) {
-            console.log(`Sending update rejection email to ${email}`);
-            console.log(`Subject: Faculty Update Rejected for "${facultyName}"`);
-            console.log(`Body: Your requested updates for "${facultyName}" have been reviewed but not approved at this time. Please contact us for more information.`);
-        }
-
-        // Faculty addition form
+        // Faculty addition form (admin only — direct create via API)
         const facultyForm = document.getElementById('facultyRegistrationForm');
         const successMessage = document.getElementById('successMessage');
-        
+
         facultyForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // Check if user is logged in
+
             const token = localStorage.getItem('token');
             if (!token) {
                 showLoginRequiredMessage();
                 return;
             }
-            
+
             const facultyName = document.getElementById('facultyName').value;
             const facultyEmail = document.getElementById('facultyEmail').value;
             const facultyCabin = document.getElementById('facultyCabin').value;
-            
+
             try {
-                const response = await fetch('http://localhost:4000/api/v1/faculty/submit-addition', {
+                const response = await fetch('/api/v1/faculty', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1920,19 +1613,18 @@
                     body: JSON.stringify({
                         name: facultyName,
                         email: facultyEmail,
-                        cabin: facultyCabin
+                        office: facultyCabin
                     })
                 });
 
                 const result = await response.json();
-                
+
                 if (response.ok) {
                     successMessage.style.display = 'flex';
                     facultyForm.reset();
                     window.scrollTo(0, 0);
-                    
-                    // Show success notification
-                    showNotification('Faculty addition submitted successfully!', 'success');
+                    renderFaculty();
+                    showNotification('Faculty added successfully!', 'success');
                 } else {
                     if (response.status === 401) {
                         showLoginRequiredMessage();
@@ -2015,17 +1707,16 @@
             const updatedCabin = document.getElementById('updateFacultyCabin').value;
             
             try {
-                const response = await fetch('http://localhost:4000/api/v1/faculty/submit-update', {
-                    method: 'POST',
+                const response = await fetch(`/api/v1/faculty/${facultyId}`, {
+                    method: 'PUT',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        facultyId: facultyId,
                         name: updatedName,
                         email: updatedEmail,
-                        cabin: updatedCabin
+                        office: updatedCabin
                     })
                 });
 
@@ -2137,7 +1828,7 @@
                     <h3>Login Required</h3>
                     <p>You need to login first to update faculty information.</p>
                     <div class="login-message-actions">
-                        <button onclick="window.location.href='../index.html'" class="btn-login">
+                        <button onclick="window.location.href='/index.html'" class="btn-login">
                             <i class='bx bxs-log-in'></i> Login Now
                         </button>
                         <button onclick="this.parentElement.parentElement.parentElement.remove()" class="btn-close">
@@ -2264,8 +1955,6 @@
         document.addEventListener('DOMContentLoaded', async function() {
             createParticles();
             await renderFaculty();
-            await renderPendingFaculty();
-            await renderPendingUpdates();
             await populateFacultySelect();
     
             // Hide admin and update tabs if not logged in

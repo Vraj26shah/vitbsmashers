@@ -83,7 +83,7 @@ class UserAuth {
                     <h3>Authentication Required</h3>
                     <p>You need to log in to access this page. Please sign in to view your profile and courses.</p>
                     <div class="access-denied-actions">
-                        <a href="../../index.html" class="btn-primary">
+                        <a href="/index.html" class="btn-primary">
                             <i class='bx bx-log-in'></i> Login Now
                         </a>
                         <button onclick="window.history.back()" class="btn-secondary">

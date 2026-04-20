@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auth Debug - Scholars Stack</title>
+    <script src="config.js"></script>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #0a1423;
+            color: #ecf0f1;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 { color: #3498db; }
+        .section {
+            background: rgba(15, 26, 42, 0.85);
+            border: 1px solid #3498db;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .success { color: #2ecc71; }
+        .error { color: #e74c3c; }
+        .warning { color: #f39c12; }
+        pre {
+            background: #000;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { opacity: 0.8; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Authentication & Module Loading Debug</h1>
+    
+    <div class="section">
+        <h2>1. Local Storage</h2>
+        <button onclick="checkLocalStorage()">Check Local Storage</button>
+        <pre id="localStorage-output">Click button to check...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>2. Token Verification</h2>
+        <button onclick="verifyToken()">Verify Token</button>
+        <pre id="token-output">Click button to verify...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>3. User Profile</h2>
+        <button onclick="checkProfile()">Check Profile</button>
+        <pre id="profile-output">Click button to check...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>4. Purchases</h2>
+        <button onclick="checkPurchases()">Check Purchases</button>
+        <pre id="purchases-output">Click button to check...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>5. Module Access</h2>
+        <input type="text" id="courseId" placeholder="Enter Course ID or PID" style="padding: 8px; width: 300px; margin-right: 10px;">
+        <button onclick="checkModules()">Check Modules</button>
+        <pre id="modules-output">Enter course ID and click button...</pre>
+    </div>
+    
+    <div class="section">
+        <h2>6. Quick Fixes</h2>
+        <button onclick="clearAndReload()">Clear Storage & Reload</button>
+        <button onclick="copyToken()">Copy Token to Clipboard</button>
+    </div>
+
+    <script>
+        function getApiBase() {
+            return window.config ? window.config.API_BASE : '/api/v1';
+        }
+        
+        function getToken() {
+            return localStorage.getItem('token');
+        }
+        
+        function log(elementId, message, type = 'info') {
+            const el = document.getElementById(elementId);
+            const color = type === 'success' ? '#2ecc71' : type === 'error' ? '#e74c3c' : type === 'warning' ? '#f39c12' : '#ecf0f1';
+            el.innerHTML = `<span style="color: ${color}">${message}</span>`;
+        }
+        
+        function checkLocalStorage() {
+            const output = {
+                token: localStorage.getItem('token') ? 'Present (length: ' + localStorage.getItem('token').length + ')' : 'Missing',
+                userProfile: localStorage.getItem('userProfile') ? JSON.parse(localStorage.getItem('userProfile')) : 'Missing',
+                profileData: localStorage.getItem('profileData') ? JSON.parse(localStorage.getItem('profileData')) : 'Missing',
+                profileCompleted: localStorage.getItem('profileCompleted') || 'Missing'
+            };
+            log('localStorage-output', JSON.stringify(output, null, 2));
+        }
+        
+        async function verifyToken() {
+            const token = getToken();
+            if (!token) {
+                log('token-output', 'ERROR: No token found in localStorage', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${getApiBase()}/profile/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    log('token-output', `ERROR (${response.status}): ${JSON.stringify(data, null, 2)}`, 'error');
+                } else {
+                    log('token-output', `SUCCESS: Token is valid\n\n${JSON.stringify(data, null, 2)}`, 'success');
+                }
+            } catch (error) {
+                log('token-output', `ERROR: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkProfile() {
+            const token = getToken();
+            if (!token) {
+                log('profile-output', 'ERROR: No token found', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${getApiBase()}/profile/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    log('profile-output', `ERROR (${response.status}): ${JSON.stringify(data, null, 2)}`, 'error');
+                } else {
+                    const profile = data.user || data;
+                    const complete = profile.phone && profile.registration_number && profile.branch;
+                    log('profile-output', `Profile Status: ${complete ? 'COMPLETE ✅' : 'INCOMPLETE ⚠️'}\n\n${JSON.stringify(profile, null, 2)}`, complete ? 'success' : 'warning');
+                }
+            } catch (error) {
+                log('profile-output', `ERROR: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkPurchases() {
+            const token = getToken();
+            if (!token) {
+                log('purchases-output', 'ERROR: No token found', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${getApiBase()}/courses/my-courses`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    log('purchases-output', `ERROR (${response.status}): ${JSON.stringify(data, null, 2)}`, 'error');
+                } else {
+                    const courses = data.data?.courses || [];
+                    if (courses.length === 0) {
+                        log('purchases-output', 'No purchases found. User needs to purchase a course first.', 'warning');
+                    } else {
+                        log('purchases-output', `Found ${courses.length} purchase(s):\n\n${JSON.stringify(courses, null, 2)}`, 'success');
+                    }
+                }
+            } catch (error) {
+                log('purchases-output', `ERROR: ${error.message}`, 'error');
+            }
+        }
+        
+        async function checkModules() {
+            const token = getToken();
+            const courseId = document.getElementById('courseId').value.trim();
+            
+            if (!token) {
+                log('modules-output', 'ERROR: No token found', 'error');
+                return;
+            }
+            
+            if (!courseId) {
+                log('modules-output', 'ERROR: Please enter a course ID or PID', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${getApiBase()}/courses/${courseId}/modules`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (!response.ok) {
+                    log('modules-output', `ERROR (${response.status}): ${JSON.stringify(data, null, 2)}`, 'error');
+                } else {
+                    const modules = data.data || [];
+                    const withR2 = modules.filter(m => m.has_file || m.r2_key);
+                    const withoutR2 = modules.filter(m => !(m.has_file || m.r2_key));
+                    
+                    log('modules-output', `Found ${modules.length} module(s):\n- With R2 key: ${withR2.length}\n- Without R2 key: ${withoutR2.length}\n\n${JSON.stringify(modules.slice(0, 5), null, 2)}${modules.length > 5 ? '\n\n... and ' + (modules.length - 5) + ' more' : ''}`, 'success');
+                }
+            } catch (error) {
+                log('modules-output', `ERROR: ${error.message}`, 'error');
+            }
+        }
+        
+        function clearAndReload() {
+            if (confirm('This will clear all local storage and reload the page. Continue?')) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+        
+        function copyToken() {
+            const token = getToken();
+            if (!token) {
+                alert('No token found in localStorage');
+                return;
+            }
+            navigator.clipboard.writeText(token).then(() => {
+                alert('Token copied to clipboard!');
+            });
+        }
+        
+        // Auto-check on load
+        window.addEventListener('load', () => {
+            checkLocalStorage();
+        });
+    </script>
+</body>
+</html>

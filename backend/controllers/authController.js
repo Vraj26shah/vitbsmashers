@@ -23,17 +23,20 @@ export const signup = async (req, res) => {
     if (existing)
       return res.status(409).json({ status: 'error', message: 'Username already taken' });
 
-    // Create Supabase Auth user — sends confirmation email automatically
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+    // Create Supabase Auth user + send confirmation email
+    const { data: authData, error: authError } = await supabase.auth.signUp({
       email,
       password,
-      email_confirm: false,
+      options: { data: { username: username.toLowerCase() } },
     });
 
     if (authError)
       return res.status(400).json({ status: 'error', message: authError.message });
 
-    // Insert profile row
+    if (!authData.user)
+      return res.status(400).json({ status: 'error', message: 'Signup failed. Try again.' });
+
+    // Insert profile row (user may not be confirmed yet — that's fine)
     const { error: profileError } = await supabase.schema('business').from('users').insert({
       id:       authData.user.id,
       email:    email.toLowerCase(),
@@ -48,7 +51,7 @@ export const signup = async (req, res) => {
 
     return res.status(201).json({
       status: 'success',
-      message: 'Account created. Check your email to confirm your address before logging in.',
+      message: 'Account created! Check your VIT email to confirm before logging in.',
     });
   } catch (err) {
     console.error('Signup error:', err.message);
@@ -94,6 +97,7 @@ export const login = async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
+      path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -112,7 +116,7 @@ export const login = async (req, res) => {
 // ── POST /api/v1/auth/google-token ──────────────────────────────────────────
 export const verifyGoogleToken = async (req, res) => {
   try {
-    const { access_token, idToken } = req.body;
+    const { access_token, idToken, refresh_token } = req.body;
     const tokenToUse = access_token || idToken;
 
     if (!tokenToUse)
@@ -125,24 +129,40 @@ export const verifyGoogleToken = async (req, res) => {
     if (!user.email.endsWith('@vitbhopal.ac.in'))
       return res.status(403).json({ status: 'error', message: 'Must use VIT Bhopal Google account (@vitbhopal.ac.in)' });
 
-    const { data: profile } = await supabase.schema('business').from('users').upsert({
+    let { data: profile, error: upsertError } = await supabase.schema('business').from('users').upsert({
       id:          user.id,
       email:       user.email.toLowerCase(),
       username:    user.email.split('@')[0].toLowerCase(),
       full_name:   user.user_metadata?.full_name || null,
+      role:        'student',
       is_verified: true,
     }, { onConflict: 'id' }).select().single();
+
+    if (upsertError) {
+      console.error('Google auth upsert error:', upsertError.message);
+      // Row may already exist (e.g. username unique conflict) — try fetching it
+      const { data: existing } = await supabase.schema('business').from('users')
+        .select('*').eq('id', user.id).single();
+      if (existing) {
+        profile = existing;
+        upsertError = null;
+      } else {
+        return res.status(500).json({ status: 'error', message: 'Failed to create user profile. Please try again.' });
+      }
+    }
 
     res.cookie('jwt', tokenToUse, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
+      path: '/',
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
     return res.status(200).json({
-      status: 'success',
-      token:  tokenToUse,
+      status:  'success',
+      token:   tokenToUse,
+      refresh: refresh_token || null,
       data: {
         user:       profile,
         authMethod: 'google',
@@ -155,10 +175,40 @@ export const verifyGoogleToken = async (req, res) => {
   }
 };
 
+// ── POST /api/v1/auth/refresh-token ─────────────────────────────────────────
+export const refreshToken = async (req, res) => {
+  try {
+    const { refresh_token } = req.body;
+    if (!refresh_token)
+      return res.status(400).json({ status: 'error', message: 'refresh_token required' });
+
+    const { data, error } = await supabase.auth.refreshSession({ refresh_token });
+    if (error || !data.session)
+      return res.status(401).json({ status: 'error', message: 'Invalid or expired refresh token' });
+
+    res.cookie('jwt', data.session.access_token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    return res.status(200).json({
+      status:  'success',
+      token:   data.session.access_token,
+      refresh: data.session.refresh_token,
+    });
+  } catch (err) {
+    console.error('Token refresh error:', err.message);
+    return res.status(500).json({ status: 'error', message: 'Server error' });
+  }
+};
+
 // ── POST /api/v1/auth/logout ─────────────────────────────────────────────────
 export const logout = (req, res) => {
-  res.clearCookie('jwt');
+  res.clearCookie('jwt', { path: '/' });
   return res.status(200).json({ status: 'success', message: 'Logged out successfully' });
 };
 
-export default { signup, login, verifyGoogleToken, logout };
+export default { signup, login, verifyGoogleToken, refreshToken, logout };

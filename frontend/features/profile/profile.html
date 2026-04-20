@@ -811,6 +811,7 @@
         margin-bottom: 30px;
         max-width: 700px;
         margin: 0 auto;
+        display: none !important;
     }
 
     .form-title {
@@ -1669,7 +1670,7 @@
     </nav>
     <!-- Main Content Area -->
     <main class="main-content" id="mainContent">
-        <div class="setup-form" id="setupForm">
+        <div class="setup-form" id="setupForm" style="display: none !important;">
             <div id="googleWelcomeBanner"
                 style="display: none; background: linear-gradient(135deg, #4285F4 0%, #34A853 100%); color: white; padding: 20px; border-radius: 12px; margin-bottom: 20px; text-align: center;">
                 <i class='bx bxs-check-circle' style="font-size: 48px; margin-bottom: 15px; color: white;"></i>
@@ -2389,25 +2390,22 @@
                         // Ensure setup form stays hidden
                         ensureSetupFormHidden();
                     } else {
-                        console.log('📝 Profile not completed and not Google user, showing setup form');
-
-                        // Hide profile section and show setup form
-                        document.getElementById('profileSection').style.display = 'none';
-                        document.getElementById('setupForm').style.display = 'block';
-
-                        // Populate email from backend data if available, otherwise from token
-                        if (profileData && profileData.email) {
-                            displayUserEmail(profileData.email);
-                        } else {
-                            populateEmailForSetup();
+                        console.log('ℹ️ Profile incomplete - keeping profile view visible');
+                        document.getElementById('setupForm').style.display = 'none';
+                        document.getElementById('profileSection').style.display = 'block';
+                        document.getElementById('profileSection').classList.add('active');
+                        if (profileData) {
+                            populateCompleteProfile(profileData);
+                            updateLocalStorageWithBackendData(profileData);
                         }
+                        ensureSetupFormHidden();
                     }
                 } else {
-                    console.log('❌ No profile data from backend');
-                    // Show setup form if no data
-                    document.getElementById('profileSection').style.display = 'none';
-                    document.getElementById('setupForm').style.display = 'block';
-                    populateEmailForSetup();
+                    console.log('❌ No profile data from backend, keeping profile view visible');
+                    document.getElementById('setupForm').style.display = 'none';
+                    document.getElementById('profileSection').style.display = 'block';
+                    document.getElementById('profileSection').classList.add('active');
+                    ensureSetupFormHidden();
                 }
 
             } catch (error) {
@@ -2422,10 +2420,10 @@
                         showProfileCompletionBanner();
                     }
                 } else {
-                    // Show setup form as last resort
-                    document.getElementById('profileSection').style.display = 'none';
-                    document.getElementById('setupForm').style.display = 'block';
-                    populateEmailForSetup();
+                    document.getElementById('setupForm').style.display = 'none';
+                    document.getElementById('profileSection').style.display = 'block';
+                    document.getElementById('profileSection').classList.add('active');
+                    ensureSetupFormHidden();
                 }
             }
         }
@@ -2451,16 +2449,19 @@
         // Update localStorage with backend data
         function updateLocalStorageWithBackendData(profileData) {
             try {
+                // Support both snake_case (Supabase) and camelCase (legacy cache)
+                const regNum = profileData.registrationNumber || profileData.registration_number || profileData.regNumber;
+                const name   = profileData.fullName || profileData.full_name || 'Student';
                 const localProfileData = {
                     email: profileData.email,
                     phone: profileData.phone,
                     program: profileData.branch,
-                    regNumber: profileData.registrationNumber,
-                    fullName: profileData.fullName || 'Student',
-                    profilePicture: profileData.profilePicture,
+                    regNumber: regNum,
+                    fullName: name,
+                    profilePicture: profileData.profilePicture || profileData.profile_picture,
                     googleId: profileData.googleId,
-                    profileCompleted: profileData.profileCompleted ||
-                        !!(profileData.phone && profileData.registrationNumber && profileData.branch),
+                    profileCompleted: profileData.profileCompleted || profileData.profile_completed ||
+                        !!(profileData.phone && regNum && profileData.branch),
                     lastUpdated: new Date().toISOString(),
                     schedule: getStoredSchedule()
                 };
@@ -2584,12 +2585,13 @@
                     }
                 }
 
-                // Extract user data with fallbacks
-                let fullName = profileData.fullName || profileData.username || 'Student';
+                // Extract user data with fallbacks — support both camelCase (cache) and snake_case (Supabase DB)
+                let fullName = profileData.fullName || profileData.full_name || profileData.username || 'Student';
 
                 // If fullName is still 'Student', try to get from AuthManager or extract from email
                 if (fullName === 'Student' && window.authManager && window.authManager.userData) {
-                    fullName = window.authManager.userData.fullName || window.authManager.userData.username || 'Student';
+                    const am = window.authManager.userData;
+                    fullName = am.fullName || am.full_name || am.username || 'Student';
                 }
 
                 // If still 'Student', try to extract from email
@@ -2613,7 +2615,8 @@
 
                 const phone = profileData.phone || 'Not specified';
                 const program = profileData.branch || profileData.program || 'Not specified';
-                const regNumber = profileData.registrationNumber || profileData.regNumber || 'Not specified';
+                // Support snake_case from Supabase (registration_number) and camelCase from cache (registrationNumber)
+                const regNumber = profileData.registrationNumber || profileData.registration_number || profileData.regNumber || 'Not specified';
                 const semester = profileData.semester || 'Not specified';
                 const cgpa = profileData.cgpa || 'Not specified';
                 const dob = profileData.dob || 'Not specified';
@@ -2728,142 +2731,12 @@
 
         // Function to show profile completion banner for Google users
         function showProfileCompletionBanner() {
-            // Check if banner already exists
-            if (document.getElementById('profileCompletionBanner')) {
-                return;
-            }
-
-            const banner = document.createElement('div');
-            banner.id = 'profileCompletionBanner';
-            banner.style.cssText = `
-                background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
-                color: white;
-                padding: 20px;
-                border-radius: 12px;
-                margin-bottom: 30px;
-                border: 2px solid #e67e22;
-                box-shadow: 0 8px 25px rgba(243, 156, 18, 0.3);
-                text-align: center;
-                position: relative;
-            `;
-
-            banner.innerHTML = `
-                <div style="display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 15px;">
-                    <i class='bx bx-info-circle' style="font-size: 28px;"></i>
-                    <h3 style="margin: 0; font-size: 20px; font-weight: 600;">Complete Your Profile</h3>
-                </div>
-                <p style="margin: 0 0 15px 0; font-size: 16px; opacity: 0.9;">
-                    Welcome! To access all features like course purchases, please complete your profile setup below.
-                </p>
-                <button onclick="scrollToSetup()" style="
-                    background: white;
-                    color: #e67e22;
-                    border: none;
-                    padding: 12px 24px;
-                    border-radius: 8px;
-                    font-weight: 600;
-                    cursor: pointer;
-                    transition: all 0.3s ease;
-                    font-size: 14px;
-                " onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='white'">
-                    <i class='bx bx-edit'></i> Complete Profile Now
-                </button>
-                <button onclick="this.parentElement.remove()" style="
-                    position: absolute;
-                    top: 10px;
-                    right: 10px;
-                    background: transparent;
-                    border: none;
-                    color: white;
-                    font-size: 20px;
-                    cursor: pointer;
-                    opacity: 0.7;
-                " onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
-                    ×
-                </button>
-            `;
-
-            // Insert banner at the top of the profile section
-            const profileSection = document.getElementById('profileSection');
-            if (profileSection) {
-                profileSection.insertBefore(banner, profileSection.firstChild);
-            }
-
-            console.log('📢 Profile completion banner shown for Google user');
+            console.log('ℹ️ Profile completion banner disabled on profile page');
         }
 
         // Function to scroll to setup form (for banner button)
         function scrollToSetup() {
-            // Create setup form at the bottom of profile if it doesn't exist
-            let setupForm = document.getElementById('setupForm');
-            if (!setupForm) {
-                setupForm = document.createElement('div');
-                setupForm.id = 'setupForm';
-                setupForm.innerHTML = `
-                    <h2 class="form-title">Complete Your Profile Setup</h2>
-                    <p class="form-subtitle">Please fill in these mandatory fields to access all features</p>
-
-                    <div class="form-group">
-                        <label style="display: flex; align-items: center; gap: 8px; font-weight: 600; color: var(--light-color);">
-                            <i class='bx bx-envelope' style="color: var(--accent-blue);"></i>
-                            Your VIT Email ID
-                        </label>
-                        <div style="position: relative; margin-top: 8px;">
-                            <input type="email" class="form-control" id="vitEmail" value="" placeholder="Loading your email..." readonly required>
-                            <i class='bx bx-loader-alt bx-spin' style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #f39c12; font-size: 18px;" id="emailLoadingIcon"></i>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="tel" class="form-control" id="phoneNumber" placeholder="e.g. 9876543210" required>
-                        <p class="form-note">This can only be set once and cannot be changed later</p>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Program</label>
-                        <select class="form-control" id="programSelect" required>
-                            <option value="">Select your program</option>
-                            <option>B.Tech Computer Science</option>
-                            <option>B.Tech Electronics</option>
-                            <option>B.Tech Mechanical</option>
-                            <option>B.Tech Civil</option>
-                            <option>B.Arch</option>
-                            <option>BBA</option>
-                            <option>B.Com</option>
-                            <option>M.Tech</option>
-                            <option>MBA</option>
-                        </select>
-                        <p class="form-note">This can only be set once and cannot be changed later</p>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Registration Number</label>
-                        <input type="text" class="form-control" id="regNumber" placeholder="e.g. 23BCE0001" required>
-                        <p class="form-note">This can only be set once and cannot be changed later</p>
-                    </div>
-
-                    <div class="form-actions">
-                        <button class="btn btn-primary" id="saveSetup">Complete Profile</button>
-                    </div>
-                `;
-                setupForm.className = 'setup-form';
-                document.getElementById('profileSection').appendChild(setupForm);
-
-                // Populate email
-                populateEmailImmediately();
-
-                // Add event listener for save button
-                document.getElementById('saveSetup').addEventListener('click', async function () {
-                    // Reuse the existing save logic
-                    const event = new Event('click');
-                    // This would need to be implemented properly
-                    alert('Please refresh the page to complete your profile setup.');
-                });
-            }
-
-            // Scroll to setup form
-            setupForm.scrollIntoView({ behavior: 'smooth' });
+            console.log('ℹ️ Setup form removed from profile page');
         }
 
         // Function to ensure setup form is permanently hidden for completed profiles
@@ -2887,24 +2760,77 @@
             }
         }
 
-        // Load purchased courses (placeholder - will be implemented with backend)
-        function loadPurchasedCourses() {
-            const coursesContainer = document.getElementById('coursesContainer');
-            coursesContainer.innerHTML = `
-                <div style="
-                    text-align: center;
-                    padding: 40px;
-                    color: #666;
-                    background: rgba(44, 62, 80, 0.5);
-                    border-radius: 12px;
-                    border: 1px solid rgba(52, 152, 219, 0.3);
-                ">
-                    <i class='bx bx-book' style="font-size: 48px; color: #3498db; margin-bottom: 15px;"></i>
-                    <h3 style="color: #ecf0f1; margin-bottom: 10px;">Your Purchased Courses</h3>
-                    <p style="color: #ddd;">Courses will be loaded from your account data.</p>
-                    <p style="color: #aaa; font-size: 14px;">This feature will be fully implemented with backend integration.</p>
-                </div>
-            `;
+        // Load purchased courses from backend API
+        async function loadPurchasedCourses() {
+            const container = document.getElementById('coursesContainer');
+            container.innerHTML = `
+                <div style="text-align:center;padding:30px;">
+                    <i class='bx bx-loader bx-spin' style="font-size:32px;color:#3498db;"></i>
+                    <p style="color:#aaa;margin-top:10px;">Loading your courses...</p>
+                </div>`;
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    container.innerHTML = `<p style="color:#aaa;text-align:center;padding:30px;">Please log in to see your courses.</p>`;
+                    return;
+                }
+                const res = await fetch('/api/v1/courses/my-courses', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (!res.ok) throw new Error(`API error ${res.status}`);
+                const json = await res.json();
+                const courses = json?.data?.courses || [];
+
+                if (courses.length === 0) {
+                    container.innerHTML = `
+                        <div style="text-align:center;padding:40px;background:rgba(44,62,80,0.5);
+                                    border-radius:12px;border:1px solid rgba(52,152,219,0.3);">
+                            <i class='bx bx-book' style="font-size:48px;color:#3498db;margin-bottom:15px;"></i>
+                            <h3 style="color:#ecf0f1;margin-bottom:10px;">No Courses Yet</h3>
+                            <p style="color:#ddd;margin-bottom:15px;">Browse our marketplace to get started.</p>
+                            <a href="../marketplace/market.html"
+                               style="background:#3498db;color:#fff;padding:10px 20px;border-radius:8px;
+                                      text-decoration:none;font-weight:600;display:inline-flex;align-items:center;gap:8px;">
+                                <i class='bx bx-store'></i> Browse Courses
+                            </a>
+                        </div>`;
+                    return;
+                }
+
+                container.innerHTML = courses.map(item => {
+                    const c = item.course || item;
+                    const purchaseDate = item.purchased_at
+                        ? new Date(item.purchased_at).toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric' })
+                        : 'N/A';
+                    return `
+                        <div class="purchased-course-card">
+                            <div class="purchased-course-header">
+                                <div>
+                                    <div class="purchased-course-title">${c.title || 'Course'}</div>
+                                    <div class="purchased-course-info">
+                                        ${c.category || ''}&nbsp;·&nbsp;Purchased ${purchaseDate}
+                                    </div>
+                                </div>
+                            </div>
+                            <a href="../mycourses/mycourses.html" class="purchased-course-link">
+                                <i class='bx bx-play-circle'></i> Access Course Materials &rarr;
+                            </a>
+                        </div>`;
+                }).join('');
+
+            } catch (err) {
+                console.error('Failed to load purchased courses:', err);
+                container.innerHTML = `
+                    <div style="text-align:center;padding:30px;color:#e74c3c;">
+                        <i class='bx bx-error-circle' style="font-size:40px;margin-bottom:10px;"></i>
+                        <p style="margin-bottom:10px;">Failed to load courses.</p>
+                        <button onclick="loadPurchasedCourses()"
+                                style="background:#3498db;color:#fff;border:none;padding:8px 18px;
+                                       border-radius:8px;cursor:pointer;font-weight:600;">
+                            <i class='bx bx-refresh'></i> Retry
+                        </button>
+                    </div>`;
+            }
         }
 
         // Refresh courses button
@@ -2972,7 +2898,7 @@
                 const token = localStorage.getItem('token');
                 if (!token) {
                     showGeneralError('Please log in first');
-                    window.location.href = '../index.html';
+                    window.location.href = '/index.html';
                     return;
                 }
 
@@ -3792,36 +3718,20 @@
                         return;
                     }
 
-                    // STEP 4: Profile not completed - show setup form
-                    console.log('📝 Profile not completed - showing setup form');
+                    console.log('ℹ️ Profile incomplete - forcing normal profile view');
+                    document.getElementById('setupForm').style.display = 'none';
+                    document.getElementById('profileSection').style.display = 'block';
+                    document.getElementById('profileSection').classList.add('active');
+                    ensureSetupFormHidden();
 
-                    // Try to populate email immediately
-                    const emailLoaded = populateEmailImmediately();
-                    console.log('📧 Email loading result:', emailLoaded);
-
-                    // Show Google welcome banner if this is a Google OAuth user
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const isGoogleUser = urlParams.get('google_success') === 'true' ||
-                        (localStorage.getItem('token') && (() => {
-                            try {
-                                const token = localStorage.getItem('token');
-                                const payload = JSON.parse(atob(token.split('.')[1]));
-                                return payload.email && payload.email.includes('@vitbhopal.ac.in');
-                            } catch (e) {
-                                return false;
-                            }
-                        })());
-
-                    if (isGoogleUser) {
-                        document.getElementById('googleWelcomeBanner').style.display = 'block';
-                        console.log('🎉 Showing Google welcome banner');
-                    }
-
-                    // Show setup form and hide profile section
-                    document.getElementById('setupForm').style.display = 'block';
-                    document.getElementById('profileSection').style.display = 'none';
-
-                    console.log('✅ Setup form displayed, profile initialization complete');
+                    setTimeout(() => {
+                        createParticles();
+                        checkSidebarActivation();
+                        clearOldProfileData();
+                        if (window.adminPanelManager) {
+                            window.adminPanelManager.init();
+                        }
+                    }, 100);
                 }).catch(error => {
                     console.error('❌ Profile auth initialization failed:', error);
                     window.authManager.showLoginRequired();

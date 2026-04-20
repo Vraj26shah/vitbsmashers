@@ -1,14 +1,16 @@
 import express from 'express';
-import { signup, login, verifyGoogleToken, logout } from '../controllers/authController.js';
+import { signup, login, verifyGoogleToken, refreshToken, logout } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
-import { supabase } from '../lib/supabase.js';
+import { authLimiter, strictAuthLimiter } from '../middleware/securityMiddleware.js';
 
 const router = express.Router();
+const hasValue = (value) => typeof value === 'string' ? value.trim().length > 0 : !!value;
 
-// Public routes
-router.post('/signup',       signup);
-router.post('/login',        login);
-router.post('/google-token', verifyGoogleToken);
+// Public routes (rate-limited — protects Supabase + user accounts from brute force)
+router.post('/signup',        strictAuthLimiter, signup);
+router.post('/login',         strictAuthLimiter, login);
+router.post('/google-token',  authLimiter, verifyGoogleToken);
+router.post('/refresh-token', authLimiter, refreshToken);
 
 // Logout
 router.post('/logout', protect, logout);
@@ -17,16 +19,13 @@ router.post('/logout', protect, logout);
 router.get('/profile', protect, (req, res) => {
   return res.status(200).json({
     user: req.user,
-    profileComplete: !!(req.user.phone && req.user.registration_number && req.user.branch),
+    profileComplete: hasValue(req.user.phone) && hasValue(req.user.registration_number) && hasValue(req.user.branch),
   });
 });
 
-// Token validation
+// Token validation (never return JWT in JSON — avoids XSS / log leakage)
 router.get('/validate-token', protect, (req, res) => {
-  const token =
-    (req.headers.authorization?.startsWith('Bearer ') ? req.headers.authorization.split(' ')[1] : null) ||
-    req.cookies?.jwt;
-  return res.status(200).json({ valid: true, user: req.user, token, message: 'Token is valid' });
+  return res.status(200).json({ valid: true, user: req.user, message: 'Token is valid' });
 });
 
 // Admin status

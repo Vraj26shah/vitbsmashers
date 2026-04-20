@@ -34,8 +34,11 @@ async function handleLogout() {
 
     // Clear all user data from localStorage
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('cart');
     localStorage.removeItem('userProfile');
+    localStorage.removeItem('profileData');
+    localStorage.removeItem('profileCompleted');
 
     // Show logout message
     showNotification('Logged out successfully', 'success');

@@ -1022,6 +1022,18 @@
                 max-width: 1500px;
             }
         }
+
+        .content-protection-notice {
+            margin: 0 0 20px 0;
+            padding: 14px 18px;
+            border-radius: 12px;
+            background: rgba(231, 76, 60, 0.15);
+            border: 1px solid rgba(231, 76, 60, 0.45);
+            color: #fadbd8;
+            font-size: 14px;
+            line-height: 1.45;
+            max-width: 900px;
+        }
     </style>
 </head>
 
@@ -1091,6 +1103,7 @@
     </nav>
 
     <main class="main-content" id="mainContent">
+        <div id="contentProtectionNotice" class="content-protection-notice" style="display: none;" role="alert"></div>
         <h1 class="page-title">
             <i class='bx bxs-graduation'></i> My Courses
         </h1>
@@ -1098,6 +1111,52 @@
         <div class="course-grid" id="myCoursesGrid">
         </div>
     </main>
+
+    <!-- Module Browser Modal -->
+    <div id="module-browser-modal"
+         style="display:none; position:fixed; inset:0; z-index:5000;
+                background:rgba(0,0,0,0.75); backdrop-filter:blur(5px);
+                align-items:center; justify-content:center; padding:20px;"
+         onclick="if(event.target===this) closeModuleBrowser()">
+        <div style="background:#0f1a2a; border:2px solid var(--accent-blue);
+                    border-radius:16px; width:100%; max-width:520px;
+                    max-height:80vh; display:flex; flex-direction:column;
+                    box-shadow:0 24px 60px rgba(0,0,0,0.7);">
+            <!-- Header -->
+            <div style="display:flex; align-items:center; justify-content:space-between;
+                        padding:20px 24px; border-bottom:1px solid rgba(52,152,219,0.25);
+                        flex-shrink:0;">
+                <div>
+                    <div id="module-browser-subtitle"
+                         style="font-size:11px; font-weight:700; color:var(--accent-blue);
+                                text-transform:uppercase; letter-spacing:0.5px; margin-bottom:3px;"></div>
+                    <h3 id="module-browser-title"
+                        style="font-size:17px; font-weight:700; color:var(--light-color); margin:0;
+                               line-height:1.3; max-width:380px; overflow:hidden;
+                               text-overflow:ellipsis; white-space:nowrap;"></h3>
+                </div>
+                <button onclick="closeModuleBrowser()"
+                        style="background:rgba(231,76,60,0.12); border:1px solid rgba(231,76,60,0.35);
+                               color:#e74c3c; width:36px; height:36px; border-radius:8px;
+                               cursor:pointer; font-size:20px; line-height:1;
+                               display:flex; align-items:center; justify-content:center;
+                               flex-shrink:0; margin-left:12px;"
+                        title="Close">&#x2715;</button>
+            </div>
+            <!-- Protection notice -->
+            <div style="margin:14px 24px 0; padding:10px 14px; border-radius:10px;
+                        background:rgba(46,204,113,0.08); border:1px solid rgba(46,204,113,0.2);
+                        display:flex; align-items:center; gap:8px; flex-shrink:0;">
+                <i class='bx bxs-lock-alt' style="color:var(--accent-teal); font-size:16px; flex-shrink:0;"></i>
+                <span style="font-size:12px; color:#aaa; line-height:1.4;">
+                    All files are protected — no download, screenshot, or screen recording.
+                </span>
+            </div>
+            <!-- Module list -->
+            <div id="module-browser-list"
+                 style="overflow-y:auto; padding:16px 24px 24px; flex:1;"></div>
+        </div>
+    </div>
 
     <script>
 
@@ -1239,12 +1298,13 @@
                     return {
                         _id: item.id,
                         pid: item.id,
-                        title: item.title || supplementalCourse.title || `Course ${item.id}`,
+                        title: item.title || supplementalCourse.name || `Branch Pack ${item.id}`,
+                        name: supplementalCourse.name || item.title || `Branch Pack ${item.id}`,
+                        shortName: supplementalCourse.shortName || item.id,
+                        tagline: supplementalCourse.tagline || 'Premium Branch Pack',
                         image: item.image || supplementalCourse.image,
-                        description: supplementalCourse.description || 'Your purchased course is available. Full details will sync automatically.',
-                        modules: supplementalCourse.modulesList || [],
-                        pyqs: supplementalCourse.pyqs || [],
-                        referenceBooks: supplementalCourse.referenceBooks || [],
+                        description: supplementalCourse.description || 'Your purchased branch pack is available. Full details will sync automatically.',
+                        courses: supplementalCourse.courses || [],
                         paymentInfo: {
                             orderId: item.id,
                             purchaseDate: item.purchasedAt || new Date().toISOString(),
@@ -1396,35 +1456,72 @@
             courseGrid.innerHTML = courseCards;
         }
 
-        // Global variables for courses and image mapping
+        // Global variables for branch packs, subject catalog, and image mapping
         let coursesData = {};
+        let subjectCatalogData = {};
         let courseImageMap = {};
 
-        // Load courses from JSON file (same as marketplace)
+        function createBranchArtwork(branch) {
+            const from = branch.gradientFrom || '#1e3a5f';
+            const to = branch.gradientTo || '#3498db';
+            const shortName = escapeHtml(branch.shortName || branch.name || branch.id);
+            const tagline = escapeHtml(branch.tagline || 'Premium Branch Pack');
+            const branchId = escapeHtml(branch.id || '');
+
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+                    <defs>
+                        <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="${from}" />
+                            <stop offset="100%" stop-color="${to}" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="800" height="500" rx="32" fill="url(#g)" />
+                    <circle cx="680" cy="110" r="90" fill="rgba(255,255,255,0.12)" />
+                    <circle cx="130" cy="420" r="120" fill="rgba(255,255,255,0.08)" />
+                    <text x="64" y="160" fill="white" font-family="Poppins, Arial, sans-serif" font-size="58" font-weight="700">${shortName}</text>
+                    <text x="64" y="220" fill="rgba(255,255,255,0.92)" font-family="Poppins, Arial, sans-serif" font-size="26">${tagline}</text>
+                    <text x="64" y="410" fill="rgba(255,255,255,0.88)" font-family="Poppins, Arial, sans-serif" font-size="30" font-weight="600">Scholars Stack</text>
+                    <text x="620" y="430" fill="rgba(255,255,255,0.94)" font-family="Poppins, Arial, sans-serif" font-size="44" font-weight="700">${branchId}</text>
+                </svg>
+            `;
+
+            return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+        }
+
+        // Load branch packs from JSON file (same as marketplace)
         async function loadCoursesFromJSON() {
             try {
-                console.log('📂 Loading courses from JSON file...');
-                const response = await fetch('../marketplace/courses.json');
+                console.log('📂 Loading branch packs from JSON file...');
+                const [branchesResponse, subjectsResponse] = await Promise.all([
+                    fetch('../marketplace/branches.json'),
+                    fetch('../marketplace/courses.json')
+                ]);
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                if (!branchesResponse.ok) {
+                    throw new Error(`HTTP error! status: ${branchesResponse.status}`);
                 }
 
-                const data = await response.json();
-                coursesData = data.courses;
+                const branchData = await branchesResponse.json();
+                coursesData = branchData.branches || {};
 
-                // Build image mapping from loaded courses
+                if (subjectsResponse.ok) {
+                    const subjectData = await subjectsResponse.json();
+                    subjectCatalogData = subjectData.courses || {};
+                } else {
+                    subjectCatalogData = {};
+                }
+
+                // Build image mapping from loaded branch packs
                 courseImageMap = {};
                 Object.keys(coursesData).forEach(courseId => {
-                    courseImageMap[courseId] = coursesData[courseId].image;
+                    courseImageMap[courseId] = createBranchArtwork(coursesData[courseId]);
                 });
 
-                console.log(`✅ Loaded ${Object.keys(coursesData).length} courses from JSON`);
+                console.log(`✅ Loaded ${Object.keys(coursesData).length} branch packs from JSON`);
                 return true;
             } catch (error) {
-                console.error('❌ Error loading courses from JSON:', error);
-                // Fallback to hardcoded courses if JSON fails to load
-                console.log('🔄 Falling back to hardcoded courses...');
+                console.error('❌ Error loading branch packs from JSON:', error);
                 return false;
             }
         }
@@ -1432,7 +1529,7 @@
         // Get consistent image for course
         function getCourseImage(course) {
             const courseId = course.pid || course._id || course.id;
-            return courseImageMap[courseId] || course.image || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+            return courseImageMap[courseId] || course.image || createBranchArtwork(course);
         }
 
         function escapeHtml(value) {
@@ -1449,28 +1546,126 @@
             return coursesData[courseId] || null;
         }
 
-        function getCatalogDrivenCourse(course) {
-            const supplementalCourse = getSupplementalCourseData(course);
-            if (!supplementalCourse) {
-                return course;
+        function normalizePurchasedCourse(entry) {
+            const nestedCourse = entry?.course || null;
+            if (nestedCourse) {
+                return {
+                    ...nestedCourse,
+                    _id: nestedCourse.id || entry._id || entry.id,
+                    pid: nestedCourse.pid || entry.pid || entry.id,
+                    paymentInfo: {
+                        orderId: entry.razorpay_order_id || entry.orderId || nestedCourse.pid || nestedCourse.id,
+                        purchaseDate: entry.purchased_at || entry.purchaseDate || new Date().toISOString(),
+                        amount: Number.isFinite(Number(entry.amount_paid)) ? Number(entry.amount_paid) * 100 : (entry.paymentInfo?.amount || 0),
+                        gateway: entry.gateway || entry.paymentInfo?.gateway || 'razorpay',
+                        status: entry.status || entry.paymentInfo?.status || 'completed'
+                    }
+                };
             }
 
-            // If backend modules have driveFileIds, keep them — they are secured content
-            const hasSecuredModules = Array.isArray(course.modules) &&
-                course.modules.some(m => m && m.driveFileId);
+            return entry;
+        }
+
+        function getCatalogDrivenCourse(course) {
+            const normalizedCourse = normalizePurchasedCourse(course);
+            const supplementalCourse = getSupplementalCourseData(normalizedCourse);
+            if (!supplementalCourse) {
+                return normalizedCourse;
+            }
 
             return {
-                ...course,
-                title: supplementalCourse.title || course.title,
-                image: supplementalCourse.image || course.image,
-                description: supplementalCourse.description || course.description,
-                price: supplementalCourse.price || course.price,
-                modules: hasSecuredModules ? course.modules : (supplementalCourse.modulesList || course.modules || []),
-                pyqs: course.pyqs && course.pyqs.some(p => p && p.driveFileId)
-                    ? course.pyqs
-                    : (supplementalCourse.pyqs || course.pyqs || []),
-                referenceBooks: supplementalCourse.referenceBooks || course.referenceBooks || []
+                ...normalizedCourse,
+                title: supplementalCourse.name || supplementalCourse.title || normalizedCourse.title,
+                name: supplementalCourse.name || normalizedCourse.name || normalizedCourse.title,
+                shortName: supplementalCourse.shortName || normalizedCourse.shortName || normalizedCourse.pid || normalizedCourse._id,
+                tagline: supplementalCourse.tagline || normalizedCourse.tagline || 'Premium Branch Pack',
+                image: courseImageMap[normalizedCourse.pid || normalizedCourse._id || normalizedCourse.id] || supplementalCourse.image || normalizedCourse.image,
+                description: supplementalCourse.description || normalizedCourse.description,
+                price: supplementalCourse.price || normalizedCourse.price,
+                courses: supplementalCourse.courses || normalizedCourse.courses || []
             };
+        }
+
+        function getIncludedCourseMeta(courseCode) {
+            return subjectCatalogData[courseCode] || null;
+        }
+
+        async function accessIncludedCourse(courseCode, fallbackTitle) {
+            // Navigate to the course explorer view
+            const params = new URLSearchParams({
+                courseId: courseCode,
+                courseName: fallbackTitle || courseCode
+            });
+            window.location.href = `course-explorer.html?${params}`;
+        }
+
+        function openModuleBrowser(courseCode, courseTitle, modules) {
+            document.getElementById('module-browser-title').textContent = courseTitle || courseCode;
+            document.getElementById('module-browser-subtitle').textContent = courseCode;
+
+            const listEl = document.getElementById('module-browser-list');
+            const typeLabels = { module: '📚 Modules', pyq: '📋 PYQs', reference: '📎 References' };
+            const typeOrder = ['module', 'pyq', 'reference'];
+            const grouped = {};
+            for (const m of modules) {
+                const t = m.type || 'module';
+                if (!grouped[t]) grouped[t] = [];
+                grouped[t].push(m);
+            }
+
+            let html = '';
+            for (const type of typeOrder) {
+                const items = grouped[type];
+                if (!items || items.length === 0) continue;
+                html += `
+                    <div style="margin-bottom:16px;">
+                        <div style="font-size:11px; font-weight:700; color:var(--accent-blue);
+                                    text-transform:uppercase; letter-spacing:0.5px;
+                                    margin-bottom:8px; padding:0 2px;">
+                            ${typeLabels[type] || type}
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            ${items.map(m => `
+                                <div style="display:flex; align-items:center; justify-content:space-between;
+                                            gap:10px; padding:11px 14px; border-radius:10px;
+                                            background:rgba(52,152,219,0.07);
+                                            border:1px solid rgba(52,152,219,0.2);">
+                                    <div style="display:flex; align-items:center; gap:10px; flex:1; min-width:0;">
+                                        <i class='bx bxs-file-pdf' style="color:#e74c3c; font-size:20px; flex-shrink:0;"></i>
+                                        <span style="font-size:13px; font-weight:600; color:var(--light-color);
+                                                     overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+                                            ${escapeHtml(m.title || 'Untitled')}
+                                        </span>
+                                    </div>
+                                    <button onclick="openModuleInViewer('${escapeJsString(courseCode)}','${escapeJsString(m.id)}','${escapeJsString(m.title || 'Notes')}')"
+                                            style="background:var(--accent-teal); color:#fff; border:none;
+                                                   padding:7px 14px; border-radius:8px; font-size:12px;
+                                                   font-weight:700; cursor:pointer; white-space:nowrap;
+                                                   flex-shrink:0; display:flex; align-items:center; gap:5px;">
+                                        <i class='bx bx-show'></i> View
+                                    </button>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>`;
+            }
+
+            listEl.innerHTML = html;
+            document.getElementById('module-browser-modal').style.display = 'flex';
+        }
+
+        function openModuleInViewer(courseCode, moduleId, moduleTitle) {
+            const params = new URLSearchParams({
+                courseId: courseCode,
+                fileId: moduleId,
+                fileName: moduleTitle
+            });
+            window.open(`/features/pdf-viewer/viewer.html?${params}`, '_blank');
+            closeModuleBrowser();
+        }
+
+        function closeModuleBrowser() {
+            document.getElementById('module-browser-modal').style.display = 'none';
         }
 
         function escapeJsString(value) {
@@ -1482,13 +1677,21 @@
         }
 
         function openCourseAccess(url, itemLabel, courseId, driveFileId) {
+            // driveFileId is a legacy Google Drive id — the PDF viewer needs Supabase course_modules.id
+            // (see /courses/:id/notes/:moduleId/stream). Send users to Course Explorer to open real R2 files.
             if (driveFileId && courseId) {
-                const params = new URLSearchParams({ courseId, fileId: driveFileId, fileName: itemLabel });
-                window.open(`/features/pdf-viewer/viewer.html?${params}`, '_blank');
+                const params = new URLSearchParams({ courseId, courseName: itemLabel });
+                window.location.href = `course-explorer.html?${params}`;
                 return;
             }
             if (url && url !== '#') {
                 window.open(url, '_blank', 'noopener,noreferrer');
+                return;
+            }
+            // If no direct file link, redirect to course explorer to access actual files
+            if (courseId) {
+                const params = new URLSearchParams({ courseId, courseName: itemLabel });
+                window.location.href = `course-explorer.html?${params}`;
                 return;
             }
             showNotification(`${itemLabel} notes are not linked yet. Please check back soon.`, 'info');
@@ -1569,51 +1772,55 @@
 
         function createCourseContentHtml(course) {
             const displayCourse = getCatalogDrivenCourse(course);
-            const courseId = displayCourse.pid || displayCourse._id;
+            const includedCourses = Array.isArray(displayCourse.courses) ? displayCourse.courses : [];
 
-            const modules = Array.isArray(displayCourse.modules) ? displayCourse.modules : [];
-            const pyqs    = Array.isArray(displayCourse.pyqs)    ? displayCourse.pyqs    : [];
-
-            const hasModules = modules.some(m => m?.driveFileId);
-            const hasPyqs    = pyqs.some(p => p?.driveFileId);
-
-            if (!hasModules && !hasPyqs) {
+            if (includedCourses.length === 0) {
                 return `
                     <div style="margin-top:16px; padding:18px; border-radius:12px;
                                 background:rgba(52,152,219,0.06); border:1px solid rgba(52,152,219,0.2);
                                 text-align:center; color:#aaa; font-size:13px;">
-                        Notes are being uploaded. Check back soon!
+                        Branch pack details are syncing. Please refresh shortly.
                     </div>`;
             }
 
-            // Group modules by section prefix
-            const moduleGroups = groupBySection(modules.filter(m => m?.driveFileId), courseId);
-            const pyqItems = pyqs
-                .filter(p => p?.driveFileId)
-                .map(p => ({ label: p.title || 'PYQ', driveFileId: p.driveFileId, url: '#', courseId }));
-
-            let html = '<div style="margin-top:16px;">';
-
-            if (moduleGroups.size > 0) {
-                html += `<div style="font-size:12px; font-weight:700; color:var(--accent-blue);
-                                     letter-spacing:0.5px; text-transform:uppercase; margin-bottom:8px;">
-                             Study Notes
-                         </div>`;
-                for (const [section, files] of moduleGroups) {
-                    html += renderSectionGroup(section, files, 'rgba(52,152,219,0.3)');
-                }
-            }
-
-            if (pyqItems.length > 0) {
-                html += `<div style="font-size:12px; font-weight:700; color:var(--accent-teal);
-                                     letter-spacing:0.5px; text-transform:uppercase; margin:12px 0 8px;">
-                             Previous Year Questions
-                         </div>`;
-                html += renderSectionGroup('PYQs', pyqItems, 'rgba(46,204,113,0.3)');
-            }
-
-            html += '</div>';
-            return html;
+            return `
+                <div style="margin-top:16px;">
+                    <div style="font-size:12px; font-weight:700; color:var(--accent-blue);
+                                letter-spacing:0.5px; text-transform:uppercase; margin-bottom:8px;">
+                        Included Courses
+                    </div>
+                    <div style="display:grid; gap:8px; margin-bottom:12px;">
+                        ${includedCourses.map(code => {
+                            const courseMeta = getIncludedCourseMeta(code);
+                            const courseTitle = courseMeta?.title || code;
+                            return `
+                                <div style="padding:10px 12px; border-radius:10px; background:rgba(52,152,219,0.1);
+                                            border:1px solid rgba(52,152,219,0.25); display:flex; align-items:center;
+                                            justify-content:space-between; gap:10px;">
+                                    <div style="display:flex; flex-direction:column; gap:2px; flex:1; min-width:0;">
+                                        <span style="font-size:13px; font-weight:700; color:var(--light-color);">
+                                            ${escapeHtml(courseTitle)}
+                                        </span>
+                                        <span style="font-size:11px; color:#9ecff5; font-weight:600;">
+                                            ${escapeHtml(code)}
+                                        </span>
+                                    </div>
+                                    <div style="display:flex; gap:6px; flex-shrink:0;">
+                                        <button onclick="accessIncludedCourse('${escapeJsString(code)}','${escapeJsString(courseTitle)}')"
+                                                style="background:var(--accent-teal); color:#fff; border:none; padding:7px 12px;
+                                                       border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;
+                                                       white-space:nowrap; display:flex; align-items:center; gap:4px;"
+                                                title="Quick access to files">
+                                            <i class='bx bx-show' style="font-size:14px;"></i>
+                                            View
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
         }
 
         // Create course card HTML
@@ -1679,29 +1886,29 @@
                                     ${escapeHtml(displayCourse.pid || '')}
                                 </div>
                                 <h3 class="course-title">${displayCourse.title}</h3>
+                                <div style="margin-top:4px; color:var(--accent-teal); font-size:13px; font-weight:600;">
+                                    ${escapeHtml(displayCourse.tagline || 'Premium Branch Pack')}
+                                </div>
                                 <div style="margin-top:6px; display:flex; gap:8px; flex-wrap:wrap;">
-                                    ${(displayCourse.modules||[]).filter(m=>m?.driveFileId).length > 0
+                                    ${(displayCourse.courses||[]).length > 0
                                         ? `<span style="font-size:11px; background:rgba(52,152,219,0.15); color:var(--accent-blue);
                                                         padding:2px 10px; border-radius:20px; font-weight:600;">
-                                               ${(displayCourse.modules||[]).filter(m=>m?.driveFileId).length} Notes
+                                               ${(displayCourse.courses||[]).length} Courses
                                            </span>` : ''}
-                                    ${(displayCourse.pyqs||[]).filter(p=>p?.driveFileId).length > 0
-                                        ? `<span style="font-size:11px; background:rgba(46,204,113,0.15); color:var(--accent-teal);
+                                    <span style="font-size:11px; background:rgba(46,204,113,0.15); color:var(--accent-teal);
                                                         padding:2px 10px; border-radius:20px; font-weight:600;">
-                                               ${(displayCourse.pyqs||[]).filter(p=>p?.driveFileId).length} PYQs
-                                           </span>` : ''}
+                                               PYQs Included
+                                           </span>
+                                    <span style="font-size:11px; background:rgba(241,196,15,0.15); color:#f1c40f;
+                                                        padding:2px 10px; border-radius:20px; font-weight:600;">
+                                               References Included
+                                           </span>
                                 </div>
                             </div>
                         </div>
 
                         ${paymentDetailsHtml}
                         ${createCourseContentHtml(displayCourse)}
-
-                        <div class="course-footer">
-                            <button class="access-btn full-width-btn" onclick="accessCourse('${displayCourse._id || displayCourse.pid}')">
-                                <i class='bx bx-play'></i> Open First Note
-                            </button>
-                        </div>
                     </div>
                 </div>
             `;
@@ -1774,6 +1981,18 @@
 
 
         document.addEventListener('DOMContentLoaded', async function () {
+            try {
+                const key = 'contentProtectionRedirectMsg';
+                const msg = sessionStorage.getItem(key);
+                if (msg) {
+                    sessionStorage.removeItem(key);
+                    const notice = document.getElementById('contentProtectionNotice');
+                    if (notice) {
+                        notice.textContent = msg;
+                        notice.style.display = 'block';
+                    }
+                }
+            } catch (_) {}
             // Wait for authManager and its async init before checking auth
             const waitForAuth = () => new Promise(resolve => {
                 const check = async () => {
@@ -1812,7 +2031,7 @@
                         <i class='bx bx-lock-alt' style="font-size: 64px; color: #3498db; margin-bottom: 20px;"></i>
                         <h2 style="color: #ecf0f1; margin-bottom: 15px; font-size: 24px;">Login Required</h2>
                         <p style="color: #ddd; margin-bottom: 20px; font-size: 16px;">Please log in to view your purchased courses.</p>
-                        <a href="../../index.html" style="
+                        <a href="/index.html" style="
                             background: var(--accent-blue);
                             color: white;
                             padding: 12px 24px;
@@ -1834,11 +2053,11 @@
             async function initializePage() {
                 createParticles();
 
-                // Load courses from JSON file first
+                // Load branch packs from JSON file first
                 const coursesLoaded = await loadCoursesFromJSON();
                 if (!coursesLoaded) {
-                    console.error('❌ Failed to load courses from JSON - my courses may not work properly');
-                    showNotification('Failed to load course data. Please refresh the page.', 'danger');
+                    console.error('❌ Failed to load branch packs from JSON - my courses may not work properly');
+                    showNotification('Failed to load branch pack data. Please refresh the page.', 'danger');
                 }
 
                 // Check if user came from successful payment

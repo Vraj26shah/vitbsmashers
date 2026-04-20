@@ -1,5 +1,7 @@
 import { supabase } from '../lib/supabase.js';
 
+const hasValue = (value) => typeof value === 'string' ? value.trim().length > 0 : !!value;
+
 // ── GET /api/v1/profile/me  OR  GET /api/v1/profile/:userId ─────────────────
 export const getProfile = async (req, res) => {
   try {
@@ -17,7 +19,7 @@ export const getProfile = async (req, res) => {
       status: 'success',
       data: {
         user: data,
-        profileComplete: !!(data.phone && data.registration_number && data.branch),
+        profileComplete: hasValue(data.phone) && hasValue(data.registration_number) && hasValue(data.branch),
       },
     });
   } catch (err) {
@@ -30,7 +32,13 @@ export const getProfile = async (req, res) => {
 export const updateProfile = async (req, res) => {
   try {
     const userId = req.user.id;
-    const { full_name, phone, registration_number, branch, year } = req.body;
+
+    // Accept both snake_case (API standard) and camelCase (legacy frontend forms)
+    const full_name           = req.body.full_name           || req.body.fullName;
+    const phone               = req.body.phone;
+    const registration_number = req.body.registration_number || req.body.registrationNumber;
+    const branch              = req.body.branch              || req.body.program;
+    const year                = req.body.year;
 
     if (phone && !/^\d{10}$/.test(phone.replace(/\s+/g, '')))
       return res.status(400).json({ status: 'error', message: 'Phone must be 10 digits' });
@@ -45,11 +53,11 @@ export const updateProfile = async (req, res) => {
     const user  = req.user;
     const newCount = user.last_profile_update === today ? (user.profile_update_count || 0) + 1 : 1;
 
-    const profileComplete = !!(
-      (full_name || user.full_name) &&
-      (phone || user.phone) &&
-      (registration_number || user.registration_number) &&
-      (branch || user.branch)
+    const profileComplete = (
+      hasValue(full_name || user.full_name) &&
+      hasValue(phone || user.phone) &&
+      hasValue(registration_number || user.registration_number) &&
+      hasValue(branch || user.branch)
     );
 
     const { data, error } = await supabase.schema('business').from('users')

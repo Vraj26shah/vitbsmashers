@@ -39,12 +39,16 @@
 
             // Initialize the appropriate gateway based on backend response
             async initializeGateway(gatewayType, orderData) {
-                if (gatewayType === 'mock') {
+                const resolvedGateway = gatewayType || orderData?.gateway || 'razorpay';
+
+                if (resolvedGateway === 'mock') {
                     this.currentGateway = new MockPaymentGateway();
-                } else if (gatewayType === 'razorpay') {
+                } else if (resolvedGateway === 'razorpay') {
                     this.currentGateway = new RazorpayPaymentGateway();
-                } else if (gatewayType === 'phonepe') {
+                } else if (resolvedGateway === 'phonepe') {
                     this.currentGateway = new PhonePePaymentGateway();
+                } else {
+                    throw new Error(`Unsupported payment gateway: ${resolvedGateway}`);
                 }
                 return this.currentGateway;
             }
@@ -322,7 +326,7 @@
                         const result = await verifyPayment({
                             razorpay_payment_id: `mock_payment_${Date.now()}`,
                             razorpay_signature: 'mock_signature'
-                        }, this.currentOrder.order_id);
+                        }, this.currentOrder.orderId || this.currentOrder.order_id);
 
                         if (result && result.success) {
                             showNotification('Payment successful! Courses unlocked.', 'success');
@@ -363,7 +367,7 @@
                         image: '/features/images/logo1.png',
                         handler: function (response) {
                             // Payment successful
-                            verifyPayment(response, orderData.order_id).then(resolve).catch(reject);
+                            verifyPayment(response, orderData.orderId || orderData.order_id).then(resolve).catch(reject);
                         },
                         prefill: {
                             name: userProfile.fullName || userProfile.name || '',
@@ -1984,20 +1988,20 @@
         <section class="marketplace-hero">
             <div class="hero-content">
                 <h2 class="hero-title">Elevate Your Academic Journey</h2>
-                <p class="hero-subtitle">Access premium course notes curated by top performers and professors. Invest in your success with Scholars Stack' exclusive marketplace.</p>
+                <p class="hero-subtitle">Choose your branch pack and unlock the full study bundle mapped in our marketplace configuration. Each pack is built from `branches.json`, not the standalone course catalog.</p>
                 
                 <div class="hero-stats">
                     <div class="hero-stat">
-                        <div class="stat-number">20+</div>
-                        <div class="stat-label">Premium Courses</div>
+                        <div class="stat-number">6</div>
+                        <div class="stat-label">Branch Packs</div>
                     </div>
                     <div class="hero-stat">
-                        <div class="stat-number">4.8★</div>
-                        <div class="stat-label">Average Rating</div>
+                        <div class="stat-number">46+</div>
+                        <div class="stat-label">Courses Included</div>
                     </div>
                     <div class="hero-stat">
-                        <div class="stat-number">500+</div>
-                        <div class="stat-label">Satisfied Students</div>
+                        <div class="stat-number">₹999</div>
+                        <div class="stat-label">Per Branch Pack</div>
                     </div>
                 </div>
             </div>
@@ -2007,41 +2011,48 @@
         <div class="marketplace-controls">
             <div class="search-container">
                 <i class='bx bx-search'></i>
-                <input type="text" placeholder="Search courses, subjects, or professors..." id="searchInput">
+                <input type="text" placeholder="Search branch packs, programs, or included subjects..." id="searchInput">
             </div>
 
             <!-- Profile completion notice for authenticated users -->
             <div id="profileNotice" class="profile-notice" style="display: none; background: rgba(243, 156, 18, 0.1); border: 1px solid var(--warning-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: center;">
                 <i class='bx bx-info-circle' style="color: var(--warning-color); font-size: 20px; margin-bottom: 8px;"></i>
                 <p style="color: var(--warning-color); margin: 0; font-weight: 500;">
-                    Please complete your profile before purchasing courses.
+                    Please complete your profile before purchasing branch packs.
                     <br><small style="color: #ddd; font-weight: 400;">Required: Phone number, Registration number, and Program</small>
                     <br><a href="../profile/profile.html?sidebar=active" style="color: var(--accent-blue); text-decoration: underline; margin-left: 8px;">Complete Profile</a>
                 </p>
             </div>
 
+            <!-- Branch filters -->
             <div class="filter-container">
                 <button class="filter-btn active" data-filter="all">
-                    <i class='bx bx-filter'></i> All Courses
+                    <i class='bx bx-filter'></i> All Branches
                 </button>
-                <button class="filter-btn" data-filter="cs">
-                    <i class='bx bx-chip'></i> CS
+                <button class="filter-btn" data-filter="BAI">
+                    <i class='bx bx-brain'></i> B.Tech AI
                 </button>
-                <button class="filter-btn" data-filter="eng">
-                    <i class='bx bx-atom'></i> Engineering
+                <button class="filter-btn" data-filter="BCE">
+                    <i class='bx bx-code-alt'></i> BCE
                 </button>
-                <button class="filter-btn" data-filter="math">
-                    <i class='bx bx-calculator'></i> Math
+                <button class="filter-btn" data-filter="BCG">
+                    <i class='bx bx-joystick'></i> BCG
                 </button>
-                <button class="filter-btn" data-filter="sci">
-                    <i class='bx bx-dna'></i> Sciences
+                <button class="filter-btn" data-filter="BEY">
+                    <i class='bx bx-chip'></i> BEY
+                </button>
+                <button class="filter-btn" data-filter="BSA">
+                    <i class='bx bx-flask'></i> BSA
+                </button>
+                <button class="filter-btn" data-filter="MIM">
+                    <i class='bx bx-book-open'></i> MIM
                 </button>
             </div>
         </div>
         
-        <!-- Course Grid - Courses will be loaded dynamically from courses.json -->
+        <!-- Branch Grid - Branch packs will be loaded dynamically from branches.json -->
         <div class="course-grid">
-            <!-- Loading message while courses are being loaded -->
+            <!-- Loading message while branch packs are being loaded -->
             <div style="
                 text-align: center;
                 padding: 60px 20px;
@@ -2053,17 +2064,17 @@
                 margin: 0 auto;
             ">
                 <i class='bx bx-loader-alt bx-spin' style="font-size: 48px; color: #3498db; margin-bottom: 20px;"></i>
-                <h3 style="color: #ecf0f1; margin-bottom: 15px; font-size: 20px;">Loading Courses...</h3>
-                <p style="color: #ddd; margin: 0; font-size: 14px;">Please wait while we load the latest course offerings.</p>
+                <h3 style="color: #ecf0f1; margin-bottom: 15px; font-size: 20px;">Loading Branch Packs...</h3>
+                <p style="color: #ddd; margin: 0; font-size: 14px;">Please wait while we load the latest branch offerings.</p>
             </div>
         </div>
     </main>
 
-    <!-- Course Detail Modal -->
+    <!-- Branch Detail Modal -->
     <div class="course-modal" id="courseModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title" id="modalCourseTitle">Course Title</h2>
+                <h2 class="modal-title" id="modalCourseTitle">Branch Pack</h2>
                 <button class="close-modal" id="closeModal">
                     <i class='bx bx-x'></i>
                 </button>
@@ -2076,7 +2087,7 @@
             <div class="modal-footer">
                 <div class="price-container">
                     <div class="original-price">₹1,499</div>
-                    <div class="discount-price" id="modalCoursePrice">₹1,299</div>
+                    <div class="discount-price" id="modalCoursePrice">₹999</div>
                 </div>
                 
                 <div class="modal-actions">
@@ -2184,12 +2195,12 @@
                 return false;
             }
 
-            if (status === 403 && errorData?.error === 'profile_incomplete') {
+            if (status === 403 && (errorData?.error === 'incomplete_profile' || errorData?.error === 'profile_incomplete')) {
                 isUserProfileComplete = false;
                 updatePaymentButtonVisibility();
-                showNotification(errorData.message || 'Please complete your profile before purchasing courses.', 'warning');
+                showNotification(errorData.message || 'Please complete your profile before purchasing branch packs.', 'warning');
                 setTimeout(() => {
-                    window.location.href = '../profile/profile.html?sidebar=active';
+                    window.location.href = '/features/profile/profile.html?sidebar=active';
                 }, 1200);
                 return false;
             }
@@ -2226,7 +2237,7 @@
         }
 
         async function startSingleCourseCheckout(courseId, courseTitle, coursePriceText) {
-            const amount = parseInt(coursePriceText.replace('₹', '').replace(',', ''), 10) * 100;
+            const amount = parseInt(coursePriceText.replace('₹', '').replace(',', ''), 10);
             const orderData = await createCheckoutSession({
                 courseId,
                 subject: courseTitle,
@@ -2238,7 +2249,7 @@
                     id: courseId,
                     title: courseTitle,
                     image: getCourseImage(courseId),
-                    price: amount / 100
+                    price: amount
                 }];
                 await initializePayment(orderData, courseTitle);
             }
@@ -2248,7 +2259,7 @@
             const items = cart.map(item => ({
                 courseId: item.id,
                 subject: item.title,
-                amount: item.price * 100
+                amount: item.price
             }));
 
             const orderData = await createCheckoutSession({ items });
@@ -2298,8 +2309,22 @@
           const userAvatarImg = document.getElementById('userAvatar');
         
           if (userNameElement) {
-            // Show email as the primary identifier, fallback to name, then default to 'Student'
-            const displayName = (profile && (profile.email || profile.fullName || profile.name)) || 'Student';
+            const displayName = (
+              profile && (
+                profile.fullName ||
+                profile.name ||
+                (profile.username && !String(profile.username).includes('@') ? profile.username : null)
+              )
+            ) || (
+              profile?.email
+                ? String(profile.email)
+                    .split('@')[0]
+                    .split(/[._-]+/)
+                    .filter(Boolean)
+                    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+                    .join(' ')
+                : 'Student'
+            );
             userNameElement.textContent = displayName;
         
             // Update avatar initial
@@ -2319,7 +2344,8 @@
 
         // Control payment button visibility and profile notice based on auth and profile status
         function updatePaymentButtonVisibility() {
-            const paymentButtons = document.querySelectorAll('.add-to-cart, .enroll-now, #checkoutButton');
+            const paymentButtons = document.querySelectorAll('.enroll-now, #checkoutButton');
+            const addToCartButtons = document.querySelectorAll('.add-to-cart');
             const profileNotice = document.getElementById('profileNotice');
 
             console.log('🔄 Updating payment button visibility:', {
@@ -2328,9 +2354,18 @@
                 buttonsFound: paymentButtons.length
             });
 
+            addToCartButtons.forEach(button => {
+                button.style.display = 'inline-flex';
+                button.disabled = false;
+                button.style.opacity = '1';
+                button.style.cursor = 'pointer';
+                button.title = '';
+                button.innerHTML = '<i class="bx bx-cart"></i> Add to Cart';
+            });
+
             paymentButtons.forEach(button => {
                 if (!isUserAuthenticated) {
-                    // Hide all payment buttons for non-authenticated users
+                    // Hide payment buttons for non-authenticated users
                     button.style.display = 'none';
                     if (profileNotice) profileNotice.style.display = 'none';
                     console.log('🚫 User not authenticated - hiding payment buttons');
@@ -2345,8 +2380,6 @@
                     // Change button text to indicate profile completion needed
                     if (button.classList.contains('enroll-now')) {
                         button.innerHTML = '<i class="bx bx-user-check"></i> Complete Profile First';
-                    } else if (button.classList.contains('add-to-cart')) {
-                        button.innerHTML = '<i class="bx bx-cart"></i> Complete Profile';
                     } else if (button.id === 'checkoutButton') {
                         button.textContent = 'Complete Profile First';
                     }
@@ -2368,8 +2401,6 @@
                     // Restore original button text
                     if (button.classList.contains('enroll-now')) {
                         button.innerHTML = '<i class="bx bxs-graduation"></i> Enroll Now - Secure Payment';
-                    } else if (button.classList.contains('add-to-cart')) {
-                        button.innerHTML = '<i class="bx bx-cart"></i> Add to Cart';
                     } else if (button.id === 'checkoutButton') {
                         button.textContent = 'Checkout';
                     }
@@ -2381,48 +2412,99 @@
             });
         }
 
-        // Global variables for courses and image mapping
+        // Global variables for branch packs and courses
         let courses = {};
+        let branches = {};
         let courseImageMap = {};
 
-        // Load courses from JSON file
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function createBranchArtwork(branch) {
+            const from = branch.gradientFrom || '#1e3a5f';
+            const to = branch.gradientTo || '#3498db';
+            const shortName = escapeHtml(branch.shortName || branch.name || branch.id);
+            const tagline = escapeHtml(branch.tagline || 'Premium Branch Pack');
+            const branchId = escapeHtml(branch.id || '');
+
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+                    <defs>
+                        <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="${from}" />
+                            <stop offset="100%" stop-color="${to}" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="800" height="500" rx="32" fill="url(#g)" />
+                    <circle cx="680" cy="110" r="90" fill="rgba(255,255,255,0.12)" />
+                    <circle cx="130" cy="420" r="120" fill="rgba(255,255,255,0.08)" />
+                    <text x="64" y="160" fill="white" font-family="Poppins, Arial, sans-serif" font-size="58" font-weight="700">${shortName}</text>
+                    <text x="64" y="220" fill="rgba(255,255,255,0.92)" font-family="Poppins, Arial, sans-serif" font-size="26">${tagline}</text>
+                    <text x="64" y="410" fill="rgba(255,255,255,0.88)" font-family="Poppins, Arial, sans-serif" font-size="30" font-weight="600">Scholars Stack</text>
+                    <text x="620" y="430" fill="rgba(255,255,255,0.94)" font-family="Poppins, Arial, sans-serif" font-size="44" font-weight="700">${branchId}</text>
+                </svg>
+            `;
+
+            return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+        }
+
+        // Load branch packs from JSON file
         async function loadCoursesFromJSON() {
             try {
-                console.log('📂 Loading courses from JSON file...');
-                const response = await fetch('./courses.json');
+                console.log('📂 Loading branch packs and course data from JSON files...');
+                const [branchRes, courseRes] = await Promise.all([
+                    fetch('./branches.json'),
+                    fetch('./courses.json')
+                ]);
 
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
+                if (!branchRes.ok) throw new Error(`branches.json HTTP error! status: ${branchRes.status}`);
+                if (!courseRes.ok) throw new Error(`courses.json HTTP error! status: ${courseRes.status}`);
 
-                const data = await response.json();
-                courses = data.courses;
+                const branchData = await branchRes.json();
+                const courseData = await courseRes.json();
 
-                // Build image mapping from loaded courses
+                courses = branchData.branches || {};
+                window._allCourses = courseData.courses || {};
+
+                // Build image mapping from loaded branches
                 courseImageMap = {};
                 Object.keys(courses).forEach(courseId => {
-                    courseImageMap[courseId] = courses[courseId].image;
+                    courseImageMap[courseId] = createBranchArtwork(courses[courseId]);
                 });
 
-                console.log(`✅ Loaded ${Object.keys(courses).length} courses from JSON`);
-                console.log('📊 Course IDs:', Object.keys(courses));
+                console.log(`✅ Loaded ${Object.keys(courses).length} branch packs and ${Object.keys(window._allCourses).length} courses`);
                 return true;
             } catch (error) {
-                console.error('❌ Error loading courses from JSON:', error);
-                // Fallback to hardcoded courses if JSON fails to load
-                console.log('🔄 Falling back to hardcoded courses...');
+                console.error('❌ Error loading JSON data:', error);
                 return false;
             }
         }
 
-        // Get consistent image for course
+        // Get consistent image for branch pack
         function getCourseImage(courseId) {
-            return courseImageMap[courseId] || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80';
+            return courseImageMap[courseId] || 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
+                    <defs>
+                        <linearGradient id="fallback" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#1e3a5f" />
+                            <stop offset="100%" stop-color="#3498db" />
+                        </linearGradient>
+                    </defs>
+                    <rect width="800" height="500" rx="32" fill="url(#fallback)" />
+                    <text x="64" y="260" fill="white" font-family="Poppins, Arial, sans-serif" font-size="54" font-weight="700">Scholars Stack</text>
+                </svg>
+            `);
         }
 
-        // Generate course cards dynamically from loaded data
+        // Generate branch pack cards dynamically from loaded data
         function generateCourseCards() {
-            console.log('🏗️ Generating course cards dynamically...');
+            console.log('🏗️ Generating branch pack cards dynamically...');
 
             const courseGrid = document.querySelector('.course-grid');
             if (!courseGrid) {
@@ -2433,40 +2515,52 @@
             // Clear existing content
             courseGrid.innerHTML = '';
 
-            // Generate cards for each course
-            Object.keys(courses).forEach(courseId => {
-                const course = courses[courseId];
+            // For each branch, compute stats from courses.json data
+            Object.keys(courses).forEach(branchId => {
+                const branch = courses[branchId];
+                const courseList = branch.courses || [];
+                const pyqCount = courseList.filter(cid => {
+                    const c = window._allCourses && window._allCourses[cid];
+                    return c && Array.isArray(c.pyqs) && c.pyqs.length > 0;
+                }).length;
+                const refCount = courseList.filter(cid => {
+                    const c = window._allCourses && window._allCourses[cid];
+                    return c && Array.isArray(c.referenceBooks) && c.referenceBooks.length > 0;
+                }).length;
+                const extrasCount = courseList.filter(cid => {
+                    const c = window._allCourses && window._allCourses[cid];
+                    return c && Array.isArray(c.extras) && c.extras.length > 0;
+                }).length;
+
                 const courseCard = document.createElement('div');
                 courseCard.className = 'course-card';
-                courseCard.setAttribute('data-course', courseId);
-                courseCard.setAttribute('data-tags', course.tags || '');
+                courseCard.setAttribute('data-course', branchId);
+                courseCard.setAttribute('data-tags', branchId.toLowerCase());
 
                 courseCard.innerHTML = `
-                    <div class="course-image" id="course-image-${courseId}">
-                        <div class="premium-badge">PREMIUM</div>
+                    <div class="course-image" id="course-image-${branchId}" style="background: linear-gradient(135deg, ${branch.gradientFrom || '#2980b9'}, ${branch.gradientTo || '#1abc9c'}); display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;">
+                        <div class="premium-badge">COMPLETE PACK</div>
+                        <i class='bx ${branch.icon || 'bx-book'}' style="font-size:52px;color:rgba(255,255,255,0.9);margin-bottom:10px;"></i>
+                        <span style="font-size:18px;font-weight:800;color:white;letter-spacing:2px;">${branch.shortName}</span>
+                        <span style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:4px;letter-spacing:0.5px;">${courseList.length} Subjects Included</span>
                     </div>
                     <div class="course-info">
                         <div class="course-header">
                             <div>
-                                <h3 class="course-title">${course.title}</h3>
+                                <h3 class="course-title">${branch.name}</h3>
                             </div>
-                            ${course.rating ? `
-                                <div class="course-rating">
-                                    <i class='bx bxs-star' style="color: var(--gold-color);"></i>
-                                    <span>${course.rating}</span>
-                                </div>
-                            ` : ''}
                         </div>
-                        <p class="course-description">${course.description}</p>
+                        <p style="color:${branch.gradientFrom || 'var(--accent-teal)'};font-weight:600;margin-bottom:8px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">${branch.tagline}</p>
+                        <p class="course-description">${branch.description.substring(0, 120)}...</p>
                         <div class="course-meta" style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
-                            <span class="stat-item">${Array.isArray(course.modulesList) ? course.modulesList.length : 5} Modules</span>
-                            ${Array.isArray(course.pyqs) && course.pyqs.length > 0 ? `<span class="stat-item">PYQs Included</span>` : ''}
-                            ${Array.isArray(course.referenceBooks) && course.referenceBooks.length > 0 ? `<span class="stat-item">Reference Books</span>` : ''}
-                            <span class="stat-item">${courseId}</span>
+                            <span class="stat-item"><i class='bx bx-book-content' style="font-size:13px;"></i> ${courseList.length} Courses</span>
+                            ${pyqCount > 0 ? `<span class="stat-item" style="background:rgba(46,204,113,0.15);color:#2ecc71;border-color:#2ecc71;">✓ ${pyqCount} with PYQs</span>` : ''}
+                            ${refCount > 0 ? `<span class="stat-item" style="background:rgba(52,152,219,0.15);color:#3498db;border-color:#3498db;">📚 ${refCount} with Refs</span>` : ''}
+                            ${extrasCount > 0 ? `<span class="stat-item" style="background:rgba(241,196,15,0.15);color:#f1c40f;border-color:#f1c40f;">★ ${extrasCount} Extras</span>` : ''}
                         </div>
                         <div class="course-footer">
-                            <div class="course-price">${course.price}</div>
-                            <button class="add-to-cart" data-id="${courseId}" data-title="${course.title}" data-price="${parseInt(course.price.replace('₹', '').replace(',', ''))}" data-image="${course.image}">
+                            <div class="course-price">${branch.price}</div>
+                            <button class="add-to-cart" data-id="${branchId}" data-title="${branch.name}" data-price="${parseInt(branch.price.replace('₹', '').replace(',', ''))}" data-image="">
                                 <i class='bx bx-cart'></i> Add to Cart
                             </button>
                         </div>
@@ -2476,12 +2570,12 @@
                 courseGrid.appendChild(courseCard);
             });
 
-            console.log(`✅ Generated ${Object.keys(courses).length} course cards`);
+            console.log(`✅ Generated ${Object.keys(courses).length} branch pack cards`);
         }
 
-        // Initialize course images dynamically
+        // Initialize branch pack images dynamically
         function initializeCourseImages() {
-            console.log('🎨 Initializing course images dynamically...');
+            console.log('🎨 Initializing branch pack images dynamically...');
 
             // Update all course image elements
             Object.keys(courseImageMap).forEach(courseId => {
@@ -2502,42 +2596,85 @@
                 }
             });
 
-            console.log('🎨 Course images initialization complete');
+            console.log('🎨 Branch pack images initialization complete');
         }
 
-        function renderCourseInclusions(course) {
-            const inclusions = [];
+        function renderCourseInclusions(branch) {
+            const includedCourses = Array.isArray(branch.courses) ? branch.courses : [];
+            const allCourses = window._allCourses || {};
 
-            if (Array.isArray(course.modulesList) && course.modulesList.length > 0) {
-                inclusions.push(`${course.modulesList.length} Modules`);
-            }
-            if (Array.isArray(course.pyqs) && course.pyqs.length > 0) {
-                inclusions.push('PYQs Included');
-            }
-            if (Array.isArray(course.referenceBooks) && course.referenceBooks.length > 0) {
-                inclusions.push('Reference Books Included');
-            }
+            const courseRows = includedCourses.map(cid => {
+                const c = allCourses[cid];
+                const name = c ? c.title : cid;
+                const hasPyq = c && Array.isArray(c.pyqs) && c.pyqs.length > 0;
+                const hasRef = c && Array.isArray(c.referenceBooks) && c.referenceBooks.length > 0;
+                const hasExtra = c && Array.isArray(c.extras) && c.extras.length > 0;
+                const badges = [
+                    hasPyq ? `<span style="background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid rgba(46,204,113,0.4);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;">PYQs</span>` : '',
+                    hasRef ? `<span style="background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.4);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;">Refs</span>` : '',
+                    hasExtra ? `<span style="background:rgba(241,196,15,0.15);color:#f1c40f;border:1px solid rgba(241,196,15,0.4);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;">Extras</span>` : '',
+                ].filter(Boolean).join(' ');
+                return `
+                    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-radius:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
+                        <div style="display:flex;align-items:center;gap:8px;">
+                            <span style="font-size:11px;color:var(--accent-teal);font-weight:700;min-width:60px;">${cid}</span>
+                            <span style="font-size:13px;color:var(--light-color);">${name}</span>
+                        </div>
+                        <div style="display:flex;gap:4px;flex-shrink:0;">${badges || '<span style="font-size:10px;color:rgba(255,255,255,0.35);">Modules</span>'}</div>
+                    </div>
+                `;
+            }).join('');
 
-            if (inclusions.length === 0) {
-                return '';
-            }
+            const pyqTotal = includedCourses.filter(cid => allCourses[cid] && Array.isArray(allCourses[cid].pyqs) && allCourses[cid].pyqs.length > 0).length;
+            const refTotal = includedCourses.filter(cid => allCourses[cid] && Array.isArray(allCourses[cid].referenceBooks) && allCourses[cid].referenceBooks.length > 0).length;
 
             return `
                 <div class="modules-section">
-                    <h3 class="section-title">Included In This Course</h3>
-                    <div class="modules-grid">
-                        ${inclusions.map(item => `
-                            <div class="module-card">
-                                <h4 class="module-title">${item}</h4>
-                            </div>
-                        `).join('')}
+                    <h3 class="section-title">Courses Included (${includedCourses.length})</h3>
+                    <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
+                        <span class="stat-item" style="background:rgba(46,204,113,0.1);color:#2ecc71;border-color:#2ecc71;">✓ ${pyqTotal} courses with PYQs</span>
+                        <span class="stat-item" style="background:rgba(52,152,219,0.1);color:#3498db;border-color:#3498db;">📚 ${refTotal} courses with References</span>
+                    </div>
+                    <div style="display:flex;flex-direction:column;gap:6px;">
+                        ${courseRows}
                     </div>
                 </div>
             `;
         }
 
-        // Course data will be loaded dynamically from courses.json
-        // No hardcoded courses needed - everything loads from JSON file
+        function normalizeProfileData(rawProfile = {}) {
+            return {
+                name: rawProfile.username || rawProfile.name || '',
+                email: rawProfile.email || '',
+                phone: rawProfile.phone || '',
+                fullName: rawProfile.full_name || rawProfile.fullName || '',
+                registrationNumber: rawProfile.registration_number || rawProfile.registrationNumber || '',
+                branch: rawProfile.branch || rawProfile.program || '',
+                year: rawProfile.year || '',
+                profileCompleted: rawProfile.profile_completed === true || rawProfile.profileCompleted === true
+            };
+        }
+
+        function hasProfileField(value) {
+            return typeof value === 'string' ? value.trim().length > 0 : !!value;
+        }
+
+        function evaluateProfileCompletion(rawProfile = {}, backendProfileComplete = false) {
+            const normalizedProfile = normalizeProfileData(rawProfile);
+            const fieldsComplete = (
+                hasProfileField(normalizedProfile.phone) &&
+                hasProfileField(normalizedProfile.registrationNumber) &&
+                hasProfileField(normalizedProfile.branch)
+            );
+
+            return {
+                normalizedProfile,
+                fieldsComplete,
+                isComplete: backendProfileComplete === true || normalizedProfile.profileCompleted || fieldsComplete
+            };
+        }
+
+        // Branch pack data will be loaded dynamically from branches.json
 
         // Cart functionality with improved initialization
         let cart = [];
@@ -2892,31 +3029,28 @@
 
                     selectedCourse = courses[courseId];
                     if (selectedCourse) {
-                        modalCourseTitle.textContent = selectedCourse.title;
+                        modalCourseTitle.textContent = selectedCourse.name;
                         modalCoursePrice.textContent = selectedCourse.price;
                         modalBody.innerHTML = `
                             <div class="course-overview">
-                                <div class="course-image-large" style="background-image: url('${selectedCourse.image}')"></div>
-                                <div class="course-details">
-                                    <p class="detailed-description">${selectedCourse.description}</p>
+                                <div class="course-image-large" style="background: linear-gradient(135deg, ${selectedCourse.gradientFrom || '#2980b9'}, ${selectedCourse.gradientTo || '#1abc9c'}); display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;">
+                                    <i class='bx ${selectedCourse.icon || 'bx-book'}' style="font-size:56px;color:rgba(255,255,255,0.9);"></i>
+                                    <span style="font-size:20px;font-weight:800;color:white;letter-spacing:2px;">${selectedCourse.shortName}</span>
                                 </div>
-                            </div>
-                            <div class="modules-section">
-                                <h3 class="section-title">Course Modules</h3>
-                                <div class="modules-grid">
-                                    ${(selectedCourse.modulesList || []).map(module => `
-                                        <div class="module-card">
-                                            <h4 class="module-title">${module.title}</h4>
-                                            <p class="module-topics">${module.topics}</p>
-                                        </div>
-                                    `).join('')}
+                                <div class="course-details">
+                                    <div class="course-meta" style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
+                                        <span class="stat-item">${selectedCourse.shortName || selectedCourse.id}</span>
+                                        <span class="stat-item">${(selectedCourse.courses || []).length} Subjects</span>
+                                        <span class="stat-item">${selectedCourse.tagline || 'Premium Branch Pack'}</span>
+                                    </div>
+                                    <p class="detailed-description">${selectedCourse.description}</p>
                                 </div>
                             </div>
                             ${renderCourseInclusions(selectedCourse)}
                         `;
                         courseModal.classList.add('active');
                         document.body.style.overflow = 'hidden';
-                        console.log('✅ Modal opened for course:', selectedCourse.title);
+                        console.log('✅ Modal opened for branch pack:', selectedCourse.name);
                     } else {
                         console.warn('⚠️ Course not found:', courseId);
                     }
@@ -2985,9 +3119,9 @@
         modalAddToCart.addEventListener('click', () => {
             if (selectedCourse) {
                 const id = selectedCourse.id;
-                const title = selectedCourse.title;
+                const title = selectedCourse.name;
                 const price = parseInt(selectedCourse.price.replace('₹', '').replace(',', ''));
-                const image = selectedCourse.image;
+                const image = getCourseImage(selectedCourse.id);
 
                 console.log('Modal add to cart clicked:', { id, title, price, image });
 
@@ -2995,7 +3129,7 @@
                 const success = addToCart({ id, title, price, image });
 
                 if (success) {
-                    showNotification('Course added to cart!', 'success');
+                    showNotification('Branch pack added to cart!', 'success');
                     courseModal.classList.remove('active');
                     document.body.style.overflow = 'auto';
                 }
@@ -3079,14 +3213,16 @@
             courseCards.forEach(card => {
                 const title = card.querySelector('.course-title').textContent.toLowerCase();
                 const description = card.querySelector('.course-description').textContent.toLowerCase();
-                const tags = card.dataset.tags;
+                const tags = (card.dataset.tags || '').toLowerCase();
 
-                // Check if matches filter
-                const matchesFilter = activeFilter === "all" || tags.includes(activeFilter);
+                // Check if matches filter — match by branch ID stored in data-course
+                const branchId = card.dataset.course || '';
+                const matchesFilter = activeFilter === "all" || branchId === activeFilter;
 
                 // Check if matches search
                 const matchesSearch = title.includes(searchTerm) ||
-                                      description.includes(searchTerm);
+                                      description.includes(searchTerm) ||
+                                      tags.includes(searchTerm);
 
                 // Show/hide based on both conditions
                 card.style.display = (matchesFilter && matchesSearch) ? 'block' : 'none';
@@ -3098,7 +3234,7 @@
 async function initializePayment(orderData, courseTitle) {
   try {
     // Initialize the appropriate gateway based on backend response
-    const gateway = await paymentGatewayFactory.initializeGateway(orderData.gateway, orderData);
+    const gateway = await paymentGatewayFactory.initializeGateway(orderData.gateway || 'razorpay', orderData);
 
     // Handle PhonePe redirect
     if (orderData.gateway === 'phonepe' && orderData.paymentUrl) {
@@ -3110,7 +3246,7 @@ async function initializePayment(orderData, courseTitle) {
     await gateway.processPayment(orderData, courseTitle);
   } catch (error) {
     console.error('Payment initialization error:', error);
-    showNotification('Payment initialization failed', 'danger');
+    showNotification(error?.message || 'Payment initialization failed', 'danger');
   }
 }
 
@@ -3139,7 +3275,7 @@ async function verifyPayment(razorpayResponse, orderId) {
       savePurchasedCoursesCache(purchasedItems);
       removePurchasedItemsFromCart(purchasedItems);
       pendingPurchaseContext = null;
-      showNotification('Payment successful! Access granted to your course.', 'success');
+      showNotification('Payment successful! Access granted to your branch pack.', 'success');
       // Redirect to MyCourses page on successful payment
       setTimeout(() => {
         window.location.href = '../mycourses/mycourses.html?payment=success&sidebar=active';
@@ -3159,7 +3295,7 @@ async function verifyPayment(razorpayResponse, orderId) {
 // Enroll now - let backend handle all validation
 enrollNowButton.addEventListener('click', async () => {
   if (selectedCourse) {
-    console.log('Enroll now clicked for course:', selectedCourse.title);
+    console.log('Enroll now clicked for branch pack:', selectedCourse.name);
 
     if (!isUserAuthenticated) {
       console.log('User not authenticated, showing login prompt');
@@ -3169,7 +3305,7 @@ enrollNowButton.addEventListener('click', async () => {
 
     if (!isUserProfileComplete) {
       console.log('Profile not complete, staying on marketplace');
-      showNotification('Please complete your profile before purchasing courses.', 'warning');
+      showNotification('Please complete your profile before purchasing branch packs.', 'warning');
       // Close modal and stay on marketplace
       courseModal.classList.remove('active');
       document.body.style.overflow = 'auto';
@@ -3177,7 +3313,7 @@ enrollNowButton.addEventListener('click', async () => {
     }
 
     try {
-      await startSingleCourseCheckout(selectedCourse.id, selectedCourse.title, selectedCourse.price);
+      await startSingleCourseCheckout(selectedCourse.id, selectedCourse.name, selectedCourse.price);
     } catch (err) {
       console.error('Payment error:', err);
       showNotification('Payment initiation failed: ' + err.message, 'danger');
@@ -3231,7 +3367,7 @@ checkoutButton.addEventListener('click', async () => {
 
   if (!isUserProfileComplete) {
     console.log('Profile not complete, staying on marketplace');
-    showNotification('Please complete your profile before purchasing courses.', 'warning');
+    showNotification('Please complete your profile before purchasing branch packs.', 'warning');
     return;
   }
 
@@ -3263,7 +3399,7 @@ accessBtns.forEach(btn => {
 
     if (!isUserProfileComplete) {
       console.log('Profile not complete, staying on marketplace');
-      showNotification('Please complete your profile before purchasing courses.', 'warning');
+      showNotification('Please complete your profile before purchasing branch packs.', 'warning');
       return;
     }
 
@@ -3339,7 +3475,7 @@ async function fetchUserProfile() {
     });
 
     if (response.ok) {
-      return data.data || data;
+      return data?.data || data || null;
     }
     return null;
   } catch (err) {
@@ -3363,21 +3499,16 @@ async function fetchUserProfile() {
      authManagerReady: !!window.authManager
    });
 
-   // First, try to load from localStorage for immediate display
+   // First, try shared-auth user data and cached data for immediate display
    if (isUserAuthenticated) {
+     if (window.authManager?.userData) {
+       updateUserProfileDisplay(normalizeProfileData(window.authManager.userData));
+     }
+
      try {
        const cachedProfile = localStorage.getItem('profileData');
        if (cachedProfile) {
-         const profile = JSON.parse(cachedProfile);
-         const tempUserProfile = {
-           name: profile.username || profile.name || '',
-           email: profile.email || '',
-           phone: profile.phone || '',
-           fullName: profile.fullName || '',
-           registrationNumber: profile.registrationNumber || '',
-           branch: profile.program || profile.branch || '',
-           year: profile.year || ''
-         };
+         const tempUserProfile = normalizeProfileData(JSON.parse(cachedProfile));
          updateUserProfileDisplay(tempUserProfile);
          console.log('⚡ Updated display from cached profile:', tempUserProfile.email);
        }
@@ -3394,60 +3525,29 @@ async function fetchUserProfile() {
 
      if (profileData && profileData.user) {
          const profile = profileData.user;
-         userProfile = {
-           name: profile.username || profile.name || '',
-           email: profile.email || '',
-           phone: profile.phone || '',
-           fullName: profile.fullName || '',
-           registrationNumber: profile.registrationNumber || '',
-           branch: profile.branch || '',
-           year: profile.year || ''
-         };
+         const profileStatus = evaluateProfileCompletion(profile, profileData.profileComplete === true);
+         userProfile = profileStatus.normalizedProfile;
 
          console.log('👤 Processed user profile:', userProfile);
-
-         // Check profile completion using the same logic as backend payment controller
-         const hasPhone = !!(profile.phone && profile.phone.trim());
-         const hasRegistrationNumber = !!(profile.registrationNumber && profile.registrationNumber.trim());
-         const hasBranch = !!(profile.branch && profile.branch.trim());
-
-         console.log('🔍 Field presence check:', {
-           phone: profile.phone,
-           hasPhone,
-           registrationNumber: profile.registrationNumber,
-           hasRegistrationNumber,
-           branch: profile.branch,
-           hasBranch
-         });
-
-         // Use backend flag OR check individual fields (same as backend validation)
-         const backendFlagComplete = (profileData.profileComplete === true);
-         const fieldsComplete = (hasPhone && hasRegistrationNumber && hasBranch);
-
-         isUserProfileComplete = backendFlagComplete || fieldsComplete;
+         isUserProfileComplete = profileStatus.isComplete;
 
          console.log('✅ Profile completion calculation:', {
-           backendFlag: profileData.profileComplete,
-           backendFlagComplete,
-           fieldsComplete,
+           backendFlag: profileData.profileComplete === true,
+           profileCompletedColumn: userProfile.profileCompleted === true,
+           fieldsComplete: profileStatus.fieldsComplete,
            finalResult: isUserProfileComplete
          });
 
          localStorage.setItem('userProfile', JSON.stringify(profile));
          localStorage.setItem('profileData', JSON.stringify({
-           ...profile,
+           ...userProfile,
            profileCompleted: isUserProfileComplete,
-           program: profile.branch || ''
+           program: userProfile.branch || ''
          }));
          localStorage.setItem('profileCompleted', String(isUserProfileComplete));
 
          // Update user profile display in header
          updateUserProfileDisplay(userProfile);
-
-         // If profile is complete but backend flag is false, there might be a sync issue
-         if (fieldsComplete && !backendFlagComplete) {
-           console.warn('⚠️ Profile fields are complete but backend flag is false - possible sync issue');
-         }
      } else {
        isUserProfileComplete = false;
        console.log('❌ No profile data received from backend');
@@ -3581,20 +3681,13 @@ function isProfileComplete() {
 
             // Test profile completion logic
             if (profileData && profileData.user) {
-                const profile = profileData.user;
-                const hasPhone = !!(profile.phone && profile.phone.trim());
-                const hasRegistrationNumber = !!(profile.registrationNumber && profile.registrationNumber.trim());
-                const hasBranch = !!(profile.branch && profile.branch.trim());
-
-                const calculatedComplete = (profileData.profileComplete === true) ||
-                                         (hasPhone && hasRegistrationNumber && hasBranch);
+                const profileStatus = evaluateProfileCompletion(profileData.user, profileData.profileComplete === true);
 
                 console.log('🔍 Profile completion calculation:', {
-                    backendFlag: profileData.profileComplete,
-                    hasPhone,
-                    hasRegistrationNumber,
-                    hasBranch,
-                    calculatedComplete,
+                    backendFlag: profileData.profileComplete === true,
+                    normalizedProfile: profileStatus.normalizedProfile,
+                    fieldsComplete: profileStatus.fieldsComplete,
+                    calculatedComplete: profileStatus.isComplete,
                     currentState: isUserProfileComplete
                 });
             }
@@ -3629,59 +3722,43 @@ function isProfileComplete() {
             return isUserProfileComplete;
         };
 
-        // INSTANT PROFILE CHECK - Synchronous localStorage check
+        // INSTANT PROFILE CHECK - Synchronous shared-auth/local cache check
         function instantProfileCheck() {
             console.log('⚡ INSTANT PROFILE CHECK - SYNCHRONOUS...');
 
             try {
-                // Check for global profile completion flag first
-                if (window.profileCompletedInstantly === true) {
-                    console.log('🎯 GLOBAL FLAG DETECTED - Profile completed instantly!');
-                    forceEnablePaymentsInstantly();
-                    return true;
-                }
-
-                const token = localStorage.getItem('token');
+                const token = getStoredToken();
+                const sharedUser = window.authManager?.userData || null;
                 const cachedProfile = localStorage.getItem('profileData');
-                const profileCompletedFlag = localStorage.getItem('profileCompleted');
+                const profileCompletedFlag = localStorage.getItem('profileCompleted') === 'true';
 
                 console.log('📊 Storage check:', {
                     hasToken: !!token,
+                    hasSharedAuthUser: !!sharedUser,
                     hasCachedProfile: !!cachedProfile,
                     profileCompletedFlag: profileCompletedFlag,
                     globalFlag: window.profileCompletedInstantly
                 });
 
-                // Multiple completion indicators
-                const indicators = {
-                    globalFlag: window.profileCompletedInstantly === true,
-                    localStorageFlag: profileCompletedFlag === 'true',
-                    cachedProfileComplete: false,
-                    hasRequiredFields: false
-                };
-
-                // Check cached profile
-                if (cachedProfile) {
-                    const profile = JSON.parse(cachedProfile);
-                    indicators.cachedProfileComplete = profile.profileCompleted === true;
-
-                    // Check if required fields are present
-                    indicators.hasRequiredFields = !!(profile.phone && profile.registrationNumber && profile.program);
+                if (sharedUser) {
+                    const sharedStatus = evaluateProfileCompletion(sharedUser);
+                    if (sharedStatus.isComplete) {
+                        console.log('✅ Shared auth profile is complete');
+                        forceEnablePaymentsInstantly(sharedStatus.normalizedProfile);
+                        window.profileCompletedInstantly = true;
+                        return true;
+                    }
                 }
 
-                console.log('🔍 Completion indicators:', indicators);
-
-                // If ANY indicator is true, enable payments instantly
-                if (indicators.globalFlag || indicators.localStorageFlag || indicators.cachedProfileComplete || indicators.hasRequiredFields) {
-                    console.log('✅ PROFILE COMPLETED DETECTED - ENABLING PAYMENTS INSTANTLY');
-
-                    // Force enable payments immediately
-                    forceEnablePaymentsInstantly();
-
-                    // Set global flag to prevent re-checking
-                    window.profileCompletedInstantly = true;
-
-                    return true;
+                if (cachedProfile) {
+                    const cachedStatus = evaluateProfileCompletion(JSON.parse(cachedProfile), profileCompletedFlag);
+                    console.log('🔍 Cached completion indicators:', cachedStatus);
+                    if (cachedStatus.isComplete) {
+                        console.log('✅ Cached profile is complete');
+                        forceEnablePaymentsInstantly(cachedStatus.normalizedProfile);
+                        window.profileCompletedInstantly = true;
+                        return true;
+                    }
                 }
 
             } catch (error) {
@@ -3693,30 +3770,26 @@ function isProfileComplete() {
         }
 
         // FORCE ENABLE PAYMENTS INSTANTLY - No delays
-        function forceEnablePaymentsInstantly() {
+        function forceEnablePaymentsInstantly(profileOverride = null) {
             console.log('🚀 FORCE ENABLING PAYMENTS INSTANTLY...');
 
             // Set all flags immediately
             isUserAuthenticated = true;
             isUserProfileComplete = true;
 
-            // Populate user profile from localStorage if available
-            try {
-                const cachedProfile = localStorage.getItem('profileData');
-                if (cachedProfile) {
-                    const profile = JSON.parse(cachedProfile);
-                    userProfile = {
-                        name: profile.fullName || profile.name || 'Student',
-                        email: profile.email || '',
-                        phone: profile.phone || '',
-                        fullName: profile.fullName || 'Student',
-                        registrationNumber: profile.registrationNumber || '',
-                        branch: profile.program || profile.branch || '',
-                        year: profile.year || ''
-                    };
+            if (profileOverride) {
+                userProfile = profileOverride;
+            } else {
+                try {
+                    const sharedProfile = window.authManager?.userData
+                        ? normalizeProfileData(window.authManager.userData)
+                        : null;
+                    const cachedProfile = localStorage.getItem('profileData');
+                    const fallbackProfile = cachedProfile ? normalizeProfileData(JSON.parse(cachedProfile)) : null;
+                    userProfile = sharedProfile || fallbackProfile || userProfile;
+                } catch (error) {
+                    console.warn('Error loading cached profile:', error);
                 }
-            } catch (error) {
-                console.warn('Error loading cached profile:', error);
             }
 
             // Immediately update ALL payment buttons
@@ -3783,55 +3856,30 @@ function isProfileComplete() {
             return result;
         };
 
-        // EMERGENCY PROFILE CHECK - More aggressive validation
+        // EMERGENCY PROFILE CHECK - fallback validation
         function emergencyProfileCheck() {
             console.log('🚨 EMERGENCY PROFILE CHECK...');
 
-            // Check if we have cached profile data that indicates completion
             try {
-                const cachedProfile = localStorage.getItem('profileData');
-                if (cachedProfile) {
-                    const profile = JSON.parse(cachedProfile);
-                    console.log('🚨 Cached profile data:', profile);
-
-                    // Check multiple completion indicators
-                    const hasCompletionFlag = profile.profileCompleted === true;
-                    const hasRequiredFields = !!(profile.phone && profile.registrationNumber && profile.program);
-
-                    console.log('🚨 Completion indicators:', {
-                        hasCompletionFlag,
-                        hasRequiredFields,
-                        phone: profile.phone,
-                        registrationNumber: profile.registrationNumber,
-                        program: profile.program
-                    });
-
-                    if (hasCompletionFlag || hasRequiredFields) {
-                        console.log('🚨 Found completed profile in localStorage, forcing update...');
-
-                        // Update user profile with cached data
-                        userProfile = {
-                            name: profile.fullName || profile.name || '',
-                            email: profile.email || '',
-                            phone: profile.phone || '',
-                            fullName: profile.fullName || '',
-                            registrationNumber: profile.registrationNumber || '',
-                            branch: profile.program || profile.branch || '',
-                            year: profile.year || ''
-                        };
-
-                        // Force the marketplace to recognize this
+                if (window.authManager?.userData) {
+                    const sharedStatus = evaluateProfileCompletion(window.authManager.userData);
+                    if (sharedStatus.isComplete) {
+                        userProfile = sharedStatus.normalizedProfile;
                         isUserAuthenticated = true;
                         isUserProfileComplete = true;
-
                         updatePaymentButtonVisibility();
+                        return true;
+                    }
+                }
 
-                        console.log('🚨 Emergency profile check successful:', {
-                            userProfile,
-                            isUserAuthenticated,
-                            isUserProfileComplete
-                        });
-
+                const cachedProfile = localStorage.getItem('profileData');
+                if (cachedProfile) {
+                    const cachedStatus = evaluateProfileCompletion(JSON.parse(cachedProfile), localStorage.getItem('profileCompleted') === 'true');
+                    if (cachedStatus.isComplete) {
+                        userProfile = cachedStatus.normalizedProfile;
+                        isUserAuthenticated = true;
+                        isUserProfileComplete = true;
+                        updatePaymentButtonVisibility();
                         return true;
                     }
                 }
@@ -3840,6 +3888,10 @@ function isProfileComplete() {
             }
 
             return false;
+        }
+
+        function immediateProfileCheck() {
+            return instantProfileCheck();
         }
 
         // Initialize
@@ -3899,14 +3951,14 @@ function isProfileComplete() {
             // Initialize cart first
             initializeCart();
 
-            // Load courses from JSON file
+            // Load branch packs from JSON file
             const coursesLoaded = await loadCoursesFromJSON();
 
             if (coursesLoaded) {
-                // Generate course cards from loaded data
+                // Generate branch pack cards from loaded data
                 generateCourseCards();
 
-                // Initialize course images dynamically
+                // Initialize branch pack images dynamically
                 initializeCourseImages();
 
                 // Setup event listeners for course cards (AFTER cards are generated)
@@ -3915,8 +3967,8 @@ function isProfileComplete() {
                 // Setup event listeners for add to cart buttons (AFTER cards are generated)
                 setupAddToCartListeners();
             } else {
-                console.error('❌ Failed to load courses from JSON - marketplace may not work properly');
-                showNotification('Failed to load courses. Please refresh the page.', 'danger');
+                console.error('❌ Failed to load branch packs from JSON - marketplace may not work properly');
+                showNotification('Failed to load branch packs. Please refresh the page.', 'danger');
             }
 
             // Update cart display after initialization

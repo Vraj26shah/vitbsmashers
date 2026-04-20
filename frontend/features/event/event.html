@@ -6,6 +6,8 @@
     <title>Scholars Stack - Event Management</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="../../config.js"></script>
+    <script src="../../shared-auth.js"></script>
     <script src="../../shared-admin-auth.js"></script>
     <script src="../../shared-logout.js"></script>
     <style>
@@ -1848,10 +1850,10 @@
 
         async function fetchEvents() {
             try {
-                const response = await fetch('http://localhost:4000/api/v1/events');
+                const response = await fetch('/api/v1/events');
                 const data = await response.json();
                 if (response.ok) {
-                    events = data.data.events;
+                    events = data.data;
                 } else {
                     console.error('Failed to fetch events:', data.message);
                 }

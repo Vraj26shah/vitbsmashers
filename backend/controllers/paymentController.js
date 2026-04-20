@@ -7,6 +7,13 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+const normalizeAmountToRupees = (value) => {
+  const parsed = Number.parseFloat(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) return null;
+  // Frontend should send rupees, but tolerate paise-sized payloads from older code.
+  return parsed >= 1000 ? parsed / 100 : parsed;
+};
+
 // ── POST /api/v1/payment/create-order ────────────────────────────────────────
 export const createOrder = async (req, res) => {
   try {
@@ -38,7 +45,10 @@ export const createOrder = async (req, res) => {
       if (existing)
         return res.status(409).json({ status: 'error', message: 'Course already purchased' });
 
-      const coursePrice = amount ? parseFloat(amount) : course.price;
+      const coursePrice = amount ? normalizeAmountToRupees(amount) : Number.parseFloat(course.price);
+      if (!Number.isFinite(coursePrice) || coursePrice <= 0) {
+        return res.status(400).json({ status: 'error', message: 'Invalid course amount' });
+      }
       const amountPaise = Math.round(coursePrice * 100);
 
       const rzpOrder = await razorpay.orders.create({
@@ -57,7 +67,9 @@ export const createOrder = async (req, res) => {
       return res.status(200).json({
         status: 'success',
         message: 'Checkout session created successfully',
+        gateway:    'razorpay',
         orderId:    rzpOrder.id,
+        order_id:   rzpOrder.id,
         amount:     amountPaise,
         currency:   'INR',
         courseId:   resolvedCourseId,
@@ -68,7 +80,39 @@ export const createOrder = async (req, res) => {
 
     // Cart-based (multiple items) — create one order for total
     if (items && Array.isArray(items) && items.length > 0) {
-      const totalAmount = items.reduce((s, i) => s + parseFloat(i.amount || 0), 0);
+      // Resolve cart items into order rows before inserting
+      const orderRows = [];
+      const seenCourseIds = new Set();
+
+      for (const item of items) {
+        let cid = item.courseId;
+        if (!cid) continue;
+        const itemAmount = normalizeAmountToRupees(item.amount);
+        if (!Number.isFinite(itemAmount) || itemAmount <= 0) continue;
+
+        if (!/^[0-9a-f-]{36}$/i.test(cid)) {
+          const { data: c } = await supabase.schema('business').from('courses')
+            .select('id').eq('pid', cid.toUpperCase()).maybeSingle();
+          if (c) cid = c.id;
+        }
+
+        if (cid && /^[0-9a-f-]{36}$/i.test(cid)) {
+          if (seenCourseIds.has(cid)) continue;
+          seenCourseIds.add(cid);
+
+          orderRows.push({
+            user_id:           userId,
+            course_id:         cid,
+            amount:            itemAmount,
+          });
+        }
+      }
+
+      if (orderRows.length === 0) {
+        return res.status(400).json({ status: 'error', message: 'No valid cart items found for checkout' });
+      }
+
+      const totalAmount = orderRows.reduce((sum, row) => sum + row.amount, 0);
       const amountPaise = Math.round(totalAmount * 100);
 
       const rzpOrder = await razorpay.orders.create({
@@ -77,28 +121,26 @@ export const createOrder = async (req, res) => {
         receipt:  `rcpt_cart_${userId.slice(0, 8)}_${Date.now()}`,
       });
 
-      // Store one row per item in razorpay_orders for each course
-      for (const item of items) {
-        let cid = item.courseId;
-        if (!/^[0-9a-f-]{36}$/i.test(cid)) {
-          const { data: c } = await supabase.schema('business').from('courses')
-            .select('id').eq('pid', cid.toUpperCase()).maybeSingle();
-          if (c) cid = c.id;
-        }
-        if (cid && /^[0-9a-f-]{36}$/i.test(cid)) {
-          await supabase.schema('business').from('razorpay_orders').insert({
-            user_id:           userId,
-            course_id:         cid,
-            razorpay_order_id: rzpOrder.id,
-            amount:            parseFloat(item.amount || 0),
-          }).catch(() => {});
-        }
+      orderRows.forEach((row) => {
+        row.razorpay_order_id = rzpOrder.id;
+      });
+
+      const { error: insertError } = await supabase
+        .schema('business')
+        .from('razorpay_orders')
+        .insert(orderRows);
+
+      if (insertError) {
+        console.error('createOrder insert error:', insertError.message);
+        return res.status(500).json({ status: 'error', message: 'Failed to prepare cart order' });
       }
 
       return res.status(200).json({
         status: 'success',
         message: 'Checkout session created successfully',
+        gateway:   'razorpay',
         orderId:   rzpOrder.id,
+        order_id:  rzpOrder.id,
         amount:    amountPaise,
         currency:  'INR',
         key:       process.env.RAZORPAY_KEY_ID,
