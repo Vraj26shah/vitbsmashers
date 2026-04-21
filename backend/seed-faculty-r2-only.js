@@ -118,6 +118,12 @@ async function seedFacultyToR2() {
     await uploadToR2('faculty/list.json', Buffer.from(listJson), 'application/json');
     console.log('✅ Uploaded: faculty/list.json');
 
+    // 2b. Create consolidated data file
+    console.log('\n📋 Creating consolidated faculty data file...');
+    const allDataJson = JSON.stringify(sampleFaculty, null, 2);
+    await uploadToR2('faculty/all_approved_data.json', Buffer.from(allDataJson), 'application/json');
+    console.log('✅ Uploaded: faculty/all_approved_data.json');
+
     // 3. Initialize empty pending lists
     console.log('\n📝 Initializing pending lists...');
     await uploadToR2('faculty/pending-additions.json', Buffer.from('[]'), 'application/json');
@@ -130,11 +136,13 @@ async function seedFacultyToR2() {
     console.log('\n📊 Summary:');
     console.log(`   - Individual faculty files: ${sampleFaculty.length}`);
     console.log(`   - Faculty list index: 1 file`);
+    console.log(`   - Consolidated data file: 1 file`);
     console.log(`   - Pending lists: 2 files`);
-    console.log(`   - Total R2 objects: ${sampleFaculty.length + 3}`);
+    console.log(`   - Total R2 objects: ${sampleFaculty.length + 4}`);
     console.log('\n📂 R2 Structure:');
     console.log('   faculty/');
     console.log('   ├── list.json (index of all approved faculty)');
+    console.log('   ├── all_approved_data.json (full data of all approved faculty)');
     console.log('   ├── pending-additions.json (pending submissions)');
     console.log('   ├── pending-updates.json (pending updates)');
     console.log('   ├── <id1>/data.json');

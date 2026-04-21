@@ -1,9 +1,45 @@
-import { supabase }                          from '../lib/supabase.js';
-import { uploadToR2, getImageSignedUrl, deleteFromR2 } from '../lib/r2.js';
+import { uploadToR2, getImageSignedUrl, deleteFromR2, getR2Object } from '../lib/r2.js';
 
-// ── Helpers ────────────────────────────────────────────────────────────────────
+const CLUBS_APPROVED_KEY = 'clubs/approved.json';
+const CLUBS_PENDING_ADDITIONS_KEY = 'clubs/pending-additions.json';
+const CLUBS_PENDING_UPDATES_KEY = 'clubs/pending-updates.json';
+
+function generateId(prefix = 'club') {
+  return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function getRecordId(item) {
+  return item?.id || item?._id || null;
+}
+
+function normalizeId(value) {
+  if (value === undefined || value === null) return '';
+  return String(value);
+}
+
+function idsMatch(a, b) {
+  const left = normalizeId(a);
+  const right = normalizeId(b);
+  return left !== '' && left === right;
+}
+
+async function getJsonList(key) {
+  try {
+    const data = await getR2Object(key);
+    const parsed = JSON.parse(data);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+async function saveJsonList(key, list) {
+  const payload = JSON.stringify(Array.isArray(list) ? list : [], null, 2);
+  await uploadToR2(key, Buffer.from(payload), 'application/json');
+}
+
 async function attachLogoUrl(club) {
-  if (!club.logo_r2_key) return { ...club, logoUrl: null };
+  if (!club?.logo_r2_key) return { ...club, logoUrl: null };
   try {
     const logoUrl = await getImageSignedUrl(club.logo_r2_key, 3600);
     return { ...club, logoUrl };
@@ -12,59 +48,62 @@ async function attachLogoUrl(club) {
   }
 }
 
-async function applyUpdateRequest(updateReq) {
-  const changes = typeof updateReq.changes === 'string'
-    ? JSON.parse(updateReq.changes) : updateReq.changes;
+function normalizeClubPayload(payload = {}, opts = {}) {
+  const now = new Date().toISOString();
+  return {
+    id: payload.id || opts.id || generateId('club'),
+    name: payload.name || '',
+    category: payload.category || '',
+    description: payload.description || '',
+    contact_person: payload.contact_person || '',
+    contact_email: payload.contact_email || '',
+    faculty_coordinator: payload.faculty_coordinator || '',
+    faculty_email: payload.faculty_email || '',
+    co_faculty_coordinator: payload.co_faculty_coordinator || null,
+    co_faculty_email: payload.co_faculty_email || null,
+    members: Number.parseInt(payload.members || 0, 10) || 0,
+    events: Number.parseInt(payload.events || 0, 10) || 0,
+    logo_r2_key: payload.logo_r2_key || null,
+    status: payload.status || opts.status || 'approved',
+    submitted_by: payload.submitted_by || opts.submittedBy || null,
+    created_at: payload.created_at || opts.createdAt || now,
+    updated_at: now,
+  };
+}
 
-  // Flatten changes object to apply to club (new value of each field)
-  const updates = {};
-  for (const [field, val] of Object.entries(changes)) {
-    updates[field] = typeof val === 'object' && val?.new !== undefined ? val.new : val;
-  }
+function hasRequiredClubFields(payload = {}) {
+  return !!(
+    payload.name && payload.category && payload.description &&
+    payload.contact_person && payload.contact_email &&
+    payload.faculty_coordinator && payload.faculty_email
+  );
+}
 
-  // If there's a pending logo, make it the canonical one
-  if (updateReq.logo_r2_key_new) {
-    const canonicalKey = `clubs/${updateReq.club_id}/logo`;
-    updates.logo_r2_key = canonicalKey;
-
-    // Try to copy the pending object over the canonical key in R2
-    try {
-      const { GetObjectCommand, PutObjectCommand } = await import('@aws-sdk/client-s3');
-      const { r2, BUCKET } = await import('../lib/r2.js');
-      const getCmd = new GetObjectCommand({ Bucket: BUCKET, Key: updateReq.logo_r2_key_new });
-      const obj = await r2.send(getCmd);
-      const chunks = [];
-      for await (const chunk of obj.Body) chunks.push(chunk);
-      const buf = Buffer.concat(chunks);
-      await r2.send(new PutObjectCommand({ Bucket: BUCKET, Key: canonicalKey, Body: buf, ContentType: obj.ContentType }));
-      await deleteFromR2(updateReq.logo_r2_key_new);
-    } catch (e) {
-      console.error('Logo copy error:', e);
-    }
-  }
-
-  updates.updated_at = new Date().toISOString();
-  await supabase.schema('content').from('clubs').update(updates).eq('id', updateReq.club_id);
-  await supabase.schema('content').from('club_update_requests')
-    .update({ status: 'approved' }).eq('id', updateReq.id);
+function applyChangesToClub(club, changes = {}) {
+  const next = { ...club };
+  Object.entries(changes).forEach(([field, val]) => {
+    const value = val && typeof val === 'object' && Object.prototype.hasOwnProperty.call(val, 'new')
+      ? val.new
+      : val;
+    next[field] = value;
+  });
+  next.updated_at = new Date().toISOString();
+  return next;
 }
 
 // ── GET /api/v1/clubs ─────────────────────────────────────────────────────────
 export const getClubs = async (req, res) => {
   try {
     const { category, search } = req.query;
-    let query = supabase.schema('content').from('clubs')
-      .select('id, name, category, description, contact_person, contact_email, faculty_coordinator, faculty_email, co_faculty_coordinator, co_faculty_email, members, events, logo_r2_key, created_at')
-      .eq('status', 'approved')
-      .order('name');
+    let approved = await getJsonList(CLUBS_APPROVED_KEY);
 
-    if (category) query = query.eq('category', category);
-    if (search)   query = query.ilike('name', `%${search}%`);
+    if (category) approved = approved.filter(c => c.category === category);
+    if (search) {
+      const q = String(search).toLowerCase();
+      approved = approved.filter(c => String(c.name || '').toLowerCase().includes(q));
+    }
 
-    const { data, error } = await query;
-    if (error) return res.status(500).json({ status: 'error', message: error.message });
-
-    const withLogos = await Promise.all(data.map(attachLogoUrl));
+    const withLogos = await Promise.all(approved.map(attachLogoUrl));
     return res.status(200).json({ status: 'success', results: withLogos.length, data: { clubs: withLogos } });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: 'Failed to retrieve clubs' });
@@ -74,10 +113,11 @@ export const getClubs = async (req, res) => {
 // ── GET /api/v1/clubs/:id ─────────────────────────────────────────────────────
 export const getClubById = async (req, res) => {
   try {
-    const { data, error } = await supabase.schema('content').from('clubs')
-      .select('*').eq('id', req.params.id).single();
-    if (error || !data) return res.status(404).json({ status: 'error', message: 'Club not found' });
-    const result = await attachLogoUrl(data);
+    const approved = await getJsonList(CLUBS_APPROVED_KEY);
+    const club = approved.find(c => idsMatch(getRecordId(c), req.params.id));
+    if (!club) return res.status(404).json({ status: 'error', message: 'Club not found' });
+
+    const result = await attachLogoUrl(club);
     return res.status(200).json({ status: 'success', data: { club: result } });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: 'Failed to retrieve club' });
@@ -87,72 +127,45 @@ export const getClubById = async (req, res) => {
 // ── POST /api/v1/clubs — create (pending approval) ───────────────────────────
 export const createClub = async (req, res) => {
   try {
-    const {
-      name, category, description,
-      contact_person, contact_email,
-      faculty_coordinator, faculty_email,
-      co_faculty_coordinator, co_faculty_email,
-      members, events,
-    } = req.body;
-
-    if (!name || !category || !description || !contact_person || !contact_email || !faculty_coordinator || !faculty_email) {
+    const payload = req.body || {};
+    if (!hasRequiredClubFields(payload)) {
       return res.status(400).json({ status: 'error', message: 'Missing required fields' });
     }
 
-    // Get user email from authenticated user
-    const userEmail = req.user?.email || contact_email;
+    const submittedBy = req.user?.email || payload.contact_email || 'anonymous';
+    const pending = await getJsonList(CLUBS_PENDING_ADDITIONS_KEY);
 
-    // Check rate limit: max 5 pending club registrations per user
-    const { data: pendingClubs, error: countError } = await supabase
-      .schema('content')
-      .from('clubs')
-      .select('id')
-      .eq('contact_email', userEmail)
-      .eq('status', 'pending');
-
-    if (countError) {
-      console.error('Error checking pending clubs:', countError);
-    }
-
-    const currentPending = pendingClubs?.length || 0;
-    if (currentPending >= 5) {
-      return res.status(429).json({ 
-        status: 'error', 
+    const userPending = pending.filter(c => String(c.submitted_by || '').toLowerCase() === String(submittedBy).toLowerCase()).length;
+    if (userPending >= 5) {
+      return res.status(429).json({
+        status: 'error',
         message: 'You have reached the maximum of 5 pending club registrations. Please wait for admin approval before submitting more.',
-        pendingCount: currentPending
+        pendingCount: userPending,
       });
     }
 
-    // Insert pending club first to get an ID
-    const { data: club, error: insertErr } = await supabase.schema('content').from('clubs')
-      .insert({
-        name, category, description,
-        contact_person, contact_email,
-        faculty_coordinator, faculty_email,
-        co_faculty_coordinator: co_faculty_coordinator || null,
-        co_faculty_email: co_faculty_email || null,
-        members: members ? parseInt(members) : 0,
-        events: events ? parseInt(events) : 0,
-        status: 'pending',
-      }).select().single();
+    const clubId = generateId('club');
+    const club = normalizeClubPayload(payload, {
+      id: clubId,
+      status: 'pending',
+      submittedBy,
+    });
 
-    if (insertErr) return res.status(400).json({ status: 'error', message: insertErr.message });
-
-    // Upload logo to R2 if provided
     if (req.file) {
-      const r2Key = `clubs/${club.id}/logo`;
-      await uploadToR2(req.file.buffer, r2Key, req.file.mimetype);
-      await supabase.schema('content').from('clubs')
-        .update({ logo_r2_key: r2Key }).eq('id', club.id);
+      const r2Key = `clubs/${clubId}/logo`;
+      await uploadToR2(r2Key, req.file.buffer, req.file.mimetype);
       club.logo_r2_key = r2Key;
     }
+
+    pending.push(club);
+    await saveJsonList(CLUBS_PENDING_ADDITIONS_KEY, pending);
 
     return res.status(201).json({
       status: 'success',
       message: 'Club registration submitted for admin review',
       data: { club },
-      pendingCount: currentPending + 1,
-      remainingRequests: 4 - currentPending
+      pendingCount: userPending + 1,
+      remainingRequests: Math.max(5 - (userPending + 1), 0),
     });
   } catch (err) {
     console.error('createClub error:', err);
@@ -163,60 +176,56 @@ export const createClub = async (req, res) => {
 // ── POST /api/v1/clubs/update-request ────────────────────────────────────────
 export const createUpdateRequest = async (req, res) => {
   try {
-    const { club_id, changes, submitted_by } = req.body;
+    const { club_id, changes, submitted_by } = req.body || {};
     if (!club_id || !changes) {
       return res.status(400).json({ status: 'error', message: 'club_id and changes are required' });
     }
 
-    // Get user email from authenticated user
-    const userEmail = req.user?.email || submitted_by || 'Unknown';
+    const submittedBy = req.user?.email || submitted_by || 'anonymous';
+    const pendingUpdates = await getJsonList(CLUBS_PENDING_UPDATES_KEY);
 
-    // Check rate limit: max 5 pending requests per user
-    const { data: pendingCount, error: countError } = await supabase
-      .schema('content')
-      .from('club_update_requests')
-      .select('id', { count: 'exact', head: true })
-      .eq('submitted_by', userEmail)
-      .eq('status', 'pending');
-
-    if (countError) {
-      console.error('Error checking pending requests:', countError);
-    }
-
-    const currentPending = pendingCount?.length || 0;
-    if (currentPending >= 5) {
-      return res.status(429).json({ 
-        status: 'error', 
+    const userPending = pendingUpdates.filter(u => String(u.submitted_by || '').toLowerCase() === String(submittedBy).toLowerCase()).length;
+    if (userPending >= 5) {
+      return res.status(429).json({
+        status: 'error',
         message: 'You have reached the maximum of 5 pending requests. Please wait for admin approval before submitting more.',
-        pendingCount: currentPending
+        pendingCount: userPending,
       });
     }
 
-    let logo_r2_key_new = null;
-
-    const { data: req_data, error } = await supabase.schema('content').from('club_update_requests')
-      .insert({
-        club_id,
-        changes: typeof changes === 'string' ? JSON.parse(changes) : changes,
-        submitted_by: userEmail,
-        status: 'pending',
-      }).select().single();
-
-    if (error) return res.status(400).json({ status: 'error', message: error.message });
-
-    // Upload new logo if provided
-    if (req.file) {
-      logo_r2_key_new = `clubs/${club_id}/logo_pending_${req_data.id}`;
-      await uploadToR2(req.file.buffer, logo_r2_key_new, req.file.mimetype);
-      await supabase.schema('content').from('club_update_requests')
-        .update({ logo_r2_key_new }).eq('id', req_data.id);
+    const approved = await getJsonList(CLUBS_APPROVED_KEY);
+    const club = approved.find(c => idsMatch(getRecordId(c), club_id));
+    if (!club) {
+      return res.status(404).json({ status: 'error', message: 'Club not found' });
     }
 
-    return res.status(201).json({ 
-      status: 'success', 
+    const requestId = generateId('club_upd');
+    const parsedChanges = typeof changes === 'string' ? JSON.parse(changes) : changes;
+
+    const updateRequest = {
+      id: requestId,
+      club_id,
+      submitted_by: submittedBy,
+      status: 'pending',
+      created_at: new Date().toISOString(),
+      changes: parsedChanges,
+      logo_r2_key_new: null,
+    };
+
+    if (req.file) {
+      const logoKey = `clubs/${club_id}/logo_pending_${requestId}`;
+      await uploadToR2(logoKey, req.file.buffer, req.file.mimetype);
+      updateRequest.logo_r2_key_new = logoKey;
+    }
+
+    pendingUpdates.push(updateRequest);
+    await saveJsonList(CLUBS_PENDING_UPDATES_KEY, pendingUpdates);
+
+    return res.status(201).json({
+      status: 'success',
       message: 'Update request submitted for admin review',
-      pendingCount: currentPending + 1,
-      remainingRequests: 4 - currentPending
+      pendingCount: userPending + 1,
+      remainingRequests: Math.max(5 - (userPending + 1), 0),
     });
   } catch (err) {
     console.error('createUpdateRequest error:', err);
@@ -227,10 +236,8 @@ export const createUpdateRequest = async (req, res) => {
 // ── GET /api/v1/clubs/admin/pending ──────────────────────────────────────────
 export const getPendingClubs = async (req, res) => {
   try {
-    const { data, error } = await supabase.schema('content').from('clubs')
-      .select('*').eq('status', 'pending').order('created_at', { ascending: false });
-    if (error) return res.status(500).json({ status: 'error', message: error.message });
-    const withLogos = await Promise.all(data.map(attachLogoUrl));
+    const pending = await getJsonList(CLUBS_PENDING_ADDITIONS_KEY);
+    const withLogos = await Promise.all(pending.map(attachLogoUrl));
     return res.status(200).json({ status: 'success', data: { clubs: withLogos } });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: 'Failed to get pending clubs' });
@@ -240,11 +247,21 @@ export const getPendingClubs = async (req, res) => {
 // ── GET /api/v1/clubs/admin/updates ──────────────────────────────────────────
 export const getPendingUpdates = async (req, res) => {
   try {
-    const { data, error } = await supabase.schema('content').from('club_update_requests')
-      .select('*, clubs(name, logo_r2_key)').eq('status', 'pending')
-      .order('created_at', { ascending: false });
-    if (error) return res.status(500).json({ status: 'error', message: error.message });
-    return res.status(200).json({ status: 'success', data: { updates: data } });
+    const updates = await getJsonList(CLUBS_PENDING_UPDATES_KEY);
+    const approved = await getJsonList(CLUBS_APPROVED_KEY);
+
+    const enriched = updates.map(update => {
+      const club = approved.find(c => idsMatch(getRecordId(c), update.club_id));
+      return {
+        ...update,
+        clubs: club ? {
+          name: club.name,
+          logo_r2_key: club.logo_r2_key,
+        } : null,
+      };
+    });
+
+    return res.status(200).json({ status: 'success', data: { updates: enriched } });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: 'Failed to get pending updates' });
   }
@@ -253,11 +270,25 @@ export const getPendingUpdates = async (req, res) => {
 // ── POST /api/v1/clubs/admin/:id/approve ─────────────────────────────────────
 export const approveClub = async (req, res) => {
   try {
-    const { data, error } = await supabase.schema('content').from('clubs')
-      .update({ status: 'approved', updated_at: new Date().toISOString() })
-      .eq('id', req.params.id).select().single();
-    if (error) return res.status(400).json({ status: 'error', message: error.message });
-    return res.status(200).json({ status: 'success', message: 'Club approved', data: { club: data } });
+    const pending = await getJsonList(CLUBS_PENDING_ADDITIONS_KEY);
+    const approved = await getJsonList(CLUBS_APPROVED_KEY);
+
+    const idx = pending.findIndex(c => idsMatch(getRecordId(c), req.params.id));
+    if (idx === -1) return res.status(404).json({ status: 'error', message: 'Pending club not found' });
+
+    const club = {
+      ...pending[idx],
+      status: 'approved',
+      updated_at: new Date().toISOString(),
+    };
+
+    approved.push(club);
+    pending.splice(idx, 1);
+
+    await saveJsonList(CLUBS_APPROVED_KEY, approved);
+    await saveJsonList(CLUBS_PENDING_ADDITIONS_KEY, pending);
+
+    return res.status(200).json({ status: 'success', message: 'Club approved', data: { club } });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: 'Failed to approve club' });
   }
@@ -266,14 +297,18 @@ export const approveClub = async (req, res) => {
 // ── POST /api/v1/clubs/admin/:id/reject ──────────────────────────────────────
 export const rejectClub = async (req, res) => {
   try {
-    // Delete logo from R2 if exists
-    const { data: club } = await supabase.schema('content').from('clubs')
-      .select('logo_r2_key').eq('id', req.params.id).single();
-    if (club?.logo_r2_key) {
+    const pending = await getJsonList(CLUBS_PENDING_ADDITIONS_KEY);
+    const idx = pending.findIndex(c => idsMatch(getRecordId(c), req.params.id));
+    if (idx === -1) return res.status(404).json({ status: 'error', message: 'Pending club not found' });
+
+    const club = pending[idx];
+    if (club.logo_r2_key) {
       try { await deleteFromR2(club.logo_r2_key); } catch {}
     }
-    await supabase.schema('content').from('clubs')
-      .update({ status: 'rejected', updated_at: new Date().toISOString() }).eq('id', req.params.id);
+
+    pending.splice(idx, 1);
+    await saveJsonList(CLUBS_PENDING_ADDITIONS_KEY, pending);
+
     return res.status(200).json({ status: 'success', message: 'Club rejected' });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: 'Failed to reject club' });
@@ -283,14 +318,55 @@ export const rejectClub = async (req, res) => {
 // ── POST /api/v1/clubs/admin/updates/:id/approve ─────────────────────────────
 export const approveUpdate = async (req, res) => {
   try {
-    const { data: updateReq, error: fetchErr } = await supabase.schema('content')
-      .from('club_update_requests').select('*').eq('id', req.params.id).single();
-    if (fetchErr || !updateReq) return res.status(404).json({ status: 'error', message: 'Update request not found' });
-    await applyUpdateRequest(updateReq);
+    const updates = await getJsonList(CLUBS_PENDING_UPDATES_KEY);
+    const approved = await getJsonList(CLUBS_APPROVED_KEY);
+
+    const updateIdx = updates.findIndex(u => idsMatch(getRecordId(u), req.params.id));
+    if (updateIdx === -1) return res.status(404).json({ status: 'error', message: 'Update request not found' });
+
+    const updateReq = updates[updateIdx];
+    const clubIdx = approved.findIndex(c => idsMatch(getRecordId(c), updateReq.club_id));
+    if (clubIdx === -1) return res.status(404).json({ status: 'error', message: 'Club not found' });
+
+    const nextClub = applyChangesToClub(approved[clubIdx], updateReq.changes || {});
+    if (updateReq.logo_r2_key_new) {
+      if (nextClub.logo_r2_key) {
+        try { await deleteFromR2(nextClub.logo_r2_key); } catch {}
+      }
+      nextClub.logo_r2_key = updateReq.logo_r2_key_new;
+    }
+
+    approved[clubIdx] = nextClub;
+    updates.splice(updateIdx, 1);
+
+    await saveJsonList(CLUBS_APPROVED_KEY, approved);
+    await saveJsonList(CLUBS_PENDING_UPDATES_KEY, updates);
+
     return res.status(200).json({ status: 'success', message: 'Update approved and applied' });
   } catch (err) {
     console.error('approveUpdate error:', err);
     return res.status(500).json({ status: 'error', message: 'Failed to approve update' });
+  }
+};
+
+// ── POST /api/v1/clubs/admin/updates/:id/reject ───────────────────────────────
+export const rejectUpdate = async (req, res) => {
+  try {
+    const updates = await getJsonList(CLUBS_PENDING_UPDATES_KEY);
+    const idx = updates.findIndex(u => idsMatch(getRecordId(u), req.params.id));
+    if (idx === -1) return res.status(404).json({ status: 'error', message: 'Update request not found' });
+
+    const updateReq = updates[idx];
+    if (updateReq.logo_r2_key_new) {
+      try { await deleteFromR2(updateReq.logo_r2_key_new); } catch {}
+    }
+
+    updates.splice(idx, 1);
+    await saveJsonList(CLUBS_PENDING_UPDATES_KEY, updates);
+
+    return res.status(200).json({ status: 'success', message: 'Update request rejected' });
+  } catch (err) {
+    return res.status(500).json({ status: 'error', message: 'Failed to reject update' });
   }
 };
 
@@ -310,7 +386,6 @@ export const seedSampleClubs = async (req, res) => {
         co_faculty_email: 'msharma@vitb.edu',
         members: 85,
         events: 12,
-        status: 'approved',
       },
       {
         name: 'Robotics Club',
@@ -322,7 +397,6 @@ export const seedSampleClubs = async (req, res) => {
         faculty_email: 'rsingh@vitb.edu',
         members: 42,
         events: 8,
-        status: 'approved',
       },
       {
         name: 'Dramatics Society',
@@ -336,7 +410,6 @@ export const seedSampleClubs = async (req, res) => {
         co_faculty_email: 'pverma@vitb.edu',
         members: 64,
         events: 6,
-        status: 'approved',
       },
       {
         name: 'Music Club',
@@ -348,50 +421,55 @@ export const seedSampleClubs = async (req, res) => {
         faculty_email: 'kdesai@vitb.edu',
         members: 78,
         events: 10,
-        status: 'approved',
       },
     ];
 
-    const { data, error } = await supabase.schema('content').from('clubs')
-      .insert(sample).select('id, name, status, created_at');
-    if (error) return res.status(400).json({ status: 'error', message: error.message });
-    return res.status(201).json({ status: 'success', message: 'Seeded sample clubs', data: { clubs: data } });
+    const approved = await getJsonList(CLUBS_APPROVED_KEY);
+    const created = sample.map(item => normalizeClubPayload(item, { id: generateId('club'), status: 'approved' }));
+    await saveJsonList(CLUBS_APPROVED_KEY, [...approved, ...created]);
+
+    return res.status(201).json({
+      status: 'success',
+      message: 'Seeded sample clubs',
+      data: { clubs: created.map(c => ({ id: c.id, name: c.name, status: c.status, created_at: c.created_at })) },
+    });
   } catch (err) {
     return res.status(500).json({ status: 'error', message: 'Failed to seed sample clubs' });
   }
 };
 
 // ── POST /api/v1/clubs/admin/smoke-update ──────────────────────────────────────
-// Creates a pending update request for the most recent approved club and approves it.
 export const smokeUpdateClub = async (req, res) => {
   try {
-    const { data: club, error: clubErr } = await supabase.schema('content').from('clubs')
-      .select('id, name, description, members')
-      .eq('status', 'approved')
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
-    if (clubErr) return res.status(400).json({ status: 'error', message: clubErr.message });
-    if (!club) return res.status(404).json({ status: 'error', message: 'No approved club found to update' });
+    const approved = await getJsonList(CLUBS_APPROVED_KEY);
+    if (!approved.length) {
+      return res.status(404).json({ status: 'error', message: 'No approved club found to update' });
+    }
 
-    const changes = {
-      description: { old: club.description, new: `${club.description} (updated ${new Date().toLocaleDateString()})` },
-      members: { old: club.members, new: (parseInt(club.members || 0) + 1) },
+    const club = approved[approved.length - 1];
+    const updateReq = {
+      id: generateId('club_upd'),
+      club_id: club.id,
+      submitted_by: req.user?.email || 'admin',
+      status: 'pending',
+      created_at: new Date().toISOString(),
+      logo_r2_key_new: null,
+      changes: {
+        description: { old: club.description, new: `${club.description} (updated ${new Date().toLocaleDateString()})` },
+        members: { old: club.members, new: (Number.parseInt(club.members || 0, 10) + 1) },
+      },
     };
 
-    const { data: updateReq, error: reqErr } = await supabase.schema('content').from('club_update_requests')
-      .insert({
-        club_id: club.id,
-        changes,
-        submitted_by: req.user?.email || 'admin',
-        status: 'pending',
-      }).select('*').single();
-    if (reqErr) return res.status(400).json({ status: 'error', message: reqErr.message });
+    const updates = await getJsonList(CLUBS_PENDING_UPDATES_KEY);
+    updates.push(updateReq);
+    await saveJsonList(CLUBS_PENDING_UPDATES_KEY, updates);
 
-    await applyUpdateRequest(updateReq);
+    const updatedClub = applyChangesToClub(club, updateReq.changes);
+    const idx = approved.findIndex(c => idsMatch(c.id, club.id));
+    approved[idx] = updatedClub;
 
-    const { data: updatedClub } = await supabase.schema('content').from('clubs')
-      .select('*').eq('id', club.id).single();
+    await saveJsonList(CLUBS_APPROVED_KEY, approved);
+    await saveJsonList(CLUBS_PENDING_UPDATES_KEY, updates.filter(u => !idsMatch(u.id, updateReq.id)));
 
     return res.status(200).json({
       status: 'success',
@@ -404,45 +482,12 @@ export const smokeUpdateClub = async (req, res) => {
   }
 };
 
-// ── POST /api/v1/clubs/admin/updates/:id/reject ───────────────────────────────
-export const rejectUpdate = async (req, res) => {
-  try {
-    const { data: updateReq } = await supabase.schema('content').from('club_update_requests')
-      .select('logo_r2_key_new').eq('id', req.params.id).single();
-    if (updateReq?.logo_r2_key_new) {
-      try { await deleteFromR2(updateReq.logo_r2_key_new); } catch {}
-    }
-    await supabase.schema('content').from('club_update_requests')
-      .update({ status: 'rejected' }).eq('id', req.params.id);
-    return res.status(200).json({ status: 'success', message: 'Update request rejected' });
-  } catch (err) {
-    return res.status(500).json({ status: 'error', message: 'Failed to reject update' });
-  }
-};
-
 // ── GET /api/v1/clubs/admin/diagnostics ────────────────────────────────────────
-// Verifies DB schema access + R2 upload/signed-url/delete roundtrip.
 export const clubDiagnostics = async (req, res) => {
-  const requiredEnv = ['R2_ENDPOINT', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_BUCKET_NAME', 'SUPABASE_URL', 'SUPABASE_SERVICE_KEY'];
+  const requiredEnv = ['R2_ENDPOINT', 'R2_ACCESS_KEY_ID', 'R2_SECRET_ACCESS_KEY', 'R2_BUCKET_NAME'];
   const missingEnv = requiredEnv.filter((k) => !process.env[k]);
 
   try {
-    // 1) Verify Supabase schema/tables/columns exist by selecting expected columns.
-    const clubsProbe = await supabase
-      .schema('content')
-      .from('clubs')
-      .select('id, name, status, logo_r2_key, created_at')
-      .limit(1);
-
-    const updatesProbe = await supabase
-      .schema('content')
-      .from('club_update_requests')
-      .select('id, club_id, status, changes, logo_r2_key_new, created_at')
-      .limit(1);
-
-    const dbOk = !clubsProbe.error && !updatesProbe.error;
-
-    // 2) Verify R2 write + signed URL + delete.
     const diagKey = `diagnostics/clubs_${Date.now()}_${Math.random().toString(16).slice(2)}.txt`;
     const payload = Buffer.from(`club diagnostics ${new Date().toISOString()}\n`, 'utf8');
 
@@ -451,7 +496,7 @@ export const clubDiagnostics = async (req, res) => {
     let r2Error = null;
 
     try {
-      await uploadToR2(payload, diagKey, 'text/plain');
+      await uploadToR2(diagKey, payload, 'text/plain');
       r2SignedUrl = await getImageSignedUrl(diagKey, 300);
       await deleteFromR2(diagKey);
       r2Ok = true;
@@ -460,23 +505,12 @@ export const clubDiagnostics = async (req, res) => {
       try { await deleteFromR2(diagKey); } catch {}
     }
 
-    return res.status(dbOk && r2Ok ? 200 : 500).json({
-      status: dbOk && r2Ok ? 'success' : 'error',
+    return res.status(r2Ok ? 200 : 500).json({
+      status: r2Ok ? 'success' : 'error',
       data: {
         env: {
           ok: missingEnv.length === 0,
           missing: missingEnv,
-        },
-        database: {
-          ok: dbOk,
-          clubs: {
-            ok: !clubsProbe.error,
-            error: clubsProbe.error?.message || null,
-          },
-          club_update_requests: {
-            ok: !updatesProbe.error,
-            error: updatesProbe.error?.message || null,
-          },
         },
         r2: {
           ok: r2Ok,
@@ -491,10 +525,6 @@ export const clubDiagnostics = async (req, res) => {
 };
 
 // ── GET /api/v1/clubs/diagnostics (dev/secret) ─────────────────────────────────
-// Same checks as admin diagnostics, but does NOT require Supabase auth.getUser().
-// Guarded by either:
-// - NODE_ENV=development, OR
-// - header `x-diagnostics-key` matching DIAGNOSTICS_KEY env var.
 export const clubDiagnosticsPublic = async (req, res) => {
   const isDev = (process.env.NODE_ENV || '').toLowerCase() === 'development';
   const key = req.headers['x-diagnostics-key'];
@@ -504,6 +534,5 @@ export const clubDiagnosticsPublic = async (req, res) => {
     return res.status(403).json({ status: 'error', message: 'Forbidden' });
   }
 
-  // Reuse the same implementation.
   return clubDiagnostics(req, res);
 };

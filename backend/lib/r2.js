@@ -31,7 +31,14 @@ export async function getImageSignedUrl(r2Key, expiresIn = 3600) {
   return getSignedUrl(r2, cmd, { expiresIn });
 }
 
-export async function uploadToR2(r2Key, buffer, contentType = 'application/pdf') {
+export async function uploadToR2(r2Key, buffer, contentType = 'application/pdf', cacheControl = null) {
+  // Default cache control: 
+  // - Images/PDFs: 1 year, immutable
+  // - JSON/Other: 5 minutes (allows for faster updates)
+  const defaultCacheControl = contentType === 'application/json' 
+    ? 'public, max-age=300, must-revalidate' 
+    : 'public, max-age=31536000, immutable';
+
   await r2.send(new PutObjectCommand({
     Bucket: BUCKET,
     Key: r2Key,
@@ -41,7 +48,7 @@ export async function uploadToR2(r2Key, buffer, contentType = 'application/pdf')
       'uploaded-at': new Date().toISOString(),
       'content-type': contentType,
     },
-    CacheControl: 'public, max-age=31536000, immutable',
+    CacheControl: cacheControl || defaultCacheControl,
     StorageClass: 'STANDARD',
   }));
 }

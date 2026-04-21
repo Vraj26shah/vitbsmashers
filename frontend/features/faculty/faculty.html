@@ -757,6 +757,14 @@
             border: none;
         }
 
+        .action-btn:disabled,
+        .action-btn.is-processing {
+            opacity: 0.65;
+            cursor: not-allowed;
+            transform: none;
+            pointer-events: none;
+        }
+
         .approve-btn {
             background: var(--success-color);
             color: white;
@@ -1308,9 +1316,14 @@
                         </div>
                     </div>
                     
-                    <button type="submit" class="submit-btn">
-                        <i class='bx bx-refresh'></i> Submit Update Request
-                    </button>
+                    <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                        <button type="submit" class="submit-btn">
+                            <i class='bx bx-refresh'></i> Submit Update Request
+                        </button>
+                        <button type="button" class="submit-btn" id="deleteFacultyRequestBtn" style="background:linear-gradient(135deg, #c0392b, #e74c3c);">
+                            <i class='bx bx-trash'></i> Request Delete Faculty
+                        </button>
+                    </div>
                 </form>
             </div>
         </section>
@@ -1375,6 +1388,19 @@
         // Tab functionality
         const tabBtns = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
+        const adminContentSection = document.getElementById('admin-tab');
+
+        function enforceAdminPanelVisibility(activeTabId, isAdminUser) {
+            if (!adminContentSection) return;
+
+            // Keep pending/admin panel isolated to Pending tab only
+            if (isAdminUser && activeTabId === 'admin') {
+                adminContentSection.style.setProperty('display', '', 'important');
+            } else {
+                adminContentSection.classList.remove('active');
+                adminContentSection.style.setProperty('display', 'none', 'important');
+            }
+        }
         
         tabBtns.forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -1394,6 +1420,12 @@
                 
                 const tabId = btn.dataset.tab;
                 document.getElementById(`${tabId}-tab`).classList.add('active');
+                enforceAdminPanelVisibility(tabId, true);
+
+                if (tabId === 'admin') {
+                    renderPendingFaculty();
+                    renderPendingUpdates();
+                }
             });
         });
         
@@ -1410,18 +1442,129 @@
                 
                 const tabId = btn.dataset.adminTab;
                 document.getElementById(`${tabId}-tab`).classList.add('active');
+
+                if (tabId === 'pending-additions') {
+                    renderPendingFaculty();
+                } else if (tabId === 'pending-updates') {
+                    renderPendingUpdates();
+                }
             });
         });
 
         // Faculty data from API
         let faculty = [];
+        const pendingAdminActions = new Set();
+
+        function getAuthToken() {
+            return localStorage.getItem('scholars_token') || localStorage.getItem('token');
+        }
+
+        function normalizeFacultyRecord(record = {}) {
+            return {
+                ...record,
+                id: record.id || record._id || '',
+                office: record.office || record.cabin || '',
+                cabin: record.cabin || record.office || '',
+                phone: record.phone || ''
+            };
+        }
+
+        function findFacultyById(facultyId) {
+            return faculty.find(item => String(item.id || item._id) === String(facultyId));
+        }
+
+        function formatPendingCounter(pendingCount = 0, limit = 5) {
+            const safePending = Number.isFinite(Number(pendingCount)) ? Number(pendingCount) : 0;
+            const remaining = Math.max(limit - safePending, 0);
+            return `Pending requests: ${safePending}/${limit} | Remaining: ${remaining}`;
+        }
+
+        function formatFieldLabel(key) {
+            const labels = {
+                name: 'Name',
+                email: 'Email',
+                office: 'Cabin Number',
+                cabin: 'Cabin Number',
+                department: 'Department',
+                designation: 'Designation',
+                phone: 'Phone',
+                specialization: 'Specialization',
+                availability: 'Availability',
+                bio: 'Bio'
+            };
+            return labels[key] || key.replace(/_/g, ' ').replace(/\b\w/g, char => char.toUpperCase());
+        }
+
+        function escapeHtml(value) {
+            return String(value ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderChangeItems(changes = {}) {
+            const entries = Object.entries(changes).filter(([, value]) => value !== undefined && value !== null && value !== '');
+
+            if (!entries.length) {
+                return '<p style="color:#bdc3c7;">No field changes available.</p>';
+            }
+
+            return `
+                <div style="display:grid;gap:10px;margin-top:14px;">
+                    ${entries.map(([key, value]) => {
+                        const nextValue = value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, 'new')
+                            ? value.new
+                            : value;
+                        const prevValue = value && typeof value === 'object' && Object.prototype.hasOwnProperty.call(value, 'old')
+                            ? value.old
+                            : null;
+
+                        return `
+                            <div style="padding:12px 14px;border-radius:12px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);">
+                                <div style="font-weight:600;color:#ecf0f1;">${escapeHtml(formatFieldLabel(key))}</div>
+                                ${prevValue !== null ? `<div style="font-size:13px;color:#95a5a6;margin-top:4px;">Current: ${escapeHtml(prevValue || 'Not set')}</div>` : ''}
+                                <div style="font-size:14px;color:#2ecc71;margin-top:4px;">Requested: ${escapeHtml(nextValue || 'Not set')}</div>
+                            </div>
+                        `;
+                    }).join('')}
+                </div>
+            `;
+        }
+
+        function getUpdateRequestKind(request = {}) {
+            return request.request_type === 'delete' ? 'delete' : 'update';
+        }
+
+        function setCardActionState(requestId, isProcessing) {
+            const buttons = document.querySelectorAll(`button[data-request-id="${requestId}"]`);
+            buttons.forEach(button => {
+                if (isProcessing) {
+                    if (!button.dataset.originalLabel) {
+                        button.dataset.originalLabel = button.innerHTML;
+                    }
+                    button.disabled = true;
+                    button.classList.add('is-processing');
+                    button.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Processing`;
+                } else {
+                    button.disabled = false;
+                    button.classList.remove('is-processing');
+                    if (button.dataset.originalLabel) {
+                        button.innerHTML = button.dataset.originalLabel;
+                    }
+                }
+            });
+        }
 
         async function fetchFaculty() {
             try {
-                const response = await fetch('/api/v1/faculty');
+                const response = await fetch(`/api/v1/faculty?ts=${Date.now()}`, {
+                    cache: 'no-store'
+                });
                 const data = await response.json();
                 if (response.ok) {
-                    faculty = data.data;
+                    faculty = (data.data.faculty || data.data || []).map(normalizeFacultyRecord);
                 } else {
                     console.error('Failed to fetch faculty:', data.message);
                 }
@@ -1464,7 +1607,7 @@
                             <button class="contact-btn email-btn" data-email="${f.email}">
                                 <i class='bx bxs-envelope'></i> Email
                             </button>
-                            <button class="update-btn" data-id="${f._id || f.id}">
+                            <button class="update-btn" data-id="${f.id}">
                                 <i class='bx bxs-edit-alt'></i> Update
                             </button>
                         </div>
@@ -1479,7 +1622,7 @@
                     e.stopPropagation();
 
                     // Check if user is logged in
-                    const token = localStorage.getItem('token');
+                    const token = getAuthToken();
                     if (!token) {
                         // Show login required message
                         showLoginRequiredMessage();
@@ -1503,7 +1646,7 @@
                         }
 
                         // User is logged in, proceed with update
-                        const facultyId = parseInt(btn.dataset.id);
+                        const facultyId = btn.dataset.id;
                         populateUpdateForm(facultyId);
                         document.querySelector('[data-tab="update"]').click();
                         // Smooth scroll to update form on mobile for better UX
@@ -1533,26 +1676,237 @@
             // Removed call and directions actions as per new design
         }
 
-        // Pending faculty/updates - no longer used (approval workflow replaced by direct admin CRUD)
         async function renderPendingFaculty() {
             const el = document.getElementById('pendingFaculty');
-            if (el) el.innerHTML = '<p>Faculty can now be added directly by admins via the API.</p>';
+            if (!el) return;
+
+            const token = getAuthToken();
+            if (!token) {
+                el.innerHTML = '<p style="color:#7f8c8d;padding:20px;">Login as admin to view pending faculty additions.</p>';
+                return;
+            }
+
+            el.innerHTML = '<p style="color:#7f8c8d;padding:20px;">Loading pending faculty additions...</p>';
+
+            try {
+                const response = await fetch('/api/v1/faculty/admin/pending', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to load pending additions');
+                }
+
+                const pendingAdditions = (result.data?.pendingAdditions || []).map(normalizeFacultyRecord);
+                if (!pendingAdditions.length) {
+                    el.innerHTML = '<p style="color:#7f8c8d;padding:20px;">No pending faculty additions.</p>';
+                    return;
+                }
+
+                el.innerHTML = pendingAdditions.map(item => `
+                    <div class="pending-faculty-card">
+                        <div class="pending-faculty-details">
+                            <div class="pending-faculty-title">${escapeHtml(item.name || 'Unnamed Faculty')}</div>
+                            <div class="pending-faculty-meta">
+                                <span><i class='bx bxs-envelope'></i> ${escapeHtml(item.email || 'Not provided')}</span>
+                                <span><i class='bx bxs-building'></i> ${escapeHtml(item.office || 'Not provided')}</span>
+                                <span><i class='bx bxs-user'></i> ${escapeHtml(item.submitted_by || 'Unknown user')}</span>
+                                <span><i class='bx bxs-time'></i> ${escapeHtml(new Date(item.created_at).toLocaleString())}</span>
+                            </div>
+                        </div>
+                        <div class="pending-faculty-actions">
+                            <button onclick="adminAdditionAction('${item.id}','approve')" class="action-btn approve-btn" data-request-id="${item.id}">
+                                <i class='bx bx-check-circle'></i> Approve
+                            </button>
+                            <button onclick="adminAdditionAction('${item.id}','reject')" class="action-btn reject-btn" data-request-id="${item.id}">
+                                <i class='bx bx-x-circle'></i> Reject
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Pending additions render failed:', error);
+                el.innerHTML = `<p style="color:#e74c3c;padding:20px;">${escapeHtml(error.message || 'Failed to load pending faculty additions.')}</p>`;
+            }
         }
 
         async function renderPendingUpdates() {
             const el = document.getElementById('pendingUpdates');
-            if (el) el.innerHTML = '<p>Faculty updates can now be applied directly by admins via the API.</p>';
+            if (!el) return;
+
+            const token = getAuthToken();
+            if (!token) {
+                el.innerHTML = '<p style="color:#7f8c8d;padding:20px;">Login as admin to view pending faculty updates.</p>';
+                return;
+            }
+
+            el.innerHTML = '<p style="color:#7f8c8d;padding:20px;">Loading pending faculty updates...</p>';
+
+            try {
+                const response = await fetch('/api/v1/faculty/admin/updates', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to load pending updates');
+                }
+
+                const pendingUpdates = result.data?.pendingUpdates || [];
+                if (!pendingUpdates.length) {
+                    el.innerHTML = '<p style="color:#7f8c8d;padding:20px;">No pending update requests.</p>';
+                    return;
+                }
+
+                el.innerHTML = pendingUpdates.map(item => `
+                    <div class="pending-update-card">
+                        <div class="pending-update-details">
+                            <div class="pending-update-title">${escapeHtml(item.faculty_name || 'Faculty')} - ${getUpdateRequestKind(item) === 'delete' ? 'Delete Request' : 'Update Request'}</div>
+                            <div class="pending-update-meta">
+                                <span><i class='bx bxs-user'></i> ${escapeHtml(item.submitted_by || 'Unknown user')}</span>
+                                <span><i class='bx bxs-time'></i> ${escapeHtml(new Date(item.created_at).toLocaleString())}</span>
+                            </div>
+                            ${getUpdateRequestKind(item) === 'delete'
+                                ? `<div style="margin-top:14px;padding:14px 16px;border-radius:12px;background:rgba(231,76,60,0.14);border:1px solid rgba(231,76,60,0.35);color:#f5b7b1;">This faculty entry will be removed from the browse section after approval.</div>`
+                                : renderChangeItems(item.changes)}
+                        </div>
+                        <div class="pending-update-actions">
+                            <button onclick="adminUpdateAction('${item.id}','approve')" class="action-btn approve-btn" data-request-id="${item.id}">
+                                <i class='bx bx-check-circle'></i> Approve
+                            </button>
+                            <button onclick="adminUpdateAction('${item.id}','reject')" class="action-btn reject-btn" data-request-id="${item.id}">
+                                <i class='bx bx-x-circle'></i> Reject
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Pending updates render failed:', error);
+                el.innerHTML = `<p style="color:#e74c3c;padding:20px;">${escapeHtml(error.message || 'Failed to load pending update requests.')}</p>`;
+            }
         }
 
+        async function adminAdditionAction(id, action) {
+            const token = getAuthToken();
+            if (!token) {
+                showNotification('Admin login required.', 'error');
+                return;
+            }
 
-        // Faculty addition form (admin only — direct create via API)
+            const lockKey = `addition:${id}`;
+            if (pendingAdminActions.has(lockKey)) {
+                return;
+            }
+            pendingAdminActions.add(lockKey);
+
+            setCardActionState(id, true);
+
+            try {
+                const response = await fetch(`/api/v1/faculty/admin/${id}/${action}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || `Failed to ${action} faculty request`);
+                }
+
+                await Promise.all([renderPendingFaculty(), renderFaculty(), populateFacultySelect()]);
+                showNotification(
+                    action === 'approve'
+                        ? 'Faculty request approved and browse list updated.'
+                        : 'Faculty request rejected. Pending counter is reduced for future requests.',
+                    action === 'approve' ? 'success' : 'info'
+                );
+            } catch (error) {
+                console.error(`Admin addition ${action} failed:`, error);
+                if ((error.message || '').toLowerCase().includes('already processed')) {
+                    await Promise.all([renderPendingFaculty(), renderFaculty(), populateFacultySelect()]);
+                    showNotification('That addition request was already handled. The list has been refreshed.', 'warning');
+                } else {
+                    showNotification(error.message || `Failed to ${action} faculty request`, 'error');
+                }
+            } finally {
+                setCardActionState(id, false);
+                pendingAdminActions.delete(lockKey);
+            }
+        }
+
+        async function adminUpdateAction(id, action) {
+            const token = getAuthToken();
+            if (!token) {
+                showNotification('Admin login required.', 'error');
+                return;
+            }
+
+            const lockKey = `update:${id}`;
+            if (pendingAdminActions.has(lockKey)) {
+                return;
+            }
+            pendingAdminActions.add(lockKey);
+
+            setCardActionState(id, true);
+
+            try {
+                const response = await fetch(`/api/v1/faculty/admin/updates/${id}/${action}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || `Failed to ${action} update request`);
+                }
+
+                const approvedDelete = action === 'approve' && (result.message || '').toLowerCase().includes('delete');
+
+                await Promise.all([renderPendingUpdates(), renderFaculty(), populateFacultySelect()]);
+                showNotification(
+                    action === 'approve'
+                        ? (approvedDelete ? 'Faculty delete request approved and browse list refreshed.' : 'Faculty request approved and browse list refreshed.')
+                        : 'Faculty update request rejected. Pending counter is reduced for future requests.',
+                    action === 'approve' ? 'success' : 'info'
+                );
+            } catch (error) {
+                console.error(`Admin update ${action} failed:`, error);
+                if ((error.message || '').toLowerCase().includes('already processed')) {
+                    await Promise.all([renderPendingUpdates(), renderFaculty(), populateFacultySelect()]);
+                    showNotification('That update request was already handled. The list has been refreshed.', 'warning');
+                } else {
+                    showNotification(error.message || `Failed to ${action} update request`, 'error');
+                }
+            } finally {
+                setCardActionState(id, false);
+                pendingAdminActions.delete(lockKey);
+            }
+        }
+
+        window.adminAdditionAction = adminAdditionAction;
+        window.adminUpdateAction = adminUpdateAction;
+
+
         const facultyForm = document.getElementById('facultyRegistrationForm');
         const successMessage = document.getElementById('successMessage');
+        const deleteFacultyRequestBtn = document.getElementById('deleteFacultyRequestBtn');
 
         facultyForm.addEventListener('submit', async function(e) {
             e.preventDefault();
 
-            const token = localStorage.getItem('token');
+            const token = getAuthToken();
             if (!token) {
                 showLoginRequiredMessage();
                 return;
@@ -1580,15 +1934,21 @@
 
                 if (response.ok) {
                     successMessage.style.display = 'flex';
+                    successMessage.innerHTML = `
+                        <i class='bx bx-check-circle'></i>
+                        <div>
+                            <p>Your faculty addition request has been sent to admin for approval.</p>
+                            <p style="font-size:14px;margin-top:8px;">${formatPendingCounter(result.pendingCount ?? 1)}</p>
+                        </div>
+                    `;
                     facultyForm.reset();
                     window.scrollTo(0, 0);
-                    renderFaculty();
-                    showNotification('Faculty added successfully!', 'success');
+                    showNotification('Faculty request submitted for approval!', 'success');
                 } else {
                     if (response.status === 401) {
                         showLoginRequiredMessage();
                     } else if (response.status === 429) {
-                        showNotification('Rate limit exceeded. You can only make 5 updates per day.', 'warning');
+                        showNotification(result.message || formatPendingCounter(result.pendingCount ?? 5), 'warning');
                     } else {
                         showNotification(result.message || 'Failed to submit faculty addition', 'error');
                     }
@@ -1607,7 +1967,7 @@
 
             faculty.forEach(f => {
                 const option = document.createElement('option');
-                option.value = f._id || f.id;
+                option.value = f.id;
                 option.textContent = f.name;
                 option.dataset.name = f.name.toLowerCase();
                 facultySelect.appendChild(option);
@@ -1616,7 +1976,7 @@
         
         // When faculty is selected for update
         document.getElementById('selectFacultyToUpdate').addEventListener('change', function() {
-            const facultyId = parseInt(this.value);
+            const facultyId = this.value;
             if (facultyId) {
                 document.getElementById('facultyUpdateForm').style.display = 'block';
                 populateUpdateForm(facultyId);
@@ -1634,13 +1994,12 @@
         
         // Populate update form with faculty data
         function populateUpdateForm(facultyId) {
-            const f = faculty.find(f => f.id === facultyId);
+            const f = findFacultyById(facultyId);
             if (f) {
                 document.getElementById('updateFacultyId').value = f.id;
                 document.getElementById('updateFacultyName').value = f.name;
                 document.getElementById('updateFacultyEmail').value = f.email;
-                document.getElementById('updateFacultyPhone').value = f.phone;
-                document.getElementById('updateFacultyCabin').value = f.cabin;
+                document.getElementById('updateFacultyCabin').value = f.office || f.cabin || '';
                 
                 document.getElementById('selectFacultyToUpdate').value = f.id;
             }
@@ -1649,60 +2008,93 @@
         // Faculty update form
         const updateForm = document.getElementById('facultyUpdateForm');
         const updateSuccessMessage = document.getElementById('updateSuccessMessage');
-        
-        updateForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // Check if user is logged in
-            const token = localStorage.getItem('token');
+
+        async function submitFacultyChangeRequest(requestType) {
+            const token = getAuthToken();
             if (!token) {
                 showLoginRequiredMessage();
                 return;
             }
-            
+
             const facultyId = document.getElementById('updateFacultyId').value;
             const updatedName = document.getElementById('updateFacultyName').value;
             const updatedEmail = document.getElementById('updateFacultyEmail').value;
             const updatedCabin = document.getElementById('updateFacultyCabin').value;
-            
+
+            const isDeleteRequest = requestType === 'delete';
+
             try {
-                const response = await fetch(`/api/v1/faculty/${facultyId}`, {
-                    method: 'PUT',
+                const response = await fetch('/api/v1/faculty/update-request', {
+                    method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({
-                        name: updatedName,
-                        email: updatedEmail,
-                        office: updatedCabin
+                        faculty_id: facultyId,
+                        request_type: requestType,
+                        changes: isDeleteRequest ? {} : {
+                            name: updatedName,
+                            email: updatedEmail,
+                            office: updatedCabin
+                        }
                     })
                 });
 
                 const result = await response.json();
-                
+
                 if (response.ok) {
                     updateSuccessMessage.style.display = 'flex';
+                    updateSuccessMessage.innerHTML = `
+                        <i class='bx bx-check-circle'></i>
+                        <div>
+                            <p>${isDeleteRequest ? 'Your faculty delete request has been sent to admin for approval.' : 'Your faculty update request has been sent to admin for approval.'}</p>
+                            <p style="font-size:14px;margin-top:8px;">${formatPendingCounter(result.pendingCount ?? 1)}</p>
+                        </div>
+                    `;
                     updateForm.reset();
                     document.getElementById('facultyUpdateForm').style.display = 'none';
                     document.getElementById('selectFacultyToUpdate').value = '';
                     window.scrollTo(0, 0);
-                    
-                    // Show success notification
-                    showNotification('Faculty update submitted successfully!', 'success');
+
+                    showNotification(
+                        isDeleteRequest ? 'Faculty delete request submitted for approval!' : 'Faculty update request submitted for approval!',
+                        'success'
+                    );
                 } else {
                     if (response.status === 401) {
                         showLoginRequiredMessage();
                     } else if (response.status === 429) {
-                        showNotification('Rate limit exceeded. You can only make 5 updates per day.', 'warning');
+                        showNotification(result.message || formatPendingCounter(result.pendingCount ?? 5), 'warning');
                     } else {
-                        showNotification(result.message || 'Failed to submit faculty update', 'error');
+                        showNotification(result.message || `Failed to submit ${isDeleteRequest ? 'delete' : 'update'} request`, 'error');
                     }
                 }
             } catch (error) {
-                console.error('Faculty update error:', error);
-                showNotification('Failed to submit faculty update', 'error');
+                console.error(`Faculty ${requestType} error:`, error);
+                showNotification(`Failed to submit ${isDeleteRequest ? 'delete' : 'update'} request`, 'error');
             }
+        }
+        
+        updateForm.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            await submitFacultyChangeRequest('update');
+        });
+
+        deleteFacultyRequestBtn.addEventListener('click', async function() {
+            const facultyId = document.getElementById('updateFacultyId').value;
+            const selectedFaculty = findFacultyById(facultyId);
+            if (!facultyId || !selectedFaculty) {
+                showNotification('Select a faculty first before requesting deletion.', 'warning');
+                return;
+            }
+
+            const confirmed = window.confirm(`Send a delete request for "${selectedFaculty.name}"? This will go to admin approval and count toward your 5 pending-request limit.`);
+            if (!confirmed) {
+                return;
+            }
+
+            await submitFacultyChangeRequest('delete');
         });
 
         // Simulate sending admin notification
@@ -1922,6 +2314,7 @@
                     adminTab.classList.add('admin-only');
                     adminTab.style.setProperty('display', 'none', 'important');
                 }
+                enforceAdminPanelVisibility('faculty', false);
                 return false;
             }
 
@@ -1941,6 +2334,9 @@
                             adminTab.classList.remove('admin-only');
                             adminTab.style.setProperty('display', 'flex', 'important');
                         }
+                        enforceAdminPanelVisibility('faculty', true);
+                        renderPendingFaculty();
+                        renderPendingUpdates();
                         return true;
                     } else {
                         // Hide for non-admin users
@@ -1948,6 +2344,7 @@
                             adminTab.classList.add('admin-only');
                             adminTab.style.setProperty('display', 'none', 'important');
                         }
+                        enforceAdminPanelVisibility('faculty', false);
                     }
                 } else {
                     // Hide on error
@@ -1955,6 +2352,7 @@
                         adminTab.classList.add('admin-only');
                         adminTab.style.setProperty('display', 'none', 'important');
                     }
+                    enforceAdminPanelVisibility('faculty', false);
                 }
             } catch (error) {
                 console.error('Admin check failed:', error);
@@ -1963,6 +2361,7 @@
                     adminTab.classList.add('admin-only');
                     adminTab.style.setProperty('display', 'none', 'important');
                 }
+                enforceAdminPanelVisibility('faculty', false);
             }
             return false;
         }
@@ -1997,6 +2396,7 @@
                 adminTab.classList.add('admin-only');
                 adminTab.style.setProperty('display', 'none', 'important');
             }
+            enforceAdminPanelVisibility('faculty', false);
             
             createParticles();
             

@@ -1773,6 +1773,18 @@
         // Tab functionality
         const tabBtns = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
+        const adminContentSection = document.getElementById('admin-tab');
+
+        function enforceAdminPanelVisibility(activeTabId, isAdminUser) {
+            if (!adminContentSection) return;
+
+            if (isAdminUser && activeTabId === 'admin') {
+                adminContentSection.style.setProperty('display', '', 'important');
+            } else {
+                adminContentSection.classList.remove('active');
+                adminContentSection.style.setProperty('display', 'none', 'important');
+            }
+        }
         
         tabBtns.forEach(btn => {
             btn.addEventListener('click', async () => {
@@ -1795,6 +1807,13 @@
                 // Show corresponding content
                 const tabId = btn.dataset.tab;
                 document.getElementById(`${tabId}-tab`).classList.add('active');
+
+                enforceAdminPanelVisibility(tabId, true);
+
+                if (tabId === 'admin') {
+                    renderPendingEvents();
+                    renderPendingUpdates();
+                }
             });
         });
         
@@ -1816,6 +1835,17 @@
                 document.getElementById(`${tabId}-tab`).classList.add('active');
             });
         });
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:99999;
+                background:${type === 'success' ? '#27ae60' : '#e74c3c'};color:#fff;
+                padding:14px 22px;border-radius:12px;font-size:14px;font-weight:600;
+                box-shadow:0 8px 24px rgba(0,0,0,0.3);font-family:'Poppins',sans-serif;max-width:320px;`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => toast.remove(), 3200);
+        }
         
         // Helper function to read image file as data URL
         function readFileAsDataURL(file) {
@@ -1860,85 +1890,141 @@
         // Events data from API
         let events = [];
 
+        function getAuthToken() {
+            return localStorage.getItem('scholars_token') || localStorage.getItem('token');
+        }
+
+        function normalizeEventRecord(event = {}) {
+            const coordinators = event.coordinators && typeof event.coordinators === 'object'
+                ? event.coordinators
+                : {};
+
+            const startValue = event.start_date || event.startDateTime || event.event_date || '';
+            const endValue = event.end_date || event.endDateTime || startValue || '';
+            const regValue = event.registration_deadline || event.regDeadline || startValue || '';
+
+            return {
+                ...event,
+                id: event.id || event._id || '',
+                name: event.title || event.name || 'Untitled Event',
+                title: event.title || event.name || 'Untitled Event',
+                description: event.description || '',
+                category: event.category || 'General',
+                venue: event.location || event.venue || coordinators.venue || 'TBA',
+                location: event.location || event.venue || coordinators.venue || 'TBA',
+                startDateTime: startValue,
+                endDateTime: endValue,
+                regDeadline: regValue,
+                event_date: event.event_date || startValue || '',
+                isActive: event.is_active !== false,
+                facultyIncharge: event.organizer || event.facultyIncharge || coordinators.facultyIncharge || coordinators.organizer || 'Event Team',
+                facultyEmail: event.contact_email || event.facultyEmail || coordinators.facultyEmail || coordinators.contactEmail || '',
+                maxAttendees: event.capacity || event.maxAttendees || coordinators.maxAttendees || 0,
+                registrationLink: event.registration_link || event.registrationLink || coordinators.registrationLink || '',
+                image: event.image || 'bx bxs-calendar-event',
+                imageData: event.imageData || null
+            };
+        }
+
         async function fetchEvents() {
             try {
-                const response = await fetch('/api/v1/events');
+                const response = await fetch(`/api/v1/events?ts=${Date.now()}`, { cache: 'no-store' });
                 const data = await response.json();
                 if (response.ok) {
-                    events = data.data;
+                    const list = data.data?.events || data.data || [];
+                    events = list.map(normalizeEventRecord);
+                    purgeExpiredEventsFromState();
                 } else {
                     console.error('Failed to fetch events:', data.message);
+                    events = [];
                 }
             } catch (error) {
                 console.error('Error fetching events:', error);
+                events = [];
             }
         }
 
-        // Pending events for admin approval
-        const pendingEvents = [
-            {
-                id: 4,
-                name: "Photography Exhibition",
-                category: "Exhibition",
-                description: "View and vote for the best student photography submissions. Winners will be featured in the campus magazine and win photography equipment.",
-                startDateTime: "2023-12-15T11:00",
-                endDateTime: "2023-12-15T15:00",
-                regDeadline: "2023-12-14T23:59",
-                venue: "Art Gallery",
-                registrationLink: "",
-                facultyIncharge: "Dr. N. Kapoor",
-                facultyEmail: "nkapoor@vitb.edu",
-                maxAttendees: 120,
-                status: "pending",
-                image: "bx bxs-camera",
-                imageData: null
-            },
-            {
-                id: 5,
-                name: "AI Research Seminar",
-                category: "Seminar",
-                description: "Exploring artificial intelligence through research projects, workshops, and competitions.",
-                startDateTime: "2023-12-20T13:00",
-                endDateTime: "2023-12-20T15:00",
-                regDeadline: "2023-12-19T23:59",
-                venue: "Computer Science Building, Room 101",
-                registrationLink: "https://forms.gle/example5",
-                facultyIncharge: "Dr. S. Rao",
-                facultyEmail: "srao@vitb.edu",
-                maxAttendees: 80,
-                status: "pending",
-                image: "bx bxs-brain",
-                imageData: null
-            }
-        ];
+        const EVENT_PENDING_ADDITIONS_KEY = 'event_pending_additions_v1';
+        const EVENT_PENDING_UPDATES_KEY = 'event_pending_updates_v1';
+        const pendingEvents = [];
+        const pendingUpdates = [];
 
-        // Pending update requests
-        const pendingUpdates = [
-            {
-                id: 1,
-                eventId: 2,
-                eventName: "Robotics Competition",
-                changes: {
-                    description: {
-                        old: "Annual robotics competition open to all students.",
-                        new: "Annual robotics competition open to all students. Build and program your robot to complete challenges. Prizes for top performers!"
-                    },
-                    venue: {
-                        old: "Engineering Building",
-                        new: "Engineering Building, Main Hall"
-                    },
-                    maxAttendees: {
-                        old: 80,
-                        new: 100
-                    }
-                },
-                status: "pending",
-                submittedBy: "Priya Patel",
-                submittedOn: "2023-11-15",
-                image: "bx bxs-bot",
-                imageData: null
+        function generatePendingId(prefix = 'evt') {
+            return `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+        }
+
+        function savePendingQueues() {
+            localStorage.setItem(EVENT_PENDING_ADDITIONS_KEY, JSON.stringify(pendingEvents));
+            localStorage.setItem(EVENT_PENDING_UPDATES_KEY, JSON.stringify(pendingUpdates));
+        }
+
+        function loadPendingQueues() {
+            const additions = JSON.parse(localStorage.getItem(EVENT_PENDING_ADDITIONS_KEY) || '[]');
+            const updates = JSON.parse(localStorage.getItem(EVENT_PENDING_UPDATES_KEY) || '[]');
+            pendingEvents.length = 0;
+            pendingUpdates.length = 0;
+            additions.forEach(item => pendingEvents.push(item));
+            updates.forEach(item => pendingUpdates.push(item));
+        }
+
+        function toValidDate(value) {
+            if (!value) return null;
+            const parsed = new Date(value);
+            return Number.isNaN(parsed.getTime()) ? null : parsed;
+        }
+
+        function isEventExpired(event, referenceDate = new Date()) {
+            const endDate = toValidDate(event?.endDateTime)
+                || toValidDate(event?.coordinators?.endDateTime)
+                || toValidDate(event?.startDateTime)
+                || toValidDate(event?.event_date);
+            if (!endDate) return false;
+            return endDate <= referenceDate;
+        }
+
+        function purgeExpiredEventsFromState() {
+            const now = new Date();
+
+            const filteredEvents = events.filter(event => !isEventExpired(event, now));
+            const eventIdSet = new Set(filteredEvents.map(event => String(event.id)));
+
+            const filteredPendingEvents = pendingEvents.filter(event => !isEventExpired(event, now));
+            filteredPendingEvents.forEach(event => eventIdSet.add(String(event.id)));
+
+            const filteredPendingUpdates = pendingUpdates.filter(update => {
+                const payloadStub = update?.payload ? {
+                    endDateTime: update.payload.endDateTime,
+                    startDateTime: update.payload.startDateTime
+                } : null;
+
+                if (payloadStub && isEventExpired(payloadStub, now)) return false;
+                if (update?.eventId && !eventIdSet.has(String(update.eventId))) return false;
+                return true;
+            });
+
+            const eventsChanged = filteredEvents.length !== events.length;
+            const pendingEventsChanged = filteredPendingEvents.length !== pendingEvents.length;
+            const pendingUpdatesChanged = filteredPendingUpdates.length !== pendingUpdates.length;
+
+            if (eventsChanged) {
+                events.length = 0;
+                filteredEvents.forEach(event => events.push(event));
             }
-        ];
+
+            if (pendingEventsChanged) {
+                pendingEvents.length = 0;
+                filteredPendingEvents.forEach(event => pendingEvents.push(event));
+            }
+
+            if (pendingUpdatesChanged) {
+                pendingUpdates.length = 0;
+                filteredPendingUpdates.forEach(update => pendingUpdates.push(update));
+            }
+
+            if (pendingEventsChanged || pendingUpdatesChanged) {
+                savePendingQueues();
+            }
+        }
 
         // Get event status based on current time
         function getEventStatus(event) {
@@ -1983,13 +2069,14 @@
         // Render approved events (only upcoming and ongoing)
         async function renderEvents() {
             await fetchEvents();
+            purgeExpiredEventsFromState();
             const eventsGrid = document.getElementById('eventsGrid');
             eventsGrid.innerHTML = '';
 
             const now = new Date();
             const upcomingEvents = events.filter(event =>
-                event.isActive && // Use isActive from API
-                new Date(event.date) > now // Use date from API
+                event.isActive &&
+                !isEventExpired(event, now)
             );
             
             if (upcomingEvents.length === 0) {
@@ -2029,7 +2116,7 @@
                     <div class="event-image">
                         ${imageElement}
                         <div class="event-date">
-                            ${formatDate(event.date)}
+                            ${formatDate(event.startDateTime)}
                         </div>
                     </div>
                     <div class="event-info">
@@ -2046,15 +2133,15 @@
                         <div class="event-meta">
                             <div class="meta-item">
                                 <i class='bx bxs-time'></i>
-                                <span>${event.time}</span>
+                                <span>${formatTime(event.startDateTime)} - ${formatTime(event.endDateTime)}</span>
                             </div>
                             <div class="meta-item">
                                 <i class='bx bxs-map'></i>
-                                <span>${event.location || event.venue}</span>
+                                <span>${event.venue}</span>
                             </div>
-                            ${event.capacity ? `<div class="meta-item">
+                            ${event.maxAttendees ? `<div class="meta-item">
                                 <i class='bx bxs-group'></i>
-                                <span>Max: ${event.capacity} attendees</span>
+                                <span>Max: ${event.maxAttendees} attendees</span>
                             </div>` : ''}
                         </div>
 
@@ -2066,13 +2153,13 @@
                             <div class="faculty-contact">
                                 <div class="meta-item">
                                     <i class='bx bxs-user'></i>
-                                    <span>${event.organizer || event.facultyIncharge}</span>
+                                    <span>${event.facultyIncharge}</span>
                                 </div>
                                 <div class="faculty-email">
-                                    ${event.contactEmail || event.facultyEmail}
+                                    ${event.facultyEmail || 'Contact unavailable'}
                                 </div>
                             </div>
-                            <button class="update-btn" data-id="${event._id || event.id}">
+                            <button class="update-btn" data-id="${event.id}">
                                 <i class='bx bxs-edit-alt'></i> Update
                             </button>
                         </div>
@@ -2083,33 +2170,52 @@
             
             // Add event listeners to update buttons
             document.querySelectorAll('.update-btn').forEach(btn => {
-                btn.addEventListener('click', (e) => {
+                btn.addEventListener('click', async (e) => {
                     e.stopPropagation();
 
                     // Check if user is logged in
-                    const token = localStorage.getItem('token');
+                    const token = getAuthToken();
                     if (!token) {
                         // Show login required message
                         showLoginRequiredMessage();
                         return;
                     }
 
-                    const eventId = btn.dataset.id;
-                    populateUpdateForm(eventId);
-                    document.querySelector('[data-tab="update"]').click();
-                    // Smooth scroll to update form on mobile and desktop
-                    setTimeout(() => {
-                        const formEl = document.getElementById('eventUpdateForm');
-                        if (formEl) {
-                            formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    try {
+                        const response = await fetch('/api/v1/profile/me', {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            showLoginRequiredMessage();
+                            return;
                         }
-                    }, 50);
+
+                        const eventId = btn.dataset.id;
+                        populateUpdateForm(eventId);
+                        document.querySelector('[data-tab="update"]').click();
+                        // Smooth scroll to update form on mobile and desktop
+                        setTimeout(() => {
+                            const formEl = document.getElementById('eventUpdateForm');
+                            if (formEl) {
+                                formEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }
+                        }, 50);
+                    } catch (error) {
+                        console.error('Auth check failed:', error);
+                        showLoginRequiredMessage();
+                    }
                 });
             });
         }
 
         // Render pending events for admin
         function renderPendingEvents() {
+            purgeExpiredEventsFromState();
             const pendingEventsContainer = document.getElementById('pendingEvents');
             pendingEventsContainer.innerHTML = '';
             
@@ -2119,77 +2225,68 @@
             }
             
             pendingEvents.forEach(event => {
-                if (event.status === 'pending') {
-                    const pendingEvent = document.createElement('div');
-                    pendingEvent.className = 'pending-event';
-                    
-                    // Create logo element
-                    let imageElement;
-                    if (event.imageData) {
-                        imageElement = `<img src="${event.imageData}" alt="${event.name}">`;
-                    } else {
-                        imageElement = `<i class='${event.image}'></i>`;
-                    }
-                    
-                    pendingEvent.innerHTML = `
-                        <div class="pending-event-image">
-                            ${imageElement}
-                        </div>
-                        <div class="pending-event-details">
-                            <h3 class="pending-event-title">${event.name}</h3>
-                            <div class="pending-event-meta">
-                                <div class="event-category">
-                                    <i class='bx bxs-category'></i> ${event.category}
-                                </div>
-                                <div class="status-indicator status-pending">
-                                    <i class='bx bxs-time'></i> Pending Approval
-                                </div>
-                            </div>
-                            <p class="pending-event-description">${event.description}</p>
-                            <div class="meta-item">
-                                <i class='bx bxs-time'></i>
-                                <span>${formatDate(event.startDateTime)} ${formatTime(event.startDateTime)} - ${formatTime(event.endDateTime)}</span>
-                            </div>
-                            <div class="meta-item">
-                                <i class='bx bxs-map'></i>
-                                <span>Venue: ${event.venue}</span>
-                            </div>
-                            <div class="meta-item">
-                                <i class='bx bxs-user'></i>
-                                <span>Faculty: ${event.facultyIncharge} (${event.facultyEmail})</span>
-                            </div>
-                            <div class="pending-event-actions">
-                                <button class="action-btn approve-btn" data-id="${event.id}">
-                                    <i class='bx bx-check'></i> Approve
-                                </button>
-                                <button class="action-btn reject-btn" data-id="${event.id}">
-                                    <i class='bx bx-x'></i> Reject
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    pendingEventsContainer.appendChild(pendingEvent);
+                const pendingEvent = document.createElement('div');
+                pendingEvent.className = 'pending-event';
+                
+                let imageElement;
+                if (event.imageData) {
+                    imageElement = `<img src="${event.imageData}" alt="${event.name}">`;
+                } else {
+                    imageElement = `<i class='${event.image || "bx bxs-calendar-event"}'></i>`;
                 }
+                
+                pendingEvent.innerHTML = `
+                    <div class="pending-event-image">
+                        ${imageElement}
+                    </div>
+                    <div class="pending-event-details">
+                        <h3 class="pending-event-title">${event.name}</h3>
+                        <div class="pending-event-meta">
+                            <div class="event-category">
+                                <i class='bx bxs-category'></i> ${event.category}
+                            </div>
+                            <div class="status-indicator status-pending">
+                                <i class='bx bxs-time'></i> Pending Approval
+                            </div>
+                        </div>
+                        <p class="pending-event-description">${event.description}</p>
+                        <div class="meta-item">
+                            <i class='bx bxs-time'></i>
+                            <span>${formatDate(event.startDateTime)} ${formatTime(event.startDateTime)} - ${formatTime(event.endDateTime)}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class='bx bxs-map'></i>
+                            <span>Venue: ${event.venue}</span>
+                        </div>
+                        <div class="meta-item">
+                            <i class='bx bxs-user'></i>
+                            <span>Faculty: ${event.facultyIncharge} (${event.facultyEmail || 'N/A'})</span>
+                        </div>
+                        <div class="pending-event-actions">
+                            <button class="action-btn approve-btn event-approve-btn" data-id="${event.id}">
+                                <i class='bx bx-check'></i> Approve
+                            </button>
+                            <button class="action-btn reject-btn event-reject-btn" data-id="${event.id}">
+                                <i class='bx bx-x'></i> Reject
+                            </button>
+                        </div>
+                    </div>
+                `;
+                pendingEventsContainer.appendChild(pendingEvent);
             });
             
-            // Add event listeners to action buttons
-            document.querySelectorAll('.approve-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const eventId = parseInt(btn.dataset.id);
-                    approveEvent(eventId);
-                });
+            document.querySelectorAll('.event-approve-btn').forEach(btn => {
+                btn.addEventListener('click', () => approveEvent(btn.dataset.id));
             });
             
-            document.querySelectorAll('.reject-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const eventId = parseInt(btn.dataset.id);
-                    rejectEvent(eventId);
-                });
+            document.querySelectorAll('.event-reject-btn').forEach(btn => {
+                btn.addEventListener('click', () => rejectEvent(btn.dataset.id));
             });
         }
         
         // Render pending updates for admin
         function renderPendingUpdates() {
+            purgeExpiredEventsFromState();
             const pendingUpdatesContainer = document.getElementById('pendingUpdates');
             pendingUpdatesContainer.innerHTML = '';
             
@@ -2199,76 +2296,66 @@
             }
             
             pendingUpdates.forEach(update => {
-                if (update.status === 'pending') {
-                    const pendingUpdate = document.createElement('div');
-                    pendingUpdate.className = 'pending-update';
-                    
-                    // Create logo element
-                    let imageElement;
-                    if (update.imageData) {
-                        imageElement = `<img src="${update.imageData}" alt="${update.eventName}">`;
-                    } else {
-                        imageElement = `<i class='${update.image}'></i>`;
-                    }
-                    
-                    pendingUpdate.innerHTML = `
-                        <div class="pending-update-image">
-                            ${imageElement}
-                        </div>
-                        <div class="pending-update-details">
-                            <h3 class="pending-update-title">${update.eventName} - Update Request</h3>
-                            <div class="pending-update-meta">
-                                <div class="status-indicator status-pending">
-                                    <i class='bx bxs-time'></i> Pending Approval
-                                </div>
-                                <div class="meta-item">
-                                    <i class='bx bxs-user'></i>
-                                    <span>Submitted by: ${update.submittedBy}</span>
-                                </div>
-                                <div class="meta-item">
-                                    <i class='bx bxs-calendar'></i>
-                                    <span>${update.submittedOn}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="update-changes">
-                                <h4><i class='bx bx-revision'></i> Proposed Changes</h4>
-                                ${Object.entries(update.changes).map(([field, values]) => `
-                                    <div class="change-item">
-                                        <div class="change-field">${formatFieldName(field)}:</div>
-                                        <div class="change-old">${values.old || 'N/A'}</div>
-                                        <div class="change-new">${values.new || 'N/A'}</div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            
-                            <div class="pending-update-actions">
-                                <button class="action-btn approve-btn" data-id="${update.id}">
-                                    <i class='bx bx-check'></i> Approve
-                                </button>
-                                <button class="action-btn reject-btn" data-id="${update.id}">
-                                    <i class='bx bx-x'></i> Reject
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    pendingUpdatesContainer.appendChild(pendingUpdate);
+                const pendingUpdate = document.createElement('div');
+                pendingUpdate.className = 'pending-update';
+                
+                let imageElement;
+                if (update.imageData) {
+                    imageElement = `<img src="${update.imageData}" alt="${update.eventName}">`;
+                } else {
+                    imageElement = `<i class='${update.image || "bx bxs-calendar-event"}'></i>`;
                 }
+                
+                pendingUpdate.innerHTML = `
+                    <div class="pending-update-image">
+                        ${imageElement}
+                    </div>
+                    <div class="pending-update-details">
+                        <h3 class="pending-update-title">${update.eventName} - Update Request</h3>
+                        <div class="pending-update-meta">
+                            <div class="status-indicator status-pending">
+                                <i class='bx bxs-time'></i> Pending Approval
+                            </div>
+                            <div class="meta-item">
+                                <i class='bx bxs-user'></i>
+                                <span>Submitted by: ${update.submittedBy || 'User'}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class='bx bxs-calendar'></i>
+                                <span>${update.submittedOn || ''}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="update-changes">
+                            <h4><i class='bx bx-revision'></i> Proposed Changes</h4>
+                            ${Object.entries(update.changes || {}).map(([field, values]) => `
+                                <div class="change-item">
+                                    <div class="change-field">${formatFieldName(field)}:</div>
+                                    <div class="change-old">${values.old || 'N/A'}</div>
+                                    <div class="change-new">${values.new || 'N/A'}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        
+                        <div class="pending-update-actions">
+                            <button class="action-btn approve-btn event-update-approve-btn" data-id="${update.id}">
+                                <i class='bx bx-check'></i> Approve
+                            </button>
+                            <button class="action-btn reject-btn event-update-reject-btn" data-id="${update.id}">
+                                <i class='bx bx-x'></i> Reject
+                            </button>
+                        </div>
+                    </div>
+                `;
+                pendingUpdatesContainer.appendChild(pendingUpdate);
             });
             
-            // Add event listeners to action buttons
-            document.querySelectorAll('.pending-update .approve-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const updateId = parseInt(btn.dataset.id);
-                    approveUpdate(updateId);
-                });
+            document.querySelectorAll('.event-update-approve-btn').forEach(btn => {
+                btn.addEventListener('click', () => approveUpdate(btn.dataset.id));
             });
             
-            document.querySelectorAll('.pending-update .reject-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const updateId = parseInt(btn.dataset.id);
-                    rejectUpdate(updateId);
-                });
+            document.querySelectorAll('.event-update-reject-btn').forEach(btn => {
+                btn.addEventListener('click', () => rejectUpdate(btn.dataset.id));
             });
         }
         
@@ -2289,101 +2376,162 @@
         }
 
         // Approve event
-        function approveEvent(eventId) {
-            const pendingIndex = pendingEvents.findIndex(event => event.id === eventId);
-            if (pendingIndex !== -1) {
-                const approvedEvent = pendingEvents[pendingIndex];
-                approvedEvent.status = 'approved';
-                
-                // Move to approved events
-                events.push(approvedEvent);
-                
-                // Remove from pending
+        async function approveEvent(eventId) {
+            const isAdmin = await verifyAdminAccess();
+            if (!isAdmin) {
+                showToast('Access denied. Admin privileges required.', 'error');
+                return;
+            }
+
+            const token = getAuthToken();
+            if (!token) {
+                showLoginRequiredMessage();
+                return;
+            }
+
+            const pendingIndex = pendingEvents.findIndex(event => String(event.id) === String(eventId));
+            if (pendingIndex === -1) return;
+
+            const approvedEvent = pendingEvents[pendingIndex];
+            const payload = {
+                title: approvedEvent.name,
+                category: approvedEvent.category,
+                description: approvedEvent.description,
+                event_date: approvedEvent.startDateTime,
+                is_active: true,
+                coordinators: {
+                    facultyIncharge: approvedEvent.facultyIncharge,
+                    facultyEmail: approvedEvent.facultyEmail,
+                    venue: approvedEvent.venue,
+                    registrationLink: approvedEvent.registrationLink,
+                    startDateTime: approvedEvent.startDateTime,
+                    endDateTime: approvedEvent.endDateTime,
+                    regDeadline: approvedEvent.regDeadline,
+                    maxAttendees: parseInt(approvedEvent.maxAttendees || 0, 10)
+                }
+            };
+
+            try {
+                const response = await fetch('/api/v1/events', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to approve event');
+                }
+
                 pendingEvents.splice(pendingIndex, 1);
-                
-                // Simulate sending approval email
-                sendApprovalEmail(approvedEvent.facultyEmail, approvedEvent.name);
-                
-                // Re-render both lists
-                renderEvents();
+                savePendingQueues();
+                await renderEvents();
                 renderPendingEvents();
                 populateEventSelect();
-                
-                alert(`Event "${approvedEvent.name}" has been approved and added to the public listing.`);
+                showToast(`Event "${approvedEvent.name}" approved and published.`);
+            } catch (error) {
+                console.error('approveEvent failed:', error);
+                showToast(error.message || 'Failed to approve event', 'error');
             }
         }
 
         // Reject event
-        function rejectEvent(eventId) {
-            const pendingIndex = pendingEvents.findIndex(event => event.id === eventId);
-            if (pendingIndex !== -1) {
-                const rejectedEvent = pendingEvents[pendingIndex];
-                
-                // Simulate sending rejection email
-                sendRejectionEmail(rejectedEvent.facultyEmail, rejectedEvent.name);
-                
-                // Remove from pending
-                pendingEvents.splice(pendingIndex, 1);
-                
-                // Re-render pending list
-                renderPendingEvents();
-                
-                alert(`Event "${rejectedEvent.name}" has been rejected.`);
+        async function rejectEvent(eventId) {
+            const isAdmin = await verifyAdminAccess();
+            if (!isAdmin) {
+                showToast('Access denied. Admin privileges required.', 'error');
+                return;
             }
+
+            const pendingIndex = pendingEvents.findIndex(event => String(event.id) === String(eventId));
+            if (pendingIndex === -1) return;
+
+            const rejectedEvent = pendingEvents[pendingIndex];
+            pendingEvents.splice(pendingIndex, 1);
+            savePendingQueues();
+            renderPendingEvents();
+            showToast(`Event "${rejectedEvent.name}" rejected.`, 'success');
         }
         
         // Approve update
-        function approveUpdate(updateId) {
-            const updateIndex = pendingUpdates.findIndex(update => update.id === updateId);
-            if (updateIndex !== -1) {
-                const update = pendingUpdates[updateIndex];
-                const eventIndex = events.findIndex(event => event.id === update.eventId);
-                
-                if (eventIndex !== -1) {
-                    // Apply changes to the event
-                    const event = events[eventIndex];
-                    Object.entries(update.changes).forEach(([field, values]) => {
-                        event[field] = values.new;
-                    });
-                    
-                    // Apply image update if exists
-                    if (update.imageData) {
-                        event.imageData = update.imageData;
-                    }
-                    
-                    // Simulate sending approval email
-                    sendUpdateApprovalEmail(event.facultyEmail, event.name);
-                    
-                    // Remove from pending updates
-                    pendingUpdates.splice(updateIndex, 1);
-                    
-                    // Re-render all lists
-                    renderEvents();
-                    renderPendingUpdates();
-                    populateEventSelect();
-                    
-                    alert(`Updates for "${event.name}" have been approved and applied.`);
+        async function approveUpdate(updateId) {
+            const isAdmin = await verifyAdminAccess();
+            if (!isAdmin) {
+                showToast('Access denied. Admin privileges required.', 'error');
+                return;
+            }
+
+            const token = getAuthToken();
+            if (!token) {
+                showLoginRequiredMessage();
+                return;
+            }
+
+            const updateIndex = pendingUpdates.findIndex(update => String(update.id) === String(updateId));
+            if (updateIndex === -1) return;
+
+            const update = pendingUpdates[updateIndex];
+            const payload = {
+                title: update.payload?.name || update.eventName,
+                category: update.payload?.category,
+                description: update.payload?.description,
+                event_date: update.payload?.startDateTime,
+                coordinators: {
+                    facultyIncharge: update.payload?.facultyIncharge,
+                    facultyEmail: update.payload?.facultyEmail,
+                    venue: update.payload?.venue,
+                    registrationLink: update.payload?.registrationLink,
+                    startDateTime: update.payload?.startDateTime,
+                    endDateTime: update.payload?.endDateTime,
+                    regDeadline: update.payload?.regDeadline,
+                    maxAttendees: parseInt(update.payload?.maxAttendees || 0, 10)
                 }
+            };
+
+            try {
+                const response = await fetch(`/api/v1/events/${update.eventId}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(payload)
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to approve event update');
+                }
+
+                pendingUpdates.splice(updateIndex, 1);
+                savePendingQueues();
+                await renderEvents();
+                renderPendingUpdates();
+                populateEventSelect();
+                showToast(`Updates for "${update.eventName}" approved and applied.`);
+            } catch (error) {
+                console.error('approveUpdate failed:', error);
+                showToast(error.message || 'Failed to approve update', 'error');
             }
         }
         
         // Reject update
-        function rejectUpdate(updateId) {
-            const updateIndex = pendingUpdates.findIndex(update => update.id === updateId);
-            if (updateIndex !== -1) {
-                const update = pendingUpdates[updateIndex];
-                
-                // Simulate sending rejection email
-                sendUpdateRejectionEmail(update.submittedBy, update.eventName);
-                
-                // Remove from pending
-                pendingUpdates.splice(updateIndex, 1);
-                
-                // Re-render pending updates
-                renderPendingUpdates();
-                
-                alert(`Update request for "${update.eventName}" has been rejected.`);
+        async function rejectUpdate(updateId) {
+            const isAdmin = await verifyAdminAccess();
+            if (!isAdmin) {
+                showToast('Access denied. Admin privileges required.', 'error');
+                return;
             }
+
+            const updateIndex = pendingUpdates.findIndex(update => String(update.id) === String(updateId));
+            if (updateIndex === -1) return;
+
+            const update = pendingUpdates[updateIndex];
+            pendingUpdates.splice(updateIndex, 1);
+            savePendingQueues();
+            renderPendingUpdates();
+            showToast(`Update request for "${update.eventName}" rejected.`, 'success');
         }
 
         // Simulate sending approval email
@@ -2420,8 +2568,13 @@
         
         eventForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            // Get form values
+
+            const token = getAuthToken();
+            if (!token) {
+                showLoginRequiredMessage();
+                return;
+            }
+
             const eventName = document.getElementById('eventName').value;
             const eventCategory = document.getElementById('eventCategory').value;
             const eventDescription = document.getElementById('eventDescription').value;
@@ -2433,68 +2586,92 @@
             const facultyIncharge = document.getElementById('facultyIncharge').value;
             const facultyEmail = document.getElementById('facultyEmail').value;
             const maxAttendees = document.getElementById('maxAttendees').value || 0;
-            const imageFile = document.getElementById('eventImage').files[0];
-            
-            // Create new event object
-            const newEvent = {
-                id: Date.now(), // Unique ID
+
+            const pendingEvent = {
+                id: generatePendingId('evt_add'),
                 name: eventName,
                 category: eventCategory,
                 description: eventDescription,
-                startDateTime: startDateTime,
-                endDateTime: endDateTime,
-                regDeadline: regDeadline,
-                venue: venue,
-                registrationLink: registrationLink,
-                facultyIncharge: facultyIncharge,
-                facultyEmail: facultyEmail,
-                maxAttendees: parseInt(maxAttendees),
-                status: "pending",
-                image: "bx bxs-calendar-event" // Default image
+                startDateTime,
+                endDateTime,
+                regDeadline,
+                venue,
+                registrationLink,
+                facultyIncharge,
+                facultyEmail,
+                maxAttendees: parseInt(maxAttendees || 0, 10),
+                image: 'bx bxs-calendar-event',
+                status: 'pending',
+                submittedBy: 'User',
+                submittedOn: new Date().toISOString().split('T')[0]
             };
-            
-            // Handle image upload if exists
-            if (imageFile) {
-                try {
-                    const dataUrl = await readFileAsDataURL(imageFile);
-                    newEvent.imageData = dataUrl;
-                } catch (error) {
-                    console.error('Error reading file:', error);
+
+            pendingEvents.push(pendingEvent);
+            savePendingQueues();
+
+            try {
+                const response = await fetch('/api/v1/events/submit-addition', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        name: pendingEvent.name,
+                        category: pendingEvent.category,
+                        description: pendingEvent.description,
+                        startDateTime: pendingEvent.startDateTime,
+                        endDateTime: pendingEvent.endDateTime,
+                        regDeadline: pendingEvent.regDeadline,
+                        venue: pendingEvent.venue,
+                        registrationLink: pendingEvent.registrationLink,
+                        facultyIncharge: pendingEvent.facultyIncharge,
+                        facultyEmail: pendingEvent.facultyEmail,
+                        maxAttendees: pendingEvent.maxAttendees
+                    })
+                });
+                const result = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to submit event');
                 }
-            }
-            
-            // Add to pending events
-            pendingEvents.push(newEvent);
-            
-            // Simulate sending admin notification
-            sendAdminNotification(newEvent);
-            
-            // Show success message
-            successMessage.style.display = 'flex';
-            
-            // Reset form
-            eventForm.reset();
-            document.getElementById('imagePreview').style.display = 'none';
-            
-            // Scroll to top
-            window.scrollTo(0, 0);
-            
-            // Switch to admin tab to see pending request
-            setTimeout(() => {
-                document.querySelector('[data-tab="admin"]').click();
+
+                successMessage.style.display = 'flex';
+                successMessage.innerHTML = `
+                    <i class='bx bx-check-circle'></i>
+                    <p>
+                        Your event request has been submitted successfully. Admin will review it in Pending Requests.
+                    </p>
+                `;
+
+                eventForm.reset();
+                document.getElementById('imagePreview').style.display = 'none';
+                window.scrollTo(0, 0);
+
                 renderPendingEvents();
-            }, 1000);
+                renderPendingUpdates();
+            } catch (error) {
+                const idx = pendingEvents.findIndex(item => item.id === pendingEvent.id);
+                if (idx !== -1) {
+                    pendingEvents.splice(idx, 1);
+                    savePendingQueues();
+                    renderPendingEvents();
+                }
+                console.error('Event submit failed:', error);
+                showToast(error.message || 'Failed to submit event', 'error');
+            }
         });
         
         // Populate event select for update form
         function populateEventSelect() {
+            purgeExpiredEventsFromState();
             const eventSelect = document.getElementById('selectEventToUpdate');
             eventSelect.innerHTML = '<option value="">Select your event</option>';
 
             events.forEach(event => {
-                if (event.isActive) { // Use isActive from API
+                if (event.isActive && !isEventExpired(event)) {
                     const option = document.createElement('option');
-                    option.value = event._id || event.id;
+                    option.value = event.id;
                     option.textContent = event.title || event.name;
                     eventSelect.appendChild(option);
                 }
@@ -2503,7 +2680,7 @@
         
         // When event is selected for update
         document.getElementById('selectEventToUpdate').addEventListener('change', function() {
-            const eventId = parseInt(this.value);
+            const eventId = this.value;
             if (eventId) {
                 document.getElementById('eventUpdateForm').style.display = 'block';
                 populateUpdateForm(eventId);
@@ -2521,7 +2698,7 @@
         
         // Populate update form with event data
         function populateUpdateForm(eventId) {
-            const event = events.find(e => e.id === eventId);
+            const event = events.find(e => String(e.id) === String(eventId));
             if (event) {
                 document.getElementById('updateEventId').value = event.id;
                 document.getElementById('updateEventName').value = event.name;
@@ -2529,9 +2706,9 @@
                 document.getElementById('updateEventDescription').value = event.description;
                 
                 // Format datetime for input fields
-                document.getElementById('updateStartDateTime').value = event.startDateTime.replace(' ', 'T');
-                document.getElementById('updateEndDateTime').value = event.endDateTime.replace(' ', 'T');
-                document.getElementById('updateRegDeadline').value = event.regDeadline.replace(' ', 'T');
+                document.getElementById('updateStartDateTime').value = (event.startDateTime || '').replace(' ', 'T').slice(0, 16);
+                document.getElementById('updateEndDateTime').value = (event.endDateTime || '').replace(' ', 'T').slice(0, 16);
+                document.getElementById('updateRegDeadline').value = (event.regDeadline || '').replace(' ', 'T').slice(0, 16);
                 
                 document.getElementById('updateVenue').value = event.venue;
                 document.getElementById('updateRegistrationLink').value = event.registrationLink;
@@ -2559,13 +2736,17 @@
         
         updateForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
-            const eventId = parseInt(document.getElementById('updateEventId').value);
-            const event = events.find(e => e.id === eventId);
-            
+
+            const token = getAuthToken();
+            if (!token) {
+                showLoginRequiredMessage();
+                return;
+            }
+            const eventId = document.getElementById('updateEventId').value;
+            const event = events.find(e => String(e.id) === String(eventId));
+
             if (!event) return;
-            
-            // Get form values
+
             const updatedName = document.getElementById('updateEventName').value;
             const updatedCategory = document.getElementById('updateEventCategory').value;
             const updatedDescription = document.getElementById('updateEventDescription').value;
@@ -2577,11 +2758,8 @@
             const updatedFacultyIncharge = document.getElementById('updateFacultyIncharge').value;
             const updatedFacultyEmail = document.getElementById('updateFacultyEmail').value;
             const updatedMaxAttendees = document.getElementById('updateMaxAttendees').value || 0;
-            const imageFile = document.getElementById('updateEventImage').files[0];
-            
-            // Create update request object with changed fields only
+
             const changes = {};
-            
             if (event.name !== updatedName) changes.name = { old: event.name, new: updatedName };
             if (event.category !== updatedCategory) changes.category = { old: event.category, new: updatedCategory };
             if (event.description !== updatedDescription) changes.description = { old: event.description, new: updatedDescription };
@@ -2592,57 +2770,78 @@
             if (event.registrationLink !== updatedRegistrationLink) changes.registrationLink = { old: event.registrationLink, new: updatedRegistrationLink };
             if (event.facultyIncharge !== updatedFacultyIncharge) changes.facultyIncharge = { old: event.facultyIncharge, new: updatedFacultyIncharge };
             if (event.facultyEmail !== updatedFacultyEmail) changes.facultyEmail = { old: event.facultyEmail, new: updatedFacultyEmail };
-            if (parseInt(event.maxAttendees) !== parseInt(updatedMaxAttendees)) changes.maxAttendees = { old: event.maxAttendees, new: parseInt(updatedMaxAttendees) };
-            
-            // Only create update request if there are changes
-            if (Object.keys(changes).length > 0 || imageFile) {
-                const updateRequest = {
-                    id: Date.now(),
-                    eventId: eventId,
-                    eventName: event.name,
-                    changes: changes,
-                    status: "pending",
-                    submittedBy: "Admin User", // In real app, this would be the logged-in user
-                    submittedOn: new Date().toISOString().split('T')[0],
-                    image: event.image
-                };
-                
-                // Handle image update if exists
-                if (imageFile) {
-                    try {
-                        const dataUrl = await readFileAsDataURL(imageFile);
-                        updateRequest.imageData = dataUrl;
-                    } catch (error) {
-                        console.error('Error reading file:', error);
-                    }
+            if (parseInt(event.maxAttendees || 0, 10) !== parseInt(updatedMaxAttendees || 0, 10)) {
+                changes.maxAttendees = { old: event.maxAttendees || 0, new: parseInt(updatedMaxAttendees || 0, 10) };
+            }
+
+            if (!Object.keys(changes).length) {
+                showToast('No changes detected. Please edit at least one field.', 'error');
+                return;
+            }
+
+            const pendingUpdate = {
+                id: generatePendingId('evt_upd'),
+                eventId: eventId,
+                eventName: event.name,
+                changes,
+                status: 'pending',
+                submittedBy: 'User',
+                submittedOn: new Date().toISOString().split('T')[0],
+                image: event.image || 'bx bxs-calendar-event',
+                payload: {
+                    name: updatedName,
+                    category: updatedCategory,
+                    description: updatedDescription,
+                    startDateTime: updatedStartDateTime,
+                    endDateTime: updatedEndDateTime,
+                    regDeadline: updatedRegDeadline,
+                    venue: updatedVenue,
+                    registrationLink: updatedRegistrationLink,
+                    facultyIncharge: updatedFacultyIncharge,
+                    facultyEmail: updatedFacultyEmail,
+                    maxAttendees: parseInt(updatedMaxAttendees || 0, 10)
                 }
-                
-                // Add to pending updates
-                pendingUpdates.push(updateRequest);
-                
-                // Simulate sending admin notification
-                sendUpdateNotification(updateRequest);
-                
-                // Show success message
+            };
+
+            pendingUpdates.push(pendingUpdate);
+            savePendingQueues();
+
+            try {
+                const response = await fetch('/api/v1/events/submit-update', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ event_id: eventId, changes: pendingUpdate.payload })
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    throw new Error(result.message || 'Failed to submit event update');
+                }
+
                 updateSuccessMessage.style.display = 'flex';
-                
-                // Reset form
+                updateSuccessMessage.innerHTML = `
+                    <i class='bx bx-check-circle'></i>
+                    <p>Your event update request was submitted. Admin will review it in Pending Requests.</p>
+                `;
+
                 updateForm.reset();
                 document.getElementById('eventUpdateForm').style.display = 'none';
                 document.getElementById('selectEventToUpdate').value = '';
                 document.getElementById('updateImagePreview').style.display = 'none';
-                
-                // Scroll to top
                 window.scrollTo(0, 0);
-                
-                // Switch to admin tab to see pending request
-                setTimeout(() => {
-                    document.querySelector('[data-tab="admin"]').click();
-                    document.querySelector('[data-admin-tab="pending-updates"]').click();
+
+                renderPendingUpdates();
+            } catch (error) {
+                const idx = pendingUpdates.findIndex(item => item.id === pendingUpdate.id);
+                if (idx !== -1) {
+                    pendingUpdates.splice(idx, 1);
+                    savePendingQueues();
                     renderPendingUpdates();
-                }, 1000);
-            } else {
-                alert("No changes detected. Please make changes before submitting an update request.");
+                }
+                console.error('Event update failed:', error);
+                showToast(error.message || 'Failed to submit event update', 'error');
             }
         });
 
@@ -2682,6 +2881,7 @@
                     adminTab.classList.add('admin-only');
                     adminTab.style.setProperty('display', 'none', 'important');
                 }
+                enforceAdminPanelVisibility('events', false);
                 return false;
             }
 
@@ -2701,6 +2901,7 @@
                             adminTab.classList.remove('admin-only');
                             adminTab.style.setProperty('display', 'flex', 'important');
                         }
+                        enforceAdminPanelVisibility('events', true);
                         return true;
                     } else {
                         // Hide for non-admin users
@@ -2708,6 +2909,7 @@
                             adminTab.classList.add('admin-only');
                             adminTab.style.setProperty('display', 'none', 'important');
                         }
+                        enforceAdminPanelVisibility('events', false);
                     }
                 } else {
                     // Hide on error
@@ -2715,6 +2917,7 @@
                         adminTab.classList.add('admin-only');
                         adminTab.style.setProperty('display', 'none', 'important');
                     }
+                    enforceAdminPanelVisibility('events', false);
                 }
             } catch (error) {
                 console.error('Admin check failed:', error);
@@ -2723,6 +2926,7 @@
                     adminTab.classList.add('admin-only');
                     adminTab.style.setProperty('display', 'none', 'important');
                 }
+                enforceAdminPanelVisibility('events', false);
             }
             return false;
         }
@@ -2758,6 +2962,7 @@
                 adminTab.classList.add('admin-only');
                 adminTab.style.setProperty('display', 'none', 'important');
             }
+            enforceAdminPanelVisibility('events', false);
             
             // Check admin access
             checkAdminAccess();
@@ -2766,6 +2971,8 @@
             checkSidebarActivation();
 
             createParticles();
+            loadPendingQueues();
+            purgeExpiredEventsFromState();
             await renderEvents();
             renderPendingEvents();
             renderPendingUpdates();
@@ -2782,17 +2989,14 @@
             document.getElementById('endDateTime').value = formatDateTimeLocal(end);
             document.getElementById('regDeadline').value = formatDateTimeLocal(regDeadline);
             
-            // Periodically check for expired events
-            setInterval(() => {
-                const now = new Date();
-                events.forEach((event, index) => {
-                    if (new Date(event.endDateTime) < now) {
-                        events.splice(index, 1);
-                        renderEvents();
-                        populateEventSelect();
-                    }
-                });
-            }, 60000); // Check every minute
+            // Periodically refresh events to stay in sync with backend
+            setInterval(async () => {
+                await renderEvents();
+                purgeExpiredEventsFromState();
+                renderPendingEvents();
+                renderPendingUpdates();
+                populateEventSelect();
+            }, 60000);
         });
         
         // Format datetime for input[type=datetime-local]

@@ -15,6 +15,11 @@ async function initFacultyR2() {
     await uploadToR2('faculty/list.json', Buffer.from('[]'), 'application/json');
     console.log('✅ Created: faculty/list.json (empty array)');
 
+    // 1b. Create empty consolidated data file
+    console.log('📋 Creating consolidated faculty data file...');
+    await uploadToR2('faculty/all_approved_data.json', Buffer.from('[]'), 'application/json');
+    console.log('✅ Created: faculty/all_approved_data.json (empty array)');
+
     // 2. Create empty pending additions list
     console.log('\n📝 Creating pending additions list...');
     await uploadToR2('faculty/pending-additions.json', Buffer.from('[]'), 'application/json');

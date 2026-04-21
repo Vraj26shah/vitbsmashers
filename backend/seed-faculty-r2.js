@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import { supabase } from './lib/supabase.js';
 import { uploadToR2 } from './lib/r2.js';
 
 const sampleFaculty = [
@@ -65,60 +64,65 @@ const sampleFaculty = [
   }
 ];
 
+// R2 Keys
+const FACULTY_LIST_KEY = 'faculty/list.json';
+const ALL_APPROVED_DATA_KEY = 'faculty/all_approved_data.json';
+
+function generateId() {
+  return Date.now() + Math.random().toString(36).substr(2, 9);
+}
+
 async function seedFacultyData() {
-  console.log('🚀 Seeding faculty data to R2...\n');
+  console.log('🚀 Seeding faculty data to R2 (Pure R2 implementation)...\n');
 
   try {
-    // Get faculty IDs from Supabase
-    const { data: facultyList, error } = await supabase
-      .schema('content')
-      .from('faculty')
-      .select('id, name')
-      .eq('status', 'approved')
-      .order('id');
+    const fullFacultyData = [];
+    const facultyIndex = [];
 
-    if (error) {
-      console.error('❌ Error fetching faculty from Supabase:', error.message);
-      return;
-    }
-
-    if (!facultyList || facultyList.length === 0) {
-      console.log('⚠️  No faculty found in database. Please run faculty-schema.sql first.');
-      return;
-    }
-
-    console.log(`📋 Found ${facultyList.length} faculty members in database\n`);
-
-    // Upload data to R2 for each faculty
-    for (let i = 0; i < facultyList.length && i < sampleFaculty.length; i++) {
-      const faculty = facultyList[i];
-      const sampleData = sampleFaculty[i];
-
-      const fullData = {
-        id: faculty.id,
-        ...sampleData,
+    // Process each sample faculty
+    for (const sample of sampleFaculty) {
+      const id = generateId();
+      const facultyData = {
+        id,
+        ...sample,
+        status: 'approved',
         submitted_by: 'admin',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       };
 
-      const r2Key = `faculty/${faculty.id}/data.json`;
-      const jsonString = JSON.stringify(fullData, null, 2);
+      // Individual file
+      const r2Key = `faculty/${id}/data.json`;
+      const jsonString = JSON.stringify(facultyData, null, 2);
+      await uploadToR2(r2Key, Buffer.from(jsonString), 'application/json');
+      console.log(`✅ Uploaded individual data for: ${sample.name} (ID: ${id})`);
 
-      try {
-        await uploadToR2(r2Key, Buffer.from(jsonString), 'application/json');
-        console.log(`✅ Uploaded data for: ${faculty.name} (ID: ${faculty.id})`);
-        console.log(`   📁 R2 Key: ${r2Key}`);
-      } catch (uploadError) {
-        console.error(`❌ Failed to upload data for ${faculty.name}:`, uploadError.message);
-      }
+      fullFacultyData.push(facultyData);
+      facultyIndex.push({
+        id,
+        name: sample.name,
+        department: sample.department,
+        status: 'approved',
+        created_at: facultyData.created_at,
+        updated_at: facultyData.updated_at
+      });
     }
 
-    console.log('\n✨ Faculty data seeding completed!');
-    console.log('\n📝 Summary:');
-    console.log(`   - Database: ${facultyList.length} faculty entries (minimal metadata)`);
-    console.log(`   - R2 Storage: Complete faculty data as JSON files`);
-    console.log(`   - Format: faculty/<id>/data.json`);
+    // Upload consolidated files
+    console.log('\n📦 Uploading consolidated files...');
+    
+    await uploadToR2(FACULTY_LIST_KEY, Buffer.from(JSON.stringify(facultyIndex, null, 2)), 'application/json');
+    console.log(`✅ Uploaded index: ${FACULTY_LIST_KEY}`);
+
+    await uploadToR2(ALL_APPROVED_DATA_KEY, Buffer.from(JSON.stringify(fullFacultyData, null, 2)), 'application/json');
+    console.log(`✅ Uploaded all-in-one: ${ALL_APPROVED_DATA_KEY}`);
+
+    console.log('\n✨ Faculty data seeding completed successfully!');
+    console.log('📝 Summary:');
+    console.log(`   - Total Faculty: ${fullFacultyData.length}`);
+    console.log(`   - Individual Files: faculty/<id>/data.json`);
+    console.log(`   - Index File: ${FACULTY_LIST_KEY}`);
+    console.log(`   - Consolidated Data: ${ALL_APPROVED_DATA_KEY}`);
 
   } catch (error) {
     console.error('❌ Seeding failed:', error);

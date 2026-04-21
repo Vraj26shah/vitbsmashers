@@ -419,7 +419,22 @@
         });
 
         // Tabs
-        document.querySelectorAll('.tab-btn').forEach(btn => {
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+        const pendingContentSection = document.getElementById('pending-tab');
+
+        function enforcePendingPanelVisibility(activeTabId, isAdminUser) {
+            if (!pendingContentSection) return;
+
+            if (isAdminUser && activeTabId === 'pending') {
+                pendingContentSection.style.setProperty('display', '', 'important');
+            } else {
+                pendingContentSection.classList.remove('active');
+                pendingContentSection.style.setProperty('display', 'none', 'important');
+            }
+        }
+
+        tabBtns.forEach(btn => {
             btn.addEventListener('click', async () => {
                 // Check if this is the pending tab and verify admin access
                 if (btn.dataset.tab === 'pending') {
@@ -430,10 +445,11 @@
                     }
                 }
                 
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                tabBtns.forEach(b => b.classList.remove('active'));
+                tabContents.forEach(c => c.classList.remove('active'));
                 btn.classList.add('active');
                 document.getElementById(`${btn.dataset.tab}-tab`).classList.add('active');
+                enforcePendingPanelVisibility(btn.dataset.tab, true);
                 if (btn.dataset.tab === 'pending') loadPendingData();
             });
         });
@@ -522,7 +538,8 @@
                 let url = `${API()}?`;
                 if (category) url += `category=${encodeURIComponent(category)}&`;
                 if (search)   url += `search=${encodeURIComponent(search)}&`;
-                const res  = await fetch(url);
+                url += `ts=${Date.now()}`;
+                const res  = await fetch(url, { cache: 'no-store' });
                 const json = await res.json();
 
                 if (!res.ok) {
@@ -1233,6 +1250,7 @@
                     pendingTab.classList.add('admin-only');
                     pendingTab.style.setProperty('display', 'none', 'important');
                 }
+                enforcePendingPanelVisibility('clubs', false);
                 return false;
             }
 
@@ -1252,6 +1270,7 @@
                             pendingTab.classList.remove('admin-only');
                             pendingTab.style.setProperty('display', 'flex', 'important');
                         }
+                        enforcePendingPanelVisibility('clubs', true);
                         return true;
                     } else {
                         // Hide for non-admin users
@@ -1259,6 +1278,7 @@
                             pendingTab.classList.add('admin-only');
                             pendingTab.style.setProperty('display', 'none', 'important');
                         }
+                        enforcePendingPanelVisibility('clubs', false);
                     }
                 } else {
                     // Hide on error
@@ -1266,6 +1286,7 @@
                         pendingTab.classList.add('admin-only');
                         pendingTab.style.setProperty('display', 'none', 'important');
                     }
+                    enforcePendingPanelVisibility('clubs', false);
                 }
             } catch (error) {
                 console.error('Admin check failed:', error);
@@ -1274,6 +1295,7 @@
                     pendingTab.classList.add('admin-only');
                     pendingTab.style.setProperty('display', 'none', 'important');
                 }
+                enforcePendingPanelVisibility('clubs', false);
             }
             return false;
         }
@@ -1309,6 +1331,7 @@
                 pendingTab.classList.add('admin-only');
                 pendingTab.style.setProperty('display', 'none', 'important');
             }
+            enforcePendingPanelVisibility('clubs', false);
             
             createParticles();
             loadClubs();
