@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase.js';
+import { getImageSignedUrl, getR2Object, uploadToR2 } from '../lib/r2.js';
 
 const hasValue = (value) => typeof value === 'string' ? value.trim().length > 0 : !!value;
 
@@ -100,4 +101,199 @@ export const getAchievements = async (req, res) => {
 
 export const addAchievement = async (req, res) => {
   return res.status(201).json({ status: 'success', message: 'Achievement added' });
+};
+
+const QUERY_INDEX_KEY = 'support/queries/index.json';
+const ALLOWED_QUERY_CATEGORIES = new Set([
+  'Academic',
+  'Administrative',
+  'Technical Support',
+  'Payment',
+  'Other',
+]);
+const ALLOWED_IMAGE_MIME_TYPES = new Set([
+  'image/jpeg',
+  'image/jpg',
+  'image/png',
+  'image/webp',
+]);
+
+function safeText(value, fallback = '') {
+  return typeof value === 'string' ? value.trim() : fallback;
+}
+
+function buildTicketId(date = new Date()) {
+  const datePart = date.toISOString().slice(0, 10).replace(/-/g, '');
+  const randomPart = Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `QRY-${datePart}-${randomPart}`;
+}
+
+function extFromMime(mime) {
+  if (mime === 'image/png') return 'png';
+  if (mime === 'image/webp') return 'webp';
+  return 'jpg';
+}
+
+function toReadableTicketText(ticket) {
+  return [
+    'Scholars Stack Support Ticket',
+    '=============================',
+    `Ticket ID: ${ticket.ticket_id}`,
+    `Submitted At: ${ticket.created_at}`,
+    '',
+    'Student Information',
+    '-------------------',
+    `Name: ${ticket.user.full_name || 'Not provided'}`,
+    `Email: ${ticket.user.email || 'Not provided'}`,
+    `Phone: ${ticket.user.phone || 'Not provided'}`,
+    `Registration Number: ${ticket.user.registration_number || 'Not provided'}`,
+    `Branch: ${ticket.user.branch || 'Not provided'}`,
+    '',
+    'Issue Details',
+    '-------------',
+    `Category: ${ticket.category}`,
+    `Subject: ${ticket.subject}`,
+    `Issue Type: ${ticket.issue_type || 'Not provided'}`,
+    `Current Page URL: ${ticket.page_url || 'Not provided'}`,
+    '',
+    `Expected Behavior: ${ticket.expected_behavior || 'Not provided'}`,
+    `Actual Behavior: ${ticket.actual_behavior || 'Not provided'}`,
+    '',
+    'Steps to Reproduce',
+    '------------------',
+    ticket.steps_to_reproduce || 'Not provided',
+    '',
+    'Detailed Message',
+    '----------------',
+    ticket.message,
+    '',
+    `Screenshot Key: ${ticket.screenshot_key || 'No screenshot attached'}`,
+  ].join('\n');
+}
+
+async function readQueryIndex() {
+  try {
+    const raw = await getR2Object(QUERY_INDEX_KEY);
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch (error) {
+    if (String(error.message || '').includes('Object not found')) {
+      return [];
+    }
+    throw error;
+  }
+}
+
+export const submitQueryTicket = async (req, res) => {
+  try {
+    const subject = safeText(req.body.subject);
+    const category = safeText(req.body.category);
+    const message = safeText(req.body.message);
+    const issueType = safeText(req.body.issue_type);
+    const expectedBehavior = safeText(req.body.expected_behavior);
+    const actualBehavior = safeText(req.body.actual_behavior);
+    const stepsToReproduce = safeText(req.body.steps_to_reproduce);
+    const pageUrl = safeText(req.body.page_url);
+
+    if (subject.length < 5 || subject.length > 140) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Subject must be between 5 and 140 characters.',
+      });
+    }
+
+    if (!ALLOWED_QUERY_CATEGORIES.has(category)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Please choose a valid category.',
+      });
+    }
+
+    if (message.length < 20 || message.length > 5000) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Message must be between 20 and 5000 characters.',
+      });
+    }
+
+    if (req.file && !ALLOWED_IMAGE_MIME_TYPES.has(req.file.mimetype)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Screenshot must be JPG, PNG, or WEBP.',
+      });
+    }
+
+    const now = new Date();
+    const ticketId = buildTicketId(now);
+    const year = now.getUTCFullYear();
+
+    let screenshotKey = null;
+    if (req.file) {
+      const ext = extFromMime(req.file.mimetype);
+      screenshotKey = `support/queries/${year}/${ticketId}/screenshot.${ext}`;
+      await uploadToR2(screenshotKey, req.file.buffer, req.file.mimetype, 'private, max-age=0, no-store');
+    }
+
+    const ticket = {
+      ticket_id: ticketId,
+      created_at: now.toISOString(),
+      category,
+      subject,
+      message,
+      issue_type: issueType || null,
+      expected_behavior: expectedBehavior || null,
+      actual_behavior: actualBehavior || null,
+      steps_to_reproduce: stepsToReproduce || null,
+      page_url: pageUrl || null,
+      screenshot_key: screenshotKey,
+      status: 'open',
+      source: 'profile_form',
+      user: {
+        id: req.user.id,
+        full_name: req.user.full_name || req.user.username || null,
+        email: req.user.email || null,
+        phone: req.user.phone || null,
+        registration_number: req.user.registration_number || null,
+        branch: req.user.branch || null,
+      },
+    };
+
+    const jsonKey = `support/queries/${year}/${ticketId}.json`;
+    const textKey = `support/queries/${year}/${ticketId}.txt`;
+    const readableText = toReadableTicketText(ticket);
+
+    await uploadToR2(jsonKey, Buffer.from(JSON.stringify(ticket, null, 2)), 'application/json', 'private, max-age=0, no-store');
+    await uploadToR2(textKey, Buffer.from(readableText), 'text/plain; charset=utf-8', 'private, max-age=0, no-store');
+
+    const existingIndex = await readQueryIndex();
+    existingIndex.unshift({
+      ticket_id: ticketId,
+      created_at: ticket.created_at,
+      status: ticket.status,
+      category: ticket.category,
+      subject: ticket.subject,
+      user_id: ticket.user.id,
+      json_key: jsonKey,
+      text_key: textKey,
+      screenshot_key: screenshotKey,
+    });
+    await uploadToR2(QUERY_INDEX_KEY, Buffer.from(JSON.stringify(existingIndex.slice(0, 2000), null, 2)), 'application/json', 'private, max-age=0, no-store');
+
+    const screenshotUrl = screenshotKey ? await getImageSignedUrl(screenshotKey, 60 * 60 * 24) : null;
+
+    return res.status(201).json({
+      status: 'success',
+      message: 'Query submitted successfully.',
+      data: {
+        ticketId,
+        createdAt: ticket.created_at,
+        status: ticket.status,
+        readableSummary: readableText,
+        screenshotUrl,
+      },
+    });
+  } catch (err) {
+    console.error('submitQueryTicket error:', err.message);
+    return res.status(500).json({ status: 'error', message: 'Failed to submit query. Please try again.' });
+  }
 };
