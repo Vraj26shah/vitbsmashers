@@ -69,6 +69,17 @@
     document.getElementById('loginLink').style.display = 'inline-block';
   }
 
+  function hasValue(value) {
+    return typeof value === 'string' ? value.trim().length > 0 : !!value;
+  }
+
+  function isProfileComplete(profile = {}, backendFlag = false) {
+    if (backendFlag === true) return true;
+    return hasValue(profile.phone) &&
+      hasValue(profile.registration_number || profile.registrationNumber) &&
+      hasValue(profile.branch || profile.program);
+  }
+
   async function handleSession(session) {
     if (!session || !session.access_token) {
       showError('No session found. Please try logging in again.');
@@ -104,11 +115,31 @@
         document.getElementById('status').textContent = 'Success! Redirecting…';
         document.getElementById('sub').textContent = `Welcome, ${name}!`;
 
-        const profileComplete = !!(user.phone && user.registration_number && user.branch);
+        let profileComplete = isProfileComplete(user);
+
+        // Always confirm completion status from profile endpoint after auth.
+        try {
+          const profileRes = await fetch(`${API_BASE}/profile/me`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${data.token}`,
+            },
+            credentials: 'include'
+          });
+
+          if (profileRes.ok) {
+            const profileData = await profileRes.json();
+            const remoteUser = profileData?.data?.user || {};
+            profileComplete = isProfileComplete(remoteUser, profileData?.data?.profileComplete === true);
+            localStorage.setItem('userProfile', JSON.stringify(remoteUser));
+          }
+        } catch (_) {}
+
         setTimeout(() => {
-          window.location.href = profileComplete
+          window.location.href = data.data?.redirectTo || (profileComplete
             ? '/features/marketplace/market.html'
-            : '/features/profile/complete-profile.html';
+            : '/features/profile/complete-profile.html');
         }, 1000);
       } else {
         showError(data.message || 'Server verification failed. Only VIT Bhopal emails are allowed.');

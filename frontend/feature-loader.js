@@ -15,7 +15,6 @@ class FeatureLoader {
         // Listen for auth broadcasts
         this.authChannel.onmessage = (event) => {
             if (event.data.type === 'AUTH_SUCCESS') {
-                console.log('🔔 Received auth broadcast');
                 this.authData = event.data.data;
                 this.isReady = true;
                 this.triggerFeatureLoad();
@@ -25,13 +24,11 @@ class FeatureLoader {
         // Listen for preload broadcasts
         this.preloadChannel.onmessage = (event) => {
             if (event.data.type === 'AUTH_READY') {
-                console.log('🔔 Auth ready broadcast received');
                 this.authData = {
                     user: event.data.user,
                     token: event.data.token
                 };
             } else if (event.data.type === 'PRELOAD_COMPLETE') {
-                console.log('🔔 Preload complete broadcast received');
                 this.preloadedData = event.data.data;
                 this.triggerFeatureLoad();
             }
@@ -48,7 +45,6 @@ class FeatureLoader {
             if (age < 5 * 60 * 1000) { // 5 minutes
                 try {
                     this.preloadedData = JSON.parse(cached);
-                    console.log('✅ Using cached preload data');
                     this.triggerFeatureLoad();
                 } catch (e) {
                     console.warn('Failed to parse cached data');
@@ -82,7 +78,6 @@ class FeatureLoader {
             }
         });
         window.dispatchEvent(event);
-        console.log('📢 Feature data ready event dispatched');
     }
 
     // Get data for specific feature
@@ -146,12 +141,10 @@ window.loadFeatureData = async function(featureName) {
         // Try to get preloaded data first
         const preloaded = window.featureLoader.getFeatureData(featureName);
         if (preloaded) {
-            console.log(`✅ Using preloaded data for ${featureName}`);
             return preloaded;
         }
 
         // If not available, wait for it (with timeout)
-        console.log(`⏳ Waiting for ${featureName} data...`);
         const data = await window.featureLoader.waitForData(featureName, 3000);
         return data;
     } catch (error) {
@@ -160,4 +153,3 @@ window.loadFeatureData = async function(featureName) {
     }
 };
 
-console.log('📡 Feature Loader initialized');

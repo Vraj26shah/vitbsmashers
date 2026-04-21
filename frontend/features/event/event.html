@@ -6,6 +6,7 @@
     <title>Scholars Stack - Event Management</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../shared-feature-shell.css">
     <script src="../../config.js"></script>
     <script src="../../shared-auth.js"></script>
     <script src="../../shared-admin-auth.js"></script>
@@ -1366,6 +1367,105 @@
                 max-width: 1500px;
             }
         }
+        /* Faculty/Club parity overrides for Event page */
+        .tabs {
+            gap: 15px;
+            border-radius: 14px;
+            padding: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+        }
+
+        .tab-btn {
+            padding: 14px 24px;
+            border-radius: 10px;
+            min-width: 200px;
+            flex: 1;
+            justify-content: center;
+        }
+
+        .tab-btn.active,
+        .tab-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: none;
+        }
+
+        .event-registration {
+            border-radius: 14px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            background: rgba(44, 62, 80, 0.8);
+            border: 1px solid rgba(52, 152, 219, 0.3);
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            border-color: var(--accent-teal);
+            box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.3);
+        }
+
+        .submit-btn {
+            padding: 16px 25px;
+            border-radius: 12px;
+        }
+
+        .event-grid {
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .event-card {
+            background: transparent;
+            border: none;
+            border-radius: 14px;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+
+        .event-card:hover {
+            transform: none;
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .event-info {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        .event-title {
+            font-size: 20px;
+        }
+
+        .event-footer {
+            margin-top: auto;
+        }
+
+        .register-btn,
+        .update-btn {
+            padding: 10px 18px;
+            border-radius: 10px;
+        }
+
+        .admin-panel {
+            border-radius: 14px;
+            padding: 25px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .admin-tab-btn.active,
+        .admin-tab-btn:hover {
+            transform: translateY(-2px);
+        }
+
     </style>
 </head>
 <body>
@@ -1384,7 +1484,7 @@
                 <img src="../images/logo1.png" alt="Scholars Stack Logo">
                 <div class="logo-text">
                     <h1>Scholars Stack</h1>
-                    <span>Events</span>
+                    <span>Premium Academic Resources</span>
                 </div>
             </a>
         </div>
@@ -1417,7 +1517,7 @@
          <div class="sidebar-title">Resources</div>
          <ul class="sidebar-menu">
              <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
-             <li><a href="#" ><i class='bx bxs-group'></i> Club Info</a></li>
+             <li><a href="/features/club/club.html?sidebar=active"><i class='bx bxs-group'></i> Club Info</a></li>
              <li><a href="../faculty/faculty.html" ><i class='bx bxs-group'></i> Faculty Info</a></li>
              <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
          </ul>
@@ -2536,30 +2636,18 @@
 
         // Simulate sending approval email
         function sendApprovalEmail(email, eventName) {
-            console.log(`Sending approval email to ${email}`);
-            console.log(`Subject: Your Event "${eventName}" Has Been Approved!`);
-            console.log(`Body: Congratulations! Your event registration for "${eventName}" has been approved and is now listed on the Scholars Stack platform.`);
         }
 
         // Simulate sending rejection email
         function sendRejectionEmail(email, eventName) {
-            console.log(`Sending rejection email to ${email}`);
-            console.log(`Subject: Your Event Registration for "${eventName}"`);
-            console.log(`Body: Thank you for your event registration. After review, we've decided not to approve "${eventName}" at this time. Please contact us for more information.`);
         }
         
         // Simulate sending update approval email
         function sendUpdateApprovalEmail(email, eventName) {
-            console.log(`Sending update approval email to ${email}`);
-            console.log(`Subject: Event Update Approved for "${eventName}"`);
-            console.log(`Body: Your requested updates for "${eventName}" have been approved and are now live on the Scholars Stack platform.`);
         }
         
         // Simulate sending update rejection email
         function sendUpdateRejectionEmail(email, eventName) {
-            console.log(`Sending update rejection email to ${email}`);
-            console.log(`Subject: Event Update Rejected for "${eventName}"`);
-            console.log(`Body: Your requested updates for "${eventName}" have been reviewed but not approved at this time. Please contact us for more information.`);
         }
 
         // Event registration form
@@ -2847,16 +2935,10 @@
 
         // Simulate sending admin notification
         function sendAdminNotification(event) {
-            console.log(`Sending admin notification for new event: ${event.name}`);
-            console.log(`Subject: New Event Registration - ${event.name}`);
-            console.log(`Body: A new event "${event.name}" has been registered by ${event.facultyIncharge}. Please review it in the admin panel.`);
         }
         
         // Simulate sending update notification
         function sendUpdateNotification(update) {
-            console.log(`Sending admin notification for event update: ${update.eventName}`);
-            console.log(`Subject: Event Update Request - ${update.eventName}`);
-            console.log(`Body: An update request for "${update.eventName}" has been submitted. Please review it in the admin panel.`);
         }
 
         // Check URL parameters for sidebar activation

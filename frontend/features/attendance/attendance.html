@@ -6,6 +6,7 @@
     <title>Scholars Stack - Attendance Calculator</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../shared-feature-shell.css">
     <link rel="stylesheet" href="attendance.css">
     <style>
         /* Hide content until data is loaded */
@@ -61,7 +62,7 @@
                 <img src="../images/logo1.png" alt="Scholars Stack Logo">
                 <div class="logo-text">
                     <h1>Scholars Stack</h1>
-                    <span>Attendance Calculator</span>
+                    <span>Premium Academic Resources</span>
                 </div>
             </a>
         </div>
@@ -93,7 +94,7 @@
         <div class="sidebar-title">Resources</div>
         <ul class="sidebar-menu">
             <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
-            <li><a href="#" ><i class='bx bxs-group'></i> Club Info</a></li>
+            <li><a href="/features/club/club.html?sidebar=active"><i class='bx bxs-group'></i> Club Info</a></li>
             <li><a href="../faculty/faculty.html" ><i class='bx bxs-group'></i> Faculty Info</a></li>
             <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
         </ul>
@@ -255,12 +256,10 @@
 // When missing classes: total increases, attended stays constant
 // Must maintain rounded percentage > 75% (not equal to 75%)
 function maxSafeMisses(attended, total, minPercentage = 76) {
-    console.log('maxSafeMisses input:', { attended, total, minPercentage });
     
     // If current attendance is not above 75%, can't miss any
     const currentRoundedP = Math.round((attended / total) * 100);
     if (currentRoundedP <= 75) {
-        console.log('maxSafeMisses result: 0 (not above 75%)');
         return 0;
     }
     
@@ -279,14 +278,12 @@ function maxSafeMisses(attended, total, minPercentage = 76) {
         }
     }
     
-    console.log('maxSafeMisses result:', canMiss);
     return canMiss;
 }
 
 // Function to calculate min required attend with rounding
 // Must reach rounded percentage > 75% (not equal to 75%)
 function minRequiredAttend(attended, total, minPercentage = 76) {
-    console.log('minRequiredAttend input:', { attended, total, minPercentage });
     let low = 0;
     let high = 10000;
     let ans = high;
@@ -296,7 +293,6 @@ function minRequiredAttend(attended, total, minPercentage = 76) {
         let newAttended = attended + mid;
         let rawP = (newAttended / newTotal) * 100;
         let roundedP = Math.round(rawP);
-        console.log('minRequiredAttend iteration:', { low, high, mid, rawP, roundedP });
         if (roundedP > 75) {
             ans = mid;
             high = mid - 1;
@@ -304,7 +300,6 @@ function minRequiredAttend(attended, total, minPercentage = 76) {
             low = mid + 1;
         }
     }
-    console.log('minRequiredAttend result:', ans);
     return ans;
 }
 
@@ -319,7 +314,6 @@ function getRoundedPercentage(rawPercentage) {
 // Above 75% = 1 mark, Above 80% = 2 marks, Above 85% = 3 marks
 // Above 90% = 4 marks, Above 95% = 5 marks
 function calculateMarks(roundedPercentage) {
-    console.log('calculateMarks input:', roundedPercentage);
     if (roundedPercentage < 75) return 0; // Below 75% - cannot give exam
     if (roundedPercentage > 95) return 5;
     if (roundedPercentage > 90) return 4;
@@ -331,7 +325,6 @@ function calculateMarks(roundedPercentage) {
 
 // Update marks visualization
 function updateMarksVisualization(marks) {
-    console.log('updateMarksVisualization:', marks);
     for (let i = 1; i <= 5; i++) {
         const markElement = document.getElementById(`mark${i}`);
         if (markElement) {
@@ -358,7 +351,6 @@ function calculateAttendance({
     marksAwarded,
     marksValue
 }) {
-    console.log('calculateAttendance started');
     const totalClasses = parseInt(totalClassesInput.value);
     const attendedClasses = parseInt(attendedClassesInput.value);
 
@@ -418,15 +410,6 @@ function calculateAttendance({
     requiredClasses.textContent = required;
     allowedAbsences.textContent = allowed;
 
-    console.log('calculateAttendance result:', {
-        totalClasses,
-        attendedClasses,
-        rawP: rawP.toFixed(2),
-        roundedP,
-        required,
-        allowed,
-        marks
-    });
 
     return {
         total: totalClasses,
@@ -444,7 +427,6 @@ function loadSubjects() {
         const saved = localStorage.getItem('attendanceSubjects');
         if (saved) {
             subjects = JSON.parse(saved);
-            console.log('Subjects loaded:', subjects);
         }
     } catch (error) {
         console.error('Error loading subjects from localStorage:', error);
@@ -456,7 +438,6 @@ function loadSubjects() {
 function saveSubjects() {
     try {
         localStorage.setItem('attendanceSubjects', JSON.stringify(subjects));
-        console.log('Subjects saved:', subjects);
     } catch (error) {
         console.error('Error saving subjects to localStorage:', error);
     }
@@ -464,7 +445,6 @@ function saveSubjects() {
 
 // Render subjects
 function renderSubjects(elements) {
-    console.log('renderSubjects called with subjects:', subjects);
     const subjectList = elements.subjectList || document.getElementById('subjectList');
     const subjectCount = elements.subjectCount || document.getElementById('subjectCount');
     
@@ -539,7 +519,6 @@ function renderSubjects(elements) {
 
 // Edit subject
 function editSubject(index) {
-    console.log('editSubject:', index);
     const subject = subjects[index];
     const elements = {
         subjectNameInput: document.getElementById('subjectName'),
@@ -570,7 +549,6 @@ function editSubject(index) {
 
 // Delete subject
 function deleteSubject(index) {
-    console.log('deleteSubject:', index);
     subjects.splice(index, 1);
     saveSubjects();
     const elements = {
@@ -582,7 +560,6 @@ function deleteSubject(index) {
 
 // Save subject
 function saveSubject(e, elements) {
-    console.log('saveSubject called');
     e.preventDefault();
     const subjectData = calculateAttendance(elements);
     if (!subjectData) return;
@@ -621,7 +598,6 @@ function saveSubject(e, elements) {
 
 // Reset form
 function resetForm(elements) {
-    console.log('resetForm called');
     elements.subjectNameInput.value = '';
     elements.totalClassesInput.value = '';
     elements.attendedClassesInput.value = '';
@@ -637,7 +613,6 @@ function resetForm(elements) {
 
 // Clear all subjects
 function clearAllSubjects(e, elements) {
-    console.log('clearAllSubjects called');
     e.preventDefault();
     if (subjects.length === 0) return;
 
@@ -650,7 +625,6 @@ function clearAllSubjects(e, elements) {
 
 // Create background particles
 function createParticles(bgParticles) {
-    console.log('createParticles called');
     const particleCount = 8;
 
     for (let i = 0; i < particleCount; i++) {
@@ -683,7 +657,6 @@ function checkSidebarActivation() {
 
 // Initialize application
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('DOM fully loaded');
 
     // Check for sidebar activation from URL
     checkSidebarActivation();
@@ -726,7 +699,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Toggle sidebar
     elements.menuToggle.addEventListener('click', (e) => {
-        console.log('menuToggle clicked');
         e.preventDefault();
         elements.sidebar.classList.toggle('active');
     });
@@ -735,7 +707,6 @@ document.addEventListener('DOMContentLoaded', () => {
         if (elements.sidebar.classList.contains('active') &&
             !elements.sidebar.contains(e.target) &&
             !elements.menuToggle.contains(e.target)) {
-            console.log('Closing sidebar');
             elements.sidebar.classList.remove('active');
         }
     });
@@ -755,29 +726,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Event listeners
     elements.calculateBtn.addEventListener('click', (e) => {
-        console.log('calculateBtn clicked');
         e.preventDefault();
         calculateAttendance(elements);
     });
 
     elements.saveSubjectBtn.addEventListener('click', (e) => {
-        console.log('saveSubjectBtn clicked');
         saveSubject(e, elements);
     });
 
     elements.resetFormBtn.addEventListener('click', (e) => {
-        console.log('resetFormBtn clicked');
         e.preventDefault();
         resetForm(elements);
     });
 
     elements.clearAllBtn.addEventListener('click', (e) => {
-        console.log('clearAllBtn clicked');
         clearAllSubjects(e, elements);
     });
 
     // Initial setup
-    console.log('Initializing app');
     createParticles(elements.bgParticles);
     updateMarksVisualization(0);
 });   </script>

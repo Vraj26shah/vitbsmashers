@@ -9,6 +9,12 @@ class AuthManager {
 
     async init() {
         await this.checkAuthentication();
+        await this.hydrateProfileCompletion();
+
+        if (this.isAuthenticated && this.pageRequiresCompleteProfile() && !this.isProfileComplete(this.userData)) {
+            this.showCompleteProfileRequired();
+            return;
+        }
         
         // Normalize display name immediately after authentication check
         if (this.userData) {
@@ -37,6 +43,7 @@ class AuthManager {
             }
 
             const token = localStorage.getItem('token');
+            this.syncUserScopedCache(token);
 
             // Load cached user data
             const storedUserData = localStorage.getItem('userProfile');
@@ -80,6 +87,17 @@ class AuthManager {
                     }
                 }
 
+                // If bearer token path still fails, try cookie-only validation.
+                // This prevents false "Login Required" screens when local token is stale
+                // but httpOnly session cookie is valid.
+                if (response.status === 401) {
+                    response = await fetch(`${API_BASE}/validate-token`, {
+                        method: 'GET',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'include'
+                    });
+                }
+
                 if (response.ok) {
                     const data = await response.json();
                     if (data.valid && data.user) {
@@ -91,6 +109,7 @@ class AuthManager {
                         this.normalizeDisplayName(this.userData);
                         
                         localStorage.setItem('userProfile', JSON.stringify(this.userData));
+                        this.syncProfileDataForUser(this.userData);
                         
                         // Broadcast auth and trigger preload
                         if (window.preloadManager) {
@@ -141,6 +160,65 @@ class AuthManager {
         }
     }
 
+    getTokenPayload(token) {
+        try {
+            if (!token) return null;
+            const parts = token.split('.');
+            if (parts.length < 2) return null;
+            return JSON.parse(atob(parts[1]));
+        } catch {
+            return null;
+        }
+    }
+
+    syncUserScopedCache(token) {
+        const payload = this.getTokenPayload(token);
+        if (!payload) return;
+
+        const tokenUserId = payload.sub || null;
+        const tokenEmail = payload.email || null;
+
+        try {
+            const raw = localStorage.getItem('userProfile');
+            if (raw) {
+                const cached = JSON.parse(raw);
+                const sameId = tokenUserId && cached?.id ? cached.id === tokenUserId : true;
+                const sameEmail = tokenEmail && cached?.email ? cached.email === tokenEmail : true;
+                if (!sameId || !sameEmail) {
+                    localStorage.removeItem('userProfile');
+                    localStorage.removeItem('profileData');
+                    localStorage.removeItem('profileCompleted');
+                }
+            }
+        } catch {
+            localStorage.removeItem('userProfile');
+            localStorage.removeItem('profileData');
+            localStorage.removeItem('profileCompleted');
+        }
+    }
+
+    syncProfileDataForUser(user) {
+        if (!user) return;
+        try {
+            const rawProfileData = localStorage.getItem('profileData');
+            if (!rawProfileData) return;
+            const cached = JSON.parse(rawProfileData);
+            const cachedEmail = cached?.email || null;
+            const cachedReg = cached?.regNumber || cached?.registrationNumber || cached?.registration_number || null;
+            const userEmail = user?.email || null;
+            const userReg = user?.registration_number || user?.registrationNumber || user?.regNumber || null;
+            const emailMismatch = userEmail && cachedEmail && userEmail !== cachedEmail;
+            const regMismatch = userReg && cachedReg && userReg !== cachedReg;
+            if (emailMismatch || regMismatch) {
+                localStorage.removeItem('profileData');
+                localStorage.removeItem('profileCompleted');
+            }
+        } catch {
+            localStorage.removeItem('profileData');
+            localStorage.removeItem('profileCompleted');
+        }
+    }
+
     // Attempt to refresh the access token using the stored refresh token
     async _tryRefreshToken(apiBase) {
         const refreshToken = localStorage.getItem('refreshToken');
@@ -171,9 +249,179 @@ class AuthManager {
         localStorage.removeItem('refreshToken');
         localStorage.removeItem('cart');
         localStorage.removeItem('userProfile');
+        localStorage.removeItem('profileData');
+        localStorage.removeItem('profileCompleted');
         this.isAuthenticated = false;
         this.userEmail = null;
         this.userData = null;
+    }
+
+    isProfileComplete(userData) {
+        const hasValue = (value) => typeof value === 'string' ? value.trim().length > 0 : !!value;
+        const candidate = userData || this.userData || {};
+
+        if (candidate.profile_completed === true || candidate.profileComplete === true || candidate.profileCompleted === true) {
+            return true;
+        }
+
+        // Fallback to cached profile state to avoid false negatives from partial auth payloads
+        try {
+            const profileCompletedFlag = localStorage.getItem('profileCompleted') === 'true';
+            const rawProfileData = localStorage.getItem('profileData');
+            if (profileCompletedFlag) return true;
+            if (rawProfileData) {
+                const cached = JSON.parse(rawProfileData);
+                if (cached.profileCompleted === true || cached.profile_complete === true) return true;
+                if (
+                    hasValue(cached.phone) &&
+                    hasValue(cached.registration_number || cached.registrationNumber || cached.regNumber) &&
+                    hasValue(cached.branch || cached.program)
+                ) return true;
+            }
+        } catch (_) {}
+
+        return hasValue(candidate.phone) &&
+               hasValue(candidate.registration_number || candidate.registrationNumber || candidate.regNumber) &&
+               hasValue(candidate.branch || candidate.program);
+    }
+
+    async hydrateProfileCompletion() {
+        if (!this.isAuthenticated) return;
+        try {
+            const API_BASE = window.config ? window.config.API_BASE : '/api/v1';
+            const token = localStorage.getItem('token');
+            const headers = { 'Content-Type': 'application/json' };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const response = await fetch(`${API_BASE}/profile/me`, {
+                method: 'GET',
+                headers,
+                credentials: 'include'
+            });
+
+            if (!response.ok) return;
+            const data = await response.json();
+            const profile = data?.data?.user || data?.user || null;
+            if (!profile) return;
+
+            this.userData = { ...(this.userData || {}), ...profile };
+            localStorage.setItem('userProfile', JSON.stringify(this.userData));
+
+            const hasValue = (value) => typeof value === 'string' ? value.trim().length > 0 : !!value;
+            const completed =
+                profile.profile_completed === true ||
+                profile.profileComplete === true ||
+                profile.profileCompleted === true ||
+                (
+                    hasValue(profile.phone) &&
+                    hasValue(profile.registration_number || profile.registrationNumber || profile.regNumber) &&
+                    hasValue(profile.branch || profile.program)
+                );
+
+            localStorage.setItem('profileCompleted', String(completed));
+            const existingProfileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+            localStorage.setItem('profileData', JSON.stringify({
+                ...existingProfileData,
+                ...profile,
+                regNumber: profile.registration_number || profile.registrationNumber || profile.regNumber || existingProfileData.regNumber,
+                registrationNumber: profile.registration_number || profile.registrationNumber || profile.regNumber || existingProfileData.registrationNumber,
+                program: profile.branch || profile.program || existingProfileData.program,
+                branch: profile.branch || profile.program || existingProfileData.branch,
+                profileCompleted: completed,
+                lastUpdated: new Date().toISOString()
+            }));
+        } catch (_) {}
+    }
+
+    pageRequiresCompleteProfile() {
+        const currentPath = window.location.pathname;
+        return currentPath.includes('/features/profile/profile.html');
+    }
+
+    showCompleteProfileRequired() {
+        const returnTo = window.location.pathname + window.location.search;
+        const isProfilePage = returnTo.includes('/features/profile/profile.html');
+        const completeProfileHref = isProfilePage
+            ? '/features/profile/complete-profile.html?source=profile'
+            : '/features/profile/complete-profile.html';
+        try {
+            localStorage.setItem('profileCompletionReturnTo', returnTo);
+        } catch (_) {}
+
+        document.body.innerHTML = `
+            <div style="
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                min-height: 100vh;
+                background: linear-gradient(135deg, #0a1423 0%, #0f1a2a 100%);
+                color: #ecf0f1;
+                text-align: center;
+                padding: 20px;
+            ">
+                <div style="
+                    background: rgba(15, 26, 42, 0.85);
+                    backdrop-filter: blur(10px);
+                    border-radius: 20px;
+                    padding: 40px;
+                    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+                    border: 2px solid #3498db;
+                    max-width: 560px;
+                    width: 100%;
+                ">
+                    <i class='bx bx-user-check' style="
+                        font-size: 60px;
+                        color: #3498db;
+                        margin-bottom: 20px;
+                    "></i>
+                    <h1 style="
+                        font-size: 28px;
+                        margin-bottom: 15px;
+                        color: #ecf0f1;
+                    ">Complete Your Profile</h1>
+                    <p style="
+                        font-size: 16px;
+                        margin-bottom: 30px;
+                        color: #ddd;
+                        line-height: 1.6;
+                    ">
+                        Please complete your profile before accessing this section.
+                    </p>
+                    <div style="display: flex; gap: 15px; justify-content: center; flex-wrap: wrap;">
+                        <a href="${completeProfileHref}" style="
+                            background: #3498db;
+                            color: white;
+                            padding: 12px 24px;
+                            border-radius: 10px;
+                            text-decoration: none;
+                            font-weight: 600;
+                            transition: all 0.3s ease;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 8px;
+                        " onmouseover="this.style.background='#2980b9'" onmouseout="this.style.background='#3498db'">
+                            <i class='bx bx-edit'></i> Complete Profile
+                        </a>
+                        <button onclick="window.history.back()" style="
+                            background: transparent;
+                            color: #3498db;
+                            border: 2px solid #3498db;
+                            padding: 12px 24px;
+                            border-radius: 10px;
+                            font-weight: 600;
+                            cursor: pointer;
+                            transition: all 0.3s ease;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 8px;
+                        " onmouseover="this.style.background='#3498db'; this.style.color='white'" onmouseout="this.style.background='transparent'; this.style.color='#3498db'">
+                            <i class='bx bx-arrow-back'></i> Go Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
     }
 
     // Update UI based on authentication status
@@ -263,7 +511,6 @@ class AuthManager {
         // Store it permanently - this will NEVER change
         userData.displayName = name;
         localStorage.setItem('userProfile', JSON.stringify(userData));
-        console.log('✅ Display name locked permanently:', name || 'No name');
     }
 
     // Get user initials for avatar
@@ -440,21 +687,24 @@ window.authManager = authManager;
 
 // Initialize when DOM is ready
 document.addEventListener('DOMContentLoaded', function () {
-    // Add logout event listeners
-    document.querySelectorAll('.logout-link').forEach(link => {
+    const logoutLinks = new Set([
+        ...document.querySelectorAll('.logout-link'),
+        ...Array.from(document.querySelectorAll('.sidebar-menu a')).filter(link =>
+            (link.textContent || '').includes('Logout') || link.classList.contains('logout-link')
+        )
+    ]);
+
+    logoutLinks.forEach(link => {
+        if (link.dataset.logoutBound === 'true') return;
+        link.dataset.logoutBound = 'true';
+
         link.addEventListener('click', function (e) {
             e.preventDefault();
-            authManager.logout();
-        });
-    });
-
-    // Handle sidebar logout links
-    document.querySelectorAll('.sidebar-menu a').forEach(link => {
-        if (link.textContent.includes('Logout') || link.classList.contains('logout-link')) {
-            link.addEventListener('click', function (e) {
-                e.preventDefault();
-                authManager.logout();
+            if (window.__logoutInProgress) return;
+            window.__logoutInProgress = true;
+            Promise.resolve(authManager.logout()).finally(() => {
+                setTimeout(() => { window.__logoutInProgress = false; }, 1200);
             });
-        }
+        });
     });
 });

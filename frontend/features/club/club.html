@@ -6,6 +6,7 @@
     <title>Scholars Stack - Club Info</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../shared-feature-shell.css">
     <link rel="stylesheet" href="../../shared-background.css">
     <link rel="stylesheet" href="club.css">
     <script src="../../config.js"></script>
@@ -30,7 +31,7 @@
                 <img src="../images/logo1.png" alt="Scholars Stack Logo">
                 <div class="logo-text">
                     <h1>Scholars Stack</h1>
-                    <span>Club Info</span>
+                    <span>Premium Academic Resources</span>
                 </div>
             </a>
         </div>
@@ -418,17 +419,44 @@
             });
         });
 
+        function checkSidebarActivation() {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (!sidebar) return;
+
+            const source = urlParams.get('source');
+            let isFromIndex = source === 'index';
+
+            if (!isFromIndex) {
+                try {
+                    if (document.referrer) {
+                        const refUrl = new URL(document.referrer);
+                        const refPath = refUrl.pathname || '';
+                        isFromIndex =
+                            refUrl.origin === window.location.origin &&
+                            (refPath === '/' || refPath.endsWith('/index.html'));
+                    }
+                } catch (_) {}
+            }
+
+            if (urlParams.get('sidebar') === 'active' && isFromIndex) {
+                sidebar.classList.add('active');
+            } else {
+                sidebar.classList.remove('active');
+            }
+        }
+
         // Tabs
         const tabBtns = document.querySelectorAll('.tab-btn');
         const tabContents = document.querySelectorAll('.tab-content');
         const pendingContentSection = document.getElementById('pending-tab');
 
-        function enforcePendingPanelVisibility(activeTabId, isAdminUser) {
+        function enforcePendingPanelVisibility(activeTabId) {
             if (!pendingContentSection) return;
-
+            // Only hide if the pending tab is NOT currently the active tab.
+            // Never hide when an admin has already opened it.
             if (isAdminUser && activeTabId === 'pending') {
-                pendingContentSection.style.setProperty('display', '', 'important');
-            } else {
+                pendingContentSection.style.removeProperty('display');
+            } else if (activeTabId !== 'pending') {
                 pendingContentSection.classList.remove('active');
                 pendingContentSection.style.setProperty('display', 'none', 'important');
             }
@@ -438,19 +466,25 @@
             btn.addEventListener('click', async () => {
                 // Check if this is the pending tab and verify admin access
                 if (btn.dataset.tab === 'pending') {
-                    const isAdmin = await verifyAdminAccess();
-                    if (!isAdmin) {
+                    if (!isAdminUser) {
                         showToast('Access denied. Admin privileges required.', 'error');
                         return;
                     }
                 }
-                
+
                 tabBtns.forEach(b => b.classList.remove('active'));
                 tabContents.forEach(c => c.classList.remove('active'));
                 btn.classList.add('active');
-                document.getElementById(`${btn.dataset.tab}-tab`).classList.add('active');
-                enforcePendingPanelVisibility(btn.dataset.tab, true);
-                if (btn.dataset.tab === 'pending') loadPendingData();
+                const targetSection = document.getElementById(`${btn.dataset.tab}-tab`);
+                targetSection.classList.add('active');
+
+                if (btn.dataset.tab === 'pending') {
+                    // Pin the pending section as visible so async callbacks cannot hide it
+                    pendingContentSection.style.removeProperty('display');
+                    loadPendingData();
+                } else {
+                    enforcePendingPanelVisibility(btn.dataset.tab);
+                }
             });
         });
 
@@ -464,11 +498,7 @@
             });
         });
 
-        // Sidebar URL param
-        (function() {
-            const p = new URLSearchParams(window.location.search);
-            if (p.get('sidebar') === 'active') sidebar.classList.add('active');
-        })();
+        // Keep club sidebar collapsed on entry for consistency with feature flow.
 
         // ── Toast ───────────────────────────────────────────────────────────────
         function showToast(msg, type = 'success') {
@@ -514,6 +544,7 @@
 
         // ── State ───────────────────────────────────────────────────────────────
         let approvedClubs = [];   // cache for update-form select
+        let isAdminUser   = false; // cached admin flag – set once by checkAdminAccess
 
         // ── Logo helper ─────────────────────────────────────────────────────────
         function logoElement(club, size = 72) {
@@ -543,10 +574,6 @@
                 const json = await res.json();
 
                 if (!res.ok) {
-                    // Check if it's a database table error
-                    if (json.message && json.message.includes('content.clubs')) {
-                        throw new Error('DATABASE_NOT_SETUP');
-                    }
                     throw new Error(json.message || 'Failed to load clubs');
                 }
 
@@ -554,29 +581,18 @@
                 renderClubGrid(approvedClubs);
                 populateClubSelect(approvedClubs);
             } catch (err) {
-                if (err.message === 'DATABASE_NOT_SETUP') {
-                    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#7f8c8d;max-width:600px;margin:0 auto;">
-                        <i class='bx bx-error-circle' style="font-size:48px;color:#e74c3c;"></i>
-                        <h3 style="color:#ecf0f1;margin-top:16px;margin-bottom:12px;">Database Not Set Up</h3>
-                        <p style="margin-bottom:16px;line-height:1.6;">The clubs database table hasn't been created yet. Please run the setup script:</p>
-                        <div style="background:rgba(26,37,47,0.9);padding:16px;border-radius:8px;margin:20px 0;text-align:left;">
-                            <code style="color:#2ecc71;font-family:monospace;font-size:14px;">cd backend && node setup-clubs-db.js</code>
-                        </div>
-                        <p style="font-size:14px;color:#95a5a6;margin-top:16px;">This will create the necessary tables and seed sample club data.</p>
-                    </div>`;
-                } else {
-                    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#7f8c8d;">
-                        <i class='bx bx-error-circle' style="font-size:48px;color:#e74c3c;"></i>
-                        <p style="margin-top:12px;color:#ecf0f1;font-size:16px;margin-bottom:8px;">Could not load clubs</p>
-                        <p style="color:#95a5a6;font-size:14px;margin-bottom:20px;">${err.message}</p>
-                        <button onclick="loadClubs()" style="margin-top:16px;background:#3498db;color:#fff;
-                            border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;
-                            font-weight:600;transition:all 0.3s ease;" 
-                            onmouseover="this.style.background='#2980b9'" 
-                            onmouseout="this.style.background='#3498db'">
-                            <i class='bx bx-refresh'></i> Retry
-                        </button></div>`;
-                }
+                grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#7f8c8d;">
+                    <i class='bx bxs-group' style="font-size:54px;color:#3498db;opacity:0.5;"></i>
+                    <p style="margin-top:16px;color:#ecf0f1;font-size:18px;font-weight:600;margin-bottom:8px;">No Clubs Available</p>
+                    <p style="color:#95a5a6;font-size:14px;margin-bottom:24px;">Club information is not available at the moment. Please check back later.</p>
+                    <button onclick="loadClubs()" style="background:#3498db;color:#fff;
+                        border:none;padding:12px 28px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;
+                        font-weight:600;font-size:14px;transition:all 0.3s ease;"
+                        onmouseover="this.style.background='#2980b9'"
+                        onmouseout="this.style.background='#3498db'">
+                        <i class='bx bx-refresh'></i> Retry
+                    </button>
+                </div>`;
             }
         }
 
@@ -871,11 +887,9 @@
 
         // ── Admin Panel ─────────────────────────────────────────────────────────
         async function loadPendingData() {
-            // Verify admin access before loading
-            const isAdmin = await checkAdminAccess();
-            if (!isAdmin) {
+            // Use cached admin flag – no network round-trip needed here
+            if (!isAdminUser) {
                 showToast('Access denied. Admin privileges required.', 'error');
-                // Switch back to browse tab
                 document.querySelector('[data-tab="clubs"]').click();
                 return;
             }
@@ -885,10 +899,8 @@
         async function loadPendingClubs() {
             const container = document.getElementById('pendingClubs');
             container.innerHTML = '<p style="color:#7f8c8d;padding:20px;">Loading...</p>';
-            
-            // Verify admin access
-            const isAdmin = await verifyAdminAccess();
-            if (!isAdmin) {
+
+            if (!isAdminUser) {
                 container.innerHTML = '<p style="color:#e74c3c;padding:20px;"><i class="bx bx-lock"></i> Access denied. Admin privileges required.</p>';
                 return;
             }
@@ -1017,10 +1029,8 @@
         async function loadPendingUpdates() {
             const container = document.getElementById('pendingUpdates');
             container.innerHTML = '<p style="color:#7f8c8d;padding:20px;">Loading...</p>';
-            
-            // Verify admin access
-            const isAdmin = await verifyAdminAccess();
-            if (!isAdmin) {
+
+            if (!isAdminUser) {
                 container.innerHTML = '<p style="color:#e74c3c;padding:20px;"><i class="bx bx-lock"></i> Access denied. Admin privileges required.</p>';
                 return;
             }
@@ -1239,18 +1249,32 @@
             document.body.appendChild(messageDiv);
         }
 
-        // Check if user is admin and show pending tab
+        // Check if user is admin and show/hide the pending tab accordingly.
+        // Sets the module-level `isAdminUser` flag so that tab-click handlers
+        // and enforcePendingPanelVisibility can use the cached result without
+        // firing extra network requests.
         async function checkAdminAccess() {
             const token = localStorage.getItem('scholars_token') || localStorage.getItem('token');
             const pendingTab = document.getElementById('pendingTab');
-            
-            if (!token) {
-                // Hide pending tab for non-logged-in users
+
+            const hidePendingTab = () => {
                 if (pendingTab) {
                     pendingTab.classList.add('admin-only');
                     pendingTab.style.setProperty('display', 'none', 'important');
                 }
-                enforcePendingPanelVisibility('clubs', false);
+                // Only hide the pending panel if it is NOT currently the active tab
+                const activeTab = document.querySelector('.tab-btn.active');
+                if (!activeTab || activeTab.dataset.tab !== 'pending') {
+                    if (pendingContentSection) {
+                        pendingContentSection.classList.remove('active');
+                        pendingContentSection.style.setProperty('display', 'none', 'important');
+                    }
+                }
+            };
+
+            if (!token) {
+                isAdminUser = false;
+                hidePendingTab();
                 return false;
             }
 
@@ -1265,38 +1289,22 @@
                 if (response.ok) {
                     const data = await response.json();
                     if (data.isAdmin) {
-                        // Show pending requests tab for admin only
+                        isAdminUser = true;
                         if (pendingTab) {
                             pendingTab.classList.remove('admin-only');
                             pendingTab.style.setProperty('display', 'flex', 'important');
                         }
-                        enforcePendingPanelVisibility('clubs', true);
+                        // Do NOT touch the pending content panel here – the user may
+                        // already be viewing it and we must not hide it.
                         return true;
-                    } else {
-                        // Hide for non-admin users
-                        if (pendingTab) {
-                            pendingTab.classList.add('admin-only');
-                            pendingTab.style.setProperty('display', 'none', 'important');
-                        }
-                        enforcePendingPanelVisibility('clubs', false);
                     }
-                } else {
-                    // Hide on error
-                    if (pendingTab) {
-                        pendingTab.classList.add('admin-only');
-                        pendingTab.style.setProperty('display', 'none', 'important');
-                    }
-                    enforcePendingPanelVisibility('clubs', false);
                 }
             } catch (error) {
                 console.error('Admin check failed:', error);
-                // Hide on error
-                if (pendingTab) {
-                    pendingTab.classList.add('admin-only');
-                    pendingTab.style.setProperty('display', 'none', 'important');
-                }
-                enforcePendingPanelVisibility('clubs', false);
             }
+
+            isAdminUser = false;
+            hidePendingTab();
             return false;
         }
 
@@ -1332,7 +1340,8 @@
                 pendingTab.style.setProperty('display', 'none', 'important');
             }
             enforcePendingPanelVisibility('clubs', false);
-            
+
+            checkSidebarActivation();
             createParticles();
             loadClubs();
             startPolling();

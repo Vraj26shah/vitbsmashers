@@ -46,10 +46,8 @@ class UserAuth {
     }
 
     applyAuthRestrictions() {
-        // TEMPORARILY DISABLED: User requested to bypass login checks for profile/features testing
-        // this.hideUserElements();
-        // this.showAccessDeniedMessage();
-        console.log("Authentication restrictions temporarily disabled for development.");
+        this.hideUserElements();
+        this.showAccessDeniedMessage();
     }
 
     hideUserElements() {

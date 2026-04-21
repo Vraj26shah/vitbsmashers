@@ -53,11 +53,13 @@ const corsOptions = {
       'https://vitbsmashers-main.vercel.app',
       'https://vitbsmashers.onrender.com',
       'https://vitbsmashers-backend.onrender.com',
+      process.env.FRONTEND_URL,
       /^https:\/\/.*\.vercel\.app$/,
       /^https:\/\/.*\.onrender\.com$/,
+      /^https:\/\/([a-z0-9-]+\.)?razorpay\.com$/i,
       /^https?:\/\/localhost(:\d+)?$/,
       /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
-    ];
+    ].filter(Boolean);
 
     const isAllowed = allowedOrigins.some(allowed => {
       if (typeof allowed === 'string') {
@@ -66,10 +68,13 @@ const corsOptions = {
       return allowed instanceof RegExp ? allowed.test(origin) : false;
     });
 
-    if (isAllowed) {
+    // Some payment popup/callback flows can send Origin: "null" (about:blank / sandboxed context).
+    // Allow only outside production to keep deployed policy strict.
+    const allowNullOriginInNonProd = origin === 'null' && process.env.NODE_ENV !== 'production';
+
+    if (isAllowed || allowNullOriginInNonProd) {
       callback(null, true);
     } else {
-      console.log('CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },

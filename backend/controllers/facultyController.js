@@ -25,7 +25,6 @@ async function getAllApprovedFaculty() {
     return facultyCache;
   } catch (error) {
     // If consolidated file doesn't exist, try to build it from the list
-    console.log('Consolidated faculty file not found, attempting to rebuild...');
     const list = await getFacultyList();
     const approved = list.filter(f => f.status === 'approved');
     

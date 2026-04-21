@@ -125,21 +125,24 @@ function manageAccountSection() {
         }
     });
 
-    // Add event listeners to all logout links
-    document.querySelectorAll('.logout-link').forEach(link => {
+    const logoutLinks = new Set([
+        ...document.querySelectorAll('.logout-link'),
+        ...Array.from(document.querySelectorAll('.sidebar-menu a')).filter(link =>
+            link.classList.contains('logout-link') || (link.textContent || '').includes('Logout')
+        )
+    ]);
+
+    logoutLinks.forEach(link => {
+        if (link.dataset.logoutBound === 'true') return;
+        link.dataset.logoutBound = 'true';
+
         link.addEventListener('click', function(e) {
             e.preventDefault();
-            handleLogout();
-        });
-    });
-
-    // Also handle sidebar menu clicks for logout
-    document.querySelectorAll('.sidebar-menu a').forEach(link => {
-        if (link.classList.contains('logout-link') || link.textContent.includes('Logout')) {
-            link.addEventListener('click', function(e) {
-                e.preventDefault();
-                handleLogout();
+            if (window.__logoutInProgress) return;
+            window.__logoutInProgress = true;
+            Promise.resolve(handleLogout()).finally(() => {
+                setTimeout(() => { window.__logoutInProgress = false; }, 1200);
             });
-        }
+        });
     });
 }

@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase.js';
+const hasValue = (value) => typeof value === 'string' ? value.trim().length > 0 : !!value;
 
 // ── POST /api/v1/auth/signup ─────────────────────────────────────────────────
 export const signup = async (req, res) => {
@@ -142,34 +143,79 @@ export const verifyGoogleToken = async (req, res) => {
 
     // Determine role
     const userRole = isAdmin ? 'admin' : 'student';
+    const emailLower = user.email.toLowerCase();
+    const baseUsername = emailLower.split('@')[0].toLowerCase().replace(/[^a-z0-9_.-]/g, '') || 'student';
+    const isPolicyRecursionError = (err) =>
+      Boolean(err?.message && String(err.message).toLowerCase().includes('infinite recursion detected in policy'));
 
-    let { data: profile, error: upsertError } = await supabase.schema('business').from('users').upsert({
-      id:          user.id,
-      email:       user.email.toLowerCase(),
-      username:    user.email.split('@')[0].toLowerCase(),
-      full_name:   user.user_metadata?.full_name || null,
-      role:        userRole,
-      is_verified: true,
-    }, { onConflict: 'id' }).select().single();
+    // Keep Google login resilient even when DB policies are temporarily inconsistent.
+    let profile = null;
 
-    if (upsertError) {
-      console.error('Google auth upsert error:', upsertError.message);
-      // Row may already exist (e.g. username unique conflict) — try fetching it
-      const { data: existing } = await supabase.schema('business').from('users')
-        .select('*').eq('id', user.id).single();
-      if (existing) {
-        profile = existing;
-        // Update role if needed
-        if (isAdmin && existing.role !== 'admin') {
-          await supabase.schema('business').from('users')
-            .update({ role: 'admin' }).eq('id', user.id);
-          profile.role = 'admin';
-        }
-        upsertError = null;
-      } else {
-        return res.status(500).json({ status: 'error', message: 'Failed to create user profile. Please try again.' });
+    const { data: byId, error: byIdError } = await supabase
+      .schema('business').from('users').select('*').eq('id', user.id).maybeSingle();
+    if (byIdError && !isPolicyRecursionError(byIdError)) {
+      console.error('Google auth profile lookup error:', byIdError.message);
+    }
+    if (byId) {
+      profile = byId;
+    }
+
+    if (!profile) {
+      const { data: byEmail, error: byEmailError } = await supabase
+        .schema('business').from('users').select('*').eq('email', emailLower).maybeSingle();
+      if (byEmailError && !isPolicyRecursionError(byEmailError)) {
+        console.error('Google auth email lookup error:', byEmailError.message);
+      }
+      if (byEmail) {
+        profile = byEmail;
       }
     }
+
+    if (!profile) {
+      const { data: inserted, error: insertError } = await supabase
+        .schema('business').from('users').insert({
+          id:          user.id,
+          email:       emailLower,
+          username:    baseUsername,
+          full_name:   user.user_metadata?.full_name || null,
+          avatar_url:  user.user_metadata?.avatar_url || null,
+          role:        userRole,
+          is_verified: true,
+        }).select().maybeSingle();
+
+      if (insertError && !isPolicyRecursionError(insertError)) {
+        console.error('Google auth profile insert error:', insertError.message);
+      }
+      if (inserted) {
+        profile = inserted;
+      }
+    }
+
+    if (profile && isAdmin && profile.role !== 'admin') {
+      const { error: roleUpdateError } = await supabase
+        .schema('business').from('users').update({ role: 'admin' }).eq('id', profile.id);
+      if (!roleUpdateError) {
+        profile.role = 'admin';
+      }
+    }
+
+    // Fallback profile so login is not blocked by a DB policy misconfiguration.
+    if (!profile) {
+      profile = {
+        id: user.id,
+        email: emailLower,
+        username: baseUsername,
+        full_name: user.user_metadata?.full_name || null,
+        avatar_url: user.user_metadata?.avatar_url || null,
+        role: userRole,
+        is_verified: true,
+        profileCompleted: false,
+      };
+    }
+
+    const isProfileComplete = hasValue(profile.phone) &&
+      hasValue(profile.registration_number || profile.registrationNumber || profile.regNumber) &&
+      hasValue(profile.branch || profile.program);
 
     res.cookie('jwt', tokenToUse, {
       httpOnly: true,
@@ -186,7 +232,9 @@ export const verifyGoogleToken = async (req, res) => {
       data: {
         user:       profile,
         authMethod: 'google',
-        redirectTo: '/features/profile/profile.html?sidebar=active',
+        redirectTo: isProfileComplete
+          ? '/features/profile/profile.html?sidebar=active'
+          : '/features/profile/complete-profile.html',
       },
     });
   } catch (err) {

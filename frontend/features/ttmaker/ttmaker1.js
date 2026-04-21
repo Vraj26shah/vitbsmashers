@@ -1246,7 +1246,6 @@ function downloadTimetableAsImage(e) {
                         title: 'My Timetable',
                         files: [file]
                     }).catch(err => {
-                        console.log('Share failed:', err);
                         fallbackDownload(imgData);
                     });
                 });
@@ -1527,7 +1526,6 @@ function downloadTimetableAsImage(e) {
                         text: 'Here is my class timetable',
                         files: [file]
                     }).catch(err => {
-                        console.log('Share failed:', err);
                         fallbackDownload(imgData, `timetable_${new Date().getTime()}.png`);
                     });
                 }, 'image/png', 1.0);

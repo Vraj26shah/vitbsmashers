@@ -113,6 +113,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     featureCards.forEach(card => {
+        if (card.classList.contains('feature-card--disabled')) {
+            return;
+        }
         card.addEventListener('click', function(e) {
             // Add active class for visual feedback
             this.classList.add('active');

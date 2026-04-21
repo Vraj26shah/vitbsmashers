@@ -5,6 +5,7 @@
 <title>Scholars Stack - Student Profile</title>
 <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../shared-feature-shell.css">
 <!-- <script src="../../shared-admin-auth.js"></script>
     <script src="../../admin-panel-manager.js"></script> -->
 <script src="../../config.js"></script>
@@ -23,6 +24,11 @@
         await mgr.initPromise;
         if (!mgr.isAuthenticated) {
             mgr.showLoginRequired();
+            return;
+        }
+        if (mgr.pageRequiresCompleteProfile && mgr.isProfileComplete && !mgr.isProfileComplete(mgr.userData)) {
+            mgr.showCompleteProfileRequired();
+            return;
         }
     });
 </script>
@@ -1600,6 +1606,285 @@
             max-width: 1500px;
         }
     }
+    /* Production-ready profile polish */
+    .profile-section {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .profile-card {
+        background: linear-gradient(145deg, rgba(16, 30, 46, 0.88), rgba(11, 22, 36, 0.95));
+        border: 1px solid rgba(126, 198, 255, 0.2);
+        border-radius: 18px;
+        box-shadow: 0 22px 42px rgba(0, 0, 0, 0.32);
+        padding: 28px;
+    }
+
+    .profile-header {
+        display: grid;
+        grid-template-columns: auto 1fr;
+        align-items: center;
+        gap: 22px;
+        text-align: left;
+        margin-bottom: 22px;
+    }
+
+    .profile-avatar {
+        width: 132px;
+        height: 132px;
+        border: 3px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+        margin-bottom: 0;
+    }
+
+    .profile-info h2 {
+        font-size: 30px;
+        margin-bottom: 6px;
+        letter-spacing: 0.3px;
+    }
+
+    .profile-info p {
+        color: #9ed8ff;
+        margin-bottom: 6px;
+        font-size: 15px;
+    }
+
+    .profile-stats {
+        justify-content: flex-start;
+        gap: 10px;
+        margin-top: 12px;
+    }
+
+    .stat-item {
+        min-width: 110px;
+        max-width: 150px;
+        border-radius: 10px;
+        background: rgba(79, 182, 255, 0.15);
+        border: 1px solid rgba(79, 182, 255, 0.26);
+        padding: 11px 12px;
+    }
+
+    .stat-value {
+        color: #7beeb7;
+        font-size: 20px;
+    }
+
+    .profile-details {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+    }
+
+    .detail-card {
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid rgba(126, 198, 255, 0.2);
+        border-radius: 14px;
+        padding: 18px;
+        box-shadow: none;
+    }
+
+    .detail-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 26px rgba(0, 0, 0, 0.22);
+        border-color: rgba(126, 198, 255, 0.42);
+    }
+
+    .detail-title {
+        color: #6fc7ff;
+        font-size: 19px;
+    }
+
+    .detail-item {
+        border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+        padding-bottom: 10px;
+        margin-bottom: 10px;
+    }
+
+    .detail-label {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.35px;
+        color: rgba(210, 229, 245, 0.88);
+        margin-bottom: 5px;
+    }
+
+    .detail-value {
+        color: #f3f8fc;
+        font-size: 14px;
+    }
+
+    .purchased-courses-section {
+        margin-top: 24px;
+    }
+
+    .purchased-courses-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 14px;
+    }
+
+    .purchased-course-card {
+        background: rgba(255, 255, 255, 0.045);
+        border: 1px solid rgba(126, 198, 255, 0.22);
+        border-radius: 14px;
+        padding: 16px;
+    }
+
+    .purchased-course-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 16px 26px rgba(0, 0, 0, 0.22);
+    }
+
+    .purchased-course-title {
+        font-size: 17px;
+        color: #6fc7ff;
+    }
+
+    .query-section,
+    .admin-section {
+        background: linear-gradient(145deg, rgba(16, 30, 46, 0.84), rgba(11, 22, 36, 0.95));
+        border: 1px solid rgba(126, 198, 255, 0.2);
+        border-radius: 16px;
+        box-shadow: 0 20px 35px rgba(0, 0, 0, 0.3);
+    }
+
+    @media (max-width: 992px) {
+        .profile-header {
+            grid-template-columns: 1fr;
+            text-align: center;
+            gap: 14px;
+        }
+
+        .profile-stats {
+            justify-content: center;
+        }
+
+        .profile-details,
+        .purchased-courses-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Final alignment polish */
+    .profile-section,
+    .query-section,
+    .admin-section {
+        width: 100%;
+        max-width: 1200px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    .profile-card {
+        margin-bottom: 20px;
+    }
+
+    .profile-details {
+        align-items: stretch;
+    }
+
+    .detail-card {
+        height: 100%;
+    }
+
+    .purchased-courses-section {
+        margin-top: 18px;
+    }
+
+    #timeScheduleSection .detail-card {
+        margin-bottom: 0;
+    }
+
+    .schedule-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+    }
+
+    .query-section,
+    .admin-section {
+        margin-top: 22px;
+        padding: 22px;
+    }
+
+    .query-form .form-group {
+        margin-bottom: 14px;
+    }
+
+    .form-actions {
+        margin-top: 4px;
+    }
+
+    @media (max-width: 992px) {
+        .schedule-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .query-section,
+        .admin-section {
+            padding: 18px;
+        }
+    }
+
+    /* Query section spotlight (distinct from rest of profile) */
+    .query-section {
+        position: relative;
+        background: #102841;
+        border: 1px solid #4a86b9;
+        box-shadow: 0 14px 28px rgba(0, 0, 0, 0.28);
+    }
+
+    .query-section::before {
+        content: 'Support Desk';
+        position: absolute;
+        top: -12px;
+        left: 18px;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.4px;
+        color: #dff3ff;
+        background: #2f6ea3;
+        border: 1px solid #6ea8d6;
+    }
+
+    .query-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 6px;
+    }
+
+    .query-header i {
+        font-size: 24px;
+        color: #7dc6f7;
+    }
+
+    .query-intro {
+        margin-bottom: 18px !important;
+        color: #d6e6f3 !important;
+    }
+
+    .query-section .form-control {
+        background: #162f4a;
+        border: 1px solid #3e658a;
+    }
+
+    .query-section .form-control:focus {
+        border-color: #6eb5e7;
+        box-shadow: 0 0 0 3px rgba(110, 181, 231, 0.2);
+    }
+
+    .query-section .btn.btn-primary {
+        background: linear-gradient(135deg, #1f7fc8, #2d9ce8);
+        border: none;
+        color: #ffffff;
+        font-weight: 700;
+    }
+
+    .query-section .btn.btn-primary:hover {
+        filter: brightness(1.05);
+        transform: translateY(-1px);
+    }
+
 </style>
 </head>
 
@@ -1620,7 +1905,7 @@
                 <img src="../images/logo1.png" alt="Scholars Stack Logo">
                 <div class="logo-text">
                     <h1>Scholars Stack</h1>
-                    <span>Student Profile</span>
+                    <span>Premium Academic Resources</span>
                 </div>
             </a>
         </div>
@@ -1652,7 +1937,7 @@
         <div class="sidebar-title">Resources</div>
         <ul class="sidebar-menu">
             <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
-            <li><a href="#"><i class='bx bxs-group'></i> Club Info</a></li>
+            <li><a href="/features/club/club.html?sidebar=active"><i class='bx bxs-group'></i> Club Info</a></li>
             <li><a href="../faculty/faculty.html"><i class='bx bxs-group'></i> Faculty Info</a></li>
             <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
         </ul>
@@ -1811,12 +2096,12 @@
 
                         <div class="profile-stats">
                             <div class="stat-item">
-                                <div class="stat-value" id="headerCGPA">0.00</div>
-                                <div class="stat-label">CGPA</div>
+                                <div class="stat-value" id="headerProgram">--</div>
+                                <div class="stat-label">Program</div>
                             </div>
                             <div class="stat-item">
-                                <div class="stat-value" id="headerSemester">1</div>
-                                <div class="stat-label">Semester</div>
+                                <div class="stat-value" id="headerReg">--</div>
+                                <div class="stat-label">Registration</div>
                             </div>
                         </div>
                     </div>
@@ -1844,10 +2129,6 @@
                                 <div class="detail-label">Phone:</div>
                                 <div class="detail-value fixed-field" id="userPhone">Not specified</div>
                             </div>
-                            <div class="detail-item">
-                                <div class="detail-label">Date of Birth:</div>
-                                <div class="detail-value" id="userDOB">Not specified</div>
-                            </div>
                         </div>
 
                         <div class="edit-form" id="personalForm">
@@ -1855,10 +2136,6 @@
                                 <label>Full Name</label>
                                 <input type="text" class="form-control" id="nameInput"
                                     placeholder="Enter your full name">
-                            </div>
-                            <div class="form-group">
-                                <label>Date of Birth</label>
-                                <input type="date" class="form-control" id="dobInput">
                             </div>
                             <div class="form-actions">
                                 <button class="btn btn-primary" id="savePersonal">Save</button>
@@ -1870,9 +2147,6 @@
                     <div class="detail-card">
                         <div class="detail-header">
                             <h3 class="detail-title">Academic Information</h3>
-                            <button class="edit-btn" data-target="academicForm">
-                                <i class='bx bxs-edit'></i>
-                            </button>
                         </div>
 
                         <div class="detail-content">
@@ -1885,91 +2159,8 @@
                                 <div class="detail-value fixed-field" id="userRegText">Not specified</div>
                             </div>
                             <div class="detail-item">
-                                <div class="detail-label">Current Semester:</div>
-                                <div class="detail-value" id="userSemester">Not specified</div>
-                            </div>
-                            <div class="detail-item">
-                                <div class="detail-label">CGPA:</div>
-                                <div class="detail-value" id="userCGPA">Not specified</div>
-                            </div>
-                        </div>
-
-                        <div class="edit-form" id="academicForm">
-                            <div class="form-group">
-                                <label>Current Semester</label>
-                                <select class="form-control" id="semesterInput">
-                                    <option value="">Select semester</option>
-                                    <option>1st Semester</option>
-                                    <option>2nd Semester</option>
-                                    <option>3rd Semester</option>
-                                    <option>4th Semester</option>
-                                    <option>5th Semester</option>
-                                    <option>6th Semester</option>
-                                    <option>7th Semester</option>
-                                    <option>8th Semester</option>
-                                </select>
-                            </div>
-                            <div class="form-group">
-                                <label>CGPA</label>
-                                <input type="number" step="0.01" min="0" max="10" class="form-control" id="cgpaInput"
-                                    placeholder="Enter your CGPA">
-                            </div>
-                            <div class="form-actions">
-                                <button class="btn btn-primary" id="saveAcademic">Save</button>
-                                <button class="btn btn-outline" id="cancelAcademic">Cancel</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="detail-card">
-                        <div class="detail-header">
-                            <h3 class="detail-title">Time Schedule</h3>
-                            <button class="edit-btn" data-target="scheduleForm">
-                                <i class='bx bxs-edit'></i>
-                            </button>
-                        </div>
-
-                        <div class="detail-content">
-                            <div class="time-schedule">
-                                <h4>Weekly Study Plan</h4>
-                                <div class="schedule-grid" id="scheduleContainer">
-                                    <!-- Schedule items will be added here dynamically -->
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="edit-form" id="scheduleForm">
-                            <div class="form-group">
-                                <label>Day of Week</label>
-                                <select class="form-control" id="scheduleDay">
-                                    <option value="">Select day</option>
-                                    <option>Monday</option>
-                                    <option>Tuesday</option>
-                                    <option>Wednesday</option>
-                                    <option>Thursday</option>
-                                    <option>Friday</option>
-                                    <option>Saturday</option>
-                                    <option>Sunday</option>
-                                </select>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group">
-                                    <label>Start Time</label>
-                                    <input type="time" class="form-control" id="scheduleStart">
-                                </div>
-                                <div class="form-group">
-                                    <label>End Time</label>
-                                    <input type="time" class="form-control" id="scheduleEnd">
-                                </div>
-                            </div>
-                            <div class="form-group">
-                                <label>Subject</label>
-                                <input type="text" class="form-control" id="scheduleSubject"
-                                    placeholder="Enter subject name">
-                            </div>
-                            <div class="form-actions">
-                                <button class="btn btn-primary" id="addSchedule">Add to Schedule</button>
-                                <button class="btn btn-outline" id="cancelSchedule">Cancel</button>
+                                <div class="detail-label">Profile Status:</div>
+                                <div class="detail-value">Verified Student Account</div>
                             </div>
                         </div>
                     </div>
@@ -1988,22 +2179,85 @@
                     <!-- Courses will be added here dynamically -->
                 </div>
             </div>
+
+            <div class="purchased-courses-section" id="timeScheduleSection">
+                <div class="detail-card">
+                    <div class="detail-header">
+                        <h3 class="detail-title">Time Schedule</h3>
+                        <button class="edit-btn" data-target="scheduleForm">
+                            <i class='bx bxs-edit'></i>
+                        </button>
+                    </div>
+
+                    <div class="detail-content">
+                        <div class="time-schedule">
+                            <h4>Weekly Study Plan</h4>
+                            <div class="schedule-grid" id="scheduleContainer">
+                                <!-- Schedule items will be added here dynamically -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="edit-form" id="scheduleForm">
+                        <div class="form-group">
+                            <label>Day of Week</label>
+                            <select class="form-control" id="scheduleDay">
+                                <option value="">Select day</option>
+                                <option>Monday</option>
+                                <option>Tuesday</option>
+                                <option>Wednesday</option>
+                                <option>Thursday</option>
+                                <option>Friday</option>
+                                <option>Saturday</option>
+                                <option>Sunday</option>
+                            </select>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Start Time</label>
+                                <input type="time" class="form-control" id="scheduleStart">
+                            </div>
+                            <div class="form-group">
+                                <label>End Time</label>
+                                <input type="time" class="form-control" id="scheduleEnd">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Subject</label>
+                            <input type="text" class="form-control" id="scheduleSubject"
+                                placeholder="Enter subject name">
+                        </div>
+                        <div class="form-actions">
+                            <button class="btn btn-primary" id="addSchedule">Add to Schedule</button>
+                            <button class="btn btn-outline" id="cancelSchedule">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <div class="query-section">
-            <h2 class="section-title">Submit a Query</h2>
-            <p style="margin-bottom: 25px; color: #ddd;">Have questions or need assistance? Submit your query below and
-                our team will get back to you.</p>
+            <div class="query-header">
+                <i class='bx bxs-message-dots'></i>
+                <h2 class="section-title">Submit a Query</h2>
+            </div>
+            <p class="query-intro">Tell us exactly what happened and we will investigate quickly.</p>
+            <div style="margin-bottom: 20px; padding: 12px 14px; border-radius: 10px; background: rgba(52, 152, 219, 0.12); border: 1px solid rgba(52, 152, 219, 0.35); color: #d8ebf8; font-size: 13px; line-height: 1.45;">
+                Helpful format:
+                <br>1. What you expected
+                <br>2. What actually happened
+                <br>3. Exact steps (step-by-step)
+            </div>
 
-            <form class="query-form" id="queryForm">
+            <form class="query-form" id="queryForm" enctype="multipart/form-data">
                 <div class="form-group">
                     <label>Subject</label>
-                    <input type="text" class="form-control" placeholder="Enter query subject" required>
+                    <input type="text" class="form-control" id="querySubject" placeholder="Short title for your issue" required minlength="5" maxlength="140">
                 </div>
 
                 <div class="form-group">
                     <label>Category</label>
-                    <select class="form-control" required>
+                    <select class="form-control" id="queryCategory" required>
                         <option value="">Select category</option>
                         <option>Academic</option>
                         <option>Administrative</option>
@@ -2014,13 +2268,39 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Issue Type (Optional)</label>
+                    <input type="text" class="form-control" id="queryIssueType" placeholder="e.g. Login failed, page crash, wrong data">
+                </div>
+
+                <div class="form-group">
+                    <label>Expected Behavior</label>
+                    <textarea class="form-control" id="queryExpected" placeholder="What should happen?" required minlength="5"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Actual Behavior</label>
+                    <textarea class="form-control" id="queryActual" placeholder="What happened instead?" required minlength="5"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Steps to Reproduce</label>
+                    <textarea class="form-control" id="querySteps" placeholder="1) Go to ... 2) Click ... 3) See error ..." required minlength="10"></textarea>
+                </div>
+
+                <div class="form-group">
                     <label>Your Message</label>
-                    <textarea class="form-control" placeholder="Describe your query in detail" required
-                        minlength="20"></textarea>
+                    <textarea class="form-control" id="queryMessage" placeholder="Any extra context, timestamps, or account details that help us debug faster." required minlength="20"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Screenshot (Optional for technical issues)</label>
+                    <input type="file" class="form-control" id="queryScreenshot" accept="image/png,image/jpeg,image/jpg,image/webp">
+                    <p style="margin-top: 8px; font-size: 12px; color: #a8c9df;">Accepted: JPG, PNG, WEBP | Max 8MB</p>
+                    <img id="queryScreenshotPreview" alt="Query screenshot preview" style="display:none; margin-top: 10px; max-width: 260px; border-radius: 10px; border: 1px solid rgba(52, 152, 219, 0.35);">
                 </div>
 
                 <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">Submit Query</button>
+                    <button type="submit" class="btn btn-primary" id="querySubmitBtn">Submit Query</button>
                     <button type="reset" class="btn btn-outline">Clear Form</button>
                 </div>
             </form>
@@ -2028,7 +2308,9 @@
             <div class="success-message" id="successMessage">
                 <i class='bx bxs-check-circle'></i>
                 <h3>Query Submitted Successfully!</h3>
-                <p>Our support team will review your query and get back to you within 24 hours.</p>
+                <p id="querySuccessText">Our support team will review your query and get back to you soon.</p>
+                <a id="queryScreenshotLink" href="#" target="_blank" rel="noopener" style="display:none; margin-top:8px; color:#9debc3; text-decoration:underline; font-size:13px;">View uploaded screenshot</a>
+                <pre id="querySummaryText" style="text-align:left; white-space:pre-wrap; margin-top: 12px; font-size:12px; line-height:1.45; color:#daf7e7; background: rgba(255,255,255,0.05); border:1px solid rgba(46,204,113,0.35); border-radius: 10px; padding: 10px; max-height: 220px; overflow:auto;"></pre>
             </div>
         </div>
 
@@ -2080,6 +2362,9 @@
     <input type="file" id="avatarUpload" accept="image/*" style="display: none;">
 
     <script>
+        // Keep verbose debug output disabled in production.
+        const debugLog = () => {};
+
         // Check authentication on page load (removed duplicate function)
 
         // Emergency check: If profile is completed or user is Google authenticated, ensure setup form is never shown
@@ -2089,7 +2374,7 @@
                 if (profileData) {
                     const parsed = JSON.parse(profileData);
                     if (parsed.profileCompleted === true || parsed.googleId) {
-                        console.log('🚨 EMERGENCY: Profile completed or Google user detected, forcing profile view');
+                        debugLog('🚨 EMERGENCY: Profile completed or Google user detected, forcing profile view');
                         // Show profile view immediately with cached data
                         showProfileFromCache(parsed);
                         if (parsed.googleId && !parsed.profileCompleted) {
@@ -2098,7 +2383,7 @@
                         return true;
                     }
                 }
-                console.log('🚨 EMERGENCY: Profile not completed and not Google user - setup form should be visible');
+                debugLog('🚨 EMERGENCY: Profile not completed and not Google user - setup form should be visible');
             } catch (error) {
                 console.warn('⚠️ Error in emergency profile check:', error);
             }
@@ -2172,13 +2457,13 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('🔍 Backend response received:', data);
+                    debugLog('🔍 Backend response received:', data);
 
                     if (data.data && data.data.user) {
                         // Add profile completion status to the user object
                         const user = data.data.user;
                         user.profileCompleted = data.data.profileComplete || false;
-                        console.log('✅ Profile loaded successfully:', {
+                        debugLog('✅ Profile loaded successfully:', {
                             email: user.email,
                             phone: user.phone,
                             branch: user.branch,
@@ -2206,11 +2491,11 @@
             try {
                 const token = localStorage.getItem('token');
                 if (!token) {
-                    console.log('❌ No token available for user data fetch');
+                    debugLog('❌ No token available for user data fetch');
                     return null;
                 }
 
-                console.log('🔄 Fetching user data from backend...');
+                debugLog('🔄 Fetching user data from backend...');
                 const response = await fetch('/api/v1/profile/me', {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -2219,10 +2504,10 @@
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('✅ User data received:', data);
+                    debugLog('✅ User data received:', data);
                     return data.data && data.data.user ? data.data.user : null;
                 } else {
-                    console.log('❌ Failed to fetch user data, status:', response.status);
+                    debugLog('❌ Failed to fetch user data, status:', response.status);
                     return null;
                 }
             } catch (error) {
@@ -2237,7 +2522,7 @@
             if (emailField && email) {
                 emailField.value = email;
                 emailField.placeholder = '';
-                console.log('📧 Email displayed to user:', email);
+                debugLog('📧 Email displayed to user:', email);
 
                 // Add success styling
                 emailField.style.boxShadow = '0 0 0 3px rgba(46, 204, 113, 0.3)';
@@ -2281,21 +2566,21 @@
 
         // ULTRA-SIMPLE INITIALIZATION: Show profile immediately
         function initializeProfileInstantly() {
-            console.log('⚡ SIMPLE INIT: Starting profile...');
+            debugLog('⚡ SIMPLE INIT: Starting profile...');
 
             // STEP 1: Check localStorage FIRST (instant)
             const cachedProfile = getCachedProfileData();
-            console.log('📦 Cached profile data:', cachedProfile);
+            debugLog('📦 Cached profile data:', cachedProfile);
 
             if (cachedProfile && cachedProfile.profileCompleted) {
-                console.log('🚀 INSTANT: Showing cached profile data');
+                debugLog('🚀 INSTANT: Showing cached profile data');
                 showProfileFromCache(cachedProfile);
                 // Start background sync with backend
                 syncWithBackendInBackground();
                 return;
             }
 
-            console.log('📝 No valid cached data, proceeding with backend load');
+            debugLog('📝 No valid cached data, proceeding with backend load');
 
             // STEP 2: Show profile section immediately (no loading)
             showProfileSection();
@@ -2306,7 +2591,7 @@
 
         // Show profile from cached data (instant)
         function showProfileFromCache(cachedProfile) {
-            console.log('📱 Showing cached profile instantly');
+            debugLog('📱 Showing cached profile instantly');
 
             // Hide setup form immediately
             document.getElementById('setupForm').style.display = 'none';
@@ -2324,12 +2609,12 @@
             // Ensure setup form stays hidden
             ensureSetupFormHidden();
 
-            console.log('✅ Cached profile displayed instantly');
+            debugLog('✅ Cached profile displayed instantly');
         }
 
         // Simple function to show profile section immediately
         function showProfileSection() {
-            console.log('📱 Showing profile section immediately');
+            debugLog('📱 Showing profile section immediately');
 
             // Hide setup form
             document.getElementById('setupForm').style.display = 'none';
@@ -2345,13 +2630,13 @@
 
         // Load profile from backend (after showing cache or loading state)
         async function loadProfileFromBackend() {
-            console.log('🔄 Loading profile from backend...');
+            debugLog('🔄 Loading profile from backend...');
 
             try {
                 const profileData = await loadUserProfile();
 
                 if (profileData) {
-                    console.log('📊 Backend profile data loaded');
+                    debugLog('📊 Backend profile data loaded');
 
                     // Check if profile is completed
                     const isProfileCompleted = profileData && (
@@ -2359,11 +2644,8 @@
                         (profileData.phone && profileData.registrationNumber && profileData.branch)
                     );
 
-                    // Check if user is Google authenticated (has googleId)
-                    const isGoogleUser = profileData && profileData.googleId;
-
-                    if (isProfileCompleted || isGoogleUser) {
-                        console.log('✅ PROFILE ACCESSIBLE: Showing profile view (completed or Google user)');
+                    if (isProfileCompleted) {
+                        debugLog('✅ PROFILE ACCESSIBLE: Showing profile view (completed)');
 
                         // Update with fresh backend data
                         document.getElementById('setupForm').style.display = 'none';
@@ -2379,34 +2661,22 @@
                         // Update localStorage with fresh data
                         updateLocalStorageWithBackendData(profileData);
 
-                        console.log('✅ Backend profile data populated successfully');
+                        debugLog('✅ Backend profile data populated successfully');
 
-                        // If Google user but profile not completed, show setup banner
-                        if (isGoogleUser && !isProfileCompleted) {
-                            showProfileCompletionBanner();
-                            // Also show Google welcome banner in setup form
-                            document.getElementById('googleWelcomeBanner').style.display = 'block';
-                        }
-
-                        // Ensure setup form stays hidden
                         ensureSetupFormHidden();
                     } else {
-                        console.log('ℹ️ Profile incomplete - keeping profile view visible');
-                        document.getElementById('setupForm').style.display = 'none';
-                        document.getElementById('profileSection').style.display = 'block';
-                        document.getElementById('profileSection').classList.add('active');
-                        if (profileData) {
-                            populateCompleteProfile(profileData);
-                            updateLocalStorageWithBackendData(profileData);
+                        debugLog('ℹ️ Profile incomplete - showing complete-profile gate');
+                        if (window.authManager && window.authManager.showCompleteProfileRequired) {
+                            window.authManager.showCompleteProfileRequired();
+                            return;
                         }
-                        ensureSetupFormHidden();
                     }
                 } else {
-                    console.log('❌ No profile data from backend, keeping profile view visible');
-                    document.getElementById('setupForm').style.display = 'none';
-                    document.getElementById('profileSection').style.display = 'block';
-                    document.getElementById('profileSection').classList.add('active');
-                    ensureSetupFormHidden();
+                    debugLog('❌ No profile data from backend - showing complete-profile gate');
+                    if (window.authManager && window.authManager.showCompleteProfileRequired) {
+                        window.authManager.showCompleteProfileRequired();
+                        return;
+                    }
                 }
 
             } catch (error) {
@@ -2414,24 +2684,22 @@
 
                 // Fallback to cached data if available
                 const cachedProfile = getCachedProfileData();
-                if (cachedProfile && (cachedProfile.profileCompleted || cachedProfile.googleId)) {
-                    console.log('📱 Fallback: Using cached profile data');
+                if (cachedProfile && cachedProfile.profileCompleted) {
+                    debugLog('📱 Fallback: Using cached profile data');
                     showProfileFromCache(cachedProfile);
-                    if (cachedProfile.googleId && !cachedProfile.profileCompleted) {
-                        showProfileCompletionBanner();
-                    }
                 } else {
-                    document.getElementById('setupForm').style.display = 'none';
-                    document.getElementById('profileSection').style.display = 'block';
-                    document.getElementById('profileSection').classList.add('active');
-                    ensureSetupFormHidden();
+                    debugLog('ℹ️ Fallback: incomplete/missing profile - showing complete-profile gate');
+                    if (window.authManager && window.authManager.showCompleteProfileRequired) {
+                        window.authManager.showCompleteProfileRequired();
+                        return;
+                    }
                 }
             }
         }
 
         // Background sync with backend (non-blocking)
         function syncWithBackendInBackground() {
-            console.log('🔄 Starting background sync...');
+            debugLog('🔄 Starting background sync...');
             setTimeout(async () => {
                 try {
                     const profileData = await loadUserProfile();
@@ -2439,10 +2707,10 @@
                         // Silently update with fresh data
                         populateCompleteProfile(profileData);
                         updateLocalStorageWithBackendData(profileData);
-                        console.log('🔄 Background sync completed');
+                        debugLog('🔄 Background sync completed');
                     }
                 } catch (error) {
-                    console.log('⚠️ Background sync failed (non-critical)');
+                    debugLog('⚠️ Background sync failed (non-critical)');
                 }
             }, 1000); // Wait 1 second before background sync
         }
@@ -2474,19 +2742,19 @@
 
         // Populate email for setup form
         function populateEmailForSetup() {
-            console.log('🔄 Populating email for setup form...');
+            debugLog('🔄 Populating email for setup form...');
             try {
                 const token = localStorage.getItem('token');
                 if (token) {
                     const payload = JSON.parse(atob(token.split('.')[1]));
                     if (payload.email) {
                         displayUserEmail(payload.email);
-                        console.log('✅ Email populated for setup from token');
+                        debugLog('✅ Email populated for setup from token');
                     } else {
-                        console.log('⚠️ No email in token for setup');
+                        debugLog('⚠️ No email in token for setup');
                     }
                 } else {
-                    console.log('❌ No token available for setup email population');
+                    debugLog('❌ No token available for setup email population');
                 }
             } catch (error) {
                 console.warn('⚠️ Error populating email for setup:', error);
@@ -2497,32 +2765,32 @@
         function getCachedProfileData() {
             try {
                 const cached = localStorage.getItem('profileData');
-                console.log('🔍 Raw localStorage data:', cached);
+                debugLog('🔍 Raw localStorage data:', cached);
 
                 if (cached) {
                     const profileData = JSON.parse(cached);
-                    console.log('📦 Parsed cached profile data:', profileData);
+                    debugLog('📦 Parsed cached profile data:', profileData);
 
                     // Check if cache is recent (within 24 hours)
                     if (profileData.lastUpdated) {
                         const cacheAge = new Date() - new Date(profileData.lastUpdated);
                         const oneDay = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-                        console.log('⏱️ Cache age:', cacheAge, 'ms (max allowed:', oneDay, 'ms)');
+                        debugLog('⏱️ Cache age:', cacheAge, 'ms (max allowed:', oneDay, 'ms)');
 
                         if (cacheAge < oneDay) {
-                            console.log('📅 Using recent cached profile data');
+                            debugLog('📅 Using recent cached profile data');
                             return profileData;
                         } else {
-                            console.log('⏰ Cached profile data is too old, ignoring');
+                            debugLog('⏰ Cached profile data is too old, ignoring');
                             localStorage.removeItem('profileData');
                         }
                     } else {
-                        console.log('⚠️ No lastUpdated timestamp in cached data');
+                        debugLog('⚠️ No lastUpdated timestamp in cached data');
                         // Still use it if it exists but has no timestamp
                         return profileData;
                     }
                 } else {
-                    console.log('❌ No cached profile data in localStorage');
+                    debugLog('❌ No cached profile data in localStorage');
                 }
             } catch (error) {
                 console.warn('⚠️ Error reading cached profile data:', error);
@@ -2549,7 +2817,7 @@
                 return;
             }
 
-            console.log('📊 Populating profile with data:', profileData);
+            debugLog('📊 Populating profile with data:', profileData);
 
             // Use requestAnimationFrame for smooth DOM updates
             requestAnimationFrame(() => {
@@ -2564,11 +2832,8 @@
                     userFullName: document.getElementById('userFullName'),
                     editableName: document.getElementById('editableName'),
                     avatarImage: document.getElementById('avatarImage'),
-                    userSemester: document.getElementById('userSemester'),
-                    userCGPA: document.getElementById('userCGPA'),
-                    headerCGPA: document.getElementById('headerCGPA'),
-                    headerSemester: document.getElementById('headerSemester'),
-                    userDOB: document.getElementById('userDOB')
+                    headerProgram: document.getElementById('headerProgram'),
+                    headerReg: document.getElementById('headerReg')
                 };
 
                 // Get email from profile data or token
@@ -2618,30 +2883,26 @@
                 const program = profileData.branch || profileData.program || 'Not specified';
                 // Support snake_case from Supabase (registration_number) and camelCase from cache (registrationNumber)
                 const regNumber = profileData.registrationNumber || profileData.registration_number || profileData.regNumber || 'Not specified';
-                const semester = profileData.semester || 'Not specified';
-                const cgpa = profileData.cgpa || 'Not specified';
-                const dob = profileData.dob || 'Not specified';
-
-                console.log('📝 Extracted user data:', {
-                    fullName, phone, program, regNumber, semester, cgpa, dob, userEmail
+                debugLog('📝 Extracted user data:', {
+                    fullName, phone, program, regNumber, userEmail
                 });
 
                 // Batch DOM writes (much faster)
                 if (elements.userEmail) {
                     elements.userEmail.textContent = userEmail || 'Not specified';
-                    console.log('✅ Email populated:', userEmail);
+                    debugLog('✅ Email populated:', userEmail);
                 }
                 if (elements.userPhone) {
                     elements.userPhone.textContent = phone;
-                    console.log('✅ Phone populated:', phone);
+                    debugLog('✅ Phone populated:', phone);
                 }
                 if (elements.userProgram) {
                     elements.userProgram.textContent = program;
-                    console.log('✅ Program populated:', program);
+                    debugLog('✅ Program populated:', program);
                 }
                 if (elements.userReg) {
                     elements.userReg.textContent = `Registration: ${regNumber}`;
-                    console.log('✅ Registration populated:', regNumber);
+                    debugLog('✅ Registration populated:', regNumber);
                 }
                 if (elements.userProgramText) {
                     elements.userProgramText.textContent = program;
@@ -2651,59 +2912,34 @@
                 }
                 if (elements.userFullName) {
                     elements.userFullName.textContent = fullName;
-                    console.log('✅ Full name populated:', fullName);
+                    debugLog('✅ Full name populated:', fullName);
                 }
                 if (elements.editableName) {
                     elements.editableName.textContent = fullName;
                 }
-                if (elements.userSemester) {
-                    elements.userSemester.textContent = semester;
+                if (elements.headerProgram) {
+                    elements.headerProgram.textContent = program === 'Not specified' ? '--' : program;
                 }
-                if (elements.userCGPA) {
-                    elements.userCGPA.textContent = cgpa;
-                }
-                if (elements.headerCGPA) {
-                    elements.headerCGPA.textContent = cgpa;
-                }
-                if (elements.headerSemester) {
-                    elements.headerSemester.textContent = semester.split(' ')[0] || '1';
-                }
-                if (elements.userDOB) {
-                    elements.userDOB.textContent = dob;
+                if (elements.headerReg) {
+                    elements.headerReg.textContent = regNumber === 'Not specified' ? '--' : regNumber;
                 }
 
                 // Set avatar (lazy load for performance)
                 if (elements.avatarImage) {
                     const avatarUrl = profileData.profilePicture || profileData.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(fullName)}&background=3498db&color=fff&size=200`;
                     elements.avatarImage.src = avatarUrl;
-                    console.log('✅ Avatar set:', avatarUrl);
+                    debugLog('✅ Avatar set:', avatarUrl);
                 }
 
                 // Mark profile as completed (deferred)
                 setTimeout(() => markProfileAsCompleted(), 50);
 
-                console.log('✅ Profile population completed');
+                debugLog('✅ Profile population completed');
             });
         }
 
         // Function to mark profile fields as completed and read-only
         function markProfileAsCompleted() {
-            // Add visual indicators that profile is completed
-            const profileCard = document.querySelector('.profile-card');
-            if (profileCard) {
-                profileCard.style.borderColor = '#2ecc71';
-                profileCard.style.boxShadow = '0 12px 25px rgba(46, 204, 113, 0.3)';
-            }
-
-            // Add completion badge to page title
-            const pageTitle = document.querySelector('.page-title');
-            if (pageTitle) {
-                const completionBadge = document.createElement('span');
-                completionBadge.className = 'profile-completed-indicator';
-                completionBadge.innerHTML = '<i class="bx bxs-check-circle"></i> Profile Completed';
-                pageTitle.appendChild(completionBadge);
-            }
-
             // Hide edit buttons for core profile fields (email, phone, program, registration)
             const editButtons = document.querySelectorAll('.edit-btn[data-target]');
             editButtons.forEach(button => {
@@ -2727,17 +2963,17 @@
                 }
             });
 
-            console.log('✅ Profile marked as completed and read-only');
+            debugLog('✅ Profile marked as completed and read-only');
         }
 
         // Function to show profile completion banner for Google users
         function showProfileCompletionBanner() {
-            console.log('ℹ️ Profile completion banner disabled on profile page');
+            debugLog('ℹ️ Profile completion banner disabled on profile page');
         }
 
         // Function to scroll to setup form (for banner button)
         function scrollToSetup() {
-            console.log('ℹ️ Setup form removed from profile page');
+            debugLog('ℹ️ Setup form removed from profile page');
         }
 
         // Function to ensure setup form is permanently hidden for completed profiles
@@ -2757,7 +2993,7 @@
                 profileSection.style.opacity = '1';
                 profileSection.classList.add('active');
 
-                console.log('🔒 Setup form permanently hidden, profile view enforced');
+                debugLog('🔒 Setup form permanently hidden, profile view enforced');
             }
         }
 
@@ -2938,7 +3174,7 @@
                 }
 
                 // Success - profile completed
-                console.log('✅ Profile completed successfully:', data);
+                debugLog('✅ Profile completed successfully:', data);
 
                 // Save complete profile data to localStorage for offline access and consistency
                 try {
@@ -2954,10 +3190,10 @@
                     };
 
                     localStorage.setItem('profileData', JSON.stringify(profileData));
-                    console.log('💾 Profile data saved to localStorage successfully');
+                    debugLog('💾 Profile data saved to localStorage successfully');
 
                     // INSTANT NOTIFICATION TO MARKETPLACE - CRITICAL FOR IMMEDIATE RECOGNITION
-                    console.log('📢 INSTANT: Notifying marketplace of profile completion...');
+                    debugLog('📢 INSTANT: Notifying marketplace of profile completion...');
 
                     // Set global flag for instant recognition across all tabs/windows
                     window.profileCompletedInstantly = true;
@@ -2971,13 +3207,13 @@
                         try {
                             window.parent.profileCompletedInstantly = true;
                             window.parent.dispatchEvent(new CustomEvent('profileCompleted'));
-                            console.log('📢 INSTANT: Notified parent window');
+                            debugLog('📢 INSTANT: Notified parent window');
                         } catch (error) {
                             console.warn('⚠️ Could not notify parent window:', error);
                         }
                     }
 
-                    console.log('📢 INSTANT: Profile completion notification sent to all listeners');
+                    debugLog('📢 INSTANT: Profile completion notification sent to all listeners');
 
                 } catch (error) {
                     console.warn('⚠️ Failed to save profile to localStorage:', error);
@@ -2996,11 +3232,11 @@
 
                         // Populate complete profile with data from backend response
                         if (data.data && data.data.user) {
-                            console.log('📊 Populating with backend response data:', data.data.user);
+                            debugLog('📊 Populating with backend response data:', data.data.user);
                             populateCompleteProfile(data.data.user);
                         } else {
                             // Fallback to local data
-                            console.log('📱 Falling back to local profile data:', profileData);
+                            debugLog('📱 Falling back to local profile data:', profileData);
                             populateCompleteProfile(profileData);
                         }
 
@@ -3050,7 +3286,7 @@
             field.style.borderColor = '#e74c3c';
             field.style.boxShadow = '0 0 0 3px rgba(231, 76, 60, 0.3)';
 
-            console.log(`❌ Field error for ${fieldId}:`, message);
+            debugLog(`❌ Field error for ${fieldId}:`, message);
         }
 
         // Function to show general error message
@@ -3082,7 +3318,7 @@
             const form = document.getElementById('setupForm');
             form.insertBefore(errorDiv, form.firstChild);
 
-            console.log('❌ General error:', message);
+            debugLog('❌ General error:', message);
         }
 
         // Function to clear all field errors
@@ -3107,56 +3343,44 @@
             }
         }
 
-        // Edit personal information
-        document.getElementById('savePersonal').addEventListener('click', function (e) {
-            e.preventDefault();
-            const fullName = document.getElementById('nameInput').value;
-            const dob = document.getElementById('dobInput').value;
+        // Edit personal information (full name only)
+        const savePersonalBtn = document.getElementById('savePersonal');
+        if (savePersonalBtn) {
+            savePersonalBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const fullName = document.getElementById('nameInput')?.value?.trim();
 
-            if (!fullName && !dob) {
-                alert('Please fill in at least one field');
-                return;
-            }
+                if (!fullName) {
+                    alert('Please enter full name.');
+                    return;
+                }
 
-            let formattedDOB = '';
-            if (dob) {
-                const dobDate = new Date(dob);
-                formattedDOB = dobDate.toLocaleDateString('en-GB', {
-                    day: 'numeric', month: 'long', year: 'numeric'
-                });
-            }
+                const userFullNameEl = document.getElementById('userFullName');
+                const editableNameEl = document.getElementById('editableName');
+                if (userFullNameEl) userFullNameEl.textContent = fullName;
+                if (editableNameEl) editableNameEl.textContent = fullName;
 
-            if (fullName) {
-                document.getElementById('userFullName').textContent = fullName;
-                document.getElementById('editableName').textContent = fullName;
-            }
+                const personalForm = document.getElementById('personalForm');
+                if (personalForm) personalForm.style.display = 'none';
 
-            if (dob) {
-                document.getElementById('userDOB').textContent = formattedDOB;
-            }
+                // Save to localStorage with error handling
+                try {
+                    const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
+                    profileData.fullName = fullName;
+                    profileData.lastUpdated = new Date().toISOString();
+                    localStorage.setItem('profileData', JSON.stringify(profileData));
+                    debugLog('💾 Personal info updated in localStorage');
+                } catch (error) {
+                    console.warn('⚠️ Failed to update personal info in localStorage:', error);
+                }
 
-            document.getElementById('personalForm').style.display = 'none';
-
-            // Save to localStorage with error handling
-            try {
-                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-                if (fullName) profileData.fullName = fullName;
-                if (dob) profileData.dob = formattedDOB;
-                profileData.lastUpdated = new Date().toISOString();
-                localStorage.setItem('profileData', JSON.stringify(profileData));
-                console.log('💾 Personal info updated in localStorage');
-            } catch (error) {
-                console.warn('⚠️ Failed to update personal info in localStorage:', error);
-            }
-
-            // Update avatar if name changed
-            if (fullName) {
+                // Update avatar if name changed
                 const defaultAvatar = "https://ui-avatars.com/api/?name=" +
                     encodeURIComponent(fullName) +
                     "&background=3498db&color=fff&size=200";
-                document.getElementById('avatarImage').src = defaultAvatar;
+                const avatarImage = document.getElementById('avatarImage');
+                if (avatarImage) avatarImage.src = defaultAvatar;
 
-                // Update avatar in localStorage
                 try {
                     const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
                     profileData.avatar = defaultAvatar;
@@ -3165,54 +3389,17 @@
                 } catch (error) {
                     console.warn('⚠️ Failed to update avatar in localStorage:', error);
                 }
-            }
-        });
+            });
+        }
 
-        document.getElementById('cancelPersonal').addEventListener('click', function (e) {
-            e.preventDefault();
-            document.getElementById('personalForm').style.display = 'none';
-        });
-
-        // Edit academic information
-        document.getElementById('saveAcademic').addEventListener('click', function (e) {
-            e.preventDefault();
-            const semester = document.getElementById('semesterInput').value;
-            const cgpa = document.getElementById('cgpaInput').value;
-
-            if (!semester && !cgpa) {
-                alert('Please fill in at least one field');
-                return;
-            }
-
-            if (semester) {
-                document.getElementById('userSemester').textContent = semester;
-                document.getElementById('headerSemester').textContent = semester.split(' ')[0];
-            }
-
-            if (cgpa) {
-                document.getElementById('userCGPA').textContent = cgpa;
-                document.getElementById('headerCGPA').textContent = cgpa;
-            }
-
-            document.getElementById('academicForm').style.display = 'none';
-
-            // Save to localStorage with error handling
-            try {
-                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-                if (semester) profileData.semester = semester;
-                if (cgpa) profileData.cgpa = cgpa;
-                profileData.lastUpdated = new Date().toISOString();
-                localStorage.setItem('profileData', JSON.stringify(profileData));
-                console.log('💾 Academic info updated in localStorage');
-            } catch (error) {
-                console.warn('⚠️ Failed to update academic info in localStorage:', error);
-            }
-        });
-
-        document.getElementById('cancelAcademic').addEventListener('click', function (e) {
-            e.preventDefault();
-            document.getElementById('academicForm').style.display = 'none';
-        });
+        const cancelPersonalBtn = document.getElementById('cancelPersonal');
+        if (cancelPersonalBtn) {
+            cancelPersonalBtn.addEventListener('click', function (e) {
+                e.preventDefault();
+                const personalForm = document.getElementById('personalForm');
+                if (personalForm) personalForm.style.display = 'none';
+            });
+        }
 
         // Add schedule item
         document.getElementById('addSchedule').addEventListener('click', function (e) {
@@ -3247,7 +3434,7 @@
                 profileData.schedule.push(scheduleItem);
                 profileData.lastUpdated = new Date().toISOString();
                 localStorage.setItem('profileData', JSON.stringify(profileData));
-                console.log('💾 Schedule item added to localStorage');
+                debugLog('💾 Schedule item added to localStorage');
             } catch (error) {
                 console.warn('⚠️ Failed to save schedule to localStorage:', error);
             }
@@ -3282,7 +3469,7 @@
                         profileData.schedule = profileData.schedule.filter(s => s.display !== this.dataset.id);
                         profileData.lastUpdated = new Date().toISOString();
                         localStorage.setItem('profileData', JSON.stringify(profileData));
-                        console.log('💾 Schedule item removed from localStorage');
+                        debugLog('💾 Schedule item removed from localStorage');
                     }
                 } catch (error) {
                     console.warn('⚠️ Failed to remove schedule from localStorage:', error);
@@ -3313,17 +3500,117 @@
 
         // Query form submission
         const queryForm = document.getElementById('queryForm');
-        queryForm.addEventListener('submit', function (e) {
+        const queryScreenshotInput = document.getElementById('queryScreenshot');
+        const queryScreenshotPreview = document.getElementById('queryScreenshotPreview');
+        const querySubmitBtn = document.getElementById('querySubmitBtn');
+
+        queryScreenshotInput.addEventListener('change', function () {
+            const file = this.files?.[0];
+            if (!file) {
+                queryScreenshotPreview.style.display = 'none';
+                queryScreenshotPreview.src = '';
+                return;
+            }
+
+            if (file.size > 8 * 1024 * 1024) {
+                alert('Screenshot must be 8MB or smaller.');
+                this.value = '';
+                queryScreenshotPreview.style.display = 'none';
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                alert('Please upload a valid image file.');
+                this.value = '';
+                queryScreenshotPreview.style.display = 'none';
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (event) {
+                queryScreenshotPreview.src = event.target.result;
+                queryScreenshotPreview.style.display = 'block';
+            };
+            reader.readAsDataURL(file);
+        });
+
+        queryForm.addEventListener('submit', async function (e) {
             e.preventDefault();
 
-            document.getElementById('successMessage').style.display = 'block';
+            const token = localStorage.getItem('token');
+            if (!token) {
+                alert('Please login first.');
+                return;
+            }
 
-            setTimeout(() => {
+            const formData = new FormData();
+            formData.append('subject', document.getElementById('querySubject').value.trim());
+            formData.append('category', document.getElementById('queryCategory').value);
+            formData.append('issue_type', document.getElementById('queryIssueType').value.trim());
+            formData.append('expected_behavior', document.getElementById('queryExpected').value.trim());
+            formData.append('actual_behavior', document.getElementById('queryActual').value.trim());
+            formData.append('steps_to_reproduce', document.getElementById('querySteps').value.trim());
+            formData.append('message', document.getElementById('queryMessage').value.trim());
+            formData.append('page_url', window.location.href);
+
+            const screenshot = queryScreenshotInput.files?.[0];
+            if (screenshot) {
+                formData.append('screenshot', screenshot);
+            }
+
+            const originalBtnText = querySubmitBtn.textContent;
+            querySubmitBtn.disabled = true;
+            querySubmitBtn.textContent = 'Submitting...';
+
+            try {
+                const response = await fetch('/api/v1/profile/query', {
+                    method: 'POST',
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                    },
+                    credentials: 'include',
+                    body: formData,
+                });
+
+                const result = await response.json();
+                if (!response.ok || result.status !== 'success') {
+                    throw new Error(result.message || 'Could not submit your query.');
+                }
+
+                const successMessage = document.getElementById('successMessage');
+                const successText = document.getElementById('querySuccessText');
+                const summaryText = document.getElementById('querySummaryText');
+                const screenshotLink = document.getElementById('queryScreenshotLink');
+                const ticketId = result.data?.ticketId || 'N/A';
+                const createdAt = result.data?.createdAt ? new Date(result.data.createdAt).toLocaleString() : 'N/A';
+                const readableSummary = result.data?.readableSummary || '';
+                const uploadedScreenshotUrl = result.data?.screenshotUrl || '';
+
+                successText.textContent = `Ticket ${ticketId} submitted at ${createdAt}. Our team will review this and update you.`;
+                summaryText.textContent = readableSummary;
+                if (uploadedScreenshotUrl) {
+                    screenshotLink.href = uploadedScreenshotUrl;
+                    screenshotLink.style.display = 'inline-block';
+                } else {
+                    screenshotLink.href = '#';
+                    screenshotLink.style.display = 'none';
+                }
+                successMessage.style.display = 'block';
+
                 queryForm.reset();
-                setTimeout(() => {
-                    document.getElementById('successMessage').style.display = 'none';
-                }, 5000);
-            }, 1000);
+                queryScreenshotPreview.style.display = 'none';
+                queryScreenshotPreview.src = '';
+            } catch (error) {
+                alert(error.message || 'Failed to submit query. Please try again.');
+            } finally {
+                querySubmitBtn.disabled = false;
+                querySubmitBtn.textContent = originalBtnText;
+            }
+        });
+
+        queryForm.addEventListener('reset', function () {
+            queryScreenshotPreview.style.display = 'none';
+            queryScreenshotPreview.src = '';
         });
 
         // Avatar upload functionality
@@ -3359,7 +3646,7 @@
                         profileData.avatar = event.target.result;
                         profileData.lastUpdated = new Date().toISOString();
                         localStorage.setItem('profileData', JSON.stringify(profileData));
-                        console.log('💾 Avatar updated in localStorage');
+                        debugLog('💾 Avatar updated in localStorage');
                     } catch (error) {
                         console.warn('⚠️ Failed to save avatar to localStorage:', error);
                     }
@@ -3379,7 +3666,7 @@
                         const dataAge = new Date() - new Date(parsed.lastUpdated);
                         const thirtyDays = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
                         if (dataAge > thirtyDays) {
-                            console.log('🧹 Clearing old profile data from localStorage');
+                            debugLog('🧹 Clearing old profile data from localStorage');
                             localStorage.removeItem('profileData');
                         }
                     }
@@ -3421,7 +3708,7 @@
                                 schedule: getStoredSchedule() // Preserve existing schedule
                             };
                             localStorage.setItem('profileData', JSON.stringify(localProfileData));
-                            console.log('🔄 Profile data synced with backend');
+                            debugLog('🔄 Profile data synced with backend');
                             return true;
                         } catch (error) {
                             console.warn('⚠️ Failed to sync profile data to localStorage:', error);
@@ -3565,34 +3852,6 @@
             }
         }
 
-        // DEBUG FUNCTION: Manual email population test
-        window.testEmailPopulation = function () {
-            console.log('🧪 MANUAL EMAIL POPULATION TEST');
-            alert('Testing email population...');
-            return populateEmailImmediately();
-        };
-
-        // DEBUG FUNCTION: Check token content
-        window.checkToken = function () {
-            const token = localStorage.getItem('token');
-            console.log('🔑 Token exists:', !!token);
-            if (token) {
-                try {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    console.log('🔍 Token payload:', payload);
-                    alert('Token payload: ' + JSON.stringify(payload, null, 2));
-                    return payload;
-                } catch (error) {
-                    console.error('❌ Token parsing error:', error);
-                    alert('Token parsing error: ' + error.message);
-                }
-            } else {
-                alert('No token found!');
-            }
-            return null;
-        };
-
-
         // Show toast notification
         function showToast(message, type) {
             const notification = document.createElement('div');
@@ -3641,7 +3900,7 @@
             const error = urlParams.get('error');
 
             if (token && googleSuccess) {
-                console.log('🎉 Google OAuth redirect successful, storing token');
+                debugLog('🎉 Google OAuth redirect successful, storing token');
                 // Store token in localStorage
                 localStorage.setItem('token', token);
                 showToast('Welcome! Google authentication successful!', 'success');
@@ -3681,32 +3940,32 @@
 
         // CLEAN AND RELIABLE INITIALIZATION
         document.addEventListener('DOMContentLoaded', function () {
-            console.log('🚀 Starting profile page initialization...');
+            debugLog('🚀 Starting profile page initialization...');
 
             // STEP 1: Wait for auth manager to be ready (it handles OAuth redirects)
             const initProfilePage = () => {
                 if (!window.authManager) {
-                    console.log('⏳ Waiting for auth manager...');
+                    debugLog('⏳ Waiting for auth manager...');
                     setTimeout(initProfilePage, 50);
                     return;
                 }
 
                 window.authManager.initPromise.then(() => {
-                    console.log('🔐 Auth manager ready, checking authentication...');
+                    debugLog('🔐 Auth manager ready, checking authentication...');
 
                     // STEP 2: Check authentication status
                     if (!window.authManager.isAuthenticated) {
-                        console.log('❌ User not authenticated, showing login required');
+                        debugLog('❌ User not authenticated, showing login required');
                         window.authManager.showLoginRequired();
                         return;
                     }
 
-                    console.log('✅ User authenticated, proceeding with profile setup');
+                    debugLog('✅ User authenticated, proceeding with profile setup');
 
                     // STEP 3: Check if profile is already completed
                     const profileCompleted = emergencyProfileCheck();
                     if (profileCompleted) {
-                        console.log('✅ Profile already completed - showing profile view');
+                        debugLog('✅ Profile already completed - showing profile view');
                         // Initialize UI components for completed profile
                         setTimeout(() => {
                             createParticles();
@@ -3719,22 +3978,22 @@
                         return;
                     }
 
-                    console.log('ℹ️ Profile incomplete - forcing normal profile view');
-                    document.getElementById('setupForm').style.display = 'none';
-                    document.getElementById('profileSection').style.display = 'block';
-                    document.getElementById('profileSection').classList.add('active');
-                    ensureSetupFormHidden();
-
-                    setTimeout(() => {
-                        createParticles();
-                        checkSidebarActivation();
-                        clearOldProfileData();
-                        if (window.adminPanelManager) {
-                            window.adminPanelManager.init();
-                        }
-                    }, 100);
+                    debugLog('ℹ️ Profile incomplete - showing complete-profile gate');
+                    if (window.authManager.showCompleteProfileRequired) {
+                        window.authManager.showCompleteProfileRequired();
+                        return;
+                    }
                 }).catch(error => {
                     console.error('❌ Profile auth initialization failed:', error);
+                    if (
+                        window.authManager &&
+                        window.authManager.isAuthenticated &&
+                        window.authManager.isProfileComplete &&
+                        !window.authManager.isProfileComplete(window.authManager.userData)
+                    ) {
+                        window.authManager.showCompleteProfileRequired();
+                        return;
+                    }
                     window.authManager.showLoginRequired();
                 });
             };
@@ -3746,7 +4005,7 @@
 
         // Function to populate email immediately when page loads
         function populateEmailImmediately() {
-            console.log('🔍 Starting immediate email population...');
+            debugLog('🔍 Starting immediate email population...');
 
             const emailField = document.getElementById('vitEmail');
             if (!emailField) {
@@ -3755,14 +4014,14 @@
                 return false;
             }
 
-            console.log('✅ Email field found:', emailField);
+            debugLog('✅ Email field found:', emailField);
 
             const token = localStorage.getItem('token');
-            console.log('🔑 Token exists:', !!token);
-            console.log('🔑 Token length:', token ? token.length : 0);
+            debugLog('🔑 Token exists:', !!token);
+            debugLog('🔑 Token length:', token ? token.length : 0);
 
             if (!token) {
-                console.log('❌ No token found for email population');
+                debugLog('❌ No token found for email population');
                 emailField.placeholder = 'Please log in first';
                 emailField.style.borderColor = '#f39c12';
                 emailField.style.backgroundColor = '#fff3cd';
@@ -3772,7 +4031,7 @@
             try {
                 // Parse JWT token
                 const tokenParts = token.split('.');
-                console.log('🔑 Token parts:', tokenParts.length);
+                debugLog('🔑 Token parts:', tokenParts.length);
 
                 if (tokenParts.length !== 3) {
                     console.error('❌ Invalid JWT token format');
@@ -3780,21 +4039,21 @@
                 }
 
                 const payload = JSON.parse(atob(tokenParts[1]));
-                console.log('🔍 Token payload keys:', Object.keys(payload));
-                console.log('🔍 Token payload:', JSON.stringify(payload, null, 2));
+                debugLog('🔍 Token payload keys:', Object.keys(payload));
+                debugLog('🔍 Token payload:', JSON.stringify(payload, null, 2));
 
                 // Try multiple possible email fields
                 let email = payload.email || payload.user?.email || payload.sub || payload.email_address || payload.preferred_username || payload.mail;
-                console.log('📧 Raw email from token:', email);
+                debugLog('📧 Raw email from token:', email);
 
                 if (email && typeof email === 'string') {
                     // Clean the email
                     email = email.trim().toLowerCase();
-                    console.log('📧 Cleaned email:', email);
+                    debugLog('📧 Cleaned email:', email);
 
                     // Check if it's a valid email
                     if (email.includes('@') && (email.includes('@vitbhopal.ac.in') || email.includes('@gmail.com'))) {
-                        console.log('✅ Valid VIT/Gmail email found:', email);
+                        debugLog('✅ Valid VIT/Gmail email found:', email);
 
                         // Set the email field
                         emailField.value = email;
@@ -3809,17 +4068,17 @@
                         if (loadingIcon) {
                             loadingIcon.className = 'bx bxs-lock';
                             loadingIcon.style.color = '#2ecc71';
-                            console.log('✅ Icon changed to lock');
+                            debugLog('✅ Icon changed to lock');
                         }
 
                         // Show success indicator
                         const indicator = document.getElementById('googleEmailIndicator');
                         if (indicator) {
                             indicator.style.display = 'flex';
-                            console.log('✅ Success indicator shown');
+                            debugLog('✅ Success indicator shown');
                         }
 
-                        console.log('✅ Email successfully populated from token:', email);
+                        debugLog('✅ Email successfully populated from token:', email);
                         return true;
                     } else {
                         console.warn('⚠️ Email found but not VIT/Gmail:', email);
@@ -3829,7 +4088,7 @@
                 }
 
                 // If we get here, token doesn't have email - try backend
-                console.log('📡 Token email not found, trying backend API...');
+                debugLog('📡 Token email not found, trying backend API...');
                 populateEmailFromBackend(token, emailField);
                 return false;
 
@@ -3847,7 +4106,7 @@
         // Helper function to populate email from backend API
         async function populateEmailFromBackend(token, emailField) {
             try {
-                console.log('📡 Making backend API call for email...');
+                debugLog('📡 Making backend API call for email...');
 
                 const response = await fetch('/api/v1/profile/me', {
                     method: 'GET',
@@ -3857,17 +4116,17 @@
                     }
                 });
 
-                console.log('📡 Backend response status:', response.status);
+                debugLog('📡 Backend response status:', response.status);
 
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('📦 Backend response data:', data);
+                    debugLog('📦 Backend response data:', data);
 
                     const backendEmail = data.data?.user?.email || data.user?.email || data.email;
-                    console.log('📧 Email from backend:', backendEmail);
+                    debugLog('📧 Email from backend:', backendEmail);
 
                     if (backendEmail && backendEmail.includes('@')) {
-                        console.log('✅ Email found in backend, updating field...');
+                        debugLog('✅ Email found in backend, updating field...');
 
                         // Only update if field is still empty or showing loading
                         if (!emailField.value || emailField.value === '' || emailField.placeholder.includes('Loading')) {
@@ -3882,9 +4141,9 @@
                             const indicator = document.getElementById('googleEmailIndicator');
                             if (indicator) indicator.style.display = 'flex';
 
-                            console.log('✅ Email field updated from backend');
+                            debugLog('✅ Email field updated from backend');
                         } else {
-                            console.log('ℹ️ Email field already populated, skipping backend update');
+                            debugLog('ℹ️ Email field already populated, skipping backend update');
                         }
 
                         return true;

@@ -156,6 +156,11 @@
                 <div class="hero-text">
                     <h1>Transform Your Academic Performance at VIT Bhopal</h1>
                     <p>Access premium study materials from 9-pointer students, curated resources, and powerful tools designed to maximize your GPA and minimize your effort.</p>
+                    <div class="quick-start-strip" aria-label="How to get started">
+                        <span><strong>1.</strong> Sign in</span>
+                        <span><strong>2.</strong> Pick a feature</span>
+                        <span><strong>3.</strong> Start learning</span>
+                    </div>
                     
                     <div class="stats">
                         <div class="stat-item">
@@ -197,16 +202,17 @@
                 
                 <!-- Compact Feature Cards -->
 <!-- Feature Cards Section -->
-<section class="features-section">
+<section class="features-section" id="features">
     <div class="container">
         <div class="section-title">
             <h2>Features</h2>
             <p>Premium academic resources curated by top-performing students</p>
+            <p class="features-click-hint"><i class="fas fa-hand-pointer"></i> Tap any card to open the feature</p>
         </div>
         
         <div class="compact-features-grid">
             <!-- Feature Card 1 -->
-             <a class="feature-card" href="features/maps/maps.html?sidebar=active">
+             <div class="feature-card feature-card--disabled" role="button" aria-disabled="true" title="Map is coming soon">
                                 <span class="upcoming-tag">Upcoming</span>
 
                 <div class="feature-icon">
@@ -215,13 +221,13 @@
                 <h3>Map</h3>
                 <p>Map of Vit-bhopal with its looks</p>
                 <div class="access-now">
-                    <span>Access Now</span>
-                    <i class="fas fa-arrow-right"></i>
+                    <span>Coming Soon</span>
+                    <i class="fas fa-clock"></i>
                 </div>
-            </a>
+            </div>
             
             
-             <a class="feature-card" href="features/ttmaker/ttmaker1.html?sidebar=active">
+             <a class="feature-card" href="features/ttmaker/ttmaker1.html?sidebar=active" title="Open Timetable Maker" aria-label="Open Timetable Maker">
                  <div class="feature-icon">
                      <i class="fas fa-calendar-alt"></i>
                  </div>
@@ -233,7 +239,7 @@
                  </div>
              </a>
 
-             <a class="feature-card" href="features/attendance/attendance.html?sidebar=active">
+             <a class="feature-card" href="features/attendance/attendance.html?sidebar=active" title="Open Attendance Calculator" aria-label="Open Attendance Calculator">
                  <div class="feature-icon">
                      <i class="fas fa-calculator"></i>
                  </div>
@@ -245,7 +251,7 @@
                  </div>
              </a>
              <!-- Repeat for other 7 features with unique icons -->
-             <a class="feature-card" href="features/mess-menu/mess.html?sidebar=active">
+             <a class="feature-card" href="features/mess-menu/mess.html?sidebar=active" title="Open Mess Menus" aria-label="Open Mess Menus">
                  <div class="feature-icon">
                      <i class="fas fa-file-alt"></i>
                  </div>
@@ -256,7 +262,7 @@
                      <i class="fas fa-arrow-right"></i>
                  </div>
              </a>
-             <a class="feature-card" href="features/gpa-calculator/cgpa.html?sidebar=active">
+             <a class="feature-card" href="features/gpa-calculator/cgpa.html?sidebar=active" title="Open CGPA Calculator" aria-label="Open CGPA Calculator">
                  <div class="feature-icon">
                      <i class="fas fa-calculator"></i>
                  </div>
@@ -268,7 +274,7 @@
                  </div>
              </a>
 
-             <a class="feature-card" href="features/faculty/faculty.html?sidebar=active">
+             <a class="feature-card" href="features/faculty/faculty.html?sidebar=active" title="Open Faculty Info" aria-label="Open Faculty Info">
                  <div class="feature-icon">
                  <i class="fas fa-chalkboard-teacher"></i>
                  </div>
@@ -280,7 +286,7 @@
                  </div>
              </a>
 
-             <a class="feature-card" href="features/club/club.html?sidebar=active">
+             <a class="feature-card" href="features/club/club.html?sidebar=active&source=index" title="Open Club Info" aria-label="Open Club Info">
                  <div class="feature-icon">
                      <i class="fas fa-users"></i>
                  </div>
@@ -292,7 +298,7 @@
                  </div>
              </a>
 
-             <a class="feature-card" href="features/event/event.html?sidebar=active">
+             <a class="feature-card" href="features/event/event.html?sidebar=active" title="Open Events" aria-label="Open Events">
                  <div class="feature-icon">
                      <i class="fas fa-video"></i>
                  </div>
@@ -305,7 +311,7 @@
              </a>
 
 
-             <a class="feature-card" href="features/marketplace/market.html?sidebar=active">
+             <a class="feature-card" href="features/marketplace/market.html?sidebar=active" title="Open Handwritten Notes" aria-label="Open Handwritten Notes">
                  <div class="feature-icon">
                      <i class="fas fa-pencil-alt"></i>
                  </div>
@@ -557,7 +563,6 @@
 
         // Initialize when DOM is ready
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('🚀 DOM loaded, initializing Custom Google Sign-In...');
             initGoogleSignIn();
         });
     </script>

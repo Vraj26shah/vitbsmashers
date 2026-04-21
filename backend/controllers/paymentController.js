@@ -7,6 +7,46 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+const IS_TEST_KEY = String(process.env.RAZORPAY_KEY_ID || '').startsWith('rzp_test_');
+const PAYMENT_TEST_MODE = String(process.env.PAYMENT_TEST_MODE || '').toLowerCase() === 'true' || IS_TEST_KEY;
+const PAYMENT_REDIRECT_MODE = String(process.env.PAYMENT_REDIRECT_MODE || 'false').toLowerCase() === 'true';
+const hasRazorpayConfig = () => !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+
+const verifyRazorpaySignature = ({ orderId, paymentId, signature }) => {
+  if (!orderId || !paymentId || !signature || !process.env.RAZORPAY_KEY_SECRET) return false;
+  const body = `${orderId}|${paymentId}`;
+  const expected = crypto
+    .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+    .update(body).digest('hex');
+  return expected === signature;
+};
+
+const finalizeOrderPayment = async ({ orderId, paymentId, preferUserId = null }) => {
+  const { data: orders } = await supabase.schema('business').from('razorpay_orders')
+    .select('course_id, amount, user_id').eq('razorpay_order_id', orderId);
+
+  if (!orders || orders.length === 0) return { ok: false, code: 404, message: 'Order not found' };
+
+  await supabase.schema('business').from('razorpay_orders')
+    .update({ status: 'paid' }).eq('razorpay_order_id', orderId);
+
+  const purchases = [];
+  for (const order of orders) {
+    const effectiveUserId = preferUserId || order.user_id;
+    const { data: p } = await supabase.schema('business').from('purchases').upsert({
+      user_id:             effectiveUserId,
+      course_id:           order.course_id,
+      razorpay_payment_id: paymentId,
+      razorpay_order_id:   orderId,
+      amount_paid:         order.amount,
+    }, { onConflict: 'user_id,course_id', ignoreDuplicates: true }).select().single();
+
+    if (p) purchases.push(p);
+  }
+
+  return { ok: true, purchases };
+};
+
 const normalizeAmountToRupees = (value) => {
   const parsed = Number.parseFloat(value);
   if (!Number.isFinite(parsed) || parsed <= 0) return null;
@@ -19,6 +59,12 @@ export const createOrder = async (req, res) => {
   try {
     const { courseId, subject, amount, items } = req.body;
     const userId = req.user.id;
+    if (!hasRazorpayConfig()) {
+      return res.status(500).json({
+        status: 'error',
+        message: 'Payment gateway is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.',
+      });
+    }
 
     // Single course purchase
     if (courseId) {
@@ -68,6 +114,9 @@ export const createOrder = async (req, res) => {
         status: 'success',
         message: 'Checkout session created successfully',
         gateway:    'razorpay',
+        paymentMode: PAYMENT_TEST_MODE ? 'test' : 'live',
+        allowMockFallback: PAYMENT_TEST_MODE,
+        redirectMode: PAYMENT_REDIRECT_MODE,
         orderId:    rzpOrder.id,
         order_id:   rzpOrder.id,
         amount:     amountPaise,
@@ -139,6 +188,9 @@ export const createOrder = async (req, res) => {
         status: 'success',
         message: 'Checkout session created successfully',
         gateway:   'razorpay',
+        paymentMode: PAYMENT_TEST_MODE ? 'test' : 'live',
+        allowMockFallback: PAYMENT_TEST_MODE,
+        redirectMode: PAYMENT_REDIRECT_MODE,
         orderId:   rzpOrder.id,
         order_id:  rzpOrder.id,
         amount:    amountPaise,
@@ -168,47 +220,55 @@ export const verifyPayment = async (req, res) => {
     const paymentId  = razorpay_payment_id || payment_id;
     const sig        = razorpay_signature || signature;
 
-    // Verify signature
-    const body     = `${orderId}|${paymentId}`;
-    const expected = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(body).digest('hex');
-
-    const isValid = expected === sig;
-
-    // In development, allow even if signature doesn't match (test mode)
-    if (!isValid && process.env.NODE_ENV === 'production')
+    const isValid = verifyRazorpaySignature({ orderId, paymentId, signature: sig });
+    const allowSignatureBypass = PAYMENT_TEST_MODE || IS_TEST_KEY || process.env.NODE_ENV !== 'production';
+    if (!isValid && !allowSignatureBypass)
       return res.status(400).json({ success: false, status: 'error', message: 'Payment signature invalid' });
-
-    // Fetch all orders for this razorpay_order_id
-    const { data: orders } = await supabase.schema('business').from('razorpay_orders')
-      .select('course_id, amount, user_id').eq('razorpay_order_id', orderId);
-
-    if (!orders || orders.length === 0)
-      return res.status(404).json({ success: false, status: 'error', message: 'Order not found' });
-
-    // Mark all matching orders as paid
-    await supabase.schema('business').from('razorpay_orders')
-      .update({ status: 'paid' }).eq('razorpay_order_id', orderId);
-
-    // Create purchase record for each course
-    const purchases = [];
-    for (const order of orders) {
-      const { data: p, error: pe } = await supabase.schema('business').from('purchases').upsert({
-        user_id:             userId,
-        course_id:           order.course_id,
-        razorpay_payment_id: paymentId,
-        razorpay_order_id:   orderId,
-        amount_paid:         order.amount,
-      }, { onConflict: 'user_id,course_id', ignoreDuplicates: true }).select().single();
-
-      if (p) purchases.push(p);
+    const finalized = await finalizeOrderPayment({ orderId, paymentId, preferUserId: userId });
+    if (!finalized.ok) {
+      return res.status(finalized.code).json({ success: false, status: 'error', message: finalized.message });
     }
-
-    return res.status(200).json({ success: true, status: 'success', message: 'Payment verified', data: purchases });
+    return res.status(200).json({ success: true, status: 'success', message: 'Payment verified', data: finalized.purchases });
   } catch (err) {
     console.error('verifyPayment error:', err.message);
     return res.status(500).json({ success: false, status: 'error', message: 'Payment verification failed' });
+  }
+};
+
+// ── POST /api/v1/payment/callback ─────────────────────────────────────────────
+export const paymentCallback = async (req, res) => {
+  const frontendBase = process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`;
+  const successUrl = `${frontendBase}/features/mycourses/mycourses.html?payment=success&sidebar=active`;
+  const failedUrl = `${frontendBase}/features/marketplace/market.html?payment=failed&sidebar=active`;
+
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      order_id,
+      payment_id,
+      signature,
+    } = req.body || {};
+
+    const orderId = razorpay_order_id || order_id;
+    const paymentId = razorpay_payment_id || payment_id;
+    const sig = razorpay_signature || signature;
+
+    const isValid = verifyRazorpaySignature({ orderId, paymentId, signature: sig });
+    const allowSignatureBypass = PAYMENT_TEST_MODE || IS_TEST_KEY || process.env.NODE_ENV !== 'production';
+    if (!isValid && !allowSignatureBypass) {
+      return res.redirect(failedUrl);
+    }
+
+    const finalized = await finalizeOrderPayment({ orderId, paymentId });
+    if (!finalized.ok) {
+      return res.redirect(failedUrl);
+    }
+    return res.redirect(successUrl);
+  } catch (error) {
+    console.error('paymentCallback error:', error.message);
+    return res.redirect(failedUrl);
   }
 };
 
@@ -265,4 +325,4 @@ export const webhook = async (req, res) => {
   }
 };
 
-export default { createOrder, createCheckoutSession, verifyPayment, getOrder, webhook };
+export default { createOrder, createCheckoutSession, verifyPayment, paymentCallback, getOrder, webhook };

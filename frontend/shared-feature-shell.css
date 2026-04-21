@@ -1,0 +1,103 @@
+/* Shared shell styling for all feature pages */
+:root {
+  --shell-header-height: 90px;
+  --shell-sidebar-width: 280px;
+}
+
+.header {
+  height: var(--shell-header-height) !important;
+  background: rgba(8, 18, 30, 0.55) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-bottom: 1px solid rgba(79, 182, 255, 0.4) !important;
+  box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35) !important;
+}
+
+.logo img {
+  height: 62px !important;
+}
+
+.logo-text h1 {
+  letter-spacing: 0.3px;
+}
+
+.logo-text span {
+  color: #72d0ff !important;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+}
+
+.sidebar {
+  top: var(--shell-header-height) !important;
+  width: var(--shell-sidebar-width) !important;
+  left: calc(-1 * var(--shell-sidebar-width));
+  background: rgba(8, 18, 30, 0.55) !important;
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+  border-right: 1px solid rgba(79, 182, 255, 0.35) !important;
+  box-shadow: 12px 0 30px rgba(0, 0, 0, 0.3) !important;
+}
+
+.sidebar-title {
+  color: #67c8ff !important;
+  font-size: 13px !important;
+  letter-spacing: 0.7px !important;
+}
+
+.sidebar-menu a {
+  border-left: 3px solid transparent !important;
+}
+
+.sidebar-menu a:hover,
+.sidebar-menu a.active {
+  background: rgba(79, 182, 255, 0.18) !important;
+  border-left-color: #58beff !important;
+}
+
+.main-content {
+  padding-top: calc(var(--shell-header-height) + 26px) !important;
+}
+
+.sidebar.active + .main-content {
+  margin-left: var(--shell-sidebar-width) !important;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --shell-header-height: 70px;
+  }
+
+  .header {
+    height: var(--shell-header-height) !important;
+  }
+
+  .logo img {
+    height: 48px !important;
+  }
+
+  .logo-text h1 {
+    font-size: 21px !important;
+  }
+
+  .logo-text span {
+    font-size: 12px !important;
+  }
+
+  .sidebar {
+    top: var(--shell-header-height) !important;
+    width: 100% !important;
+    left: -100% !important;
+  }
+
+  .sidebar.active {
+    left: 0 !important;
+  }
+
+  .sidebar.active + .main-content {
+    margin-left: 0 !important;
+  }
+
+  .main-content {
+    padding-top: calc(var(--shell-header-height) + 16px) !important;
+  }
+}

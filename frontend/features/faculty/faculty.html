@@ -6,6 +6,7 @@
     <title>Scholars Stack - Faculty Info</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../shared-feature-shell.css">
     <script src="../../config.js"></script>
     <script src="../../shared-auth.js"></script>
     <script src="../../shared-admin-auth.js"></script>
@@ -1139,7 +1140,7 @@
                 <img src="../images/logo1.png" alt="Scholars Stack Logo">
                 <div class="logo-text">
                     <h1>Scholars Stack</h1>
-                    <span>Faculty Info</span>
+                    <span>Premium Academic Resources</span>
                 </div>
             </a>
         </div>
@@ -1172,7 +1173,7 @@
          <div class="sidebar-title">Resources</div>
          <ul class="sidebar-menu">
              <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
-             <li><a href="#" ><i class='bx bxs-group'></i> Club Info</a></li>
+             <li><a href="/features/club/club.html?sidebar=active"><i class='bx bxs-group'></i> Club Info</a></li>
              <li><a href="../faculty/faculty.html" class="active"><i class='bx bxs-group'></i> Faculty Info</a></li>
              <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
          </ul>
@@ -2099,16 +2100,10 @@
 
         // Simulate sending admin notification
         function sendAdminNotification(faculty) {
-            console.log(`Sending admin notification for new faculty: ${faculty.name}`);
-            console.log(`Subject: New Faculty Addition - ${faculty.name}`);
-            console.log(`Body: A new faculty "${faculty.name}" has been added by ${faculty.submittedBy}. Please review it in the admin panel.`);
         }
         
         // Simulate sending update notification
         function sendUpdateNotification(update) {
-            console.log(`Sending admin notification for faculty update: ${update.facultyName}`);
-            console.log(`Subject: Faculty Update Request - ${update.facultyName}`);
-            console.log(`Body: An update request for "${update.facultyName}" has been submitted. Please review it in the admin panel.`);
         }
         
         // Search functionality for Browse Faculty

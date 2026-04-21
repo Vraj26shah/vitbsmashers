@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scholars Stack - Premium Marketplace</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../shared-feature-shell.css">
     <script src="../../config.js"></script>
     <script src="../../shared-auth.js"></script>
     <script src="../../shared-admin-auth.js"></script>
@@ -66,6 +68,8 @@
             constructor() {
                 this.modal = null;
                 this.currentOrder = null;
+                this.pendingResolve = null;
+                this.pendingReject = null;
                 this.createModal();
             }
 
@@ -283,22 +287,28 @@
                 this.modal.querySelector('.mock-close').addEventListener('click', () => {
                     this.close();
                     showNotification('Payment cancelled - returning to marketplace', 'warning');
+                    if (this.pendingResolve) {
+                        this.pendingResolve({ success: false, cancelled: true });
+                    }
                 });
 
                 this.modal.addEventListener('click', (e) => {
                     if (e.target === this.modal) {
                         this.close();
                         showNotification('Payment cancelled - returning to marketplace', 'warning');
+                        if (this.pendingResolve) {
+                            this.pendingResolve({ success: false, cancelled: true });
+                        }
                     }
                 });
 
                 // Payment buttons
                 document.getElementById('mockPaySuccess').addEventListener('click', () => {
-                    this.processPayment(true);
+                    this.processMockResult(true);
                 });
 
                 document.getElementById('mockPayFailure').addEventListener('click', () => {
-                    this.processPayment(false);
+                    this.processMockResult(false);
                 });
             }
 
@@ -317,7 +327,7 @@
                 this.currentOrder = null;
             }
 
-            async processPayment(success) {
+            async processMockResult(success) {
                 if (!this.currentOrder) return;
 
                 try {
@@ -329,24 +339,48 @@
                         }, this.currentOrder.orderId || this.currentOrder.order_id);
 
                         if (result && result.success) {
-                            showNotification('Payment successful! Courses unlocked.', 'success');
+                            showNotification('Payment successful! Redirecting to your courses...', 'success');
+                            if (this.pendingResolve) {
+                                this.pendingResolve(result);
+                            }
                             setTimeout(() => {
                                 window.location.href = '../mycourses/mycourses.html?payment=success&sidebar=active';
-                            }, 2000);
+                            }, 1500);
                         } else {
-                            showNotification('Payment verification failed', 'danger');
+                            const verifyError = new Error('Payment verification failed');
+                            showNotification(verifyError.message, 'danger');
+                            if (this.pendingReject) {
+                                this.pendingReject(verifyError);
+                            }
                         }
                     } else {
                         // Simulate failed payment - stay on marketplace
-                        showNotification('Payment failed. Please try again.', 'danger');
-                        console.log('❌ Payment failed - staying on marketplace');
+                        const failError = new Error('Payment failed. Please try again.');
+                        failError.alreadyNotified = true;
+                        showNotification(failError.message, 'danger');
+                        if (this.pendingReject) {
+                            this.pendingReject(failError);
+                        }
                     }
                 } catch (error) {
                     console.error('Mock payment error:', error);
                     showNotification('Payment processing failed', 'danger');
+                    if (this.pendingReject) {
+                        this.pendingReject(error);
+                    }
                 }
 
                 this.close();
+                this.pendingResolve = null;
+                this.pendingReject = null;
+            }
+
+            async processPayment(orderData, description) {
+                this.open(orderData, description);
+                return new Promise((resolve, reject) => {
+                    this.pendingResolve = resolve;
+                    this.pendingReject = reject;
+                });
             }
         }
 
@@ -355,8 +389,20 @@
             async processPayment(orderData, description) {
                 // Load Razorpay SDK if not already loaded
                 await loadRazorpaySDK();
+                if (!window.Razorpay) {
+                    throw new Error('Razorpay SDK failed to load.');
+                }
+                if (!orderData?.key || !orderData?.orderId) {
+                    throw new Error('Invalid payment session. Missing Razorpay key/order id.');
+                }
 
                 return new Promise((resolve, reject) => {
+                    const isTestMode = (orderData.paymentMode || '').toLowerCase() === 'test';
+                    const safeContact = (userProfile.phone || '').replace(/\D/g, '').slice(-10);
+                    const canUseCheckoutImage =
+                        window.location.protocol === 'https:' &&
+                        window.location.hostname !== 'localhost' &&
+                        window.location.hostname !== '127.0.0.1';
                     const options = {
                         key: orderData.key,
                         amount: orderData.amount,
@@ -364,7 +410,6 @@
                         order_id: orderData.orderId,
                         name: 'Scholars Stack',
                         description: description,
-                        image: '/features/images/logo1.png',
                         handler: function (response) {
                             // Payment successful
                             verifyPayment(response, orderData.orderId || orderData.order_id).then(resolve).catch(reject);
@@ -372,13 +417,19 @@
                         prefill: {
                             name: userProfile.fullName || userProfile.name || '',
                             email: userProfile.email || '',
-                            contact: userProfile.phone || ''
+                            contact: safeContact
                         },
                         theme: {
                             color: '#2ecc71'
                         },
+                        // Keep checkout in-page (modal) instead of redirecting to a dedicated page.
+                        redirect: false,
+                        retry: {
+                            enabled: true,
+                            max_count: 2
+                        },
                         modal: {
-                            ondismiss: function() {
+                            ondismiss: function () {
                                 showNotification('Payment cancelled - returning to marketplace', 'warning');
                                 // Stay on marketplace page - don't redirect
                                 resolve({ success: false, cancelled: true });
@@ -386,7 +437,42 @@
                         }
                     };
 
+                    // Avoid mixed-content/CORS failure inside Razorpay hosted HTTPS checkout
+                    // when app is served from localhost/http during development.
+                    if (canUseCheckoutImage) {
+                        options.image = `${window.location.origin}/features/images/logo1.png`;
+                    }
+
+                    // In Razorpay test mode, UPI/wallet/paylater often trigger external popup/app flows
+                    // that can fail on desktop browsers and show about:blank. Keep stable methods only.
+                    if (isTestMode) {
+                        options.method = {
+                            card: true,
+                            netbanking: true,
+                            upi: false,
+                            wallet: false,
+                            paylater: false,
+                            emi: false
+                        };
+                    }
+
                     const rzp = new Razorpay(options);
+                    rzp.on('payment.failed', function (response) {
+                        const reason = response?.error?.description || response?.error?.reason || 'Payment failed';
+                        const isTestModeIssue = /another (method|email|mail|payment)|use another|try another|not supported|test.*fail/i.test(reason);
+                        if (isTestModeIssue) {
+                            showNotification(
+                                'Test mode: this method is not supported. Use card 4111 1111 1111 1111 / expiry 12/25 / CVV 123, or UPI ID success@razorpay',
+                                'warning'
+                            );
+                        } else {
+                            showNotification(reason, 'danger');
+                        }
+                        const err = new Error(reason);
+                        err.alreadyNotified = true;
+                        err.isTestModeIssue = isTestModeIssue;
+                        reject(err);
+                    });
                     rzp.open();
                 });
             }
@@ -466,11 +552,25 @@
         }
 
         @keyframes float {
-            0% { transform: translateY(0) translateX(0) rotate(0deg); }
-            25% { transform: translateY(-20px) translateX(20px) rotate(90deg); }
-            50% { transform: translateY(0) translateX(40px) rotate(180deg); }
-            75% { transform: translateY(20px) translateX(20px) rotate(270deg); }
-            100% { transform: translateY(0) translateX(0) rotate(360deg); }
+            0% {
+                transform: translateY(0) translateX(0) rotate(0deg);
+            }
+
+            25% {
+                transform: translateY(-20px) translateX(20px) rotate(90deg);
+            }
+
+            50% {
+                transform: translateY(0) translateX(40px) rotate(180deg);
+            }
+
+            75% {
+                transform: translateY(20px) translateX(20px) rotate(270deg);
+            }
+
+            100% {
+                transform: translateY(0) translateX(0) rotate(360deg);
+            }
         }
 
         /* Header styles */
@@ -512,7 +612,7 @@
             transition: all 0.3s ease;
         }
 
- 
+
         .logo {
             display: flex;
             align-items: center;
@@ -678,7 +778,7 @@
             max-width: 1500px;
         }
 
-        .sidebar.active + .main-content {
+        .sidebar.active+.main-content {
             margin-left: var(--sidebar-width);
         }
 
@@ -711,8 +811,8 @@
 
         /* Marketplace Hero Section */
         .marketplace-hero {
-            background: linear-gradient(135deg, rgba(44, 62, 80, 0.9), rgba(26, 37, 47, 0.9)), 
-                        url('https://images.unsplash.com/photo-1497636577773-f1231844b336?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
+            background: linear-gradient(135deg, rgba(44, 62, 80, 0.9), rgba(26, 37, 47, 0.9)),
+                url('https://images.unsplash.com/photo-1497636577773-f1231844b336?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80');
             background-size: cover;
             background-position: center;
             border-radius: 16px;
@@ -851,7 +951,8 @@
             white-space: nowrap;
         }
 
-        .filter-btn.active, .filter-btn:hover {
+        .filter-btn.active,
+        .filter-btn:hover {
             background: var(--accent-blue);
             color: white;
             transform: translateY(-2px);
@@ -875,7 +976,7 @@
             border-radius: 14px;
             overflow: hidden;
             box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
-            border: 2px solid var(--accent-blue);
+            border: none;
             transition: all 0.4s ease;
             position: relative;
             cursor: pointer;
@@ -934,7 +1035,12 @@
         }
 
         .course-rating {
-            display: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 16px;
+            color: var(--gold-color);
+            font-weight: 600;
         }
 
         .course-meta {
@@ -1352,18 +1458,98 @@
         }
 
         .modules-section {
-            background: rgba(26, 37, 47, 0.7);
-            border-radius: 14px;
+            background: radial-gradient(circle at top right, rgba(79, 182, 255, 0.16), rgba(14, 24, 38, 0.96) 42%);
+            border-radius: 18px;
             padding: 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 20px 38px rgba(0, 0, 0, 0.26);
+            border: 1px solid rgba(79, 182, 255, 0.14);
         }
 
         .section-title {
-            font-size: 22px;
-            color: var(--accent-blue);
-            margin-bottom: 15px;
-            padding-bottom: 8px;
-            border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+            font-size: 24px;
+            color: #6ec6ff;
+            margin-bottom: 6px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(79, 182, 255, 0.24);
+        }
+
+        .section-caption {
+            margin: 0 0 14px 0;
+            color: rgba(214, 233, 247, 0.82);
+            font-size: 13px;
+            letter-spacing: 0.2px;
+        }
+
+        .inclusion-list {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+
+        .inclusion-item {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            align-items: start;
+            padding: 12px;
+            border-radius: 12px;
+            background: linear-gradient(145deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.015));
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+        }
+
+        .inclusion-item:hover {
+            transform: translateY(-2px);
+            border-color: rgba(110, 198, 255, 0.35);
+            background: linear-gradient(145deg, rgba(110, 198, 255, 0.12), rgba(255, 255, 255, 0.02));
+        }
+
+        .inclusion-order {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            color: #001a2d;
+            background: linear-gradient(145deg, #8fe7ff, #4fb6ff);
+            box-shadow: 0 6px 16px rgba(79, 182, 255, 0.32);
+        }
+
+        .inclusion-code {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: fit-content;
+            max-width: 100%;
+            padding: 4px 9px;
+            border-radius: 999px;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            color: #8cffc9;
+            background: rgba(23, 229, 143, 0.16);
+            margin-bottom: 7px;
+        }
+
+        .inclusion-name {
+            font-size: 14px;
+            color: rgba(236, 240, 241, 0.97);
+            line-height: 1.4;
+        }
+
+        .inclusion-content {
+            min-width: 0;
+        }
+
+        @media (max-width: 768px) {
+            .inclusion-list {
+                grid-template-columns: 1fr;
+            }
         }
 
         .modules-grid {
@@ -1493,11 +1679,11 @@
                 grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
                 gap: 25px;
             }
-            
+
             .course-overview {
                 grid-template-columns: 1fr;
             }
-            
+
             .course-image-large {
                 height: 220px;
             }
@@ -1516,19 +1702,19 @@
             .hero-title {
                 font-size: 28px;
             }
-            
+
             .hero-subtitle {
                 font-size: 16px;
             }
-            
+
             .course-grid {
                 grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
             }
-            
+
             .course-stats {
                 grid-template-columns: repeat(2, 1fr);
             }
-            
+
             .modal-title {
                 font-size: 24px;
             }
@@ -1607,7 +1793,7 @@
                 max-width: 100%;
             }
 
-            .sidebar.active + .main-content {
+            .sidebar.active+.main-content {
                 margin-left: 0;
             }
 
@@ -1910,11 +2096,32 @@
                 font-size: 14px;
             }
         }
+
+        /* Transparent glassmorphism card overrides */
+        .course-card {
+            background: rgba(255, 255, 255, 0.05) !important;
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: none !important;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25) !important;
+        }
+
+        .course-card:hover {
+            background: rgba(255, 255, 255, 0.09) !important;
+            box-shadow: 0 16px 48px rgba(0, 0, 0, 0.35) !important;
+            transform: translateY(-6px);
+        }
+
+        .course-info {
+            background: transparent !important;
+        }
+
     </style>
 </head>
+
 <body>
     <div class="bg-particles" id="bgParticles"></div>
-    
+
     <!-- Header with Menu Toggle -->
     <header class="header">
         <div class="menu-toggle" id="menuToggle">
@@ -1922,19 +2129,19 @@
             <span></span>
             <span></span>
         </div>
-        
+
         <div class="logo">
             <a href="/" style="text-decoration: none; display: flex; align-items: center;">
                 <img src="/features/images/logo1.png" alt="Scholars Stack Logo">
                 <div class="logo-text">
                     <h1>Scholars Stack</h1>
-                    <span>Marketplace</span>
+                    <span>Premium Academic Resources</span>
                 </div>
             </a>
         </div>
-        
+
         <div class="header-actions">
-            <div class="user-profile" style="display: none;">
+            <div class="user-profile">
                 <div class="user-avatar">
                     <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
                     <span>S</span>
@@ -1946,7 +2153,7 @@
             </a>
         </div>
     </header>
-    
+
     <!-- Sidebar Navigation -->
     <nav class="sidebar" id="sidebar">
         <div class="sidebar-title">Main Navigation</div>
@@ -1956,81 +2163,86 @@
             <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
             <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
         </ul>
-        
+
         <div class="sidebar-title">Resources</div>
         <ul class="sidebar-menu">
             <li><a href="../marketplace/market.html" class="active"><i class='bx bxs-store'></i> Marketplace</a></li>
-            <li><a href="#"><i class='bx bxs-group'></i> Club Info</a></li>
+            <li><a href="/features/club/club.html?sidebar=active"><i class='bx bxs-group'></i> Club Info</a></li>
             <li><a href="../faculty/faculty.html"><i class='bx bxs-group'></i> Faculty Info</a></li>
             <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
         </ul>
-        
+
         <div class="sidebar-title">Quick Links</div>
         <ul class="sidebar-menu">
             <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
             <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
         </ul>
-        
+
         <div class="sidebar-title">Account</div>
         <ul class="sidebar-menu">
             <!-- <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li> -->
             <li><a href="#" class="logout-link"><i class='bx bxs-log-out'></i> Logout</a></li>
         </ul>
     </nav>
-    
+
     <!-- Main Content Area -->
     <main class="main-content" id="mainContent">
         <h1 class="page-title">
             <i class='bx bxs-store'></i> Premium Marketplace
         </h1>
-        
+
         <!-- Marketplace Hero Section -->
         <section class="marketplace-hero">
             <div class="hero-content">
                 <h2 class="hero-title">Elevate Your Academic Journey</h2>
-                <p class="hero-subtitle">Choose your branch pack and unlock the full study bundle mapped in our marketplace configuration. Each pack is built from `branches.json`, not the standalone course catalog.</p>
-                
+                <p class="hero-subtitle">Access premium course notes curated by top performers and professors. Invest in your success with Scholars Stack's exclusive marketplace.</p>
+
                 <div class="hero-stats">
                     <div class="hero-stat">
-                        <div class="stat-number">6</div>
-                        <div class="stat-label">Branch Packs</div>
+                        <div class="stat-number">20+</div>
+                        <div class="stat-label">Premium Courses</div>
                     </div>
                     <div class="hero-stat">
-                        <div class="stat-number">46+</div>
-                        <div class="stat-label">Courses Included</div>
+                        <div class="stat-number">4.8★</div>
+                        <div class="stat-label">Average Rating</div>
                     </div>
                     <div class="hero-stat">
-                        <div class="stat-number">₹999</div>
-                        <div class="stat-label">Per Branch Pack</div>
+                        <div class="stat-number">500+</div>
+                        <div class="stat-label">Satisfied Students</div>
                     </div>
                 </div>
             </div>
         </section>
-        
+
         <!-- Enhanced Marketplace Controls -->
         <div class="marketplace-controls">
             <div class="search-container">
                 <i class='bx bx-search'></i>
-                <input type="text" placeholder="Search branch packs, programs, or included subjects..." id="searchInput">
+                <input type="text" placeholder="Search courses, subjects, or professors..." id="searchInput">
             </div>
 
             <!-- Profile completion notice for authenticated users -->
-            <div id="profileNotice" class="profile-notice" style="display: none; background: rgba(243, 156, 18, 0.1); border: 1px solid var(--warning-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: center;">
-                <i class='bx bx-info-circle' style="color: var(--warning-color); font-size: 20px; margin-bottom: 8px;"></i>
+            <div id="profileNotice" class="profile-notice"
+                style="display: none; background: rgba(243, 156, 18, 0.1); border: 1px solid var(--warning-color); border-radius: 8px; padding: 15px; margin-bottom: 15px; text-align: center;">
+                <i class='bx bx-info-circle'
+                    style="color: var(--warning-color); font-size: 20px; margin-bottom: 8px;"></i>
                 <p style="color: var(--warning-color); margin: 0; font-weight: 500;">
                     Please complete your profile before purchasing branch packs.
-                    <br><small style="color: #ddd; font-weight: 400;">Required: Phone number, Registration number, and Program</small>
-                    <br><a href="../profile/profile.html?sidebar=active" style="color: var(--accent-blue); text-decoration: underline; margin-left: 8px;">Complete Profile</a>
+                    <br><small style="color: #ddd; font-weight: 400;">Required: Phone number, Registration number, and
+                        Program</small>
+                    <br><a href="#" onclick="goToCompleteProfile(); return false;"
+                        style="color: var(--accent-blue); text-decoration: underline; margin-left: 8px;">Complete
+                        Profile</a>
                 </p>
             </div>
 
             <!-- Branch filters -->
             <div class="filter-container">
                 <button class="filter-btn active" data-filter="all">
-                    <i class='bx bx-filter'></i> All Branches
+                    <i class='bx bx-filter'></i> All
                 </button>
                 <button class="filter-btn" data-filter="BAI">
-                    <i class='bx bx-brain'></i> B.Tech AI
+                    <i class='bx bx-brain'></i> BAI
                 </button>
                 <button class="filter-btn" data-filter="BCE">
                     <i class='bx bx-code-alt'></i> BCE
@@ -2049,7 +2261,7 @@
                 </button>
             </div>
         </div>
-        
+
         <!-- Branch Grid - Branch packs will be loaded dynamically from branches.json -->
         <div class="course-grid">
             <!-- Loading message while branch packs are being loaded -->
@@ -2065,7 +2277,8 @@
             ">
                 <i class='bx bx-loader-alt bx-spin' style="font-size: 48px; color: #3498db; margin-bottom: 20px;"></i>
                 <h3 style="color: #ecf0f1; margin-bottom: 15px; font-size: 20px;">Loading Branch Packs...</h3>
-                <p style="color: #ddd; margin: 0; font-size: 14px;">Please wait while we load the latest branch offerings.</p>
+                <p style="color: #ddd; margin: 0; font-size: 14px;">Please wait while we load the latest branch
+                    offerings.</p>
             </div>
         </div>
     </main>
@@ -2079,17 +2292,17 @@
                     <i class='bx bx-x'></i>
                 </button>
             </div>
-            
+
             <div class="modal-body" id="modalBody">
                 <!-- Content will be populated by JavaScript -->
             </div>
-            
+
             <div class="modal-footer">
                 <div class="price-container">
                     <div class="original-price">₹1,499</div>
                     <div class="discount-price" id="modalCoursePrice">₹999</div>
                 </div>
-                
+
                 <div class="modal-actions">
                     <button class="add-to-cart" id="modalAddToCart">
                         <i class='bx bx-cart'></i> Add to Cart
@@ -2107,7 +2320,7 @@
         <i class='bx bx-cart'></i>
         <div class="cart-count" id="cartCount">0</div>
     </div>
-    
+
     <!-- Cart Preview -->
     <div class="cart-preview" id="cartPreview">
         <div class="cart-header">
@@ -2116,18 +2329,18 @@
                 <i class='bx bx-x'></i>
             </button>
         </div>
-        
+
         <div class="cart-items" id="cartItems">
             <p>Your cart is empty</p>
         </div>
-        
+
         <div class="cart-total">
             <span>Total:</span>
             <span id="cartTotal">₹0</span>
         </div>
-        
+
         <div class="cart-actions">
-            <button class="cart-btn btn-clear-cart" id="clearCartButton" style="background: rgba(231, 76, 60, 0.2); color: var(--danger-color); display: none;">Clear All</button>
+            <button class="cart-btn btn-view-cart" onclick="document.getElementById('cartPreview').classList.remove('active')">View Cart</button>
             <button class="cart-btn btn-checkout" id="checkoutButton">Checkout</button>
         </div>
     </div>
@@ -2200,7 +2413,7 @@
                 updatePaymentButtonVisibility();
                 showNotification(errorData.message || 'Please complete your profile before purchasing branch packs.', 'warning');
                 setTimeout(() => {
-                    window.location.href = '/features/profile/profile.html?sidebar=active';
+                    goToCompleteProfile();
                 }, 1200);
                 return false;
             }
@@ -2299,9 +2512,14 @@
         let isUserProfileComplete = false;
 
         function isProfileComplete() {
-          return isUserProfileComplete;
+            return isUserProfileComplete;
         }
-        
+
+        function goToCompleteProfile() {
+            const next = encodeURIComponent(window.location.pathname + window.location.search);
+            window.location.href = `../profile/complete-profile.html?next=${next}`;
+        }
+
         // Function to update user profile display in header
         // REMOVED - Let shared-auth.js handle user profile display
         // function updateUserProfileDisplay(profile) { ... }
@@ -2317,11 +2535,6 @@
             const addToCartButtons = document.querySelectorAll('.add-to-cart');
             const profileNotice = document.getElementById('profileNotice');
 
-            console.log('🔄 Updating payment button visibility:', {
-                isUserAuthenticated,
-                isUserProfileComplete,
-                buttonsFound: paymentButtons.length
-            });
 
             addToCartButtons.forEach(button => {
                 button.style.display = 'inline-flex';
@@ -2337,14 +2550,13 @@
                     // Hide payment buttons for non-authenticated users
                     button.style.display = 'none';
                     if (profileNotice) profileNotice.style.display = 'none';
-                    console.log('🚫 User not authenticated - hiding payment buttons');
                 } else if (!isUserProfileComplete) {
-                    // Show buttons but disable them for authenticated users with incomplete profiles
+                    // Keep buttons interactive and route user to complete-profile
                     button.style.display = 'inline-flex';
-                    button.disabled = true;
-                    button.style.opacity = '0.6';
-                    button.style.cursor = 'not-allowed';
-                    button.title = 'Complete your profile to enable payments';
+                    button.disabled = false;
+                    button.style.opacity = '1';
+                    button.style.cursor = 'pointer';
+                    button.title = 'Complete your profile to continue';
 
                     // Change button text to indicate profile completion needed
                     if (button.classList.contains('enroll-now')) {
@@ -2356,9 +2568,7 @@
                     // Show profile completion notice - user stays on marketplace
                     if (profileNotice) {
                         profileNotice.style.display = 'block';
-                        console.log('📝 Profile incomplete - showing notice, user stays on marketplace');
                     }
-                    console.log('⚠️ Profile incomplete - disabling payment buttons and showing notice');
                 } else {
                     // Enable buttons for authenticated users with complete profiles
                     button.style.display = 'inline-flex';
@@ -2376,7 +2586,6 @@
 
                     // Hide profile completion notice
                     if (profileNotice) profileNotice.style.display = 'none';
-                    console.log('✅ Profile complete - enabling payment buttons');
                 }
             });
         }
@@ -2398,25 +2607,19 @@
         function createBranchArtwork(branch) {
             const from = branch.gradientFrom || '#1e3a5f';
             const to = branch.gradientTo || '#3498db';
-            const shortName = escapeHtml(branch.shortName || branch.name || branch.id);
-            const tagline = escapeHtml(branch.tagline || 'Premium Branch Pack');
-            const branchId = escapeHtml(branch.id || '');
+            const shortName = escapeHtml(branch.shortName || branch.name || branch.id || 'Branch Pack');
 
             const svg = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500">
                     <defs>
-                        <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
                             <stop offset="0%" stop-color="${from}" />
                             <stop offset="100%" stop-color="${to}" />
                         </linearGradient>
                     </defs>
-                    <rect width="800" height="500" rx="32" fill="url(#g)" />
-                    <circle cx="680" cy="110" r="90" fill="rgba(255,255,255,0.12)" />
-                    <circle cx="130" cy="420" r="120" fill="rgba(255,255,255,0.08)" />
-                    <text x="64" y="160" fill="white" font-family="Poppins, Arial, sans-serif" font-size="58" font-weight="700">${shortName}</text>
-                    <text x="64" y="220" fill="rgba(255,255,255,0.92)" font-family="Poppins, Arial, sans-serif" font-size="26">${tagline}</text>
-                    <text x="64" y="410" fill="rgba(255,255,255,0.88)" font-family="Poppins, Arial, sans-serif" font-size="30" font-weight="600">Scholars Stack</text>
-                    <text x="620" y="430" fill="rgba(255,255,255,0.94)" font-family="Poppins, Arial, sans-serif" font-size="44" font-weight="700">${branchId}</text>
+                    <rect width="800" height="500" rx="28" fill="url(#bg)" />
+                    <rect x="0" y="0" width="800" height="500" fill="rgba(6, 12, 24, 0.18)" />
+                    <text x="56" y="284" fill="rgba(255,255,255,0.95)" font-family="Poppins, Arial, sans-serif" font-size="58" font-weight="700">${shortName}</text>
                 </svg>
             `;
 
@@ -2426,7 +2629,6 @@
         // Load branch packs from JSON file
         async function loadCoursesFromJSON() {
             try {
-                console.log('📂 Loading branch packs and course data from JSON files...');
                 const [branchRes, courseRes] = await Promise.all([
                     fetch('./branches.json'),
                     fetch('./courses.json')
@@ -2447,7 +2649,6 @@
                     courseImageMap[courseId] = createBranchArtwork(courses[courseId]);
                 });
 
-                console.log(`✅ Loaded ${Object.keys(courses).length} branch packs and ${Object.keys(window._allCourses).length} courses`);
                 return true;
             } catch (error) {
                 console.error('❌ Error loading JSON data:', error);
@@ -2473,7 +2674,6 @@
 
         // Generate branch pack cards dynamically from loaded data
         function generateCourseCards() {
-            console.log('🏗️ Generating branch pack cards dynamically...');
 
             const courseGrid = document.querySelector('.course-grid');
             if (!courseGrid) {
@@ -2504,11 +2704,14 @@
                 const courseCard = document.createElement('div');
                 courseCard.className = 'course-card';
                 courseCard.setAttribute('data-course', branchId);
-                courseCard.setAttribute('data-tags', branchId.toLowerCase());
+                courseCard.setAttribute(
+                    'data-tags',
+                    `${branchId} ${branch.shortName || ''} ${branch.name || ''} ${branch.tagline || ''}`.toLowerCase()
+                );
 
                 courseCard.innerHTML = `
                     <div class="course-image" id="course-image-${branchId}" style="background: linear-gradient(135deg, ${branch.gradientFrom || '#2980b9'}, ${branch.gradientTo || '#1abc9c'}); display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative;">
-                        <div class="premium-badge">COMPLETE PACK</div>
+                        <div class="premium-badge">PREMIUM</div>
                         <i class='bx ${branch.icon || 'bx-book'}' style="font-size:52px;color:rgba(255,255,255,0.9);margin-bottom:10px;"></i>
                         <span style="font-size:18px;font-weight:800;color:white;letter-spacing:2px;">${branch.shortName}</span>
                         <span style="font-size:11px;color:rgba(255,255,255,0.75);margin-top:4px;letter-spacing:0.5px;">${courseList.length} Subjects Included</span>
@@ -2518,15 +2721,17 @@
                             <div>
                                 <h3 class="course-title">${branch.name}</h3>
                             </div>
+                            <div class="course-rating">
+                                <i class='bx bxs-star' style="color: var(--gold-color);"></i>
+                                <span>${branch.rating || '4.8'}</span>
+                            </div>
                         </div>
-                        <p style="color:${branch.gradientFrom || 'var(--accent-teal)'};font-weight:600;margin-bottom:8px;font-size:12px;text-transform:uppercase;letter-spacing:0.5px;">${branch.tagline}</p>
+                        <div class="course-meta" style="margin-bottom:15px;">
+                            <div class="meta-item"><i class='bx bx-book'></i><span>${courseList.length} Subjects</span></div>
+                            <div class="meta-item"><i class='bx bx-star'></i><span>${pyqCount} with PYQs</span></div>
+                            <div class="meta-item"><i class='bx bx-download'></i><span>${extrasCount} Extras</span></div>
+                        </div>
                         <p class="course-description">${branch.description.substring(0, 120)}...</p>
-                        <div class="course-meta" style="margin-bottom: 14px; display: flex; flex-wrap: wrap; gap: 8px;">
-                            <span class="stat-item"><i class='bx bx-book-content' style="font-size:13px;"></i> ${courseList.length} Courses</span>
-                            ${pyqCount > 0 ? `<span class="stat-item" style="background:rgba(46,204,113,0.15);color:#2ecc71;border-color:#2ecc71;">✓ ${pyqCount} with PYQs</span>` : ''}
-                            ${refCount > 0 ? `<span class="stat-item" style="background:rgba(52,152,219,0.15);color:#3498db;border-color:#3498db;">📚 ${refCount} with Refs</span>` : ''}
-                            ${extrasCount > 0 ? `<span class="stat-item" style="background:rgba(241,196,15,0.15);color:#f1c40f;border-color:#f1c40f;">★ ${extrasCount} Extras</span>` : ''}
-                        </div>
                         <div class="course-footer">
                             <div class="course-price">${branch.price}</div>
                             <button class="add-to-cart" data-id="${branchId}" data-title="${branch.name}" data-price="${parseInt(branch.price.replace('₹', '').replace(',', ''))}" data-image="">
@@ -2539,24 +2744,14 @@
                 courseGrid.appendChild(courseCard);
             });
 
-            console.log(`✅ Generated ${Object.keys(courses).length} branch pack cards`);
         }
 
         // Initialize branch pack images dynamically
         function initializeCourseImages() {
-            console.log('🎨 Initializing branch pack images dynamically...');
 
-            // Update all course image elements
+            // Keep card artwork simple (gradient + icon) and only keep image references for cart usage.
             Object.keys(courseImageMap).forEach(courseId => {
-                const imageElement = document.getElementById(`course-image-${courseId}`);
                 const imageUrl = getCourseImage(courseId);
-
-                if (imageElement) {
-                    imageElement.style.backgroundImage = `url('${imageUrl}')`;
-                    console.log(`✅ Set image for ${courseId}: ${imageUrl}`);
-                } else {
-                    console.warn(`⚠️ Image element not found for ${courseId}`);
-                }
 
                 // Also update the data-image attribute for cart functionality
                 const addToCartButton = document.querySelector(`[data-id="${courseId}"].add-to-cart`);
@@ -2565,47 +2760,33 @@
                 }
             });
 
-            console.log('🎨 Branch pack images initialization complete');
         }
 
         function renderCourseInclusions(branch) {
             const includedCourses = Array.isArray(branch.courses) ? branch.courses : [];
             const allCourses = window._allCourses || {};
 
-            const courseRows = includedCourses.map(cid => {
+            const chips = includedCourses.map((cid, idx) => {
                 const c = allCourses[cid];
                 const name = c ? c.title : cid;
-                const hasPyq = c && Array.isArray(c.pyqs) && c.pyqs.length > 0;
-                const hasRef = c && Array.isArray(c.referenceBooks) && c.referenceBooks.length > 0;
-                const hasExtra = c && Array.isArray(c.extras) && c.extras.length > 0;
-                const badges = [
-                    hasPyq ? `<span style="background:rgba(46,204,113,0.15);color:#2ecc71;border:1px solid rgba(46,204,113,0.4);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;">PYQs</span>` : '',
-                    hasRef ? `<span style="background:rgba(52,152,219,0.15);color:#3498db;border:1px solid rgba(52,152,219,0.4);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;">Refs</span>` : '',
-                    hasExtra ? `<span style="background:rgba(241,196,15,0.15);color:#f1c40f;border:1px solid rgba(241,196,15,0.4);border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;">Extras</span>` : '',
-                ].filter(Boolean).join(' ');
+                const index = idx + 1;
                 return `
-                    <div style="display:flex;align-items:center;justify-content:space-between;padding:9px 14px;border-radius:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);">
-                        <div style="display:flex;align-items:center;gap:8px;">
-                            <span style="font-size:11px;color:var(--accent-teal);font-weight:700;min-width:60px;">${cid}</span>
-                            <span style="font-size:13px;color:var(--light-color);">${name}</span>
+                    <div class="inclusion-item">
+                        <span class="inclusion-order">${String(index).padStart(2, '0')}</span>
+                        <div class="inclusion-content">
+                            <span class="inclusion-code">${cid}</span>
+                            <div class="inclusion-name">${name}</div>
                         </div>
-                        <div style="display:flex;gap:4px;flex-shrink:0;">${badges || '<span style="font-size:10px;color:rgba(255,255,255,0.35);">Modules</span>'}</div>
                     </div>
                 `;
             }).join('');
 
-            const pyqTotal = includedCourses.filter(cid => allCourses[cid] && Array.isArray(allCourses[cid].pyqs) && allCourses[cid].pyqs.length > 0).length;
-            const refTotal = includedCourses.filter(cid => allCourses[cid] && Array.isArray(allCourses[cid].referenceBooks) && allCourses[cid].referenceBooks.length > 0).length;
-
             return `
                 <div class="modules-section">
                     <h3 class="section-title">Courses Included (${includedCourses.length})</h3>
-                    <div style="display:flex;gap:12px;margin-bottom:14px;flex-wrap:wrap;">
-                        <span class="stat-item" style="background:rgba(46,204,113,0.1);color:#2ecc71;border-color:#2ecc71;">✓ ${pyqTotal} courses with PYQs</span>
-                        <span class="stat-item" style="background:rgba(52,152,219,0.1);color:#3498db;border-color:#3498db;">📚 ${refTotal} courses with References</span>
-                    </div>
-                    <div style="display:flex;flex-direction:column;gap:6px;">
-                        ${courseRows}
+                    <p class="section-caption">Structured learning path curated for your branch.</p>
+                    <div class="inclusion-list">
+                        ${chips}
                     </div>
                 </div>
             `;
@@ -2693,14 +2874,12 @@
                         cart = parsedCart.filter(item =>
                             item && item.id && item.title && typeof item.price === 'number'
                         );
-                        console.log('🛒 Cart initialized from localStorage:', cart.length, 'items');
                     } else {
                         console.warn('⚠️ Invalid cart data in localStorage, initializing empty cart');
                         cart = [];
                     }
                 } else {
                     cart = [];
-                    console.log('🛒 No saved cart found, initializing empty cart');
                 }
             } catch (error) {
                 console.warn('⚠️ Error loading cart from localStorage:', error);
@@ -2714,7 +2893,6 @@
         function saveCartToStorage() {
             try {
                 localStorage.setItem('cart', JSON.stringify(cart));
-                console.log('💾 Cart saved to localStorage:', cart.length, 'items');
                 return true;
             } catch (error) {
                 console.warn('⚠️ Failed to save cart to localStorage:', error);
@@ -2727,7 +2905,6 @@
             cart = [];
             saveCartToStorage();
             updateCart();
-            console.log('🗑️ Cart cleared completely');
         }
 
         function removePurchasedItemsFromCart(purchasedItems) {
@@ -2751,7 +2928,6 @@
             if (cart.length !== originalCount) {
                 saveCartToStorage();
                 updateCart();
-                console.log('🛒 Removed purchased items from cart:', Array.from(purchasedIds));
             }
         }
 
@@ -2773,10 +2949,8 @@
             const existingItem = cart.find(cartItem => cartItem.id === item.id);
             if (existingItem) {
                 existingItem.quantity += 1;
-                console.log('📦 Increased quantity for existing item:', item.title);
             } else {
                 cart.push(cartItem);
-                console.log('➕ Added new item to cart:', item.title);
             }
 
             saveCartToStorage();
@@ -2786,7 +2960,6 @@
             const cartPreview = document.getElementById('cartPreview');
             if (cartPreview && !cartPreview.classList.contains('active')) {
                 cartPreview.classList.add('active');
-                console.log('🛒 Auto-opened cart preview after adding item');
             }
 
             return true;
@@ -2799,7 +2972,6 @@
                 const removedItem = cart.splice(itemIndex, 1)[0];
                 saveCartToStorage();
                 updateCart();
-                console.log('🗑️ Removed item from cart:', removedItem.title);
                 return removedItem;
             }
             return null;
@@ -2873,15 +3045,11 @@
                     checkoutButton.style.display = 'none';
                 }
             } else {
-                // Show checkout and clear buttons when cart has items
+                // Show checkout button when cart has items
                 const checkoutButton = document.getElementById('checkoutButton');
-                const clearCartButton = document.getElementById('clearCartButton');
 
                 if (checkoutButton) {
                     checkoutButton.style.display = 'inline-flex';
-                }
-                if (clearCartButton) {
-                    clearCartButton.style.display = 'inline-flex';
                 }
             }
 
@@ -2890,7 +3058,7 @@
 
             // Add remove item listeners with improved functionality
             document.querySelectorAll('.remove-item').forEach(button => {
-                button.addEventListener('click', function(e) {
+                button.addEventListener('click', function (e) {
                     e.preventDefault();
                     e.stopPropagation();
 
@@ -2926,7 +3094,6 @@
                     // Auto-show cart preview when items exist
                     if (cartPreviewElement && !cartPreviewElement.classList.contains('active')) {
                         cartPreviewElement.classList.add('active');
-                        console.log('🛒 Auto-showing cart preview - items detected');
                     }
                 }
             }
@@ -2935,14 +3102,14 @@
         // Toggle sidebar
         const menuToggle = document.getElementById('menuToggle');
         const sidebar = document.getElementById('sidebar');
-        
+
         // Match cgpa/faculty behavior: no overlay, click-outside to close
         menuToggle.addEventListener('click', () => {
             sidebar.classList.toggle('active');
         });
         document.addEventListener('click', (e) => {
-            if (sidebar.classList.contains('active') && 
-                !sidebar.contains(e.target) && 
+            if (sidebar.classList.contains('active') &&
+                !sidebar.contains(e.target) &&
                 !menuToggle.contains(e.target)) {
                 sidebar.classList.remove('active');
             }
@@ -2969,11 +3136,9 @@
         const cartPreview = document.getElementById('cartPreview');
         const closeCart = document.getElementById('closeCart');
         const checkoutButton = document.getElementById('checkoutButton');
-        const clearCartButton = document.getElementById('clearCartButton');
 
         // Function to setup course card event listeners (called after cards are generated)
         function setupCourseCardListeners() {
-            console.log('🎯 Setting up course card event listeners...');
 
             // Use event delegation on the course grid instead of individual cards
             const courseGrid = document.querySelector('.course-grid');
@@ -2987,7 +3152,6 @@
                     if (e.target.closest('.add-to-cart')) return;
 
                     const courseId = courseCard.dataset.course;
-                    console.log('📖 Course card clicked:', courseId);
 
                     selectedCourse = courses[courseId];
                     if (selectedCourse) {
@@ -3012,12 +3176,10 @@
                         `;
                         courseModal.classList.add('active');
                         document.body.style.overflow = 'hidden';
-                        console.log('✅ Modal opened for branch pack:', selectedCourse.name);
                     } else {
                         console.warn('⚠️ Course not found:', courseId);
                     }
                 });
-                console.log('✅ Course card event listeners set up');
             } else {
                 console.error('❌ Course grid not found for event listeners');
             }
@@ -3038,7 +3200,6 @@
 
         // Function to setup add to cart button listeners (called after cards are generated)
         function setupAddToCartListeners() {
-            console.log('🛒 Setting up add to cart button event listeners...');
 
             // Use event delegation on the course grid
             const courseGrid = document.querySelector('.course-grid');
@@ -3056,7 +3217,6 @@
                     const price = parseInt(addToCartButton.dataset.price);
                     const image = addToCartButton.dataset.image;
 
-                    console.log('🛒 Add to cart clicked:', { id, title, price, image });
 
                     // Use helper function to add item
                     const success = addToCart({ id, title, price, image });
@@ -3071,7 +3231,6 @@
                         }, 2000);
                     }
                 });
-                console.log('✅ Add to cart event listeners set up');
             } else {
                 console.error('❌ Course grid not found for add to cart listeners');
             }
@@ -3085,7 +3244,6 @@
                 const price = parseInt(selectedCourse.price.replace('₹', '').replace(',', ''));
                 const image = getCourseImage(selectedCourse.id);
 
-                console.log('Modal add to cart clicked:', { id, title, price, image });
 
                 // Use helper function to add item
                 const success = addToCart({ id, title, price, image });
@@ -3106,10 +3264,8 @@
                 // If cart has items, always show it; if empty, still allow toggle
                 if (cart.length > 0) {
                     cartPreview.classList.add('active');
-                    console.log('🛒 Cart has items, keeping it visible');
                 } else {
                     cartPreview.classList.toggle('active');
-                    console.log('📭 Cart is empty, allowing toggle');
                 }
             }
         });
@@ -3148,13 +3304,13 @@
 
         // Filter functionality
         const filterButtons = document.querySelectorAll('.filter-btn');
-        
+
         filterButtons.forEach(button => {
             button.addEventListener('click', () => {
                 // Update active state
                 filterButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
-                
+
                 // Filter courses
                 activeFilter = button.dataset.filter;
                 filterCourses();
@@ -3171,212 +3327,213 @@
 
             // Get all course cards dynamically (since they're generated after page load)
             const courseCards = document.querySelectorAll('.course-card');
+            const selectedFilter = (activeFilter || 'all').toLowerCase();
+            let visibleCount = 0;
 
             courseCards.forEach(card => {
-                const title = card.querySelector('.course-title').textContent.toLowerCase();
-                const description = card.querySelector('.course-description').textContent.toLowerCase();
+                const title = (card.querySelector('.course-title')?.textContent || '').toLowerCase();
+                const description = (card.querySelector('.course-description')?.textContent || '').toLowerCase();
                 const tags = (card.dataset.tags || '').toLowerCase();
+                const branchId = (card.dataset.course || '').toLowerCase();
 
-                // Check if matches filter — match by branch ID stored in data-course
-                const branchId = card.dataset.course || '';
-                const matchesFilter = activeFilter === "all" || branchId === activeFilter;
+                // Match via branch code and searchable metadata.
+                const matchesFilter = selectedFilter === 'all' ||
+                    branchId === selectedFilter ||
+                    tags.includes(selectedFilter) ||
+                    title.includes(selectedFilter);
 
                 // Check if matches search
                 const matchesSearch = title.includes(searchTerm) ||
-                                      description.includes(searchTerm) ||
-                                      tags.includes(searchTerm);
+                    description.includes(searchTerm) ||
+                    tags.includes(searchTerm);
 
                 // Show/hide based on both conditions
-                card.style.display = (matchesFilter && matchesSearch) ? 'block' : 'none';
+                const shouldShow = matchesFilter && matchesSearch;
+                card.style.display = shouldShow ? '' : 'none';
+                if (shouldShow) {
+                    visibleCount += 1;
+                }
             });
 
-            console.log(`🔍 Filtered courses - Filter: ${activeFilter}, Search: "${searchTerm}", Found: ${document.querySelectorAll('.course-card[style*="display: block"]').length} visible cards`);
         }
-// Dynamic payment handler
-async function initializePayment(orderData, courseTitle) {
-  try {
-    // Initialize the appropriate gateway based on backend response
-    const gateway = await paymentGatewayFactory.initializeGateway(orderData.gateway || 'razorpay', orderData);
+        // Dynamic payment handler
+        async function initializePayment(orderData, courseTitle) {
+            try {
+                // Initialize the appropriate gateway based on backend response
+                const gateway = await paymentGatewayFactory.initializeGateway(orderData.gateway || 'razorpay', orderData);
 
-    // Handle PhonePe redirect
-    if (orderData.gateway === 'phonepe' && orderData.paymentUrl) {
-      window.location.href = orderData.paymentUrl;
-      return;
-    }
+                // Handle PhonePe redirect
+                if (orderData.gateway === 'phonepe' && orderData.paymentUrl) {
+                    window.location.href = orderData.paymentUrl;
+                    return;
+                }
 
-    // Process payment with the selected gateway
-    await gateway.processPayment(orderData, courseTitle);
-  } catch (error) {
-    console.error('Payment initialization error:', error);
-    showNotification(error?.message || 'Payment initialization failed', 'danger');
-  }
-}
+                // Process payment with the selected gateway
+                await gateway.processPayment(orderData, courseTitle);
+            } catch (error) {
+                const errorMessage = error?.message || 'Payment initialization failed';
+                const isLikelyTestMode =
+                    (orderData?.paymentMode || '').toLowerCase() === 'test' ||
+                    String(orderData?.key || '').startsWith('rzp_test_') ||
+                    window.location.hostname === 'localhost' ||
+                    window.location.hostname === '127.0.0.1';
+                const shouldFallbackToMock =
+                    isLikelyTestMode &&
+                    (error?.isTestModeIssue || /another (method|email|mail|payment)|use another|try another|not supported/i.test(errorMessage));
 
-// Verify payment with backend
-async function verifyPayment(razorpayResponse, orderId) {
-  try {
-    const { response, data: result } = await apiRequest('/payment/verify', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        order_id: orderId,
-        payment_id: razorpayResponse.razorpay_payment_id,
-        signature: razorpayResponse.razorpay_signature
-      })
-    });
+                if (shouldFallbackToMock) {
+                    showNotification('Razorpay test method blocked. Opening internal test checkout instead.', 'warning');
+                    try {
+                        const mockGateway = await paymentGatewayFactory.initializeGateway('mock', orderData);
+                        await mockGateway.processPayment(orderData, courseTitle);
+                        return;
+                    } catch (mockError) {
+                        if (!mockError?.alreadyNotified) {
+                            showNotification(mockError?.message || 'Test checkout fallback failed', 'danger');
+                        }
+                        return;
+                    }
+                }
 
-    if (!response.ok) {
-      handlePaymentApiError(response.status, result);
-      throw new Error(result?.message || 'Payment verification failed');
-    }
-
-    if (result && result.success) {
-      const purchasedItems = pendingPurchaseContext || [];
-      savePurchasedCoursesCache(purchasedItems);
-      removePurchasedItemsFromCart(purchasedItems);
-      pendingPurchaseContext = null;
-      showNotification('Payment successful! Access granted to your branch pack.', 'success');
-      // Redirect to MyCourses page on successful payment
-      setTimeout(() => {
-        window.location.href = '../mycourses/mycourses.html?payment=success&sidebar=active';
-      }, 2000);
-      return result;
-    } else {
-      throw new Error(result?.message || 'Payment verification failed');
-    }
-  } catch (error) {
-    pendingPurchaseContext = null;
-    console.error('Verification error:', error);
-    showNotification(error.message || 'Payment verification failed', 'danger');
-    throw error;
-  }
-}
-
-// Enroll now - let backend handle all validation
-enrollNowButton.addEventListener('click', async () => {
-  if (selectedCourse) {
-    console.log('Enroll now clicked for branch pack:', selectedCourse.name);
-
-    if (!isUserAuthenticated) {
-      console.log('User not authenticated, showing login prompt');
-      showLoginPrompt();
-      return;
-    }
-
-    if (!isUserProfileComplete) {
-      console.log('Profile not complete, staying on marketplace');
-      showNotification('Please complete your profile before purchasing branch packs.', 'warning');
-      // Close modal and stay on marketplace
-      courseModal.classList.remove('active');
-      document.body.style.overflow = 'auto';
-      return;
-    }
-
-    try {
-      await startSingleCourseCheckout(selectedCourse.id, selectedCourse.name, selectedCourse.price);
-    } catch (err) {
-      console.error('Payment error:', err);
-      showNotification('Payment initiation failed: ' + err.message, 'danger');
-    }
-
-    courseModal.classList.remove('active');
-    document.body.style.overflow = 'auto';
-  }
-});
-
-// Clear cart functionality
-if (clearCartButton) {
-    clearCartButton.addEventListener('click', () => {
-        if (cart.length === 0) {
-            showNotification('Your cart is already empty', 'info');
-            return;
+                console.error('Payment initialization error:', error);
+                if (!error?.alreadyNotified) {
+                    showNotification(errorMessage, 'danger');
+                }
+            }
         }
 
-        // Show confirmation dialog
-        const confirmed = confirm(`Are you sure you want to remove all ${cart.length} items from your cart?`);
-        if (confirmed) {
-            // Clear the cart using helper function
-            clearCart();
+        // Verify payment with backend
+        async function verifyPayment(razorpayResponse, orderId) {
+            try {
+                const { response, data: result } = await apiRequest('/payment/verify', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        order_id: orderId,
+                        payment_id: razorpayResponse.razorpay_payment_id,
+                        signature: razorpayResponse.razorpay_signature
+                    })
+                });
 
-            // Close cart preview
-            const cartPreview = document.getElementById('cartPreview');
-            if (cartPreview) {
-                cartPreview.classList.remove('active');
+                if (!response.ok) {
+                    handlePaymentApiError(response.status, result);
+                    throw new Error(result?.message || 'Payment verification failed');
+                }
+
+                if (result && result.success) {
+                    const purchasedItems = pendingPurchaseContext || [];
+                    savePurchasedCoursesCache(purchasedItems);
+                    removePurchasedItemsFromCart(purchasedItems);
+                    pendingPurchaseContext = null;
+                    showNotification('Payment successful! Redirecting to your courses...', 'success');
+                    setTimeout(() => {
+                        window.location.href = '../mycourses/mycourses.html?payment=success&sidebar=active';
+                    }, 1500);
+                    return result;
+                } else {
+                    throw new Error(result?.message || 'Payment verification failed');
+                }
+            } catch (error) {
+                pendingPurchaseContext = null;
+                console.error('Verification error:', error);
+                showNotification(error.message || 'Payment verification failed', 'danger');
+                throw error;
+            }
+        }
+
+        // Enroll now - let backend handle all validation
+        enrollNowButton.addEventListener('click', async () => {
+            if (selectedCourse) {
+
+                if (!isUserAuthenticated) {
+                    showLoginPrompt();
+                    return;
+                }
+
+                if (!isUserProfileComplete) {
+                    showNotification('Please complete your profile before purchasing branch packs.', 'warning');
+                    goToCompleteProfile();
+                    // Close modal before redirect
+                    courseModal.classList.remove('active');
+                    document.body.style.overflow = 'auto';
+                    return;
+                }
+
+                try {
+                    await startSingleCourseCheckout(selectedCourse.id, selectedCourse.name, selectedCourse.price);
+                } catch (err) {
+                    console.error('Payment error:', err);
+                    showNotification('Payment initiation failed: ' + err.message, 'danger');
+                }
+
+                courseModal.classList.remove('active');
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Checkout - let backend handle all validation
+        checkoutButton.addEventListener('click', async () => {
+
+            if (cart.length === 0) {
+                showNotification('Your cart is empty', 'warning');
+                return;
             }
 
-            // Show notification
-            showNotification('Cart cleared successfully', 'success');
-        }
-    });
-}
+            if (!isUserAuthenticated) {
+                showLoginPrompt();
+                return;
+            }
 
-// Checkout - let backend handle all validation
-checkoutButton.addEventListener('click', async () => {
-  console.log('Checkout button clicked');
+            if (!isUserProfileComplete) {
+                showNotification('Please complete your profile before purchasing branch packs.', 'warning');
+                goToCompleteProfile();
+                return;
+            }
 
-  if (cart.length === 0) {
-    showNotification('Your cart is empty', 'warning');
-    return;
-  }
+            try {
+                await startCartCheckout();
+            } catch (err) {
+                console.error('Checkout error:', err);
+                showNotification('Checkout failed: ' + err.message, 'danger');
+            }
 
-  if (!isUserAuthenticated) {
-    console.log('User not authenticated for checkout, showing login prompt');
-    showLoginPrompt();
-    return;
-  }
+            cartPreview.classList.remove('active');
+        });
+        const accessBtns = document.querySelectorAll('.access-btn');
+        accessBtns.forEach(btn => {
+            btn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const courseId = btn.closest('.course-card').dataset.course;
+                const courseCard = btn.closest('.course-card');
+                const courseTitle = courseCard.querySelector('.course-title').textContent;
+                const coursePrice = courseCard.querySelector('.course-price').textContent;
 
-  if (!isUserProfileComplete) {
-    console.log('Profile not complete, staying on marketplace');
-    showNotification('Please complete your profile before purchasing branch packs.', 'warning');
-    return;
-  }
 
-  try {
-    await startCartCheckout();
-  } catch (err) {
-    console.error('Checkout error:', err);
-    showNotification('Checkout failed: ' + err.message, 'danger');
-  }
+                if (!isUserAuthenticated) {
+                    showLoginPrompt();
+                    return;
+                }
 
-  cartPreview.classList.remove('active');
-});
-const accessBtns = document.querySelectorAll('.access-btn');
-accessBtns.forEach(btn => {
-  btn.addEventListener('click', async (e) => {
-    e.preventDefault();
-    const courseId = btn.closest('.course-card').dataset.course;
-    const courseCard = btn.closest('.course-card');
-    const courseTitle = courseCard.querySelector('.course-title').textContent;
-    const coursePrice = courseCard.querySelector('.course-price').textContent;
+                if (!isUserProfileComplete) {
+                    showNotification('Please complete your profile before purchasing branch packs.', 'warning');
+                    goToCompleteProfile();
+                    return;
+                }
 
-    console.log('Access button clicked for course:', courseId, courseTitle);
-
-    if (!isUserAuthenticated) {
-      console.log('User not authenticated, showing login prompt');
-      showLoginPrompt();
-      return;
-    }
-
-    if (!isUserProfileComplete) {
-      console.log('Profile not complete, staying on marketplace');
-      showNotification('Please complete your profile before purchasing branch packs.', 'warning');
-      return;
-    }
-
-    try {
-      await startSingleCourseCheckout(courseId, courseTitle, coursePrice);
-    } catch (err) {
-      console.error('Payment error:', err);
-      showNotification('Payment initiation failed: ' + err.message, 'danger');
-    }
-  });
-});
-// Add login prompt for non-authenticated users
-function showLoginPrompt() {
-  const loginPrompt = document.createElement('div');
-  loginPrompt.style.cssText = `
+                try {
+                    await startSingleCourseCheckout(courseId, courseTitle, coursePrice);
+                } catch (err) {
+                    console.error('Payment error:', err);
+                    showNotification('Payment initiation failed: ' + err.message, 'danger');
+                }
+            });
+        });
+        // Add login prompt for non-authenticated users
+        function showLoginPrompt() {
+            const loginPrompt = document.createElement('div');
+            loginPrompt.style.cssText = `
     position: fixed;
     top: 50%;
     left: 50%;
@@ -3393,7 +3550,7 @@ function showLoginPrompt() {
     width: 90%;
   `;
 
-  loginPrompt.innerHTML = `
+            loginPrompt.innerHTML = `
     <i class='bx bx-lock-alt' style="font-size: 48px; color: var(--accent-blue); margin-bottom: 20px;"></i>
     <h3 style="color: var(--light-color); margin-bottom: 15px;">Access Restricted</h3>
     <p style="color: #ddd; margin-bottom: 25px; line-height: 1.5;">
@@ -3426,137 +3583,117 @@ function showLoginPrompt() {
     </div>
   `;
 
-  document.body.appendChild(loginPrompt);
-}
-
-
-async function fetchUserProfile() {
-  try {
-    const { response, data } = await apiRequest('/profile/me', {
-      method: 'GET'
-    });
-
-    if (response.ok) {
-      return data?.data || data || null;
-    }
-    return null;
-  } catch (err) {
-    console.error('Failed to fetch profile:', err);
-    return null;
-  }
-}
-
- // Load user profile on page load
-  async function loadUserProfile() {
-   if (window.authManager && window.authManager.initPromise) {
-     await window.authManager.initPromise;
-   }
-
-   const token = getStoredToken();
-   isUserAuthenticated = !!(window.authManager ? window.authManager.isAuthenticated : token);
-
-   console.log('🔐 Authentication check:', {
-     isUserAuthenticated,
-     hasToken: !!token,
-     authManagerReady: !!window.authManager
-   });
-
-   // First, try shared-auth user data and cached data for immediate display
-   if (isUserAuthenticated) {
-     // shared-auth.js handles user profile display automatically
-     if (window.authManager?.userData) {
-       console.log('✅ User authenticated, shared-auth.js handling display');
-     }
-
-     try {
-       const cachedProfile = localStorage.getItem('profileData');
-       // shared-auth.js handles user profile display automatically
-       if (cachedProfile) {
-         const tempUserProfile = normalizeProfileData(JSON.parse(cachedProfile));
-         console.log('⚡ Loaded cached profile:', tempUserProfile.email);
-       }
-     } catch (error) {
-       console.warn('⚠️ Error loading cached profile:', error);
-     }
-   }
-
-   if (isUserAuthenticated) {
-     console.log('📡 Fetching user profile from backend...');
-     const profileData = await fetchUserProfile();
-
-     console.log('📦 Raw profile data received:', profileData);
-
-     if (profileData && profileData.user) {
-         const profile = profileData.user;
-         const profileStatus = evaluateProfileCompletion(profile, profileData.profileComplete === true);
-         userProfile = profileStatus.normalizedProfile;
-
-         console.log('👤 Processed user profile:', userProfile);
-         isUserProfileComplete = profileStatus.isComplete;
-
-         console.log('✅ Profile completion calculation:', {
-           backendFlag: profileData.profileComplete === true,
-           profileCompletedColumn: userProfile.profileCompleted === true,
-           fieldsComplete: profileStatus.fieldsComplete,
-           finalResult: isUserProfileComplete
-         });
-
-         localStorage.setItem('userProfile', JSON.stringify(profile));
-         localStorage.setItem('profileData', JSON.stringify({
-           ...userProfile,
-           profileCompleted: isUserProfileComplete,
-           program: userProfile.branch || ''
-         }));
-         localStorage.setItem('profileCompleted', String(isUserProfileComplete));
-
-         // shared-auth.js handles user profile display automatically
-         console.log('✅ Profile loaded, shared-auth.js handling display');
-     } else {
-       isUserProfileComplete = false;
-       console.log('❌ No profile data received from backend');
-       console.log('🔍 Profile data structure:', profileData);
-     }
-   } else {
-     isUserProfileComplete = false;
-     console.log('❌ User not authenticated');
-     localStorage.removeItem('profileCompleted');
-     // shared-auth.js handles user profile display automatically
-   }
-
-   console.log('🎯 Final profile status:', {
-     isUserAuthenticated,
-     isUserProfileComplete,
-     userProfile
-   });
-
-   // Update payment button visibility based on auth and profile status
-   updatePaymentButtonVisibility();
- }
-
-  // Refresh profile status when page becomes visible (user returns to tab)
-  function setupProfileRefresh() {
-    // Refresh profile when page becomes visible
-    document.addEventListener('visibilitychange', async () => {
-      if (!document.hidden && isUserAuthenticated) {
-        console.log('🔄 Page became visible, refreshing profile status...');
-        await loadUserProfile();
-      }
-    });
-
-    // Also refresh profile every 30 seconds if user is authenticated
-    if (isUserAuthenticated) {
-      setInterval(async () => {
-        if (!document.hidden) { // Only refresh if page is visible
-          console.log('🔄 Periodic profile refresh...');
-          await loadUserProfile();
+            document.body.appendChild(loginPrompt);
         }
-      }, 30000); // 30 seconds
-    }
-  }
 
-function isProfileComplete() {
-  return isUserProfileComplete;
-}
+
+        async function fetchUserProfile() {
+            try {
+                const { response, data } = await apiRequest('/profile/me', {
+                    method: 'GET'
+                });
+
+                if (response.ok) {
+                    return data?.data || data || null;
+                }
+                return null;
+            } catch (err) {
+                console.error('Failed to fetch profile:', err);
+                return null;
+            }
+        }
+
+        // Load user profile on page load
+        async function loadUserProfile() {
+            if (window.authManager && window.authManager.initPromise) {
+                await window.authManager.initPromise;
+            }
+
+            const token = getStoredToken();
+            isUserAuthenticated = !!(window.authManager ? window.authManager.isAuthenticated : token);
+
+
+            // First, try shared-auth user data and cached data for immediate display
+            if (isUserAuthenticated) {
+                // shared-auth.js handles user profile display automatically
+                if (window.authManager?.userData) {
+                }
+
+                try {
+                    const cachedProfile = localStorage.getItem('profileData');
+                    // shared-auth.js handles user profile display automatically
+                    if (cachedProfile) {
+                        const tempUserProfile = normalizeProfileData(JSON.parse(cachedProfile));
+                    }
+                } catch (error) {
+                    console.warn('⚠️ Error loading cached profile:', error);
+                }
+            }
+
+            if (isUserAuthenticated) {
+                const profileData = await fetchUserProfile();
+
+
+                if (profileData && profileData.user) {
+                    const profile = profileData.user;
+                    const profileStatus = evaluateProfileCompletion(profile, profileData.profileComplete === true);
+                    userProfile = profileStatus.normalizedProfile;
+
+                    isUserProfileComplete = profileStatus.isComplete;
+
+
+                    localStorage.setItem('userProfile', JSON.stringify(profile));
+                    localStorage.setItem('profileData', JSON.stringify({
+                        ...userProfile,
+                        profileCompleted: isUserProfileComplete,
+                        program: userProfile.branch || ''
+                    }));
+                    localStorage.setItem('profileCompleted', String(isUserProfileComplete));
+
+                    // shared-auth.js handles user profile display automatically
+
+                    if (!isUserProfileComplete) {
+                        setTimeout(() => {
+                            goToCompleteProfile();
+                        }, 250);
+                        return;
+                    }
+                } else {
+                    isUserProfileComplete = false;
+                }
+            } else {
+                isUserProfileComplete = false;
+                localStorage.removeItem('profileCompleted');
+                // shared-auth.js handles user profile display automatically
+            }
+
+
+            // Update payment button visibility based on auth and profile status
+            updatePaymentButtonVisibility();
+        }
+
+        // Refresh profile status when page becomes visible (user returns to tab)
+        function setupProfileRefresh() {
+            // Refresh profile when page becomes visible
+            document.addEventListener('visibilitychange', async () => {
+                if (!document.hidden && isUserAuthenticated) {
+                    await loadUserProfile();
+                }
+            });
+
+            // Also refresh profile every 30 seconds if user is authenticated
+            if (isUserAuthenticated) {
+                setInterval(async () => {
+                    if (!document.hidden) { // Only refresh if page is visible
+                        await loadUserProfile();
+                    }
+                }, 30000); // 30 seconds
+            }
+        }
+
+        function isProfileComplete() {
+            return isUserProfileComplete;
+        }
         // Handle payment success/failure from URL parameters
         function handlePaymentStatus() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -3565,14 +3702,14 @@ function isProfileComplete() {
             if (paymentStatus === 'success') {
                 // Clear cart on successful payment
                 cart = [];
-                localStorage.removeItem('cart'); // Clear from localStorage too
+                localStorage.removeItem('cart');
                 updateCart();
 
-                // Show success message and redirect to MyCourses
-                showNotification('Payment successful! You now have access to your courses.', 'success');
+                // Show success message and redirect to MyCourses with payment=success so banner shows
+                showNotification('Payment successful! Redirecting to your courses...', 'success');
                 setTimeout(() => {
-                    window.location.href = '../mycourses/mycourses.html?sidebar=active';
-                }, 2000);
+                    window.location.href = '../mycourses/mycourses.html?payment=success&sidebar=active';
+                }, 1500);
 
                 // Clean URL
                 window.history.replaceState({}, document.title, window.location.pathname);
@@ -3627,66 +3764,8 @@ function isProfileComplete() {
         `;
         document.head.appendChild(notificationStyle);
 
-        // DEBUG FUNCTION: Test marketplace profile completion
-        window.testMarketplaceProfile = async function() {
-            console.log('🧪 TESTING MARKETPLACE PROFILE COMPLETION...');
-
-            console.log('📊 Current state:', {
-                isUserAuthenticated,
-                isUserProfileComplete,
-                userProfile
-            });
-
-            // Test profile fetch
-            const profileData = await fetchUserProfile();
-            console.log('🔄 Fresh profile data:', profileData);
-
-            // Test profile completion logic
-            if (profileData && profileData.user) {
-                const profileStatus = evaluateProfileCompletion(profileData.user, profileData.profileComplete === true);
-
-                console.log('🔍 Profile completion calculation:', {
-                    backendFlag: profileData.profileComplete === true,
-                    normalizedProfile: profileStatus.normalizedProfile,
-                    fieldsComplete: profileStatus.fieldsComplete,
-                    calculatedComplete: profileStatus.isComplete,
-                    currentState: isUserProfileComplete
-                });
-            }
-
-            // Test button visibility
-            updatePaymentButtonVisibility();
-
-            return {
-                currentState: { isUserAuthenticated, isUserProfileComplete, userProfile },
-                freshData: profileData
-            };
-        };
-
-        // FORCE REFRESH PROFILE STATUS
-        window.forceRefreshProfileStatus = async function() {
-            console.log('🔄 FORCE REFRESHING PROFILE STATUS...');
-
-            // Clear any cached state
-            isUserProfileComplete = false;
-
-            // Re-fetch profile data
-            await loadUserProfile();
-
-            // Force update button visibility
-            updatePaymentButtonVisibility();
-
-            console.log('✅ Profile status refreshed:', {
-                isUserAuthenticated,
-                isUserProfileComplete
-            });
-
-            return isUserProfileComplete;
-        };
-
         // INSTANT PROFILE CHECK - Synchronous shared-auth/local cache check
         function instantProfileCheck() {
-            console.log('⚡ INSTANT PROFILE CHECK - SYNCHRONOUS...');
 
             try {
                 const token = getStoredToken();
@@ -3694,18 +3773,10 @@ function isProfileComplete() {
                 const cachedProfile = localStorage.getItem('profileData');
                 const profileCompletedFlag = localStorage.getItem('profileCompleted') === 'true';
 
-                console.log('📊 Storage check:', {
-                    hasToken: !!token,
-                    hasSharedAuthUser: !!sharedUser,
-                    hasCachedProfile: !!cachedProfile,
-                    profileCompletedFlag: profileCompletedFlag,
-                    globalFlag: window.profileCompletedInstantly
-                });
 
                 if (sharedUser) {
                     const sharedStatus = evaluateProfileCompletion(sharedUser);
                     if (sharedStatus.isComplete) {
-                        console.log('✅ Shared auth profile is complete');
                         forceEnablePaymentsInstantly(sharedStatus.normalizedProfile);
                         window.profileCompletedInstantly = true;
                         return true;
@@ -3714,9 +3785,7 @@ function isProfileComplete() {
 
                 if (cachedProfile) {
                     const cachedStatus = evaluateProfileCompletion(JSON.parse(cachedProfile), profileCompletedFlag);
-                    console.log('🔍 Cached completion indicators:', cachedStatus);
                     if (cachedStatus.isComplete) {
-                        console.log('✅ Cached profile is complete');
                         forceEnablePaymentsInstantly(cachedStatus.normalizedProfile);
                         window.profileCompletedInstantly = true;
                         return true;
@@ -3727,13 +3796,11 @@ function isProfileComplete() {
                 console.warn('⚡ Error in instant profile check:', error);
             }
 
-            console.log('❌ No completion indicators found');
             return false;
         }
 
         // FORCE ENABLE PAYMENTS INSTANTLY - No delays
         function forceEnablePaymentsInstantly(profileOverride = null) {
-            console.log('🚀 FORCE ENABLING PAYMENTS INSTANTLY...');
 
             // Set all flags immediately
             isUserAuthenticated = true;
@@ -3763,64 +3830,10 @@ function isProfileComplete() {
                 profileNotice.style.display = 'none';
             }
 
-            console.log('✅ PAYMENTS ENABLED INSTANTLY:', {
-                isUserAuthenticated,
-                isUserProfileComplete,
-                userProfile
-            });
         }
-
-        // MANUAL PAYMENT ENABLE - Emergency function to force enable payments
-        window.forceEnablePayments = function() {
-            console.log('🚨 FORCE ENABLING PAYMENTS...');
-
-            // Force authentication and profile completion
-            isUserAuthenticated = true;
-            isUserProfileComplete = true;
-
-            // Update all payment buttons
-            updatePaymentButtonVisibility();
-
-            console.log('✅ Payments force-enabled:', {
-                isUserAuthenticated,
-                isUserProfileComplete
-            });
-
-            return true;
-        };
-
-        // TEST INSTANT PROFILE CHECK - Debug function
-        window.testInstantProfileCheck = function() {
-            console.log('🧪 TESTING INSTANT PROFILE CHECK...');
-
-            const result = instantProfileCheck();
-
-            console.log('📊 Instant check result:', result);
-            console.log('📊 Current state:', {
-                isUserAuthenticated,
-                isUserProfileComplete,
-                globalFlag: window.profileCompletedInstantly
-            });
-
-            // Check localStorage
-            try {
-                const cached = localStorage.getItem('profileData');
-                const completedFlag = localStorage.getItem('profileCompleted');
-                console.log('💾 localStorage state:', {
-                    hasProfileData: !!cached,
-                    profileCompletedFlag: completedFlag,
-                    profileData: cached ? JSON.parse(cached) : null
-                });
-            } catch (error) {
-                console.warn('⚠️ Error reading localStorage:', error);
-            }
-
-            return result;
-        };
 
         // EMERGENCY PROFILE CHECK - fallback validation
         function emergencyProfileCheck() {
-            console.log('🚨 EMERGENCY PROFILE CHECK...');
 
             try {
                 if (window.authManager?.userData) {
@@ -3867,15 +3880,13 @@ function isProfileComplete() {
                 }
             }
         }
-    
+
         // CONTINUOUS PROFILE MONITORING
         function startProfileMonitoring() {
-            console.log('👀 Starting continuous profile monitoring...');
 
             // Check every 2 seconds for profile completion
             const monitorInterval = setInterval(() => {
                 if (instantProfileCheck()) {
-                    console.log('🎯 Profile completion detected by monitor - stopping monitoring');
                     clearInterval(monitorInterval);
                 }
             }, 2000);
@@ -3883,30 +3894,22 @@ function isProfileComplete() {
             // Stop monitoring after 30 seconds to avoid infinite checking
             setTimeout(() => {
                 clearInterval(monitorInterval);
-                console.log('⏰ Profile monitoring stopped (timeout)');
             }, 30000);
         }
 
         // LISTEN FOR PROFILE COMPLETION EVENTS FROM OTHER PAGES
-        window.addEventListener('storage', function(e) {
+        window.addEventListener('storage', function (e) {
             if (e.key === 'profileCompleted' || e.key === 'profileData') {
-                console.log('📡 Storage event detected:', e.key);
                 instantProfileCheck();
             }
         });
 
         // LISTEN FOR CUSTOM PROFILE COMPLETION EVENT
-        window.addEventListener('profileCompleted', function() {
-            console.log('🎉 Profile completion event received!');
+        window.addEventListener('profileCompleted', function () {
             forceEnablePaymentsInstantly();
         });
 
-        document.addEventListener('DOMContentLoaded', async function() {
-            console.log('🏪 Marketplace page loading...');
-            console.log('💡 TIP: Run testMarketplaceProfile() in console to debug profile issues');
-            console.log('💡 TIP: Run forceRefreshProfileStatus() to force refresh profile status');
-            console.log('💡 TIP: Run forceEnablePayments() to force enable payments (emergency)');
-            console.log('💡 TIP: Run testInstantProfileCheck() to test instant profile detection');
+        document.addEventListener('DOMContentLoaded', async function () {
 
             createParticles();
 
@@ -3928,6 +3931,9 @@ function isProfileComplete() {
 
                 // Setup event listeners for add to cart buttons (AFTER cards are generated)
                 setupAddToCartListeners();
+
+                // Apply default filter state on initial render
+                filterCourses();
             } else {
                 console.error('❌ Failed to load branch packs from JSON - marketplace may not work properly');
                 showNotification('Failed to load branch packs. Please refresh the page.', 'danger');
@@ -3937,10 +3943,8 @@ function isProfileComplete() {
             updateCart();
 
             // INSTANT CHECK FIRST - Synchronous check for completed profiles
-            console.log('🚀 RUNNING INSTANT PROFILE CHECK...');
             const instantResult = instantProfileCheck();
             if (instantResult) {
-                console.log('⚡ Profile enabled INSTANTLY from localStorage');
             }
 
             // START CONTINUOUS MONITORING
@@ -3949,7 +3953,6 @@ function isProfileComplete() {
             // IMMEDIATE CHECK - Additional immediate validation
             const immediateResult = immediateProfileCheck();
             if (immediateResult && !instantResult) {
-                console.log('⚡ Profile enabled from immediate check');
             }
 
             // EMERGENCY CHECK - Additional fallback
@@ -3966,16 +3969,9 @@ function isProfileComplete() {
             // Final emergency check after everything loads
             setTimeout(() => {
                 emergencyProfileCheck();
-                console.log('✅ Marketplace page fully loaded');
-                console.log('🎯 Final profile status:', {
-                    authenticated: isUserAuthenticated,
-                    profileComplete: isUserProfileComplete,
-                    instantCheckResult: instantResult,
-                    immediateCheckResult: immediateResult,
-                    cartItems: cart.length
-                });
             }, 1000);
         });
     </script>
 </body>
+
 </html>

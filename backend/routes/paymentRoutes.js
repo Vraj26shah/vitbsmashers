@@ -4,6 +4,7 @@ import {
   createOrder,
   createCheckoutSession,
   verifyPayment,
+  paymentCallback,
   getOrder,
   webhook,
 } from '../controllers/paymentController.js';
@@ -16,6 +17,7 @@ router.post('/create-checkout-session', protect, requireCompleteProfile, createC
 
 // Verify payment after Razorpay callback
 router.post('/verify', protect, verifyPayment);
+router.post('/callback', express.urlencoded({ extended: false }), paymentCallback);
 
 // Get order details
 router.get('/session/:orderId', protect, getOrder);

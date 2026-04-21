@@ -6,6 +6,7 @@
     <title>Smart Mess Menu | Scholars Stack</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../shared-feature-shell.css">
     <script src="../../config.js"></script>
     <script src="../../shared-auth.js"></script>
     <script src="../../shared-admin-auth.js"></script>
@@ -2167,7 +2168,7 @@ body {
                 <img src="../images/logo1.png" alt="Scholars Stack Logo">
                 <div class="logo-text">
                     <h1>Scholars Stack</h1>
-                    <span>Smart Mess Menu</span>
+                    <span>Premium Academic Resources</span>
                 </div>
             </a>
         </div>
@@ -2199,7 +2200,7 @@ body {
         <div class="sidebar-title">Resources</div>
         <ul class="sidebar-menu">
             <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
-            <li><a href="#" ><i class='bx bxs-group'></i> Club Info</a></li>
+            <li><a href="/features/club/club.html?sidebar=active"><i class='bx bxs-group'></i> Club Info</a></li>
             <li><a href="../faculty/faculty.html" ><i class='bx bxs-group'></i> Faculty Info</a></li>
             <li><a href="../mess-menu/mess.html"class="active"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
         </ul>
@@ -4023,7 +4024,6 @@ function getNextMealFromSchedule(mess) {
         // Show notification
         function showNotification(message, type = '') {
             try {
-                console.log(`[${type.toUpperCase()}] ${message}`);
             } catch (error) {
                 console.error('Error logging notification:', error);
             }

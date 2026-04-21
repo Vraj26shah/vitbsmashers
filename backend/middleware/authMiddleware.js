@@ -48,27 +48,76 @@ export const protect = async (req, res, next) => {
       });
     }
 
+    const isPolicyRecursionError = (err) =>
+      Boolean(err?.message && String(err.message).toLowerCase().includes('infinite recursion detected in policy'));
+
     let { data: profile, error: profileError } = await supabase
-      .schema('business').from('users').select('*').eq('id', user.id).single();
+      .schema('business').from('users').select('*').eq('id', user.id).maybeSingle();
+    if (profileError && !isPolicyRecursionError(profileError)) {
+      console.error('Auth profile lookup (id) error:', profileError.message);
+    }
+
+    if (!profile && user.email) {
+      const emailLower = user.email.toLowerCase();
+      const { data: profileByEmail, error: byEmailError } = await supabase
+        .schema('business').from('users').select('*').eq('email', emailLower).maybeSingle();
+      if (byEmailError && !isPolicyRecursionError(byEmailError)) {
+        console.error('Auth profile lookup (email) error:', byEmailError.message);
+      }
+      if (profileByEmail) {
+        profile = profileByEmail;
+        profileError = null;
+      }
+    }
 
     // Auto-create profile for valid auth users whose business.users row is missing
     // (happens when Google OAuth upsert failed on first login)
     if (!profile && user.email) {
-      const { data: created, error: createError } = await supabase
-        .schema('business').from('users').insert({
-          id:          user.id,
-          email:       user.email.toLowerCase(),
-          username:    user.email.split('@')[0].toLowerCase(),
-          full_name:   user.user_metadata?.full_name || null,
-          avatar_url:  user.user_metadata?.avatar_url || null,
-          role:        'student',
-          is_verified: true,
-        }).select().single();
+      const emailLower = user.email.toLowerCase();
+      const baseUsername = emailLower.split('@')[0].toLowerCase().replace(/[^a-z0-9_.-]/g, '') || 'student';
 
-      if (!createError && created) {
-        profile = created;
+      let createdProfile = null;
+      for (let attempt = 0; attempt < 5; attempt++) {
+        const username = attempt === 0
+          ? baseUsername
+          : `${baseUsername}_${Math.random().toString(36).slice(2, 6)}`;
+
+        const { data: created, error: createError } = await supabase
+          .schema('business').from('users').insert({
+            id:          user.id,
+            email:       emailLower,
+            username,
+            full_name:   user.user_metadata?.full_name || null,
+            avatar_url:  user.user_metadata?.avatar_url || null,
+            role:        user.email.toLowerCase() === 'vitbsmashers@gmail.com' ? 'admin' : 'student',
+            is_verified: true,
+          }).select().maybeSingle();
+
+        if (!createError && created) {
+          createdProfile = created;
+          break;
+        }
+        if (createError && !isPolicyRecursionError(createError)) {
+          console.error('Auth profile auto-create error:', createError.message);
+        }
+      }
+
+      if (createdProfile) {
+        profile = createdProfile;
         profileError = null;
       }
+    }
+
+    if (!profile && profileError && isPolicyRecursionError(profileError)) {
+      profile = {
+        id: user.id,
+        email: user.email?.toLowerCase() || null,
+        username: user.email?.split('@')?.[0]?.toLowerCase() || 'student',
+        full_name: user.user_metadata?.full_name || null,
+        avatar_url: user.user_metadata?.avatar_url || null,
+        role: user.email?.toLowerCase() === 'vitbsmashers@gmail.com' ? 'admin' : 'student',
+        is_verified: true,
+      };
     }
 
     if (!profile) {
