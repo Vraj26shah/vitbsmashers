@@ -9,6 +9,12 @@ class AuthManager {
 
     async init() {
         await this.checkAuthentication();
+        
+        // Normalize display name immediately after authentication check
+        if (this.userData) {
+            this.normalizeDisplayName(this.userData);
+        }
+        
         this.updateUI();
     }
 
@@ -38,6 +44,10 @@ class AuthManager {
                 try {
                     this.userData = JSON.parse(storedUserData);
                     this.userEmail = this.userData.email;
+                    
+                    // Normalize display name to ensure consistency
+                    this.normalizeDisplayName(this.userData);
+                    localStorage.setItem('userProfile', JSON.stringify(this.userData));
                 } catch (parseError) {
                     console.warn('Failed to parse stored user data:', parseError);
                 }
@@ -76,7 +86,23 @@ class AuthManager {
                         this.isAuthenticated = true;
                         this.userEmail = data.user.email;
                         this.userData = data.user;
-                        localStorage.setItem('userProfile', JSON.stringify(data.user));
+                        
+                        // Normalize display name to ensure consistency
+                        this.normalizeDisplayName(this.userData);
+                        
+                        localStorage.setItem('userProfile', JSON.stringify(this.userData));
+                        
+                        // Broadcast auth and trigger preload
+                        if (window.preloadManager) {
+                            const token = localStorage.getItem('token');
+                            window.preloadManager.broadcastAuth({
+                                user: this.userData,
+                                token: token,
+                                email: this.userData.email
+                            });
+                            window.preloadManager.preloadAllFeatures(token, this.userData);
+                        }
+                        
                         return true;
                     }
                 }
@@ -152,58 +178,53 @@ class AuthManager {
 
     // Update UI based on authentication status
     updateUI() {
-        this.updateLogoutButton();
+        this.updateAccountSection();
         this.updateUserProfile();
     }
 
-    // Hide/show logout button based on authentication
-    updateLogoutButton() {
-        const logoutLinks = document.querySelectorAll('.logout-link, .sidebar-menu a[href="#"]');
-        const accountSection = document.querySelector('.sidebar-title:last-child');
+    // Hide/show Account section based on authentication
+    updateAccountSection() {
+        const sidebar = document.getElementById('sidebar');
+        if (!sidebar) return;
 
-        logoutLinks.forEach(link => {
-            if (link.textContent.includes('Logout') || link.classList.contains('logout-link')) {
+        const titles = sidebar.querySelectorAll('.sidebar-title');
+        
+        titles.forEach(title => {
+            if (title.textContent.trim().toLowerCase().includes('account')) {
+                const nextUl = title.nextElementSibling;
+                
                 if (this.isAuthenticated) {
-                    link.style.display = 'block';
+                    // Show Account section for authorized users
+                    if (nextUl && nextUl.tagName === 'UL') {
+                        nextUl.style.display = 'block';
+                    }
+                    title.style.display = 'block';
                 } else {
-                    link.style.display = 'none';
+                    // Hide Account section for unauthorized users
+                    if (nextUl && nextUl.tagName === 'UL') {
+                        nextUl.style.display = 'none';
+                    }
+                    title.style.display = 'none';
                 }
             }
         });
-
-        // Hide entire Account section if not authenticated
-        if (accountSection && !this.isAuthenticated) {
-            const nextUl = accountSection.nextElementSibling;
-            if (nextUl && nextUl.tagName === 'UL') {
-                nextUl.style.display = 'none';
-            }
-            accountSection.style.display = 'none';
-        }
     }
 
-    // Update user profile display
+    // Update user profile display - simple: show if name exists, hide if not
     updateUserProfile() {
         const userProfiles = document.querySelectorAll('.user-profile');
-        const userAvatars = document.querySelectorAll('.user-avatar');
-        const userNames = document.querySelectorAll('.user-name');
 
         userProfiles.forEach(profile => {
-            if (this.isAuthenticated && this.userData) {
+            const displayName = this.isAuthenticated && this.userData ? this.getDisplayName(this.userData) : null;
+            
+            if (displayName) {
+                // Has name - show profile
                 profile.style.display = 'flex';
-                const displayName = this.getDisplayName(this.userData);
 
                 // Update avatar
-                const avatar = profile.querySelector('.user-avatar');
-                if (avatar) {
-                    const avatarImg = avatar.querySelector('img');
-                    if (avatarImg) {
-                        avatarImg.style.display = 'none';
-                    }
-                    const avatarSpan = avatar.querySelector('span');
-                    if (avatarSpan) {
-                        avatarSpan.textContent = this.getInitials(displayName);
-                        avatarSpan.style.display = 'block';
-                    }
+                const avatarSpan = profile.querySelector('.user-avatar span');
+                if (avatarSpan) {
+                    avatarSpan.textContent = this.getInitials(displayName);
                 }
 
                 // Update name
@@ -212,46 +233,42 @@ class AuthManager {
                     nameElement.textContent = displayName;
                 }
             } else {
+                // No name - hide profile
                 profile.style.display = 'none';
             }
         });
     }
 
+    // Get display name - ALWAYS use stored displayName, never recalculate
     getDisplayName(userData) {
-        if (!userData) return 'Student';
+        if (!userData) return null;
 
-        const explicitName =
-            userData.fullName ||
-            userData.full_name ||
-            userData.name ||
-            null;
+        // Return stored displayName - DO NOT recalculate
+        return userData.displayName !== undefined ? userData.displayName : null;
+    }
 
-        if (explicitName && explicitName.trim()) {
-            return explicitName.trim();
+    // Normalize display name - store it ONCE and NEVER change it
+    normalizeDisplayName(userData) {
+        // If displayName already exists, DO NOT change it
+        if (userData.displayName !== undefined) {
+            return;
         }
 
-        const username = userData.username || '';
-        if (username && !username.includes('@')) {
-            return username.trim();
-        }
-
-        const email = userData.email || username;
-        if (email && email.includes('@')) {
-            const emailPrefix = email.split('@')[0];
-            const nameParts = emailPrefix.split(/[._-]+/).filter(Boolean);
-            if (nameParts.length > 0) {
-                return nameParts
-                    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-                    .join(' ');
-            }
-        }
-
-        return 'Student';
+        // Get name ONCE and store it permanently
+        const name = userData.full_name || 
+                     userData.fullName || 
+                     userData.name || 
+                     (userData.username && !userData.username.includes('@') ? userData.username : null);
+        
+        // Store it permanently - this will NEVER change
+        userData.displayName = name;
+        localStorage.setItem('userProfile', JSON.stringify(userData));
+        console.log('✅ Display name locked permanently:', name || 'No name');
     }
 
     // Get user initials for avatar
     getInitials(name) {
-        if (!name) return 'U';
+        if (!name) return '?';
         return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
     }
 

@@ -1115,6 +1115,25 @@
         let _pdfRedrawTimer = null;
         const PDF_REDRAW_DEBOUNCE_MS = 110;
 
+        window.addEventListener('scholarsstack-protect-violation', function onProtectViolation() {
+            try {
+                _renderToken += 1;
+            } catch (_) {}
+            try {
+                if (currentPdf && typeof currentPdf.destroy === 'function') currentPdf.destroy();
+            } catch (_) {}
+            currentPdf = null;
+            try {
+                clearTimeout(_pdfRedrawTimer);
+            } catch (_) {}
+            _pdfRedrawTimer = null;
+            const container = document.getElementById('pdf-pages');
+            if (container) container.innerHTML = '';
+            document.getElementById('pdf-viewer-shell')?.classList.remove('pdf-viewer-shell--active');
+            document.getElementById('pdf-viewer-container')?.classList.remove('active');
+            document.getElementById('pdf-toolbar')?.classList.remove('active');
+        });
+
         async function loadPdf(streamUrl, fileName, token) {
             clearTimeout(_pdfRedrawTimer);
             _pdfRedrawTimer = null;

@@ -7,29 +7,43 @@ import {
   contactFaculty,
   getFacultySchedule,
   createFaculty,
+  createUpdateRequest,
   updateFaculty,
   deleteFaculty,
+  getPendingAdditions,
+  getPendingUpdates,
+  approveAddition,
+  rejectAddition,
+  approveUpdate,
+  rejectUpdate,
 } from '../controllers/facultyController.js';
 
 const router = express.Router();
 
-// Public routes
-router.get('/',                getFaculty);
-router.get('/:id',             getFacultyById);
-router.get('/department/:dept', getFacultyByDepartment);
+// Public routes (no auth required)
+router.get('/',                     getFaculty);
+router.get('/:id',                  getFacultyById);
+router.get('/department/:dept',     getFacultyByDepartment);
 
-// Protected routes
+// Protected routes (auth required)
 router.use(protect);
-router.post('/contact',        contactFaculty);
-router.get('/schedule/:id',    getFacultySchedule);
+router.post('/contact',             contactFaculty);
+router.get('/schedule/:id',         getFacultySchedule);
 
-// User submissions (simplified — admin reviews via direct CRUD)
-router.post('/submit-addition', (req, res) => res.status(202).json({ status: 'success', message: 'Request submitted for admin review' }));
-router.post('/submit-update',   (req, res) => res.status(202).json({ status: 'success', message: 'Request submitted for admin review' }));
+// User submissions (pending approval workflow)
+router.post('/',                    createFaculty);              // Submit new faculty (pending)
+router.post('/update-request',      createUpdateRequest);        // Submit update request (pending)
 
-// Admin-only CRUD
-router.post('/',      adminOnly, createFaculty);
-router.put('/:id',    adminOnly, updateFaculty);
-router.delete('/:id', adminOnly, deleteFaculty);
+// Admin-only routes
+router.get('/admin/pending',        adminOnly, getPendingAdditions);
+router.get('/admin/updates',        adminOnly, getPendingUpdates);
+router.post('/admin/:id/approve',   adminOnly, approveAddition);
+router.post('/admin/:id/reject',    adminOnly, rejectAddition);
+router.post('/admin/updates/:id/approve', adminOnly, approveUpdate);
+router.post('/admin/updates/:id/reject',  adminOnly, rejectUpdate);
+
+// Legacy admin routes (kept for compatibility)
+router.put('/:id',                  adminOnly, updateFaculty);
+router.delete('/:id',               adminOnly, deleteFaculty);
 
 export default router;

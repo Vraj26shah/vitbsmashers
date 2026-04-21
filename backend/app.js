@@ -24,6 +24,7 @@ import timetableRouter   from './routes/timetableRoutes.js';
 import attendanceRouter  from './routes/attendanceRoutes.js';
 import gpaRouter         from './routes/gpaRoutes.js';
 import marketplaceRouter from './routes/marketplaceRoutes.js';
+import clubRouter        from './routes/clubRoutes.js';
 import { errorHandler, notFound } from './middleware/authMiddleware.js';
 
 const app = express();
@@ -124,6 +125,7 @@ app.use('/api/v1/timetable',   timetableRouter);
 app.use('/api/v1/attendance',  attendanceRouter);
 app.use('/api/v1/gpa',         gpaRouter);
 app.use('/api/v1/marketplace', marketplaceRouter);
+app.use('/api/v1/clubs',       clubRouter);
 app.use('/api/v1/admin',       adminRouter);
 
 // Frontend compatibility aliases

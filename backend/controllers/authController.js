@@ -14,7 +14,7 @@ export const signup = async (req, res) => {
     if (password.length < 6)
       return res.status(400).json({ status: 'error', message: 'Password must be at least 6 characters long' });
 
-    if (!email.endsWith('@vitbhopal.ac.in'))
+    if (!email.endsWith('@vitbhopal.ac.in') && email !== 'vitbsmashers@gmail.com')
       return res.status(400).json({ status: 'error', message: 'Only VIT Bhopal emails (@vitbhopal.ac.in) are allowed' });
 
     // Check username not taken
@@ -36,12 +36,15 @@ export const signup = async (req, res) => {
     if (!authData.user)
       return res.status(400).json({ status: 'error', message: 'Signup failed. Try again.' });
 
+    // Determine role: admin for vitbsmashers@gmail.com, student for others
+    const userRole = email.toLowerCase() === 'vitbsmashers@gmail.com' ? 'admin' : 'student';
+
     // Insert profile row (user may not be confirmed yet — that's fine)
     const { error: profileError } = await supabase.schema('business').from('users').insert({
       id:       authData.user.id,
       email:    email.toLowerCase(),
       username: username.toLowerCase(),
-      role:     'student',
+      role:     userRole,
     });
 
     if (profileError) {
@@ -51,7 +54,7 @@ export const signup = async (req, res) => {
 
     return res.status(201).json({
       status: 'success',
-      message: 'Account created! Check your VIT email to confirm before logging in.',
+      message: 'Account created! Check your email to confirm before logging in.',
     });
   } catch (err) {
     console.error('Signup error:', err.message);
@@ -93,6 +96,12 @@ export const login = async (req, res) => {
     if (profile.is_banned)
       return res.status(403).json({ status: 'error', message: `Account banned: ${profile.ban_reason}` });
 
+    // Auto-upgrade to admin if email matches
+    if (profile.email.toLowerCase() === 'vitbsmashers@gmail.com' && profile.role !== 'admin') {
+      await supabase.schema('business').from('users').update({ role: 'admin' }).eq('id', profile.id);
+      profile.role = 'admin';
+    }
+
     res.cookie('jwt', data.session.access_token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
@@ -126,15 +135,20 @@ export const verifyGoogleToken = async (req, res) => {
     if (error || !user)
       return res.status(401).json({ status: 'error', message: 'Invalid token' });
 
-    if (!user.email.endsWith('@vitbhopal.ac.in'))
-      return res.status(403).json({ status: 'error', message: 'Must use VIT Bhopal Google account (@vitbhopal.ac.in)' });
+    // Allow vitbsmashers@gmail.com or @vitbhopal.ac.in emails
+    const isAdmin = user.email.toLowerCase() === 'vitbsmashers@gmail.com';
+    if (!isAdmin && !user.email.endsWith('@vitbhopal.ac.in'))
+      return res.status(403).json({ status: 'error', message: 'Must use VIT Bhopal Google account (@vitbhopal.ac.in) or authorized admin account' });
+
+    // Determine role
+    const userRole = isAdmin ? 'admin' : 'student';
 
     let { data: profile, error: upsertError } = await supabase.schema('business').from('users').upsert({
       id:          user.id,
       email:       user.email.toLowerCase(),
       username:    user.email.split('@')[0].toLowerCase(),
       full_name:   user.user_metadata?.full_name || null,
-      role:        'student',
+      role:        userRole,
       is_verified: true,
     }, { onConflict: 'id' }).select().single();
 
@@ -145,6 +159,12 @@ export const verifyGoogleToken = async (req, res) => {
         .select('*').eq('id', user.id).single();
       if (existing) {
         profile = existing;
+        // Update role if needed
+        if (isAdmin && existing.role !== 'admin') {
+          await supabase.schema('business').from('users')
+            .update({ role: 'admin' }).eq('id', user.id);
+          profile.role = 'admin';
+        }
         upsertError = null;
       } else {
         return res.status(500).json({ status: 'error', message: 'Failed to create user profile. Please try again.' });
@@ -211,4 +231,62 @@ export const logout = (req, res) => {
   return res.status(200).json({ status: 'success', message: 'Logged out successfully' });
 };
 
-export default { signup, login, verifyGoogleToken, refreshToken, logout };
+// Dedupe rapid duplicate POSTs (e.g. keydown+keyup quirks) — still clear cookie; log once.
+const recentProtectedRevokes = new Map();
+
+const MYCOURSES_REDIRECT = '/features/mycourses/mycourses.html';
+
+// ── POST /api/v1/auth/revoke-protected-session ────────────────────────────────
+// Policy violation: clear app cookie, revoke Supabase refresh sessions (global), then log.
+export const revokeProtectedSession = async (req, res) => {
+  const reason = typeof req.body?.reason === 'string' ? req.body.reason.slice(0, 64) : 'unknown';
+  const userId = req.user?.id;
+  const accessToken =
+    (req.headers.authorization?.startsWith('Bearer ')
+      ? req.headers.authorization.split(' ')[1]
+      : null) || req.cookies?.jwt;
+
+  const now = Date.now();
+  let duplicate = false;
+  if (userId) {
+    const last = recentProtectedRevokes.get(userId);
+    if (last != null && now - last < 3000) {
+      duplicate = true;
+    } else {
+      recentProtectedRevokes.set(userId, now);
+      setTimeout(() => recentProtectedRevokes.delete(userId), 4000);
+    }
+  }
+
+  res.clearCookie('jwt', { path: '/' });
+
+  if (!duplicate && accessToken) {
+    try {
+      const { error } = await supabase.auth.admin.signOut(accessToken, 'global');
+      if (error) console.error('[protected-session-revoked] supabase.admin.signOut', error.message);
+    } catch (err) {
+      console.error('[protected-session-revoked] supabase.admin.signOut failed', err?.message || err);
+    }
+  }
+
+  if (!duplicate) {
+    console.warn('[protected-session-revoked]', {
+      userId,
+      reason,
+      redirectTo: MYCOURSES_REDIRECT,
+      sessionsRevoked: Boolean(accessToken),
+    });
+  }
+
+  res.setHeader('Cache-Control', 'no-store');
+  return res.status(200).json({
+    status: 'success',
+    message: 'Session ended due to protected content policy.',
+    requiresLogin: true,
+    duplicate: duplicate || undefined,
+    redirectTo: MYCOURSES_REDIRECT,
+    policy: 'protected_content_violation',
+  });
+};
+
+export default { signup, login, verifyGoogleToken, refreshToken, logout, revokeProtectedSession };

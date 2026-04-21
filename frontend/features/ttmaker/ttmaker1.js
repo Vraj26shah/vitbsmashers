@@ -123,8 +123,6 @@
             
             updateStats();
             
-            setTimeout(initializeSampleCourses, 500);
-            
             // Initialize particles
             createParticles();
         });
@@ -646,6 +644,7 @@
             const listItem = document.createElement("li");
             listItem.className = "slot-item";
             listItem.style.borderLeftColor = course.color;
+            listItem.dataset.slots = course.slots.join(',');
             
             let details = "";
             if (course.code || course.teacher) {
@@ -693,8 +692,11 @@
                 // Remove from courses array
                 courses.splice(index, 1);
                 
-                const listItems = document.querySelectorAll('#coursesList li');
-                listItems[index].remove();
+                // Find and remove the specific list item by data attribute
+                const listItem = document.querySelector(`#coursesList li[data-slots="${slotString}"]`);
+                if (listItem) {
+                    listItem.remove();
+                }
                 
                 // Update stats and color options
                 updateStats();

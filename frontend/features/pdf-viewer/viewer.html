@@ -467,6 +467,23 @@
 
     // ── Zoom & page state ──
     let pdfInstance    = null;
+
+    window.addEventListener('scholarsstack-protect-violation', function onProtectViolation() {
+      try {
+        if (pdfInstance && typeof pdfInstance.destroy === 'function') pdfInstance.destroy();
+      } catch (_) {}
+      pdfInstance = null;
+      const pages = document.getElementById('pdf-pages');
+      if (pages) pages.innerHTML = '';
+      const wc = document.getElementById('watermark-canvas');
+      if (wc) {
+        const ctx = wc.getContext('2d');
+        if (ctx) ctx.clearRect(0, 0, wc.width, wc.height);
+      }
+      const tb = document.getElementById('viewer-toolbar');
+      if (tb) tb.style.display = 'none';
+    });
+
     let currentZoom    = 'fit-width';
     let currentPageNum = 1;
     const ZOOM_STEPS   = [0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 3.0];

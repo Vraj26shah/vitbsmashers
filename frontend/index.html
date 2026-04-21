@@ -5,39 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scholars Stack - Premium Academic Resources</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script>
-      // Quick API test
-      window.testAPI = async () => {
-        try {
-          const token = localStorage.getItem('token');
-          if (!token) {
-            alert('No token found - please log in first');
-            return;
-          }
-
-          // Test a simple API call
-          const response = await fetch('/api/v1/courses/my-courses', {
-            headers: { 'Authorization': `Bearer ${token}` }
-          });
-
-          const data = await response.json();
-          console.log('API Test Result:', data);
-          alert('API Test: ' + (data.status === 'success' ? 'SUCCESS' : 'FAILED - ' + JSON.stringify(data)));
-        } catch (error) {
-          console.error('API Test Error:', error);
-          alert('API Test Error: ' + error.message);
-        }
-      };
-
-      // Add test button to page
-      window.addEventListener('load', () => {
-        const testBtn = document.createElement('button');
-        testBtn.textContent = 'Test API';
-        testBtn.onclick = window.testAPI;
-        testBtn.style.cssText = 'position:fixed;top:10px;right:10px;z-index:9999;padding:5px 10px;background:red;color:white;border:none;border-radius:5px;cursor:pointer;';
-        document.body.appendChild(testBtn);
-      });
-    </script>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
     <meta name="google-signin-client_id" content="150852944049-1kljh7jhlubn7kpmrss0nccqkm61jv7u.apps.googleusercontent.com">
     <link rel="stylesheet" href="style.css">
@@ -313,6 +280,18 @@
                  </div>
              </a>
 
+             <a class="feature-card" href="features/club/club.html?sidebar=active">
+                 <div class="feature-icon">
+                     <i class="fas fa-users"></i>
+                 </div>
+                 <h3>Club Info</h3>
+                 <p>Browse and manage all college clubs</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+
              <a class="feature-card" href="features/event/event.html?sidebar=active">
                  <div class="feature-icon">
                      <i class="fas fa-video"></i>
@@ -523,6 +502,8 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="config.js"></script>
+    <script src="preload-manager.js"></script>
+    <script src="feature-loader.js"></script>
     <script>
         const SUPABASE_URL = 'https://gunogitcgaietobakvbl.supabase.co';
         const SUPABASE_ANON_KEY = 'sb_publishable_2i0qvEuWXv5KQEzYZ2X1sA_rJLIyZF6';

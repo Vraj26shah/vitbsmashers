@@ -55,8 +55,6 @@ class AdminAuth {
             }
 
             // Update user profile display
-            this.updateUserProfile();
-
             // Apply admin restrictions
             this.applyAdminRestrictions();
 

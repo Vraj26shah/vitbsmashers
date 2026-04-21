@@ -1999,3 +1999,111 @@
                 min-width: 60px;
             }
         }
+
+
+/* Tutorial Button Styles */
+.usage-notes-toggle[onclick="startTutorial()"] {
+    animation: pulse 2s infinite;
+}
+
+.usage-notes-toggle[onclick="startTutorial()"]:hover {
+    background: linear-gradient(135deg, #e67e22, #d35400) !important;
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 6px 20px rgba(243, 156, 18, 0.5) !important;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 25px rgba(243, 156, 18, 0.6);
+    }
+}
+
+/* Tutorial Overlay Styles */
+#tutorial-overlay {
+    animation: fadeIn 0.3s ease;
+}
+
+#tutorial-highlight {
+    animation: highlightPulse 2s infinite;
+}
+
+#tutorial-tooltip {
+    animation: slideUp 0.4s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes highlightPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85), 
+                    0 0 40px rgba(243, 156, 18, 0.8),
+                    inset 0 0 20px rgba(243, 156, 18, 0.3);
+        border-color: #f39c12;
+    }
+    50% {
+        box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.85), 
+                    0 0 60px rgba(243, 156, 18, 1),
+                    inset 0 0 30px rgba(243, 156, 18, 0.5);
+        border-color: #ffa500;
+    }
+}
+
+/* Make tutorial elements clickable */
+#tutorial-highlight {
+    animation: highlightPulse 2s infinite;
+}
+
+/* Add glow to highlighted element */
+.tutorial-highlighted-element {
+    position: relative;
+    z-index: 10000 !important;
+    filter: brightness(1.2) !important;
+}
+
+/* Responsive tutorial */
+@media (max-width: 768px) {
+    .usage-notes-toggle[onclick="startTutorial()"] {
+        width: 100%;
+        justify-content: center;
+        margin-left: 0 !important;
+        margin-top: 10px;
+    }
+    
+    #tutorial-tooltip {
+        max-width: 95vw !important;
+        padding: 15px !important;
+        left: 2.5vw !important;
+        right: 2.5vw !important;
+        width: auto !important;
+    }
+    
+    #tutorial-tooltip h3 {
+        font-size: 16px !important;
+    }
+    
+    #tutorial-tooltip p {
+        font-size: 13px !important;
+    }
+    
+    #tutorial-tooltip button {
+        padding: 8px 12px !important;
+        font-size: 12px !important;
+    }
+}

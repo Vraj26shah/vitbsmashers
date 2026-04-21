@@ -91,53 +91,39 @@ document.head.appendChild(style);
 
 // Initialize logout functionality when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Check login status and hide/show Account section immediately
-    const sidebar = document.getElementById('sidebar');
-    if (sidebar) {
-        const token = localStorage.getItem('token');
-        if (!token) {
-            // Hide Account section for unauthorized users
-            const titles = sidebar.querySelectorAll('.sidebar-title');
-            titles.forEach(title => {
-                if (title.textContent.trim().toLowerCase().includes('account')) {
-                    const nextUl = title.nextElementSibling;
-                    if (nextUl && nextUl.tagName === 'UL') {
-                        nextUl.remove();
-                    }
-                    title.remove();
-                }
-            });
-        }
-        // If logged in, Account section remains visible
-        // Quick Links section remains accessible for all users
-    }
+    // Wait a bit for auth to initialize
+    setTimeout(() => {
+        manageAccountSection();
+    }, 100);
+});
 
-    // Also use MutationObserver for dynamically loaded sidebars (if any)
-    const observer = new MutationObserver(() => {
-        const sidebar = document.getElementById('sidebar');
-        if (sidebar) {
-            observer.disconnect();
-            // Check login status and hide/show Account section
-            const token = localStorage.getItem('token');
+// Function to manage Account section visibility
+function manageAccountSection() {
+    const sidebar = document.getElementById('sidebar');
+    if (!sidebar) return;
+
+    const token = localStorage.getItem('token');
+    const titles = sidebar.querySelectorAll('.sidebar-title');
+    
+    titles.forEach(title => {
+        if (title.textContent.trim().toLowerCase().includes('account')) {
+            const nextUl = title.nextElementSibling;
+            
             if (!token) {
                 // Hide Account section for unauthorized users
-                const titles = sidebar.querySelectorAll('.sidebar-title');
-                titles.forEach(title => {
-                    if (title.textContent.trim().toLowerCase().includes('account')) {
-                        const nextUl = title.nextElementSibling;
-                        if (nextUl && nextUl.tagName === 'UL') {
-                            nextUl.remove();
-                        }
-                        title.remove();
-                    }
-                });
+                if (nextUl && nextUl.tagName === 'UL') {
+                    nextUl.style.display = 'none';
+                }
+                title.style.display = 'none';
+            } else {
+                // Show Account section for authorized users
+                if (nextUl && nextUl.tagName === 'UL') {
+                    nextUl.style.display = 'block';
+                }
+                title.style.display = 'block';
             }
-            // If logged in, Account section remains visible
-            // Quick Links section remains accessible for all users
         }
     });
-
-    observer.observe(document.body, { childList: true, subtree: true });
 
     // Add event listeners to all logout links
     document.querySelectorAll('.logout-link').forEach(link => {
@@ -156,4 +142,4 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-});
+}

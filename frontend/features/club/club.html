@@ -3,21 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Scholars Stack - Club Management</title>
+    <title>Scholars Stack - Club Info</title>
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="../../shared-background.css">
     <link rel="stylesheet" href="club.css">
     <script src="../../config.js"></script>
     <script src="../../shared-auth.js"></script>
     <script src="../../shared-admin-auth.js"></script>
     <script src="../../shared-logout.js"></script>
-    <style>
-
-    </style>
 </head>
 <body>
-    <!-- Mobile Overlay -->
-    <div class="mobile-overlay" id="mobileOverlay"></div>
+    <!-- Background Particles (match faculty/event) -->
+    <div class="bg-particles" id="bgParticles"></div>
     
     <!-- Header with Menu Toggle -->
     <header class="header">
@@ -28,28 +26,31 @@
         </div>
         
         <div class="logo">
-            <img src="../images/logo1.png" alt="Scholars Stack Logo">
-            <div class="logo-text">
-                <h1>Scholars Stack</h1>
-                <span>Club Info</span>
-            </div>
+            <a href="/index.html" style="text-decoration: none; display: flex; align-items: center;">
+                <img src="../images/logo1.png" alt="Scholars Stack Logo">
+                <div class="logo-text">
+                    <h1>Scholars Stack</h1>
+                    <span>Club Info</span>
+                </div>
+            </a>
         </div>
         
         <div class="header-actions">
-            <div class="user-profile">
+            <div class="user-profile" style="display: none;">
                 <div class="user-avatar">
                     <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
                     <span>S</span>
                 </div>
-                <div class="user-name">Student</div>
+                <div class="user-name"></div>
             </div>
-            <a href="../maps/maps.html" class="map-access" title="Campus Map" aria-label="View Campus Map">
+            <a href="#" class="map-access" title="Campus Map" aria-label="View Campus Map">
                 <i class='bx bxs-map'></i>
             </a>
         </div>
     </header>
     
-          <nav class="sidebar" id="sidebar">
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar" id="sidebar">
         <div class="sidebar-title">Main Navigation</div>
         <ul class="sidebar-menu">
              <!-- <li><a href="#"><i class='bx bxs-dashboard'></i> Dashboard</a></li> -->
@@ -62,28 +63,28 @@
         <div class="sidebar-title">Resources</div>
         <ul class="sidebar-menu">
             <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
-            <li><a href="#"class="active" ><i class='bx bxs-group'></i> Club Info</a></li>
-            <li><a href="../faculty/faculty.html" ><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="club.html" class="active"><i class='bx bxs-group'></i> Club Info</a></li>
+            <li><a href="../faculty/faculty.html"><i class='bx bxs-group'></i> Faculty Info</a></li>
             <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
         </ul>
         
         <div class="sidebar-title">Quick Links</div>
         <ul class="sidebar-menu">
             <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
-            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
         </ul>
         
         <div class="sidebar-title">Account</div>
         <ul class="sidebar-menu">
             <!-- <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li> -->
-            <li><a href="#"><i class='bx bxs-log-out'></i> Logout</a></li>
+            <li><a href="#" class="logout-link"><i class='bx bxs-log-out'></i> Logout</a></li>
         </ul>
     </nav>    
 
     <!-- Main Content Area -->
     <main class="main-content" id="mainContent">
         <h1 class="page-title">
-            <i class='bx bxs-group'></i> Club Management
+            <i class='bx bxs-group'></i> Club Info
         </h1>
         
         <!-- Tabs Navigation -->
@@ -97,8 +98,8 @@
             <button class="tab-btn" data-tab="update">
                 <i class='bx bxs-edit-alt'></i> Update Club
             </button>
-            <button class="tab-btn" data-tab="admin" id="adminTab">
-                <i class='bx bxs-shield'></i> Admin Panel
+            <button class="tab-btn admin-only" data-tab="pending" id="pendingTab" style="display: none !important;">
+                <i class='bx bxs-time-five'></i> Pending Requests
             </button>
         </div>
         
@@ -334,17 +335,21 @@
             </div>
         </section>
         
-        <!-- Admin Panel Section -->
-        <section class="tab-content" id="admin-tab">
+        <!-- Pending Requests Section (Admin Only) -->
+        <section class="tab-content" id="pending-tab">
             <div class="admin-panel">
                 <h2 class="admin-title">
-                    <i class='bx bxs-shield'></i> Club Approval Panel
+                    <i class='bx bxs-time-five'></i> Pending Requests
                 </h2>
                 <p>Review and approve pending club registrations and updates. Approved changes will appear in the public listing.</p>
                 
                 <div class="admin-tabs">
-                    <button class="admin-tab-btn active" data-admin-tab="pending-clubs">Pending Registrations</button>
-                    <button class="admin-tab-btn" data-admin-tab="pending-updates">Pending Updates</button>
+                    <button class="admin-tab-btn active" data-admin-tab="pending-clubs">
+                        <i class='bx bxs-plus-circle'></i> Pending Registrations
+                    </button>
+                    <button class="admin-tab-btn" data-admin-tab="pending-updates">
+                        <i class='bx bxs-edit-alt'></i> Pending Updates
+                    </button>
                 </div>
                 
                 <div class="admin-tab-content active" id="pending-clubs-tab">
@@ -363,924 +368,952 @@
     </main>
 
     <script>
-        // Toggle sidebar
+        // Background particles (match faculty/event)
+        function createParticles() {
+            const particlesContainer = document.getElementById('bgParticles');
+            if (!particlesContainer) return;
+
+            const particleCount = 20;
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+
+                const size = Math.random() * 60 + 20;
+                particle.style.width = `${size}px`;
+                particle.style.height = `${size}px`;
+                particle.style.top = `${Math.random() * 100}%`;
+                particle.style.left = `${Math.random() * 100}%`;
+                particle.style.animationDelay = `${Math.random() * 10}s`;
+                particle.style.opacity = Math.random() * 0.5 + 0.3;
+
+                particlesContainer.appendChild(particle);
+            }
+        }
+
+        // ── Sidebar boilerplate (match faculty/event) ───────────────────────────
         const menuToggle = document.getElementById('menuToggle');
         const sidebar = document.getElementById('sidebar');
-        const mobileOverlay = document.getElementById('mobileOverlay');
-        
-        menuToggle.addEventListener('click', () => {
+        function toggleSidebar() {
             sidebar.classList.toggle('active');
-            mobileOverlay.classList.toggle('active');
-            document.body.style.overflow = sidebar.classList.contains('active') ? 'hidden' : 'auto';
-        });
-        
-        mobileOverlay.addEventListener('click', () => {
-            sidebar.classList.remove('active');
-            mobileOverlay.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        });
-
-        // Tab functionality
-        const tabBtns = document.querySelectorAll('.tab-btn');
-        const tabContents = document.querySelectorAll('.tab-content');
-        
-        tabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Remove active class from all buttons and contents
-                tabBtns.forEach(b => b.classList.remove('active'));
-                tabContents.forEach(c => c.classList.remove('active'));
-                
-                // Add active class to clicked button
-                btn.classList.add('active');
-                
-                // Show corresponding content
-                const tabId = btn.dataset.tab;
-                document.getElementById(`${tabId}-tab`).classList.add('active');
-            });
-        });
-        
-        // Admin tab functionality
-        const adminTabBtns = document.querySelectorAll('.admin-tab-btn');
-        const adminTabContents = document.querySelectorAll('.admin-tab-content');
-        
-        adminTabBtns.forEach(btn => {
-            btn.addEventListener('click', () => {
-                // Remove active class from all admin buttons and contents
-                adminTabBtns.forEach(b => b.classList.remove('active'));
-                adminTabContents.forEach(c => c.classList.remove('active'));
-                
-                // Add active class to clicked button
-                btn.classList.add('active');
-                
-                // Show corresponding content
-                const tabId = btn.dataset.adminTab;
-                document.getElementById(`${tabId}-tab`).classList.add('active');
-            });
-        });
-        
-        // Helper function to read image file as data URL
-        function readFileAsDataURL(file) {
-            return new Promise((resolve, reject) => {
-                const reader = new FileReader();
-                reader.onload = () => resolve(reader.result);
-                reader.onerror = reject;
-                reader.readAsDataURL(file);
-            });
         }
-        
-        // Logo preview for registration form
-        document.getElementById('clubLogo').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                try {
-                    const dataUrl = await readFileAsDataURL(file);
-                    const preview = document.getElementById('logoPreview');
-                    preview.src = dataUrl;
-                    preview.style.display = 'block';
-                } catch (error) {
-                    console.error('Error reading file:', error);
-                }
-            }
+
+        menuToggle?.addEventListener('click', (e) => {
+            e.preventDefault();
+            toggleSidebar();
         });
-        
-        // Logo preview for update form
-        document.getElementById('updateClubLogo').addEventListener('change', async function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                try {
-                    const dataUrl = await readFileAsDataURL(file);
-                    const preview = document.getElementById('updateLogoPreview');
-                    preview.src = dataUrl;
-                    preview.style.display = 'block';
-                } catch (error) {
-                    console.error('Error reading file:', error);
-                }
-            }
+
+        // Click-outside-to-close (match faculty/event)
+        document.addEventListener('click', (e) => {
+            if (!sidebar.classList.contains('active')) return;
+            if (sidebar.contains(e.target) || menuToggle.contains(e.target)) return;
+            sidebar.classList.remove('active');
         });
-        
-        // Sample club data
-        const clubs = [
-            {
-                id: 1,
-                name: "Code Warriors",
-                category: "Technical",
-                description: "A club for coding enthusiasts to collaborate on projects, participate in hackathons, and improve programming skills.",
-                contact: "codewarriors@vitb.edu",
-                contactPerson: "Rahul Sharma",
-                facultyCoordinator: "Dr. S. Kumar",
-                facultyEmail: "skumar@vitb.edu",
-                coFacultyCoordinator: "Dr. M. Sharma",
-                coFacultyEmail: "msharma@vitb.edu",
-                members: 85,
-                events: 12,
-                status: "approved",
-                logo: "bx bx-code-alt",
-                logoData: null
-            },
-            {
-                id: 2,
-                name: "Robotics Club",
-                category: "Technical",
-                description: "Designing, building, and programming robots for competitions and research projects.",
-                contact: "robotics@vitb.edu",
-                contactPerson: "Priya Patel",
-                facultyCoordinator: "Dr. R. Singh",
-                facultyEmail: "rsingh@vitb.edu",
-                members: 42,
-                events: 8,
-                status: "approved",
-                logo: "bx bxs-bot",
-                logoData: null
-            },
-            {
-                id: 3,
-                name: "Dramatics Society",
-                category: "Cultural",
-                description: "Exploring the art of theater through workshops, productions, and performances.",
-                contact: "dramatics@vitb.edu",
-                contactPerson: "Vikram Singh",
-                facultyCoordinator: "Dr. A. Reddy",
-                facultyEmail: "areddy@vitb.edu",
-                coFacultyCoordinator: "Dr. P. Verma",
-                coFacultyEmail: "pverma@vitb.edu",
-                members: 64,
-                events: 6,
-                status: "approved",
-                logo: "bx bxs-theater",
-                logoData: null
-            },
-            {
-                id: 4,
-                name: "Music Club",
-                category: "Cultural",
-                description: "Bringing together musicians and music lovers for jam sessions, concerts, and workshops.",
-                contact: "music@vitb.edu",
-                contactPerson: "Ananya Reddy",
-                facultyCoordinator: "Dr. K. Desai",
-                facultyEmail: "kdesai@vitb.edu",
-                members: 78,
-                events: 10,
-                status: "approved",
-                logo: "bx bxs-music",
-                logoData: null
-            }
-        ];
 
-        // Pending clubs for admin approval
-        const pendingClubs = [
-            {
-                id: 5,
-                name: "Photography Club",
-                category: "Arts",
-                description: "A community for photography enthusiasts to learn, share, and explore the art of photography.",
-                contact: "photography@vitb.edu",
-                contactPerson: "Amit Verma",
-                facultyCoordinator: "Dr. N. Kapoor",
-                facultyEmail: "nkapoor@vitb.edu",
-                members: 0,
-                events: 0,
-                status: "pending",
-                logo: "bx bxs-camera",
-                logoData: null
-            },
-            {
-                id: 6,
-                name: "AI Research Group",
-                category: "Technical",
-                description: "Exploring artificial intelligence through research projects, workshops, and competitions.",
-                contact: "ai-research@vitb.edu",
-                contactPerson: "Neha Kapoor",
-                facultyCoordinator: "Dr. S. Rao",
-                facultyEmail: "srao@vitb.edu",
-                members: 0,
-                events: 0,
-                status: "pending",
-                logo: "bx bxs-brain",
-                logoData: null
-            }
-        ];
-
-        // Pending update requests
-        const pendingUpdates = [
-            {
-                id: 1,
-                clubId: 2,
-                clubName: "Robotics Club",
-                changes: {
-                    description: {
-                        old: "Designing, building, and programming robots for competitions.",
-                        new: "Designing, building, and programming robots for competitions and research projects."
-                    },
-                    contactPerson: {
-                        old: "Priya Mehta",
-                        new: "Priya Patel"
-                    },
-                    coFacultyCoordinator: {
-                        old: "",
-                        new: "Dr. S. Mishra"
-                    },
-                    coFacultyEmail: {
-                        old: "",
-                        new: "smishra@vitb.edu"
-                    },
-                    members: {
-                        old: 35,
-                        new: 42
-                    },
-                    events: {
-                        old: 5,
-                        new: 8
-                    }
-                },
-                status: "pending",
-                submittedBy: "Priya Patel",
-                submittedOn: "2023-11-15",
-                logo: "bx bxs-bot",
-                logoData: null
-            },
-            {
-                id: 2,
-                clubId: 4,
-                clubName: "Music Club",
-                changes: {
-                    events: {
-                        old: 8,
-                        new: 10
-                    },
-                    description: {
-                        old: "Bringing together musicians for jam sessions and concerts.",
-                        new: "Bringing together musicians and music lovers for jam sessions, concerts, and workshops."
-                    },
-                    members: {
-                        old: 65,
-                        new: 78
-                    }
-                },
-                status: "pending",
-                submittedBy: "Ananya Reddy",
-                submittedOn: "2023-11-18",
-                logo: "bx bxs-music",
-                logoData: null
-            }
-        ];
-
-        // Render approved clubs
-        function renderClubs() {
-            const clubsGrid = document.getElementById('clubsGrid');
-            clubsGrid.innerHTML = '';
-            
-            clubs.forEach(club => {
-                if (club.status === 'approved') {
-                    const clubCard = document.createElement('div');
-                    clubCard.className = 'club-card';
-                    
-                    // Create logo element based on whether logoData exists
-                    let logoElement;
-                    if (club.logoData) {
-                        logoElement = `<img src="${club.logoData}" alt="${club.name} logo">`;
-                    } else {
-                        logoElement = `<i class='${club.logo}'></i>`;
-                    }
-                    
-                    clubCard.innerHTML = `
-                        <div class="club-image">
-                            ${logoElement}
-                        </div>
-                        <div class="club-info">
-                            <div class="club-header">
-                                <div>
-                                    <h3 class="club-title">${club.name}</h3>
-                                    <p class="club-category"><i class='bx bxs-category'></i> ${club.category}</p>
-                                </div>
-                            </div>
-                            
-                            <div class="club-meta">
-                                <div class="meta-item">
-                                    <i class='bx bxs-group'></i>
-                                    <span>${club.members} Members</span>
-                                </div>
-                                <div class="meta-item">
-                                    <i class='bx bxs-calendar-event'></i>
-                                    <span>${club.events} Events</span>
-                                </div>
-                            </div>
-                            
-                            <p class="club-description">
-                                ${club.description}
-                            </p>
-                            
-                            <div class="club-footer">
-                                <div>
-                                    <div class="meta-item">
-                                        <i class='bx bxs-user'></i>
-                                        <span>Contact: ${club.contactPerson}</span>
-                                    </div>
-                                    <div class="meta-item">
-                                        <i class='bx bxs-envelope'></i>
-                                        <span>${club.contact}</span>
-                                    </div>
-                                    <div class="meta-item">
-                                        <i class='bx bxs-user-circle'></i>
-                                        <span>Faculty: ${club.facultyCoordinator}</span>
-                                    </div>
-                                </div>
-                                <button class="update-btn" data-id="${club.id}">
-                                    <i class='bx bxs-edit-alt'></i> Update
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    clubsGrid.appendChild(clubCard);
+        // Close sidebar on mobile after navigation (match faculty/event)
+        document.querySelectorAll('.sidebar-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.matchMedia('(max-width: 768px)').matches) {
+                    sidebar.classList.remove('active');
                 }
             });
+        });
+
+        // Tabs
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', async () => {
+                // Check if this is the pending tab and verify admin access
+                if (btn.dataset.tab === 'pending') {
+                    const isAdmin = await verifyAdminAccess();
+                    if (!isAdmin) {
+                        showToast('Access denied. Admin privileges required.', 'error');
+                        return;
+                    }
+                }
+                
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(`${btn.dataset.tab}-tab`).classList.add('active');
+                if (btn.dataset.tab === 'pending') loadPendingData();
+            });
+        });
+
+        // Admin sub-tabs
+        document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.admin-tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.admin-tab-content').forEach(c => c.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById(`${btn.dataset.adminTab}-tab`).classList.add('active');
+            });
+        });
+
+        // Sidebar URL param
+        (function() {
+            const p = new URLSearchParams(window.location.search);
+            if (p.get('sidebar') === 'active') sidebar.classList.add('active');
+        })();
+
+        // ── Toast ───────────────────────────────────────────────────────────────
+        function showToast(msg, type = 'success') {
+            const t = document.createElement('div');
+            t.style.cssText = `position:fixed;bottom:24px;right:24px;z-index:99999;
+                background:${type==='success'?'#27ae60':'#e74c3c'};color:#fff;
+                padding:14px 22px;border-radius:12px;font-size:14px;font-weight:600;
+                box-shadow:0 8px 24px rgba(0,0,0,0.3);
+                animation:slideUp .35s ease;font-family:'Poppins',sans-serif;max-width:320px;`;
+            t.textContent = msg;
+            if (!document.getElementById('toast-style')) {
+                const s = document.createElement('style');
+                s.id = 'toast-style';
+                s.textContent = `@keyframes slideUp{from{transform:translateY(20px);opacity:0}to{transform:translateY(0);opacity:1}}`;
+                document.head.appendChild(s);
+            }
+            document.body.appendChild(t);
+            setTimeout(() => t.remove(), 3500);
+        }
+
+        // ── Auth header ─────────────────────────────────────────────────────────
+        function authHeaders() {
+            const token = localStorage.getItem('scholars_token') || localStorage.getItem('token');
+            return token ? { 'Authorization': `Bearer ${token}` } : {};
+        }
+
+        // ── API base ────────────────────────────────────────────────────────────
+        const API = () => (window.config?.CLUBS_BASE || '/api/v1/clubs');
+
+        // ── Skeleton loader ─────────────────────────────────────────────────────
+        function showSkeletons(container, count = 4) {
+            container.innerHTML = Array(count).fill(`
+                <div style="background:rgba(52,152,219,.08);border-radius:14px;height:280px;
+                    animation:pulse 1.5s ease-in-out infinite;border:1px solid rgba(52,152,219,.15);">
+                </div>`).join('');
+            if (!document.getElementById('pulse-style')) {
+                const s = document.createElement('style');
+                s.id = 'pulse-style';
+                s.textContent = `@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}`;
+                document.head.appendChild(s);
+            }
+        }
+
+        // ── State ───────────────────────────────────────────────────────────────
+        let approvedClubs = [];   // cache for update-form select
+
+        // ── Logo helper ─────────────────────────────────────────────────────────
+        function logoElement(club, size = 72) {
+            if (club.logoUrl) {
+                return `<img src="${club.logoUrl}" alt="${club.name} logo"
+                    style="width:${size}px;height:${size}px;object-fit:cover;border-radius:50%;">`;
+            }
+            // Initials fallback
+            const initials = club.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+            const colors   = ['#3498db','#2ecc71','#9b59b6','#e74c3c','#f39c12','#1abc9c'];
+            const bg       = colors[club.name.charCodeAt(0) % colors.length];
+            return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${bg};
+                display:flex;align-items:center;justify-content:center;font-size:${size*.32}px;
+                font-weight:700;color:#fff;flex-shrink:0;">${initials}</div>`;
+        }
+
+        // ── Render approved clubs ───────────────────────────────────────────────
+        async function loadClubs(category = '', search = '') {
+            const grid = document.getElementById('clubsGrid');
+            showSkeletons(grid);
+            try {
+                let url = `${API()}?`;
+                if (category) url += `category=${encodeURIComponent(category)}&`;
+                if (search)   url += `search=${encodeURIComponent(search)}&`;
+                const res  = await fetch(url);
+                const json = await res.json();
+
+                if (!res.ok) {
+                    // Check if it's a database table error
+                    if (json.message && json.message.includes('content.clubs')) {
+                        throw new Error('DATABASE_NOT_SETUP');
+                    }
+                    throw new Error(json.message || 'Failed to load clubs');
+                }
+
+                approvedClubs = json.data.clubs || [];
+                renderClubGrid(approvedClubs);
+                populateClubSelect(approvedClubs);
+            } catch (err) {
+                if (err.message === 'DATABASE_NOT_SETUP') {
+                    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#7f8c8d;max-width:600px;margin:0 auto;">
+                        <i class='bx bx-error-circle' style="font-size:48px;color:#e74c3c;"></i>
+                        <h3 style="color:#ecf0f1;margin-top:16px;margin-bottom:12px;">Database Not Set Up</h3>
+                        <p style="margin-bottom:16px;line-height:1.6;">The clubs database table hasn't been created yet. Please run the setup script:</p>
+                        <div style="background:rgba(26,37,47,0.9);padding:16px;border-radius:8px;margin:20px 0;text-align:left;">
+                            <code style="color:#2ecc71;font-family:monospace;font-size:14px;">cd backend && node setup-clubs-db.js</code>
+                        </div>
+                        <p style="font-size:14px;color:#95a5a6;margin-top:16px;">This will create the necessary tables and seed sample club data.</p>
+                    </div>`;
+                } else {
+                    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px 20px;color:#7f8c8d;">
+                        <i class='bx bx-error-circle' style="font-size:48px;color:#e74c3c;"></i>
+                        <p style="margin-top:12px;color:#ecf0f1;font-size:16px;margin-bottom:8px;">Could not load clubs</p>
+                        <p style="color:#95a5a6;font-size:14px;margin-bottom:20px;">${err.message}</p>
+                        <button onclick="loadClubs()" style="margin-top:16px;background:#3498db;color:#fff;
+                            border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-family:'Poppins',sans-serif;
+                            font-weight:600;transition:all 0.3s ease;" 
+                            onmouseover="this.style.background='#2980b9'" 
+                            onmouseout="this.style.background='#3498db'">
+                            <i class='bx bx-refresh'></i> Retry
+                        </button></div>`;
+                }
+            }
+        }
+
+        function renderClubGrid(clubs) {
+            const grid = document.getElementById('clubsGrid');
+            if (!clubs.length) {
+                grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:60px;color:#7f8c8d;">
+                    <i class='bx bxs-group' style="font-size:54px;"></i>
+                    <p style="margin-top:12px;font-size:18px;">No clubs found.</p></div>`;
+                return;
+            }
+            grid.innerHTML = clubs.map(club => `
+                <div class="club-card" data-id="${club.id}">
+                    <div class="club-image" style="display:flex;align-items:center;justify-content:center;padding:24px 0 0;">
+                        ${logoElement(club, 80)}
+                    </div>
+                    <div class="club-info">
+                        <div class="club-header">
+                            <div>
+                                <h3 class="club-title">${club.name}</h3>
+                                <p class="club-category"><i class='bx bxs-category'></i> ${club.category}</p>
+                            </div>
+                        </div>
+                        <div class="club-meta">
+                            <div class="meta-item"><i class='bx bxs-group'></i><span>${club.members || 0} Members</span></div>
+                            <div class="meta-item"><i class='bx bxs-calendar-event'></i><span>${club.events || 0} Events</span></div>
+                        </div>
+                        <p class="club-description">${club.description}</p>
+                        <div class="club-details">
+                            <div class="meta-item"><i class='bx bxs-user-circle'></i><span>Faculty: ${club.faculty_coordinator}</span></div>
+                            <div class="meta-item"><i class='bx bxs-envelope'></i><span>${club.faculty_email}</span></div>
+                            ${club.co_faculty_coordinator ? `<div class="meta-item"><i class='bx bxs-user-circle'></i><span>Co-Faculty: ${club.co_faculty_coordinator}</span></div>` : ''}
+                            <div class="meta-item"><i class='bx bxs-user'></i><span>Contact: ${club.contact_person}</span></div>
+                        </div>
+                        <div class="club-footer">
+                            <button class="contact-btn email-btn" data-email="${club.contact_email}">
+                                <i class='bx bxs-envelope'></i> Email
+                            </button>
+                            <button class="update-btn" data-id="${club.id}">
+                                <i class='bx bxs-edit-alt'></i> Update
+                            </button>
+                        </div>
+                    </div>
+                </div>`).join('');
             
-            // Add event listeners to update buttons
+            // Add event listeners to update buttons with authentication check
             document.querySelectorAll('.update-btn').forEach(btn => {
+                btn.addEventListener('click', async (e) => {
+                    e.stopPropagation();
+
+                    // Check if user is logged in
+                    const token = localStorage.getItem('scholars_token') || localStorage.getItem('token');
+                    if (!token) {
+                        showLoginRequiredMessage();
+                        return;
+                    }
+
+                    // Verify token is valid
+                    try {
+                        const response = await fetch('/api/v1/profile/me', {
+                            method: 'GET',
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
+
+                        if (!response.ok) {
+                            showLoginRequiredMessage();
+                            return;
+                        }
+
+                        // User is logged in, proceed with update
+                        const clubId = btn.dataset.id;
+                        prefillUpdate(clubId);
+                    } catch (error) {
+                        console.error('Auth check failed:', error);
+                        showLoginRequiredMessage();
+                    }
+                });
+            });
+
+            // Email button
+            document.querySelectorAll('.email-btn').forEach(btn => {
                 btn.addEventListener('click', (e) => {
                     e.stopPropagation();
-                    const clubId = parseInt(btn.dataset.id);
-                    populateUpdateForm(clubId);
-                    document.querySelector('[data-tab="update"]').click();
-                });
-            });
-        }
-
-        // Render pending clubs for admin
-        function renderPendingClubs() {
-            const pendingClubsContainer = document.getElementById('pendingClubs');
-            pendingClubsContainer.innerHTML = '';
-            
-            if (pendingClubs.length === 0) {
-                pendingClubsContainer.innerHTML = '<p>No pending club registrations at this time.</p>';
-                return;
-            }
-            
-            pendingClubs.forEach(club => {
-                if (club.status === 'pending') {
-                    const pendingClub = document.createElement('div');
-                    pendingClub.className = 'pending-club';
-                    
-                    // Create logo element
-                    let logoElement;
-                    if (club.logoData) {
-                        logoElement = `<img src="${club.logoData}" alt="${club.name} logo">`;
-                    } else {
-                        logoElement = `<i class='${club.logo}'></i>`;
+                    const email = btn.dataset.email || '';
+                    if (email) {
+                        window.location.href = `mailto:${email}`;
                     }
-                    
-                    pendingClub.innerHTML = `
-                        <div class="pending-club-image">
-                            ${logoElement}
-                        </div>
-                        <div class="pending-club-details">
-                            <h3 class="pending-club-title">${club.name}</h3>
-                            <div class="pending-club-meta">
-                                <div class="club-category">
-                                    <i class='bx bxs-category'></i> ${club.category}
-                                </div>
-                                <div class="status-indicator status-pending">
-                                    <i class='bx bxs-time'></i> Pending Approval
-                                </div>
-                            </div>
-                            <p class="pending-club-description">${club.description}</p>
-                            <div class="meta-item">
-                                <i class='bx bxs-user'></i>
-                                <span>Contact: ${club.contactPerson}</span>
-                            </div>
-                            <div class="meta-item">
-                                <i class='bx bxs-envelope'></i>
-                                <span>${club.contact}</span>
-                            </div>
-                            <div class="meta-item">
-                                <i class='bx bxs-user-circle'></i>
-                                <span>Faculty: ${club.facultyCoordinator}</span>
-                            </div>
-                            <div class="meta-item">
-                                <i class='bx bxs-group'></i>
-                                <span>Members: ${club.members}</span>
-                            </div>
-                            <div class="meta-item">
-                                <i class='bx bxs-calendar-event'></i>
-                                <span>Events: ${club.events}</span>
-                            </div>
-                            <div class="pending-club-actions">
-                                <button class="action-btn approve-btn" data-id="${club.id}">
-                                    <i class='bx bx-check'></i> Approve
-                                </button>
-                                <button class="action-btn reject-btn" data-id="${club.id}">
-                                    <i class='bx bx-x'></i> Reject
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    pendingClubsContainer.appendChild(pendingClub);
-                }
-            });
-            
-            // Add event listeners to action buttons
-            document.querySelectorAll('.approve-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const clubId = parseInt(btn.dataset.id);
-                    approveClub(clubId);
-                });
-            });
-            
-            document.querySelectorAll('.reject-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const clubId = parseInt(btn.dataset.id);
-                    rejectClub(clubId);
                 });
             });
         }
-        
-        // Render pending updates for admin
-        function renderPendingUpdates() {
-            const pendingUpdatesContainer = document.getElementById('pendingUpdates');
-            pendingUpdatesContainer.innerHTML = '';
-            
-            if (pendingUpdates.length === 0) {
-                pendingUpdatesContainer.innerHTML = '<p>No pending club updates at this time.</p>';
-                return;
-            }
-            
-            pendingUpdates.forEach(update => {
-                if (update.status === 'pending') {
-                    const pendingUpdate = document.createElement('div');
-                    pendingUpdate.className = 'pending-update';
-                    
-                    // Create logo element
-                    let logoElement;
-                    if (update.logoData) {
-                        logoElement = `<img src="${update.logoData}" alt="${update.clubName} logo">`;
-                    } else {
-                        logoElement = `<i class='${update.logo}'></i>`;
-                    }
-                    
-                    pendingUpdate.innerHTML = `
-                        <div class="pending-update-image">
-                            ${logoElement}
-                        </div>
-                        <div class="pending-update-details">
-                            <h3 class="pending-update-title">${update.clubName} - Update Request</h3>
-                            <div class="pending-update-meta">
-                                <div class="status-indicator status-pending">
-                                    <i class='bx bxs-time'></i> Pending Approval
-                                </div>
-                                <div class="meta-item">
-                                    <i class='bx bxs-user'></i>
-                                    <span>Submitted by: ${update.submittedBy}</span>
-                                </div>
-                                <div class="meta-item">
-                                    <i class='bx bxs-calendar'></i>
-                                    <span>${update.submittedOn}</span>
-                                </div>
-                            </div>
-                            
-                            <div class="update-changes">
-                                <h4><i class='bx bx-revision'></i> Proposed Changes</h4>
-                                ${Object.entries(update.changes).map(([field, values]) => `
-                                    <div class="change-item">
-                                        <div class="change-field">${formatFieldName(field)}:</div>
-                                        <div class="change-old">${values.old || 'N/A'}</div>
-                                        <div class="change-new">${values.new || 'N/A'}</div>
-                                    </div>
-                                `).join('')}
-                            </div>
-                            
-                            <div class="pending-update-actions">
-                                <button class="action-btn view-btn" data-id="${update.id}">
-                                    <i class='bx bx-show'></i> View Club
-                                </button>
-                                <button class="action-btn approve-btn" data-id="${update.id}">
-                                    <i class='bx bx-check'></i> Approve
-                                </button>
-                                <button class="action-btn reject-btn" data-id="${update.id}">
-                                    <i class='bx bx-x'></i> Reject
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                    pendingUpdatesContainer.appendChild(pendingUpdate);
-                }
-            });
-            
-            // Add event listeners to action buttons
-            document.querySelectorAll('.pending-update .approve-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const updateId = parseInt(btn.dataset.id);
-                    approveUpdate(updateId);
-                });
-            });
-            
-            document.querySelectorAll('.pending-update .reject-btn').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const updateId = parseInt(btn.dataset.id);
-                    rejectUpdate(updateId);
-                });
-            });
-        }
-        
-        // Format field names for display
-        function formatFieldName(field) {
-            const names = {
-                'description': 'Description',
-                'contactPerson': 'Contact Person',
-                'facultyCoordinator': 'Faculty Coordinator',
-                'facultyEmail': 'Faculty Email',
-                'coFacultyCoordinator': 'Co-Faculty Coordinator',
-                'coFacultyEmail': 'Co-Faculty Email',
-                'members': 'Number of Members',
-                'events': 'Number of Events'
-            };
-            return names[field] || field;
+
+        // ── Real-time polling (30 s) ────────────────────────────────────────────
+        let pollTimer = null;
+        function startPolling() {
+            if (pollTimer) return;
+            pollTimer = setInterval(() => loadClubs(), 30000);
         }
 
-        // Approve club
-        function approveClub(clubId) {
-            const pendingIndex = pendingClubs.findIndex(club => club.id === clubId);
-            if (pendingIndex !== -1) {
-                const approvedClub = pendingClubs[pendingIndex];
-                approvedClub.status = 'approved';
-                
-                // Set default values if not provided
-                if (!approvedClub.members) approvedClub.members = 25;
-                if (!approvedClub.events) approvedClub.events = 3;
-                
-                // Move to approved clubs
-                clubs.push(approvedClub);
-                
-                // Remove from pending
-                pendingClubs.splice(pendingIndex, 1);
-                
-                // Simulate sending approval email
-                sendApprovalEmail(approvedClub.contact, approvedClub.name);
-                
-                // Re-render both lists
-                renderClubs();
-                renderPendingClubs();
-                populateClubSelect();
-                
-                alert(`Club "${approvedClub.name}" has been approved and added to the public listing.`);
-            }
+        // ── Populate update-form select ─────────────────────────────────────────
+        function populateClubSelect(clubs) {
+            const sel = document.getElementById('selectClubToUpdate');
+            sel.innerHTML = '<option value="">Select your club</option>' +
+                clubs.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
         }
 
-        // Reject club
-        function rejectClub(clubId) {
-            const pendingIndex = pendingClubs.findIndex(club => club.id === clubId);
-            if (pendingIndex !== -1) {
-                const rejectedClub = pendingClubs[pendingIndex];
-                
-                // Simulate sending rejection email
-                sendRejectionEmail(rejectedClub.contact, rejectedClub.name);
-                
-                // Remove from pending
-                pendingClubs.splice(pendingIndex, 1);
-                
-                // Re-render pending list
-                renderPendingClubs();
-                
-                alert(`Club "${rejectedClub.name}" has been rejected.`);
-            }
-        }
-        
-        // Approve update
-        function approveUpdate(updateId) {
-            const updateIndex = pendingUpdates.findIndex(update => update.id === updateId);
-            if (updateIndex !== -1) {
-                const update = pendingUpdates[updateIndex];
-                const clubIndex = clubs.findIndex(club => club.id === update.clubId);
-                
-                if (clubIndex !== -1) {
-                    // Apply changes to the club
-                    const club = clubs[clubIndex];
-                    Object.entries(update.changes).forEach(([field, values]) => {
-                        club[field] = values.new;
-                    });
-                    
-                    // Apply logo update if exists
-                    if (update.logoData) {
-                        club.logoData = update.logoData;
-                    }
-                    
-                    // Simulate sending approval email
-                    sendUpdateApprovalEmail(club.contact, club.name);
-                    
-                    // Remove from pending updates
-                    pendingUpdates.splice(updateIndex, 1);
-                    
-                    // Re-render all lists
-                    renderClubs();
-                    renderPendingUpdates();
-                    populateClubSelect();
-                    
-                    alert(`Updates for "${club.name}" have been approved and applied.`);
-                }
-            }
-        }
-        
-        // Reject update
-        function rejectUpdate(updateId) {
-            const updateIndex = pendingUpdates.findIndex(update => update.id === updateId);
-            if (updateIndex !== -1) {
-                const update = pendingUpdates[updateIndex];
-                
-                // Simulate sending rejection email
-                sendUpdateRejectionEmail(update.submittedBy, update.clubName);
-                
-                // Remove from pending
-                pendingUpdates.splice(updateIndex, 1);
-                
-                // Re-render pending updates
-                renderPendingUpdates();
-                
-                alert(`Update request for "${update.clubName}" has been rejected.`);
-            }
+        // ── Prefill update form ─────────────────────────────────────────────────
+        function prefillUpdate(id) {
+            const club = approvedClubs.find(c => c.id == id);
+            if (!club) return;
+            document.getElementById('selectClubToUpdate').value = id;
+            document.getElementById('clubUpdateForm').style.display = 'block';
+            document.getElementById('updateClubId').value     = club.id;
+            document.getElementById('updateClubName').value   = club.name;
+            document.getElementById('updateClubCategory').value = club.category;
+            document.getElementById('updateClubDescription').value = club.description;
+            document.getElementById('updateFacultyName').value   = club.faculty_coordinator;
+            document.getElementById('updateFacultyEmail').value  = club.faculty_email;
+            document.getElementById('updateCoFacultyName').value = club.co_faculty_coordinator || '';
+            document.getElementById('updateCoFacultyEmail').value= club.co_faculty_email || '';
+            document.getElementById('updateContactPerson').value = club.contact_person;
+            document.getElementById('updateContactEmail').value  = club.contact_email;
+            document.getElementById('updateClubMembers').value   = club.members;
+            document.getElementById('updateClubEvents').value    = club.events;
+            const prev = document.getElementById('updateLogoPreview');
+            if (club.logoUrl) { prev.src = club.logoUrl; prev.style.display = 'block'; }
+            else               { prev.style.display = 'none'; }
+            // Switch tab
+            document.querySelector('[data-tab="update"]').click();
         }
 
-        // Simulate sending approval email
-        function sendApprovalEmail(email, clubName) {
-            console.log(`Sending approval email to ${email}`);
-            console.log(`Subject: Your Club "${clubName}" Has Been Approved!`);
-            console.log(`Body: Congratulations! Your club registration for "${clubName}" has been approved and is now listed on the Scholars Stack platform.`);
-        }
-
-        // Simulate sending rejection email
-        function sendRejectionEmail(email, clubName) {
-            console.log(`Sending rejection email to ${email}`);
-            console.log(`Subject: Your Club Registration for "${clubName}"`);
-            console.log(`Body: Thank you for your club registration. After review, we've decided not to approve "${clubName}" at this time. Please contact us for more information.`);
-        }
-        
-        // Simulate sending update approval email
-        function sendUpdateApprovalEmail(email, clubName) {
-            console.log(`Sending update approval email to ${email}`);
-            console.log(`Subject: Club Update Approved for "${clubName}"`);
-            console.log(`Body: Your requested updates for "${clubName}" have been approved and are now live on the Scholars Stack platform.`);
-        }
-        
-        // Simulate sending update rejection email
-        function sendUpdateRejectionEmail(email, clubName) {
-            console.log(`Sending update rejection email to ${email}`);
-            console.log(`Subject: Club Update Rejected for "${clubName}"`);
-            console.log(`Body: Your requested updates for "${clubName}" have been reviewed but not approved at this time. Please contact us for more information.`);
-        }
-
-        // Club registration form
-        const clubForm = document.getElementById('clubRegistrationForm');
-        const successMessage = document.getElementById('successMessage');
-        
-        clubForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            // Get form values
-            const clubName = document.getElementById('clubName').value;
-            const clubCategory = document.getElementById('clubCategory').value;
-            const clubDescription = document.getElementById('clubDescription').value;
-            const facultyName = document.getElementById('facultyName').value;
-            const facultyEmail = document.getElementById('facultyEmail').value;
-            const coFacultyName = document.getElementById('coFacultyName').value;
-            const coFacultyEmail = document.getElementById('coFacultyEmail').value;
-            const contactPerson = document.getElementById('contactPerson').value;
-            const contactEmail = document.getElementById('contactEmail').value;
-            const clubMembers = document.getElementById('clubMembers').value || 0;
-            const clubEvents = document.getElementById('clubEvents').value || 0;
-            const logoFile = document.getElementById('clubLogo').files[0];
-            
-            // Create new club object
-            const newClub = {
-                id: Date.now(), // Unique ID
-                name: clubName,
-                category: clubCategory,
-                description: clubDescription,
-                facultyCoordinator: facultyName,
-                facultyEmail: facultyEmail,
-                coFacultyCoordinator: coFacultyName || '',
-                coFacultyEmail: coFacultyEmail || '',
-                contact: contactEmail,
-                contactPerson: contactPerson,
-                members: parseInt(clubMembers),
-                events: parseInt(clubEvents),
-                status: "pending",
-                logo: "bx bxs-group" // Default logo
-            };
-            
-            // Handle logo upload if exists
-            if (logoFile) {
-                try {
-                    const dataUrl = await readFileAsDataURL(logoFile);
-                    newClub.logoData = dataUrl;
-                } catch (error) {
-                    console.error('Error reading file:', error);
-                }
-            }
-            
-            // Add to pending clubs
-            pendingClubs.push(newClub);
-            
-            // Simulate sending admin notification
-            sendAdminNotification(newClub);
-            
-            // Show success message
-            successMessage.style.display = 'flex';
-            
-            // Reset form
-            clubForm.reset();
-            document.getElementById('logoPreview').style.display = 'none';
-            
-            // Scroll to top
-            window.scrollTo(0, 0);
-            
-            // Switch to admin tab to see pending request
-            setTimeout(() => {
-                document.querySelector('[data-tab="admin"]').click();
-                renderPendingClubs();
-            }, 1000);
-        });
-        
-        // Populate club select for update form
-        function populateClubSelect() {
-            const clubSelect = document.getElementById('selectClubToUpdate');
-            clubSelect.innerHTML = '<option value="">Select your club</option>';
-            
-            clubs.forEach(club => {
-                if (club.status === 'approved') {
-                    const option = document.createElement('option');
-                    option.value = club.id;
-                    option.textContent = club.name;
-                    clubSelect.appendChild(option);
-                }
-            });
-        }
-        
-        // When club is selected for update
+        // When club selected from dropdown
         document.getElementById('selectClubToUpdate').addEventListener('change', function() {
-            const clubId = parseInt(this.value);
-            if (clubId) {
+            if (this.value) {
+                prefillUpdate(this.value);
                 document.getElementById('clubUpdateForm').style.display = 'block';
-                populateUpdateForm(clubId);
             } else {
                 document.getElementById('clubUpdateForm').style.display = 'none';
             }
         });
-        
-        // Populate update form with club data
-        function populateUpdateForm(clubId) {
-            const club = clubs.find(c => c.id === clubId);
-            if (club) {
-                document.getElementById('updateClubId').value = club.id;
-                document.getElementById('updateClubName').value = club.name;
-                document.getElementById('updateClubCategory').value = club.category;
-                document.getElementById('updateClubDescription').value = club.description;
-                document.getElementById('updateFacultyName').value = club.facultyCoordinator;
-                document.getElementById('updateFacultyEmail').value = club.facultyEmail;
-                document.getElementById('updateCoFacultyName').value = club.coFacultyCoordinator || '';
-                document.getElementById('updateCoFacultyEmail').value = club.coFacultyEmail || '';
-                document.getElementById('updateContactPerson').value = club.contactPerson;
-                document.getElementById('updateContactEmail').value = club.contact;
-                document.getElementById('updateClubMembers').value = club.members;
-                document.getElementById('updateClubEvents').value = club.events;
-                
-                // Show logo preview if exists
-                const preview = document.getElementById('updateLogoPreview');
-                if (club.logoData) {
-                    preview.src = club.logoData;
-                    preview.style.display = 'block';
-                } else {
-                    preview.style.display = 'none';
-                }
-                
-                // Select the club in the dropdown
-                document.getElementById('selectClubToUpdate').value = club.id;
-            }
-        }
-        
-        // Club update form
-        const updateForm = document.getElementById('clubUpdateForm');
-        const updateSuccessMessage = document.getElementById('updateSuccessMessage');
-        
-        updateForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            
-            const clubId = parseInt(document.getElementById('updateClubId').value);
-            const club = clubs.find(c => c.id === clubId);
-            
-            if (!club) return;
-            
-            // Get form values
-            const updatedName = document.getElementById('updateClubName').value;
-            const updatedCategory = document.getElementById('updateClubCategory').value;
-            const updatedDescription = document.getElementById('updateClubDescription').value;
-            const updatedFacultyName = document.getElementById('updateFacultyName').value;
-            const updatedFacultyEmail = document.getElementById('updateFacultyEmail').value;
-            const updatedCoFacultyName = document.getElementById('updateCoFacultyName').value;
-            const updatedCoFacultyEmail = document.getElementById('updateCoFacultyEmail').value;
-            const updatedContactPerson = document.getElementById('updateContactPerson').value;
-            const updatedContactEmail = document.getElementById('updateContactEmail').value;
-            const updatedMembers = document.getElementById('updateClubMembers').value || 0;
-            const updatedEvents = document.getElementById('updateClubEvents').value || 0;
-            const logoFile = document.getElementById('updateClubLogo').files[0];
-            
-            // Create update request object with changed fields only
-            const changes = {};
-            
-            if (club.name !== updatedName) changes.name = { old: club.name, new: updatedName };
-            if (club.category !== updatedCategory) changes.category = { old: club.category, new: updatedCategory };
-            if (club.description !== updatedDescription) changes.description = { old: club.description, new: updatedDescription };
-            if (club.facultyCoordinator !== updatedFacultyName) changes.facultyCoordinator = { old: club.facultyCoordinator, new: updatedFacultyName };
-            if (club.facultyEmail !== updatedFacultyEmail) changes.facultyEmail = { old: club.facultyEmail, new: updatedFacultyEmail };
-            if (club.coFacultyCoordinator !== updatedCoFacultyName) changes.coFacultyCoordinator = { old: club.coFacultyCoordinator, new: updatedCoFacultyName };
-            if (club.coFacultyEmail !== updatedCoFacultyEmail) changes.coFacultyEmail = { old: club.coFacultyEmail, new: updatedCoFacultyEmail };
-            if (club.contactPerson !== updatedContactPerson) changes.contactPerson = { old: club.contactPerson, new: updatedContactPerson };
-            if (club.contact !== updatedContactEmail) changes.contact = { old: club.contact, new: updatedContactEmail };
-            if (parseInt(club.members) !== parseInt(updatedMembers)) changes.members = { old: club.members, new: parseInt(updatedMembers) };
-            if (parseInt(club.events) !== parseInt(updatedEvents)) changes.events = { old: club.events, new: parseInt(updatedEvents) };
-            
-            // Only create update request if there are changes
-            if (Object.keys(changes).length > 0 || logoFile) {
-                const updateRequest = {
-                    id: Date.now(),
-                    clubId: clubId,
-                    clubName: club.name,
-                    changes: changes,
-                    status: "pending",
-                    submittedBy: "Admin User", // In real app, this would be the logged-in user
-                    submittedOn: new Date().toISOString().split('T')[0],
-                    logo: club.logo
+
+        // ── Logo preview handlers ───────────────────────────────────────────────
+        ['clubLogo', 'updateClubLogo'].forEach(id => {
+            document.getElementById(id)?.addEventListener('change', function() {
+                const prevId = id === 'clubLogo' ? 'logoPreview' : 'updateLogoPreview';
+                const file = this.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = e => {
+                    const img = document.getElementById(prevId);
+                    img.src = e.target.result;
+                    img.style.display = 'block';
                 };
+                reader.readAsDataURL(file);
+            });
+        });
+
+        // ── Register Club ───────────────────────────────────────────────────────
+        document.getElementById('clubRegistrationForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            btn.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Submitting...`;
+
+            try {
+                const fd = new FormData();
+                fd.append('name',                  document.getElementById('clubName').value);
+                fd.append('category',              document.getElementById('clubCategory').value);
+                fd.append('description',           document.getElementById('clubDescription').value);
+                fd.append('faculty_coordinator',   document.getElementById('facultyName').value);
+                fd.append('faculty_email',         document.getElementById('facultyEmail').value);
+                fd.append('co_faculty_coordinator',document.getElementById('coFacultyName').value);
+                fd.append('co_faculty_email',      document.getElementById('coFacultyEmail').value);
+                fd.append('contact_person',        document.getElementById('contactPerson').value);
+                fd.append('contact_email',         document.getElementById('contactEmail').value);
+                fd.append('members',               document.getElementById('clubMembers').value || 0);
+                fd.append('events',                document.getElementById('clubEvents').value || 0);
+                const logoFile = document.getElementById('clubLogo').files[0];
+                if (logoFile) fd.append('logo', logoFile);
+
+                const res  = await fetch(API(), { method: 'POST', headers: authHeaders(), body: fd });
+                const json = await res.json();
                 
-                // Handle logo update if exists
-                if (logoFile) {
-                    try {
-                        const dataUrl = await readFileAsDataURL(logoFile);
-                        updateRequest.logoData = dataUrl;
-                    } catch (error) {
-                        console.error('Error reading file:', error);
+                if (!res.ok) {
+                    if (res.status === 429) {
+                        throw new Error(`Rate limit reached! You have ${json.pendingCount || 5} pending requests. Please wait for admin approval before submitting more.`);
                     }
+                    throw new Error(json.message || 'Submission failed');
                 }
+
+                const successMsg = document.getElementById('successMessage');
+                successMsg.innerHTML = `
+                    <i class='bx bx-check-circle'></i>
+                    <div>
+                        <p>Your club registration has been submitted successfully!</p>
+                        <p style="font-size:14px;margin-top:8px;">Pending requests: ${json.pendingCount || 1}/5 | Remaining: ${json.remainingRequests || 4}</p>
+                        <p style="font-size:13px;margin-top:4px;opacity:0.9;">The admin will review your application and you'll receive confirmation once approved.</p>
+                    </div>
+                `;
+                successMsg.style.display = 'flex';
+                this.reset();
+                document.getElementById('logoPreview').style.display = 'none';
+                showToast('Club registration submitted! Admin will review your application.');
+                window.scrollTo(0, 0);
+            } catch (err) {
+                showToast(err.message || 'Failed to submit registration', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class='bx bx-send'></i> Submit Registration`;
+            }
+        });
+
+        // ── Update Club ─────────────────────────────────────────────────────────
+        document.getElementById('clubUpdateForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const btn  = this.querySelector('button[type="submit"]');
+            const clubId = document.getElementById('updateClubId').value;
+            const club   = approvedClubs.find(c => c.id == clubId);
+            if (!club) return;
+
+            // Build changes diff
+            const changes = {};
+            const pairs = [
+                ['name',                  document.getElementById('updateClubName').value],
+                ['category',              document.getElementById('updateClubCategory').value],
+                ['description',           document.getElementById('updateClubDescription').value],
+                ['faculty_coordinator',   document.getElementById('updateFacultyName').value],
+                ['faculty_email',         document.getElementById('updateFacultyEmail').value],
+                ['co_faculty_coordinator',document.getElementById('updateCoFacultyName').value],
+                ['co_faculty_email',      document.getElementById('updateCoFacultyEmail').value],
+                ['contact_person',        document.getElementById('updateContactPerson').value],
+                ['contact_email',         document.getElementById('updateContactEmail').value],
+                ['members',               parseInt(document.getElementById('updateClubMembers').value)||0],
+                ['events',                parseInt(document.getElementById('updateClubEvents').value)||0],
+            ];
+            pairs.forEach(([field, val]) => {
+                if (String(club[field] ?? '') !== String(val)) {
+                    changes[field] = { old: club[field] ?? '', new: val };
+                }
+            });
+
+            const logoFile = document.getElementById('updateClubLogo').files[0];
+            if (!Object.keys(changes).length && !logoFile) {
+                showToast('No changes detected.', 'error'); return;
+            }
+
+            btn.disabled = true;
+            btn.innerHTML = `<i class='bx bx-loader-alt bx-spin'></i> Submitting...`;
+
+            try {
+                const fd = new FormData();
+                fd.append('club_id', clubId);
+                fd.append('changes', JSON.stringify(changes));
+                fd.append('submitted_by', 'Club Member');
+                if (logoFile) fd.append('logo', logoFile);
+
+                const res  = await fetch(`${API()}/update-request`, { method: 'POST', headers: authHeaders(), body: fd });
+                const json = await res.json();
                 
-                // Add to pending updates
-                pendingUpdates.push(updateRequest);
-                
-                // Simulate sending admin notification
-                sendUpdateNotification(updateRequest);
-                
-                // Show success message
-                updateSuccessMessage.style.display = 'flex';
-                
-                // Reset form
-                updateForm.reset();
+                if (!res.ok) {
+                    if (res.status === 429) {
+                        throw new Error(`Rate limit reached! You have ${json.pendingCount || 5} pending update requests. Please wait for admin approval before submitting more.`);
+                    }
+                    throw new Error(json.message || 'Update failed');
+                }
+
+                const successMsg = document.getElementById('updateSuccessMessage');
+                successMsg.innerHTML = `
+                    <i class='bx bx-check-circle'></i>
+                    <div>
+                        <p>Your club update request has been submitted successfully!</p>
+                        <p style="font-size:14px;margin-top:8px;">Pending requests: ${json.pendingCount || 1}/5 | Remaining: ${json.remainingRequests || 4}</p>
+                        <p style="font-size:13px;margin-top:4px;opacity:0.9;">The admin will review your changes and you'll receive confirmation once approved.</p>
+                    </div>
+                `;
+                successMsg.style.display = 'flex';
+                this.reset();
                 document.getElementById('clubUpdateForm').style.display = 'none';
                 document.getElementById('selectClubToUpdate').value = '';
                 document.getElementById('updateLogoPreview').style.display = 'none';
-                
-                // Scroll to top
+                showToast('Update request submitted! Admin will review your changes.');
                 window.scrollTo(0, 0);
-                
-                // Switch to admin tab to see pending request
-                setTimeout(() => {
-                    document.querySelector('[data-tab="admin"]').click();
-                    document.querySelector('[data-admin-tab="pending-updates"]').click();
-                    renderPendingUpdates();
-                }, 1000);
-            } else {
-                alert("No changes detected. Please make changes before submitting an update request.");
+            } catch (err) {
+                showToast(err.message || 'Failed to submit update', 'error');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i class='bx bx-refresh'></i> Submit Update Request`;
             }
         });
 
-        // Simulate sending admin notification
-        function sendAdminNotification(club) {
-            console.log(`Sending admin notification for new club: ${club.name}`);
-            console.log(`Subject: New Club Registration - ${club.name}`);
-            console.log(`Body: A new club "${club.name}" has been registered by ${club.contactPerson}. Please review it in the admin panel.`);
-        }
-        
-        // Simulate sending update notification
-        function sendUpdateNotification(update) {
-            console.log(`Sending admin notification for club update: ${update.clubName}`);
-            console.log(`Subject: Club Update Request - ${update.clubName}`);
-            console.log(`Body: An update request for "${update.clubName}" has been submitted. Please review it in the admin panel.`);
+        // ── Admin Panel ─────────────────────────────────────────────────────────
+        async function loadPendingData() {
+            // Verify admin access before loading
+            const isAdmin = await checkAdminAccess();
+            if (!isAdmin) {
+                showToast('Access denied. Admin privileges required.', 'error');
+                // Switch back to browse tab
+                document.querySelector('[data-tab="clubs"]').click();
+                return;
+            }
+            await Promise.all([loadPendingClubs(), loadPendingUpdates()]);
         }
 
-        // Check URL parameters for sidebar activation
-        function checkSidebarActivation() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('sidebar') === 'active') {
-                const sidebar = document.getElementById('sidebar');
-                if (sidebar) {
-                    sidebar.classList.add('active');
+        async function loadPendingClubs() {
+            const container = document.getElementById('pendingClubs');
+            container.innerHTML = '<p style="color:#7f8c8d;padding:20px;">Loading...</p>';
+            
+            // Verify admin access
+            const isAdmin = await verifyAdminAccess();
+            if (!isAdmin) {
+                container.innerHTML = '<p style="color:#e74c3c;padding:20px;"><i class="bx bx-lock"></i> Access denied. Admin privileges required.</p>';
+                return;
+            }
+            
+            try {
+                const res  = await fetch(`${API()}/admin/pending`, { headers: authHeaders() });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.message);
+                const clubs = json.data.clubs;
+                if (!clubs.length) {
+                    container.innerHTML = '<p style="color:#7f8c8d;padding:20px;">No pending club registrations.</p>'; return;
                 }
+                container.innerHTML = clubs.map(club => `
+                    <div class="pending-club" style="background:rgba(26,37,47,.95);border-radius:16px;padding:24px;margin-bottom:20px;border:1px solid rgba(52,152,219,0.3);box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+                        <div style="display:flex;gap:20px;align-items:flex-start;margin-bottom:20px;flex-wrap:wrap;">
+                            <div style="width:80px;height:80px;flex-shrink:0;">${logoElement(club,80)}</div>
+                            <div style="flex:1;min-width:280px;">
+                                <h3 style="font-size:22px;font-weight:700;margin-bottom:8px;color:#3498db;">${club.name}</h3>
+                                <div style="display:inline-block;background:rgba(52,152,219,0.2);color:#3498db;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:600;margin-bottom:10px;">
+                                    <i class='bx bxs-category'></i> ${club.category}
+                                </div>
+                                <div style="font-size:13px;color:#95a5a6;margin-bottom:4px;">
+                                    <i class='bx bxs-calendar'></i> Submitted: ${new Date(club.created_at).toLocaleString()}
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div style="background:rgba(0,0,0,0.2);border-radius:12px;padding:18px;margin-bottom:16px;">
+                            <h4 style="font-size:14px;font-weight:700;color:#ecf0f1;margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+                                <i class='bx bxs-info-circle' style="color:#3498db;"></i> Description
+                            </h4>
+                            <p style="font-size:14px;color:#bdc3c7;line-height:1.6;">${club.description}</p>
+                        </div>
+
+                        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px;margin-bottom:16px;">
+                            <div style="background:rgba(0,0,0,0.2);border-radius:12px;padding:16px;">
+                                <h4 style="font-size:13px;font-weight:700;color:#ecf0f1;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                                    <i class='bx bxs-user-circle' style="color:#e74c3c;"></i> Faculty Coordinator
+                                </h4>
+                                <div style="font-size:13px;color:#bdc3c7;margin-bottom:4px;">
+                                    <strong style="color:#ecf0f1;">${club.faculty_coordinator}</strong>
+                                </div>
+                                <div style="font-size:12px;color:#95a5a6;">
+                                    <i class='bx bxs-envelope'></i> ${club.faculty_email}
+                                </div>
+                            </div>
+
+                            ${club.co_faculty_coordinator ? `
+                            <div style="background:rgba(0,0,0,0.2);border-radius:12px;padding:16px;">
+                                <h4 style="font-size:13px;font-weight:700;color:#ecf0f1;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                                    <i class='bx bxs-user-circle' style="color:#e67e22;"></i> Co-Faculty Coordinator
+                                </h4>
+                                <div style="font-size:13px;color:#bdc3c7;margin-bottom:4px;">
+                                    <strong style="color:#ecf0f1;">${club.co_faculty_coordinator}</strong>
+                                </div>
+                                <div style="font-size:12px;color:#95a5a6;">
+                                    <i class='bx bxs-envelope'></i> ${club.co_faculty_email || 'N/A'}
+                                </div>
+                            </div>
+                            ` : ''}
+
+                            <div style="background:rgba(0,0,0,0.2);border-radius:12px;padding:16px;">
+                                <h4 style="font-size:13px;font-weight:700;color:#ecf0f1;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                                    <i class='bx bxs-user' style="color:#2ecc71;"></i> Contact Person
+                                </h4>
+                                <div style="font-size:13px;color:#bdc3c7;margin-bottom:4px;">
+                                    <strong style="color:#ecf0f1;">${club.contact_person}</strong>
+                                </div>
+                                <div style="font-size:12px;color:#95a5a6;">
+                                    <i class='bx bxs-envelope'></i> ${club.contact_email}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:16px;margin-bottom:18px;flex-wrap:wrap;">
+                            <div style="background:rgba(46,204,113,0.15);border:1px solid rgba(46,204,113,0.3);border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:10px;">
+                                <i class='bx bxs-group' style="font-size:24px;color:#2ecc71;"></i>
+                                <div>
+                                    <div style="font-size:20px;font-weight:700;color:#2ecc71;">${club.members}</div>
+                                    <div style="font-size:11px;color:#95a5a6;text-transform:uppercase;">Members</div>
+                                </div>
+                            </div>
+                            <div style="background:rgba(155,89,182,0.15);border:1px solid rgba(155,89,182,0.3);border-radius:10px;padding:12px 18px;display:flex;align-items:center;gap:10px;">
+                                <i class='bx bxs-calendar-event' style="font-size:24px;color:#9b59b6;"></i>
+                                <div>
+                                    <div style="font-size:20px;font-weight:700;color:#9b59b6;">${club.events}</div>
+                                    <div style="font-size:11px;color:#95a5a6;text-transform:uppercase;">Events</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button onclick="adminClubAction('${club.id}','approve')" class="action-btn approve-btn" style="flex:1;min-width:140px;padding:12px 24px;font-size:14px;font-weight:600;">
+                                <i class='bx bx-check-circle'></i> Approve Registration
+                            </button>
+                            <button onclick="adminClubAction('${club.id}','reject')" class="action-btn reject-btn" style="flex:1;min-width:140px;padding:12px 24px;font-size:14px;font-weight:600;">
+                                <i class='bx bx-x-circle'></i> Reject Registration
+                            </button>
+                        </div>
+                    </div>`).join('');
+            } catch(err) {
+                container.innerHTML = `<p style="color:#e74c3c;padding:20px;">${err.message}</p>`;
             }
         }
 
-        // Initialize the page
-        document.addEventListener('DOMContentLoaded', function() {
-            // Check for sidebar activation from URL
-            checkSidebarActivation();
+        async function adminClubAction(id, action) {
+            // Verify admin access before performing action
+            const isAdmin = await verifyAdminAccess();
+            if (!isAdmin) {
+                showToast('Access denied. Admin privileges required.', 'error');
+                return;
+            }
+            
+            try {
+                const res  = await fetch(`${API()}/admin/${id}/${action}`, { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' } });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.message);
+                showToast(`Club ${action}d successfully!`);
+                await loadPendingClubs();
+                await loadClubs(); // refresh public list
+            } catch(err) {
+                showToast(err.message, 'error');
+            }
+        }
 
-            renderClubs();
-            renderPendingClubs();
-            renderPendingUpdates();
-            populateClubSelect();
+        async function loadPendingUpdates() {
+            const container = document.getElementById('pendingUpdates');
+            container.innerHTML = '<p style="color:#7f8c8d;padding:20px;">Loading...</p>';
+            
+            // Verify admin access
+            const isAdmin = await verifyAdminAccess();
+            if (!isAdmin) {
+                container.innerHTML = '<p style="color:#e74c3c;padding:20px;"><i class="bx bx-lock"></i> Access denied. Admin privileges required.</p>';
+                return;
+            }
+            
+            try {
+                const res  = await fetch(`${API()}/admin/updates`, { headers: authHeaders() });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.message);
+                const updates = json.data.updates;
+                if (!updates.length) {
+                    container.innerHTML = '<p style="color:#7f8c8d;padding:20px;">No pending update requests.</p>'; return;
+                }
+                container.innerHTML = updates.map(u => {
+                    const changes = typeof u.changes === 'string' ? JSON.parse(u.changes) : u.changes;
+                    const changesHtml = Object.entries(changes).map(([field, value]) => {
+                        const oldVal = value?.old ?? 'N/A';
+                        const newVal = value?.new ?? value ?? 'N/A';
+                        const isLongText = (oldVal.length > 100 || newVal.length > 100);
+                        
+                        return `
+                        <div style="background:rgba(0,0,0,0.3);border-radius:10px;padding:16px;margin-bottom:12px;border-left:3px solid #f39c12;">
+                            <div style="font-size:13px;font-weight:700;color:#f39c12;margin-bottom:10px;display:flex;align-items:center;gap:6px;">
+                                <i class='bx bxs-edit'></i> ${formatField(field)}
+                            </div>
+                            <div style="display:grid;grid-template-columns:${isLongText ? '1fr' : '1fr 1fr'};gap:12px;">
+                                <div style="background:rgba(231,76,60,0.1);border:1px solid rgba(231,76,60,0.3);border-radius:8px;padding:12px;">
+                                    <div style="font-size:11px;color:#e74c3c;font-weight:600;margin-bottom:6px;text-transform:uppercase;">
+                                        <i class='bx bx-minus-circle'></i> Current Value
+                                    </div>
+                                    <div style="font-size:13px;color:#ecf0f1;word-wrap:break-word;${isLongText ? 'max-height:120px;overflow-y:auto;' : ''}">${oldVal}</div>
+                                </div>
+                                <div style="background:rgba(46,204,113,0.1);border:1px solid rgba(46,204,113,0.3);border-radius:8px;padding:12px;">
+                                    <div style="font-size:11px;color:#2ecc71;font-weight:600;margin-bottom:6px;text-transform:uppercase;">
+                                        <i class='bx bx-plus-circle'></i> Proposed Value
+                                    </div>
+                                    <div style="font-size:13px;color:#ecf0f1;word-wrap:break-word;${isLongText ? 'max-height:120px;overflow-y:auto;' : ''}">${newVal}</div>
+                                </div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                    
+                    return `
+                    <div class="pending-update" style="background:rgba(26,37,47,.95);border-radius:16px;padding:24px;margin-bottom:20px;border:1px solid rgba(243,156,18,0.3);box-shadow:0 4px 12px rgba(0,0,0,0.3);">
+                        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
+                            ${u.clubs?.logo_r2_key ? `<div style="width:60px;height:60px;flex-shrink:0;">${logoElement(u.clubs,60)}</div>` : ''}
+                            <div style="flex:1;">
+                                <h3 style="font-size:20px;font-weight:700;margin-bottom:6px;color:#f39c12;">
+                                    <i class='bx bxs-edit-alt'></i> ${u.clubs?.name || 'Club'} — Update Request
+                                </h3>
+                                <div style="font-size:13px;color:#95a5a6;">
+                                    <i class='bx bxs-user'></i> Submitted by: <strong style="color:#ecf0f1;">${u.submitted_by}</strong> &nbsp;·&nbsp;
+                                    <i class='bx bxs-calendar'></i> ${new Date(u.created_at).toLocaleString()}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="background:rgba(243,156,18,0.1);border-radius:12px;padding:16px;margin-bottom:16px;">
+                            <h4 style="font-size:15px;font-weight:700;color:#ecf0f1;margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+                                <i class='bx bx-revision' style="color:#f39c12;"></i> Proposed Changes (${Object.keys(changes).length} field${Object.keys(changes).length !== 1 ? 's' : ''})
+                            </h4>
+                            ${changesHtml}
+                        </div>
+
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                            <button onclick="adminUpdateAction('${u.id}','approve')" class="action-btn approve-btn" style="flex:1;min-width:140px;padding:12px 24px;font-size:14px;font-weight:600;">
+                                <i class='bx bx-check-circle'></i> Approve Changes
+                            </button>
+                            <button onclick="adminUpdateAction('${u.id}','reject')" class="action-btn reject-btn" style="flex:1;min-width:140px;padding:12px 24px;font-size:14px;font-weight:600;">
+                                <i class='bx bx-x-circle'></i> Reject Changes
+                            </button>
+                        </div>
+                    </div>`;
+                }).join('');
+            } catch(err) {
+                container.innerHTML = `<p style="color:#e74c3c;padding:20px;">${err.message}</p>`;
+            }
+        }
+
+        async function adminUpdateAction(id, action) {
+            // Verify admin access before performing action
+            const isAdmin = await verifyAdminAccess();
+            if (!isAdmin) {
+                showToast('Access denied. Admin privileges required.', 'error');
+                return;
+            }
+            
+            try {
+                const res  = await fetch(`${API()}/admin/updates/${id}/${action}`, { method: 'POST', headers: { ...authHeaders(), 'Content-Type': 'application/json' } });
+                const json = await res.json();
+                if (!res.ok) throw new Error(json.message);
+                showToast(`Update request ${action}d!`);
+                await loadPendingUpdates();
+                await loadClubs();
+            } catch(err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function formatField(f) {
+            return { name:'Name', category:'Category', description:'Description',
+                faculty_coordinator:'Faculty Coordinator', faculty_email:'Faculty Email',
+                co_faculty_coordinator:'Co-Faculty', co_faculty_email:'Co-Faculty Email',
+                contact_person:'Contact Person', contact_email:'Contact Email',
+                members:'Members', events:'Events' }[f] || f;
+        }
+
+        // ── Show login required message ─────────────────────────────────────────
+        function showLoginRequiredMessage() {
+            // Remove existing messages
+            const existingMessages = document.querySelectorAll('.login-required-message');
+            existingMessages.forEach(msg => msg.remove());
+
+            // Create login required message
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'login-required-message';
+            messageDiv.innerHTML = `
+                <div class="login-message-content">
+                    <div class="login-message-icon">
+                        <i class='bx bxs-lock'></i>
+                    </div>
+                    <h3>Login Required</h3>
+                    <p>You need to login first to update club information.</p>
+                    <div class="login-message-actions">
+                        <button onclick="window.location.href='/login1.html'" class="login-btn">
+                            <i class='bx bxs-log-in'></i> Go to Login
+                        </button>
+                        <button onclick="this.closest('.login-required-message').remove()" class="cancel-btn">
+                            Cancel
+                        </button>
+                    </div>
+                </div>`;
+
+            // Add styles
+            const style = document.createElement('style');
+            style.textContent = `
+                .login-required-message {
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background: rgba(0, 0, 0, 0.8);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    z-index: 10000;
+                    animation: fadeIn 0.3s ease;
+                }
+                .login-message-content {
+                    background: var(--glass-bg);
+                    border-radius: 16px;
+                    padding: 40px;
+                    max-width: 450px;
+                    text-align: center;
+                    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+                    border: 1px solid rgba(255, 255, 255, 0.1);
+                }
+                .login-message-icon {
+                    width: 80px;
+                    height: 80px;
+                    background: rgba(231, 76, 60, 0.2);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    margin: 0 auto 20px;
+                }
+                .login-message-icon i {
+                    font-size: 40px;
+                    color: #e74c3c;
+                }
+                .login-message-content h3 {
+                    font-size: 24px;
+                    margin-bottom: 12px;
+                    color: var(--light-color);
+                }
+                .login-message-content p {
+                    color: #bdc3c7;
+                    margin-bottom: 24px;
+                    line-height: 1.6;
+                }
+                .login-message-actions {
+                    display: flex;
+                    gap: 12px;
+                    justify-content: center;
+                }
+                .login-btn, .cancel-btn {
+                    padding: 12px 24px;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    border: none;
+                    font-size: 15px;
+                }
+                .login-btn {
+                    background: var(--accent-color);
+                    color: white;
+                }
+                .login-btn:hover {
+                    background: #2980b9;
+                    transform: translateY(-2px);
+                }
+                .cancel-btn {
+                    background: rgba(255, 255, 255, 0.1);
+                    color: var(--light-color);
+                }
+                .cancel-btn:hover {
+                    background: rgba(255, 255, 255, 0.15);
+                }
+            `;
+            document.head.appendChild(style);
+            document.body.appendChild(messageDiv);
+        }
+
+        // Check if user is admin and show pending tab
+        async function checkAdminAccess() {
+            const token = localStorage.getItem('scholars_token') || localStorage.getItem('token');
+            const pendingTab = document.getElementById('pendingTab');
+            
+            if (!token) {
+                // Hide pending tab for non-logged-in users
+                if (pendingTab) {
+                    pendingTab.classList.add('admin-only');
+                    pendingTab.style.setProperty('display', 'none', 'important');
+                }
+                return false;
+            }
+
+            try {
+                const response = await fetch('/api/v1/auth/admin-status', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.isAdmin) {
+                        // Show pending requests tab for admin only
+                        if (pendingTab) {
+                            pendingTab.classList.remove('admin-only');
+                            pendingTab.style.setProperty('display', 'flex', 'important');
+                        }
+                        return true;
+                    } else {
+                        // Hide for non-admin users
+                        if (pendingTab) {
+                            pendingTab.classList.add('admin-only');
+                            pendingTab.style.setProperty('display', 'none', 'important');
+                        }
+                    }
+                } else {
+                    // Hide on error
+                    if (pendingTab) {
+                        pendingTab.classList.add('admin-only');
+                        pendingTab.style.setProperty('display', 'none', 'important');
+                    }
+                }
+            } catch (error) {
+                console.error('Admin check failed:', error);
+                // Hide on error
+                if (pendingTab) {
+                    pendingTab.classList.add('admin-only');
+                    pendingTab.style.setProperty('display', 'none', 'important');
+                }
+            }
+            return false;
+        }
+
+        // Verify admin access (used by pending requests functions)
+        async function verifyAdminAccess() {
+            const token = localStorage.getItem('scholars_token') || localStorage.getItem('token');
+            if (!token) return false;
+
+            try {
+                const response = await fetch('/api/v1/auth/admin-status', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return data.isAdmin === true;
+                }
+            } catch (error) {
+                console.error('Admin verification failed:', error);
+            }
+            return false;
+        }
+
+        // ── Init ────────────────────────────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ensure pending tab is hidden by default
+            const pendingTab = document.getElementById('pendingTab');
+            if (pendingTab) {
+                pendingTab.classList.add('admin-only');
+                pendingTab.style.setProperty('display', 'none', 'important');
+            }
+            
+            createParticles();
+            loadClubs();
+            startPolling();
+            checkAdminAccess(); // Check if user is admin and show pending tab
         });
     </script>
 </body>

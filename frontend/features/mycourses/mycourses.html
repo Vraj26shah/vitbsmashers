@@ -1058,12 +1058,12 @@
         </div>
 
         <div class="header-actions">
-            <div class="user-profile">
+            <div class="user-profile" style="display: none;">
                 <div class="user-avatar">
                     <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
                     <span>S</span>
                 </div>
-                <div class="user-name">Student</div>
+                <div class="user-name"></div>
             </div>
             <a href="#" class="map-access" title="Campus Map" aria-label="View Campus Map">
                 <i class='bx bxs-map'></i>
@@ -1206,16 +1206,9 @@
             }
         });
 
-        // Sidebar link active state and close on mobile after navigation
+        // Close sidebar on mobile after navigation
         document.querySelectorAll('.sidebar-menu a').forEach(link => {
-            link.addEventListener('click', (e) => {
-                // Skip logout links - handled by shared-logout.js
-                if (link.classList.contains('logout-link')) {
-                    return;
-                }
-
-                document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
+            link.addEventListener('click', () => {
                 if (window.matchMedia('(max-width: 768px)').matches) {
                     sidebar.classList.remove('active');
                 }

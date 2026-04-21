@@ -1,5 +1,5 @@
 import express from 'express';
-import { signup, login, verifyGoogleToken, refreshToken, logout } from '../controllers/authController.js';
+import { signup, login, verifyGoogleToken, refreshToken, logout, revokeProtectedSession } from '../controllers/authController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authLimiter, strictAuthLimiter } from '../middleware/securityMiddleware.js';
 
@@ -14,6 +14,9 @@ router.post('/refresh-token', authLimiter, refreshToken);
 
 // Logout
 router.post('/logout', protect, logout);
+
+// Policy violation on protected course pages — clears httpOnly session (same as logout)
+router.post('/revoke-protected-session', protect, revokeProtectedSession);
 
 // Profile — returns current user from middleware
 router.get('/profile', protect, (req, res) => {

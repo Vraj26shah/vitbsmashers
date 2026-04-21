@@ -44,12 +44,12 @@
         </div>
         
         <div class="header-actions">
-            <div class="user-profile">
+            <div class="user-profile" style="display: none;">
                 <div class="user-avatar">
                     <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
                     <span>S</span>
                 </div>
-                <div class="user-name">Student</div>
+                <div class="user-name"></div>
             </div>
             <a href="#" class="map-access" title="Campus Map" aria-label="View Campus Map">
                 <i class='bx bxs-map'></i>
@@ -153,10 +153,30 @@
                         </div>
                     </div>
                 </div>
-                <button class="usage-notes-toggle" onclick="toggleUsageNotes()">
-                    <i class="fas fa-chevron-up"></i>
-                    <span>Hide Tips</span>
-                </button>
+                <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; padding: 10px 16px; border-top: 1px solid rgba(52,152,219,0.2);">
+                    <button class="usage-notes-toggle" onclick="toggleUsageNotes()" style="width:auto; border-top:none; padding: 8px 16px;">
+                        <i class="fas fa-chevron-up"></i>
+                        <span>Hide Tips</span>
+                    </button>
+                    <button onclick="startTutorial()" style="
+                        display: inline-flex; align-items: center; gap: 8px;
+                        background: rgba(52,152,219,0.15);
+                        border: 1.5px solid rgba(52,152,219,0.5);
+                        color: #63d0f5;
+                        padding: 8px 18px;
+                        border-radius: 8px;
+                        font-size: 13px; font-weight: 600;
+                        font-family: 'Poppins', sans-serif;
+                        cursor: pointer;
+                        transition: all 0.25s ease;
+                        white-space: nowrap;
+                    "
+                    onmouseover="this.style.background='rgba(52,152,219,0.3)';this.style.borderColor='#3498db';this.style.color='#fff';"
+                    onmouseout="this.style.background='rgba(52,152,219,0.15)';this.style.borderColor='rgba(52,152,219,0.5)';this.style.color='#63d0f5';">
+                        <i class="fas fa-graduation-cap" style="font-size:14px;"></i>
+                        Quick Tutorial
+                    </button>
+                </div>
             </div>
 
             <!-- Restructured Control Panel -->
@@ -421,5 +441,6 @@
     });
 </script>
 <script src="ttmaker1.js"></script>
+<script src="tutorial.js"></script>
 </body>
 </html>

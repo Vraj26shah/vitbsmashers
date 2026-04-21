@@ -60,6 +60,11 @@ const config = {
     return `${this.API_BASE}/faculty`;
   },
 
+  // Clubs API endpoints
+  get CLUBS_BASE() {
+    return `${this.API_BASE}/clubs`;
+  },
+
   // Marketplace API endpoints
   get MARKETPLACE_BASE() {
     return `${this.API_BASE}/marketplace`;

@@ -1928,18 +1928,18 @@
                 <img src="/features/images/logo1.png" alt="Scholars Stack Logo">
                 <div class="logo-text">
                     <h1>Scholars Stack</h1>
-                    <span>Premium Academic Resources</span>
+                    <span>Marketplace</span>
                 </div>
             </a>
         </div>
         
         <div class="header-actions">
-            <div class="user-profile">
+            <div class="user-profile" style="display: none;">
                 <div class="user-avatar">
                     <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
                     <span>S</span>
                 </div>
-                <div class="user-name">Student</div>
+                <div class="user-name"></div>
             </div>
             <a href="#" class="map-access" title="Campus Map" aria-label="View Campus Map">
                 <i class='bx bxs-map'></i>
@@ -2303,39 +2303,8 @@
         }
         
         // Function to update user profile display in header
-        function updateUserProfileDisplay(profile) {
-          const userNameElement = document.querySelector('.user-name');
-          const userAvatarElement = document.querySelector('.user-avatar span');
-          const userAvatarImg = document.getElementById('userAvatar');
-        
-          if (userNameElement) {
-            const displayName = (
-              profile && (
-                profile.fullName ||
-                profile.name ||
-                (profile.username && !String(profile.username).includes('@') ? profile.username : null)
-              )
-            ) || (
-              profile?.email
-                ? String(profile.email)
-                    .split('@')[0]
-                    .split(/[._-]+/)
-                    .filter(Boolean)
-                    .map(part => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
-                    .join(' ')
-                : 'Student'
-            );
-            userNameElement.textContent = displayName;
-        
-            // Update avatar initial
-            if (userAvatarElement) {
-              const initial = displayName.charAt(0).toUpperCase();
-              userAvatarElement.textContent = initial;
-            }
-        
-            console.log('👤 Updated user profile display:', displayName);
-          }
-        }
+        // REMOVED - Let shared-auth.js handle user profile display
+        // function updateUserProfileDisplay(profile) { ... }
 
         function isAuthenticated() {
             const token = localStorage.getItem('token');
@@ -2979,16 +2948,9 @@
             }
         });
 
-        // Sidebar link active state and close on mobile after navigation
+        // Close sidebar on mobile after navigation
         document.querySelectorAll('.sidebar-menu a').forEach(link => {
-            link.addEventListener('click', (e) => {
-                // Skip logout links - handled by shared-logout.js
-                if (link.classList.contains('logout-link')) {
-                    return;
-                }
-
-                document.querySelectorAll('.sidebar-menu a').forEach(l => l.classList.remove('active'));
-                link.classList.add('active');
+            link.addEventListener('click', () => {
                 if (window.matchMedia('(max-width: 768px)').matches) {
                     sidebar.classList.remove('active');
                 }
@@ -3501,16 +3463,17 @@ async function fetchUserProfile() {
 
    // First, try shared-auth user data and cached data for immediate display
    if (isUserAuthenticated) {
+     // shared-auth.js handles user profile display automatically
      if (window.authManager?.userData) {
-       updateUserProfileDisplay(normalizeProfileData(window.authManager.userData));
+       console.log('✅ User authenticated, shared-auth.js handling display');
      }
 
      try {
        const cachedProfile = localStorage.getItem('profileData');
+       // shared-auth.js handles user profile display automatically
        if (cachedProfile) {
          const tempUserProfile = normalizeProfileData(JSON.parse(cachedProfile));
-         updateUserProfileDisplay(tempUserProfile);
-         console.log('⚡ Updated display from cached profile:', tempUserProfile.email);
+         console.log('⚡ Loaded cached profile:', tempUserProfile.email);
        }
      } catch (error) {
        console.warn('⚠️ Error loading cached profile:', error);
@@ -3546,8 +3509,8 @@ async function fetchUserProfile() {
          }));
          localStorage.setItem('profileCompleted', String(isUserProfileComplete));
 
-         // Update user profile display in header
-         updateUserProfileDisplay(userProfile);
+         // shared-auth.js handles user profile display automatically
+         console.log('✅ Profile loaded, shared-auth.js handling display');
      } else {
        isUserProfileComplete = false;
        console.log('❌ No profile data received from backend');
@@ -3557,8 +3520,7 @@ async function fetchUserProfile() {
      isUserProfileComplete = false;
      console.log('❌ User not authenticated');
      localStorage.removeItem('profileCompleted');
-     // Reset user profile display to default
-     updateUserProfileDisplay({ name: 'Student', email: '' });
+     // shared-auth.js handles user profile display automatically
    }
 
    console.log('🎯 Final profile status:', {

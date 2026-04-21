@@ -7,7 +7,39 @@
     <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="attendance.css">
+    <style>
+        /* Hide content until data is loaded */
+        body.loading-data .main-content {
+            opacity: 0;
+            pointer-events: none;
+        }
+        
+        body.loading-data::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a1423 0%, #0f1a2a 100%);
+            z-index: 9998;
+        }
+        
+        body.loading-data::after {
+            content: 'Loading...';
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #3498db;
+            font-size: 18px;
+            font-weight: 600;
+            z-index: 9999;
+        }
+    </style>
     <script src="../../config.js"></script>
+    <script src="../../preload-manager.js"></script>
+    <script src="../../feature-loader.js"></script>
     <script src="../../shared-auth.js"></script>
     <script src="../../shared-admin-auth.js"></script>
     <script src="../../shared-logout.js"></script>
@@ -35,12 +67,12 @@
         </div>
         
         <div class="header-actions">
-            <div class="user-profile">
+            <div class="user-profile" style="display: none;">
                 <div class="user-avatar">
                     <img src="" alt="Profile Photo" id="userAvatar" style="display: none;">
                     <span>S</span>
                 </div>
-                <div class="user-name">Student</div>
+                <div class="user-name"></div>
             </div>
             <a href="#" class="map-access" title="Campus Map" aria-label="View Campus Map">
                 <i class='bx bxs-map'></i>
@@ -133,13 +165,15 @@
                 
                     
                     <div class="marks-explanation">
-                        <p><strong>How marks are calculated:</strong></p>
+                        <p><strong>How marks are calculated (based on rounded %):</strong></p>
                         <ul style="padding-left: 20px; margin-top: 8px;">
-                            <li>75% attendance > 1 mark</li>
-                            <li>80% attendance > 2 marks</li>
-                            <li>85% attendance > 3 marks</li>
-                            <li>90% attendance > 4 marks</li>
-                            <li>95% attendance > 5 marks</li>
+                            <li>75% or below = Cannot give exam</li>
+                            <li>Above 75% = Eligible for exam</li>
+                            <li>Above 75% = 1 mark</li>
+                            <li>Above 80% = 2 marks</li>
+                            <li>Above 85% = 3 marks</li>
+                            <li>Above 90% = 4 marks</li>
+                            <li>Above 95% = 5 marks</li>
                         </ul>
                     </div>
                     
@@ -162,7 +196,7 @@
                     
                     <div class="result-details">
                         <div class="detail-card">
-                            <div>Required for 75%</div>
+                            <div>Required for >75%</div>
                             <div class="detail-value" id="requiredClasses">0</div>
                             <div>Classes to attend</div>
                         </div>
@@ -218,32 +252,41 @@
 
     <script>
         // Function to calculate max safe misses with rounding
-// Function to calculate max safe misses with rounding
-function maxSafeMisses(attended, total, minEffectiveP = 76) {
-    console.log('maxSafeMisses input:', { attended, total, minEffectiveP });
-    let low = 0;
-    let high = 10000;
-    let ans = 0;
-    while (low <= high) {
-        let mid = Math.floor((low + high) / 2);
-        let newTotal = total + mid;
-        let rawP = (attended / newTotal) * 100;
-        let effectiveP = getEffectivePercentage(rawP);
-        console.log('maxSafeMisses iteration:', { low, high, mid, rawP, effectiveP });
-        if (effectiveP >= minEffectiveP) {
-            ans = mid;
-            low = mid + 1;
+// When missing classes: total increases, attended stays constant
+// Must maintain rounded percentage > 75% (not equal to 75%)
+function maxSafeMisses(attended, total, minPercentage = 76) {
+    console.log('maxSafeMisses input:', { attended, total, minPercentage });
+    
+    // If current attendance is not above 75%, can't miss any
+    const currentRoundedP = Math.round((attended / total) * 100);
+    if (currentRoundedP <= 75) {
+        console.log('maxSafeMisses result: 0 (not above 75%)');
+        return 0;
+    }
+    
+    let canMiss = 0;
+    // Check each additional miss one by one
+    for (let miss = 1; miss <= 10000; miss++) {
+        let newTotal = total + miss; // Total increases when missing classes
+        let rawP = (attended / newTotal) * 100; // Attended stays constant
+        let roundedP = Math.round(rawP);
+        
+        if (roundedP > 75) {
+            canMiss = miss;
         } else {
-            high = mid - 1;
+            // As soon as we drop to 75% or below, stop
+            break;
         }
     }
-    console.log('maxSafeMisses result:', ans);
-    return ans;
+    
+    console.log('maxSafeMisses result:', canMiss);
+    return canMiss;
 }
 
 // Function to calculate min required attend with rounding
-function minRequiredAttend(attended, total, minEffectiveP = 76) {
-    console.log('minRequiredAttend input:', { attended, total, minEffectiveP });
+// Must reach rounded percentage > 75% (not equal to 75%)
+function minRequiredAttend(attended, total, minPercentage = 76) {
+    console.log('minRequiredAttend input:', { attended, total, minPercentage });
     let low = 0;
     let high = 10000;
     let ans = high;
@@ -252,9 +295,9 @@ function minRequiredAttend(attended, total, minEffectiveP = 76) {
         let newTotal = total + mid;
         let newAttended = attended + mid;
         let rawP = (newAttended / newTotal) * 100;
-        let effectiveP = getEffectivePercentage(rawP);
-        console.log('minRequiredAttend iteration:', { low, high, mid, rawP, effectiveP });
-        if (effectiveP >= minEffectiveP) {
+        let roundedP = Math.round(rawP);
+        console.log('minRequiredAttend iteration:', { low, high, mid, rawP, roundedP });
+        if (roundedP > 75) {
             ans = mid;
             high = mid - 1;
         } else {
@@ -265,27 +308,25 @@ function minRequiredAttend(attended, total, minEffectiveP = 76) {
     return ans;
 }
 
-// Function to get effective percentage for calculations
-function getEffectivePercentage(rawPercentage) {
-    return Math.ceil(rawPercentage);
+// Function to get rounded percentage (standard rounding, not ceiling)
+function getRoundedPercentage(rawPercentage) {
+    return Math.round(rawPercentage);
 }
 
-// Function to get display percentage
-function getDisplayPercentage(rawPercentage) {
-    const effectiveP = getEffectivePercentage(rawPercentage);
-    return effectiveP + '%';
-}
-
-// Calculate marks based on ranges
-function calculateMarks(effectivePercentage) {
-    console.log('calculateMarks input:', effectivePercentage);
-    if (effectivePercentage < 76) return 0;
-    if (effectivePercentage >= 96) return 5;
-    if (effectivePercentage >= 91) return 4;
-    if (effectivePercentage >= 86) return 3;
-    if (effectivePercentage >= 81) return 2;
-    if (effectivePercentage >= 76) return 1;
-    return 0;
+// Calculate marks based on rounded percentage ranges
+// Below 75% = cannot give exam (0 marks)
+// 75% and above = eligible for exam
+// Above 75% = 1 mark, Above 80% = 2 marks, Above 85% = 3 marks
+// Above 90% = 4 marks, Above 95% = 5 marks
+function calculateMarks(roundedPercentage) {
+    console.log('calculateMarks input:', roundedPercentage);
+    if (roundedPercentage < 75) return 0; // Below 75% - cannot give exam
+    if (roundedPercentage > 95) return 5;
+    if (roundedPercentage > 90) return 4;
+    if (roundedPercentage > 85) return 3;
+    if (roundedPercentage > 80) return 2;
+    if (roundedPercentage > 75) return 1;
+    return 0; // Exactly 75% = eligible but 0 marks
 }
 
 // Update marks visualization
@@ -338,13 +379,13 @@ function calculateAttendance({
         return null;
     }
 
-    // Calculate raw percentage
+    // Calculate raw percentage and rounded percentage
     const rawP = (attendedClasses / totalClasses) * 100;
-    const effectiveP = getEffectivePercentage(rawP);
-    attendancePercentage.textContent = getDisplayPercentage(rawP);
+    const roundedP = getRoundedPercentage(rawP);
+    attendancePercentage.textContent = roundedP + '%'; // Show only rounded percentage
 
-    // Calculate marks
-    const marks = calculateMarks(effectiveP);
+    // Calculate marks based on rounded percentage
+    const marks = calculateMarks(roundedP);
     marksAwarded.textContent = marks;
     marksValue.textContent = `${marks} mark${marks !== 1 ? 's' : ''}`;
     updateMarksVisualization(marks);
@@ -355,15 +396,19 @@ function calculateAttendance({
         attendancePercentage.style.transform = 'scale(1)';
     }, 300);
 
-    // Update status
-    if (effectiveP > 75) {
-        attendanceStatus.textContent = 'Good Standing';
+    // Update status based on rounded percentage
+    // Above 75% = eligible for exam (not exactly 75%)
+    if (roundedP > 75) {
+        attendanceStatus.textContent = 'Eligible for Exam';
         attendanceStatus.className = 'attendance-status status-safe';
-    } else if (effectiveP > 65) {
-        attendanceStatus.textContent = 'Warning - Close to Minimum';
+    } else if (roundedP === 75) {
+        attendanceStatus.textContent = 'At 75% - Not Eligible (Need Above 75%)';
+        attendanceStatus.className = 'attendance-status status-warning';
+    } else if (roundedP >= 70) {
+        attendanceStatus.textContent = 'Warning - Below 75% Requirement';
         attendanceStatus.className = 'attendance-status status-warning';
     } else {
-        attendanceStatus.textContent = 'Danger - Below Requirement';
+        attendanceStatus.textContent = 'Danger - Not Eligible for Exam';
         attendanceStatus.className = 'attendance-status status-danger';
     }
 
@@ -377,7 +422,7 @@ function calculateAttendance({
         totalClasses,
         attendedClasses,
         rawP: rawP.toFixed(2),
-        effectiveP,
+        roundedP,
         required,
         allowed,
         marks
@@ -392,7 +437,7 @@ function calculateAttendance({
     };
 }
 
-// Load subjects from localStorage
+// Load subjects from localStorage - instant load, no delays
 let subjects = [];
 function loadSubjects() {
     try {
@@ -418,8 +463,11 @@ function saveSubjects() {
 }
 
 // Render subjects
-function renderSubjects({ subjectList, subjectCount }) {
+function renderSubjects(elements) {
     console.log('renderSubjects called with subjects:', subjects);
+    const subjectList = elements.subjectList || document.getElementById('subjectList');
+    const subjectCount = elements.subjectCount || document.getElementById('subjectCount');
+    
     subjectList.innerHTML = '';
     subjectCount.textContent = subjects.length;
 
@@ -439,10 +487,12 @@ function renderSubjects({ subjectList, subjectCount }) {
         item.className = 'subject-item';
 
         let statusColor = '';
-        const effectiveP = getEffectivePercentage(parseFloat(subject.percentage));
-        if (effectiveP > 75) {
+        const roundedP = getRoundedPercentage(parseFloat(subject.percentage));
+        if (roundedP > 75) {
             statusColor = 'color: var(--success-color);';
-        } else if (effectiveP > 65) {
+        } else if (roundedP === 75) {
+            statusColor = 'color: var(--warning-color);';
+        } else if (roundedP >= 70) {
             statusColor = 'color: var(--warning-color);';
         } else {
             statusColor = 'color: var(--danger-color);';
@@ -453,9 +503,9 @@ function renderSubjects({ subjectList, subjectCount }) {
                 <div class="subject-name">${subject.name}</div>
                 <div class="subject-stats">
                     <span>${subject.attended} / ${subject.total} classes</span>
-                    <span style="${statusColor}">${effectiveP}%</span>
+                    <span style="${statusColor}">${roundedP}%</span>
                     <span style="color: var(--accent-blue);">${subject.marks} marks</span>
-                    <span style="color: var(--accent-teal);">${subject.allowedAbsences} classes</span>
+                    <span style="color: var(--accent-teal);">Can miss: ${subject.allowedAbsences}</span>
                 </div>
             </div>
             <div class="subject-actions">
@@ -488,9 +538,21 @@ function renderSubjects({ subjectList, subjectCount }) {
 }
 
 // Edit subject
-function editSubject(index, elements) {
+function editSubject(index) {
     console.log('editSubject:', index);
     const subject = subjects[index];
+    const elements = {
+        subjectNameInput: document.getElementById('subjectName'),
+        totalClassesInput: document.getElementById('totalClasses'),
+        attendedClassesInput: document.getElementById('attendedClasses'),
+        attendancePercentage: document.getElementById('attendancePercentage'),
+        attendanceStatus: document.getElementById('attendanceStatus'),
+        requiredClasses: document.getElementById('requiredClasses'),
+        allowedAbsences: document.getElementById('allowedAbsences'),
+        marksAwarded: document.getElementById('marksAwarded'),
+        marksValue: document.getElementById('marksValue')
+    };
+    
     elements.subjectNameInput.value = subject.name;
     elements.totalClassesInput.value = subject.total;
     elements.attendedClassesInput.value = subject.attended;
@@ -498,17 +560,24 @@ function editSubject(index, elements) {
     calculateAttendance(elements);
     subjects.splice(index, 1);
     saveSubjects();
-    renderSubjects(elements);
+    
+    const renderElements = {
+        subjectList: document.getElementById('subjectList'),
+        subjectCount: document.getElementById('subjectCount')
+    };
+    renderSubjects(renderElements);
 }
 
 // Delete subject
-function deleteSubject(index, elements) {
+function deleteSubject(index) {
     console.log('deleteSubject:', index);
-    if (confirm('Are you sure you want to delete this subject?')) {
-        subjects.splice(index, 1);
-        saveSubjects();
-        renderSubjects(elements);
-    }
+    subjects.splice(index, 1);
+    saveSubjects();
+    const elements = {
+        subjectList: document.getElementById('subjectList'),
+        subjectCount: document.getElementById('subjectCount')
+    };
+    renderSubjects(elements);
 }
 
 // Save subject
@@ -619,6 +688,9 @@ document.addEventListener('DOMContentLoaded', () => {
     // Check for sidebar activation from URL
     checkSidebarActivation();
 
+    // Load subjects IMMEDIATELY - before any other initialization
+    loadSubjects();
+
     // DOM elements
     const elements = {
         menuToggle: document.getElementById('menuToggle'),
@@ -648,6 +720,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
     }
+
+    // Render subjects IMMEDIATELY after DOM elements are ready
+    renderSubjects(elements);
 
     // Toggle sidebar
     elements.menuToggle.addEventListener('click', (e) => {
@@ -703,10 +778,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial setup
     console.log('Initializing app');
-    loadSubjects();
     createParticles(elements.bgParticles);
     updateMarksVisualization(0);
-    renderSubjects(elements);
 });   </script>
 </body>
 </html>
