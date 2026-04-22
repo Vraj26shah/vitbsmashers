@@ -8,7 +8,7 @@ import('./app.js').then((appModule) => {
     const PORT = process.env.PORT || 4000;
     const server = http.createServer(app);
 
-    server.listen(PORT, () => {
+    server.listen(PORT, '0.0.0.0', () => {
         console.log('');
         console.log('═══════════════════════════════════════════════════════');
         console.log('✅ Server is running successfully!');
