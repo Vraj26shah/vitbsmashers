@@ -8,8 +8,6 @@ const razorpay = new Razorpay({
 });
 
 const IS_TEST_KEY = String(process.env.RAZORPAY_KEY_ID || '').startsWith('rzp_test_');
-const PAYMENT_TEST_MODE = String(process.env.PAYMENT_TEST_MODE || '').toLowerCase() === 'true' || IS_TEST_KEY;
-const PAYMENT_REDIRECT_MODE = String(process.env.PAYMENT_REDIRECT_MODE || 'false').toLowerCase() === 'true';
 const hasRazorpayConfig = () => !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
 
 const verifyRazorpaySignature = ({ orderId, paymentId, signature }) => {
@@ -114,9 +112,6 @@ export const createOrder = async (req, res) => {
         status: 'success',
         message: 'Checkout session created successfully',
         gateway:    'razorpay',
-        paymentMode: PAYMENT_TEST_MODE ? 'test' : 'live',
-        allowMockFallback: PAYMENT_TEST_MODE,
-        redirectMode: PAYMENT_REDIRECT_MODE,
         orderId:    rzpOrder.id,
         order_id:   rzpOrder.id,
         amount:     amountPaise,
@@ -137,6 +132,11 @@ export const createOrder = async (req, res) => {
         let cid = item.courseId;
         if (!cid) continue;
         const itemAmount = normalizeAmountToRupees(item.amount);
+        console.log(`📊 Processing cart item:`, {
+          courseId: cid,
+          rawAmount: item.amount,
+          normalizedAmount: itemAmount
+        });
         if (!Number.isFinite(itemAmount) || itemAmount <= 0) continue;
 
         if (!/^[0-9a-f-]{36}$/i.test(cid)) {
@@ -164,10 +164,23 @@ export const createOrder = async (req, res) => {
       const totalAmount = orderRows.reduce((sum, row) => sum + row.amount, 0);
       const amountPaise = Math.round(totalAmount * 100);
 
+      console.log('💰 Cart totals:', {
+        totalAmountRupees: totalAmount,
+        amountPaise: amountPaise,
+        itemCount: orderRows.length
+      });
+
       const rzpOrder = await razorpay.orders.create({
         amount:   amountPaise,
         currency: 'INR',
         receipt:  `rcpt_cart_${userId.slice(0, 8)}_${Date.now()}`,
+      });
+
+      console.log('✅ Razorpay order created:', {
+        id: rzpOrder.id,
+        amount: rzpOrder.amount,
+        currency: rzpOrder.currency,
+        status: rzpOrder.status
       });
 
       orderRows.forEach((row) => {
@@ -188,14 +201,12 @@ export const createOrder = async (req, res) => {
         status: 'success',
         message: 'Checkout session created successfully',
         gateway:   'razorpay',
-        paymentMode: PAYMENT_TEST_MODE ? 'test' : 'live',
-        allowMockFallback: PAYMENT_TEST_MODE,
-        redirectMode: PAYMENT_REDIRECT_MODE,
         orderId:   rzpOrder.id,
         order_id:  rzpOrder.id,
         amount:    amountPaise,
         currency:  'INR',
         key:       process.env.RAZORPAY_KEY_ID,
+        test_mode: IS_TEST_KEY,
       });
     }
 
@@ -221,9 +232,11 @@ export const verifyPayment = async (req, res) => {
     const sig        = razorpay_signature || signature;
 
     const isValid = verifyRazorpaySignature({ orderId, paymentId, signature: sig });
-    const allowSignatureBypass = PAYMENT_TEST_MODE || IS_TEST_KEY || process.env.NODE_ENV !== 'production';
-    if (!isValid && !allowSignatureBypass)
+    
+    if (!isValid) {
       return res.status(400).json({ success: false, status: 'error', message: 'Payment signature invalid' });
+    }
+    
     const finalized = await finalizeOrderPayment({ orderId, paymentId, preferUserId: userId });
     if (!finalized.ok) {
       return res.status(finalized.code).json({ success: false, status: 'error', message: finalized.message });
@@ -241,7 +254,15 @@ export const paymentCallback = async (req, res) => {
   const successUrl = `${frontendBase}/features/mycourses/mycourses.html?payment=success&sidebar=active`;
   const failedUrl = `${frontendBase}/features/marketplace/market.html?payment=failed&sidebar=active`;
 
+  console.log('🔔 Payment callback received');
+  console.log('📦 Request body:', req.body);
+  console.log('📦 Request query:', req.query);
+  console.log('📦 Request method:', req.method);
+
   try {
+    // Razorpay sends data in query params for redirect mode
+    const params = req.method === 'GET' ? req.query : req.body;
+    
     const {
       razorpay_order_id,
       razorpay_payment_id,
@@ -249,25 +270,52 @@ export const paymentCallback = async (req, res) => {
       order_id,
       payment_id,
       signature,
-    } = req.body || {};
+    } = params || {};
+
+    console.log('📝 Extracted params:', {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      order_id,
+      payment_id,
+      signature
+    });
 
     const orderId = razorpay_order_id || order_id;
     const paymentId = razorpay_payment_id || payment_id;
     const sig = razorpay_signature || signature;
 
-    const isValid = verifyRazorpaySignature({ orderId, paymentId, signature: sig });
-    const allowSignatureBypass = PAYMENT_TEST_MODE || IS_TEST_KEY || process.env.NODE_ENV !== 'production';
-    if (!isValid && !allowSignatureBypass) {
+    console.log('🔍 Verifying signature for:', { orderId, paymentId, sig });
+
+    if (!orderId || !paymentId || !sig) {
+      console.error('❌ Missing required parameters');
       return res.redirect(failedUrl);
     }
 
-    const finalized = await finalizeOrderPayment({ orderId, paymentId });
-    if (!finalized.ok) {
+    const isValid = verifyRazorpaySignature({ orderId, paymentId, signature: sig });
+    
+    console.log('🔐 Signature valid:', isValid);
+    
+    if (!isValid) {
+      console.error('❌ Invalid signature');
       return res.redirect(failedUrl);
     }
+
+    console.log('✅ Finalizing payment...');
+    const finalized = await finalizeOrderPayment({ orderId, paymentId });
+    
+    console.log('💾 Finalization result:', finalized);
+    
+    if (!finalized.ok) {
+      console.error('❌ Finalization failed:', finalized.message);
+      return res.redirect(failedUrl);
+    }
+    
+    console.log('✅ Payment successful, redirecting to success page');
     return res.redirect(successUrl);
   } catch (error) {
-    console.error('paymentCallback error:', error.message);
+    console.error('❌ paymentCallback error:', error.message);
+    console.error('❌ Stack trace:', error.stack);
     return res.redirect(failedUrl);
   }
 };

@@ -17,6 +17,9 @@ router.post('/create-checkout-session', protect, requireCompleteProfile, createC
 
 // Verify payment after Razorpay callback
 router.post('/verify', protect, verifyPayment);
+
+// Payment callback - supports both GET (redirect mode) and POST
+router.get('/callback', express.urlencoded({ extended: false }), paymentCallback);
 router.post('/callback', express.urlencoded({ extended: false }), paymentCallback);
 
 // Get order details
