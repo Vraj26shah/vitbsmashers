@@ -99,8 +99,9 @@
                     console.warn('⚠️ Invalid or missing phone - this might cause payment issues');
                 }
                 
-                // Build callback URL with order ID for tracking
-                const callbackUrl = `${window.location.origin}/api/v1/payment/callback`;
+                // Callback must hit the backend API (Railway), not the static frontend origin (Vercel).
+                const apiBase = window.config?.API_BASE || `${window.location.origin}/api/v1`;
+                const callbackUrl = `${apiBase}/payment/callback`;
                 const failedUrl = `${window.location.origin}/features/marketplace/market.html?payment=failed&sidebar=active`;
                 const cancelledUrl = `${window.location.origin}/features/marketplace/market.html?payment=cancelled&sidebar=active`;
                 

@@ -18,8 +18,8 @@ const config = {
     // For other platforms (Vercel, Netlify, etc.)
     if (window.location.hostname.includes('vercel.app') ||
         window.location.hostname.includes('netlify.app')) {
-      // Use the actual deployed Render backend URL
-      return 'https://vitbsmashers.onrender.com/api/v1';
+      // Use the deployed Railway backend URL
+      return 'https://zestful-recreation-production-cd2d.up.railway.app/api/v1';
     }
 
     // Fallback - try to use same domain (for custom domains or unknown platforms)
