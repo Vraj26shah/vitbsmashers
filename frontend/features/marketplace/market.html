@@ -14,21 +14,47 @@
     <script src="../../shared-logout.js"></script>
     <!-- Razorpay SDK (loaded conditionally) -->
     <script>
+        let razorpaySdkPromise = null;
+
         // Load Razorpay SDK only when needed
         function loadRazorpaySDK() {
-            return new Promise((resolve, reject) => {
-                if (window.Razorpay) {
-                    resolve();
-                    return;
-                }
+            if (window.Razorpay) {
+                return Promise.resolve();
+            }
 
+            if (razorpaySdkPromise) {
+                return razorpaySdkPromise;
+            }
+
+            razorpaySdkPromise = new Promise((resolve, reject) => {
                 const script = document.createElement('script');
                 script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+                script.async = true;
                 script.onload = resolve;
-                script.onerror = reject;
+                script.onerror = () => reject(new Error('Razorpay SDK failed to load'));
                 document.head.appendChild(script);
+            }).catch((error) => {
+                razorpaySdkPromise = null;
+                throw error;
             });
+
+            return razorpaySdkPromise;
         }
+
+        // Warm-load SDK to reduce popup blocking risk on user click.
+        window.addEventListener('DOMContentLoaded', () => {
+            const razorpayCheckoutUrl = 'https://checkout.razorpay.com/v1/checkout.js';
+
+            const preloadLink = document.createElement('link');
+            preloadLink.rel = 'preload';
+            preloadLink.as = 'script';
+            preloadLink.href = razorpayCheckoutUrl;
+            document.head.appendChild(preloadLink);
+
+            loadRazorpaySDK().catch((error) => {
+                console.warn('Razorpay preload failed:', error);
+            });
+        });
     </script>
     <!-- Razorpay Payment Gateway Script -->
     <script>
@@ -40,8 +66,10 @@
                 console.log('=== RAZORPAY GATEWAY - NEW WINDOW MODE ===');
                 console.log('Processing payment with order data:', orderData);
                 
-                // Load Razorpay SDK if not already loaded
-                await loadRazorpaySDK();
+                // Keep this as a fallback; SDK is preloaded on page load.
+                if (!window.Razorpay) {
+                    await loadRazorpaySDK();
+                }
                 if (!window.Razorpay) {
                     throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
                 }
@@ -73,6 +101,8 @@
                 
                 // Build callback URL with order ID for tracking
                 const callbackUrl = `${window.location.origin}/api/v1/payment/callback`;
+                const failedUrl = `${window.location.origin}/features/marketplace/market.html?payment=failed&sidebar=active`;
+                const cancelledUrl = `${window.location.origin}/features/marketplace/market.html?payment=cancelled&sidebar=active`;
                 
                 console.log('🔗 Callback URL:', callbackUrl);
                 
@@ -93,17 +123,23 @@
                     },
                     theme: {
                         color: '#2ecc71'
-                    },
-                    modal: {
-                        // Prevent modal from closing on backdrop click
-                        ondismiss: function() {
-                            console.log('⚠️ Payment cancelled by user');
-                            showNotification('Payment cancelled', 'warning');
-                        }
                     }
                 };
+                const isTestMode = Boolean(orderData?.test_mode) ||
+                    String(orderData?.key || '').startsWith('rzp_test_');
+                if (isTestMode) {
+                    options.method = {
+                        card: true,
+                        netbanking: true,
+                        upi: false,
+                        wallet: false,
+                        paylater: false,
+                        emi: false
+                    };
+                }
 
                 console.log('💳 Razorpay options:', options);
+                console.log('🔎 Razorpay: SDK present?', !!window.Razorpay, 'order:', orderData);
                 console.log('🚀 Opening Razorpay in redirect mode...');
 
                 try {
@@ -136,13 +172,21 @@
                         console.error('❌ Full error JSON:', JSON.stringify(response.error, null, 2));
                         
                         const reason = response?.error?.description || response?.error?.reason || 'Payment failed';
-                        showNotification(reason, 'danger');
+                        console.error('❌ Redirecting to failure page:', reason);
+                        window.location.href = `${failedUrl}&reason=${encodeURIComponent(reason)}`;
                     });
                     
                     // Open Razorpay - in redirect mode, this will navigate to Razorpay's hosted page
-                    rzp.open();
-                    console.log('✅ Razorpay opened in redirect mode!');
-                    console.log('ℹ️ User will be redirected to Razorpay payment page...');
+                    try {
+                        rzp.open();
+                        console.log('✅ Razorpay opened in redirect mode!');
+                        console.log('ℹ️ User will be redirected to Razorpay payment page...');
+                    } catch (openError) {
+                        console.error('❌ Razorpay open() error:', openError);
+                        const errorMessage = openError?.message || 'Payment popup failed to open.';
+                        window.location.href = `${cancelledUrl}&reason=${encodeURIComponent(errorMessage)}`;
+                        throw openError;
+                    }
                     
                 } catch (error) {
                     console.error('❌ Error opening Razorpay:', error);
@@ -3050,11 +3094,13 @@
                 console.log('=== PAYMENT INITIALIZATION ===');
                 console.log('Order Data:', orderData);
                 
-                // Load Razorpay SDK
-                await loadRazorpaySDK();
+                // Load Razorpay SDK (normally preloaded on page load)
+                if (!window.Razorpay) {
+                    await loadRazorpaySDK();
+                }
                 
                 if (!window.Razorpay) {
-                    throw new Error('Razorpay SDK failed to load. Please check your internet connection.');
+                    throw new Error('Razorpay SDK failed to load. Check internet, disable adblocker, and allow checkout.razorpay.com.');
                 }
                 
                 console.log('✅ Razorpay SDK loaded');
@@ -3082,12 +3128,9 @@
                 
                 // Check if it's a "use another method" error in test mode
                 if (errorMessage.includes('another method') || errorMessage.includes('another email')) {
-                    showNotification(
-                        'Test Mode Restriction: This payment method is not available in test mode. Please use: Card (4111 1111 1111 1111) or select a different payment method.',
-                        'warning'
-                    );
+                    window.location.href = `${window.location.origin}/features/marketplace/market.html?payment=failed&sidebar=active&reason=${encodeURIComponent('Test mode restriction. Use card 4111 1111 1111 1111 or a different method.')}`;
                 } else if (!error?.alreadyNotified) {
-                    showNotification(errorMessage, 'danger');
+                    window.location.href = `${window.location.origin}/features/marketplace/market.html?payment=failed&sidebar=active&reason=${encodeURIComponent(errorMessage)}`;
                 }
                 
                 throw error;
@@ -3420,11 +3463,13 @@
                 // Clean URL
                 window.history.replaceState({}, document.title, window.location.pathname);
             } else if (paymentStatus === 'cancelled') {
-                showNotification('Payment was cancelled. You can try again anytime.', 'warning');
+                const reason = urlParams.get('reason');
+                showNotification(reason || 'Payment was cancelled. You can try again anytime.', 'warning');
                 // Stay on marketplace - don't redirect anywhere
                 window.history.replaceState({}, document.title, window.location.pathname);
             } else if (paymentStatus === 'failed') {
-                showNotification('Payment failed. Please try again.', 'danger');
+                const reason = urlParams.get('reason');
+                showNotification(reason || 'Payment failed. Please try again.', 'danger');
                 // Stay on marketplace - don't redirect anywhere
                 window.history.replaceState({}, document.title, window.location.pathname);
             }

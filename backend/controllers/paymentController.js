@@ -94,6 +94,7 @@ export const createOrder = async (req, res) => {
         return res.status(400).json({ status: 'error', message: 'Invalid course amount' });
       }
       const amountPaise = Math.round(coursePrice * 100);
+      console.info('createOrder(single): user=', userId, 'courseId=', resolvedCourseId, 'amount=', amountPaise);
 
       const rzpOrder = await razorpay.orders.create({
         amount:   amountPaise,
@@ -163,6 +164,7 @@ export const createOrder = async (req, res) => {
 
       const totalAmount = orderRows.reduce((sum, row) => sum + row.amount, 0);
       const amountPaise = Math.round(totalAmount * 100);
+      console.info('createOrder(cart): user=', userId, 'items=', orderRows.length, 'amount=', amountPaise);
 
       console.log('💰 Cart totals:', {
         totalAmountRupees: totalAmount,
@@ -230,6 +232,7 @@ export const verifyPayment = async (req, res) => {
     const orderId    = razorpay_order_id || order_id;
     const paymentId  = razorpay_payment_id || payment_id;
     const sig        = razorpay_signature || signature;
+    console.info('verifyPayment: user=', userId, 'orderId=', orderId, 'paymentId=', paymentId, 'sigPresent=', !!sig);
 
     const isValid = verifyRazorpaySignature({ orderId, paymentId, signature: sig });
     
