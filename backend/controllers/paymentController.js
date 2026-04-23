@@ -9,6 +9,23 @@ const razorpay = new Razorpay({
 
 const IS_TEST_KEY = String(process.env.RAZORPAY_KEY_ID || '').startsWith('rzp_test_');
 const hasRazorpayConfig = () => !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+const getConfiguredFrontendBase = (req) => {
+  const configuredOrigins = String(process.env.FRONTEND_URL || '')
+    .split(',')
+    .map(origin => origin.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+
+  const preferredOrigin = String(process.env.PUBLIC_FRONTEND_URL || '').trim().replace(/\/$/, '');
+  if (preferredOrigin) return preferredOrigin;
+
+  const firstRemoteOrigin = configuredOrigins.find(origin => !/localhost|127\.0\.0\.1/.test(origin));
+  if (firstRemoteOrigin) return firstRemoteOrigin;
+
+  const firstOrigin = configuredOrigins[0];
+  if (firstOrigin) return firstOrigin;
+
+  return `${req.protocol}://${req.get('host')}`;
+};
 
 const verifyRazorpaySignature = ({ orderId, paymentId, signature }) => {
   if (!orderId || !paymentId || !signature || !process.env.RAZORPAY_KEY_SECRET) return false;
@@ -253,7 +270,7 @@ export const verifyPayment = async (req, res) => {
 
 // ── POST /api/v1/payment/callback ─────────────────────────────────────────────
 export const paymentCallback = async (req, res) => {
-  const frontendBase = process.env.FRONTEND_URL || `${req.protocol}://${req.get('host')}`;
+  const frontendBase = getConfiguredFrontendBase(req);
   const successUrl = `${frontendBase}/features/mycourses/mycourses.html?payment=success&sidebar=active`;
   const failedUrl = `${frontendBase}/features/marketplace/market.html?payment=failed&sidebar=active`;
 

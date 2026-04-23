@@ -1,6 +1,6 @@
 /**
  * Admin Authentication System
- * Restricts admin panel access to authorized email: vitbsmashers@gmail.com
+ * Uses backend admin-status as the source of truth.
  */
 
 // Add CSS to hide admin elements by default
@@ -34,7 +34,6 @@ if (document.head) {
 
 class AdminAuth {
     constructor() {
-        this.adminEmail = 'vitbsmashers@gmail.com';
         this.isAdmin = false;
         this.userEmail = null;
         this.authBase = window.config ? window.config.AUTH_BASE : '/api/v1/auth';
@@ -114,7 +113,7 @@ class AdminAuth {
     }
 
     checkAdminStatus() {
-        return this.userEmail === this.adminEmail;
+        return this.isAdmin;
     }
 
     applyAdminRestrictions() {

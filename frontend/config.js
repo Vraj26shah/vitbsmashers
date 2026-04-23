@@ -27,11 +27,14 @@ const config = {
       return '/api/v1';
     }
 
-    // For other platforms (Vercel, Netlify, etc.)
-    if (window.location.hostname.includes('vercel.app') ||
-        window.location.hostname.includes('netlify.app')) {
-      // Use the deployed Railway backend URL
-      return 'https://zestful-recreation-production-cd2d.up.railway.app/api/v1';
+    // On Vercel, route API through same-origin rewrites for cleaner auth/cookie behavior
+    if (window.location.hostname.includes('vercel.app')) {
+      return '/api/v1';
+    }
+
+    // For other static hosting platforms, use an explicit backend override if provided.
+    if (window.location.hostname.includes('netlify.app')) {
+      return this.API_BASE_OVERRIDE || '/api/v1';
     }
 
     // Fallback - try to use same domain (for custom domains or unknown platforms)

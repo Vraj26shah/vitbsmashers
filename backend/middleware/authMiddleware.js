@@ -1,4 +1,5 @@
 import { supabase } from '../lib/supabase.js';
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'vitbsmashers@gmail.com').toLowerCase();
 
 export const errorHandler = (err, req, res, next) => {
   err.statusCode = err.statusCode || 500;
@@ -89,7 +90,7 @@ export const protect = async (req, res, next) => {
             username,
             full_name:   user.user_metadata?.full_name || null,
             avatar_url:  user.user_metadata?.avatar_url || null,
-            role:        user.email.toLowerCase() === 'vitbsmashers@gmail.com' ? 'admin' : 'student',
+            role:        user.email.toLowerCase() === ADMIN_EMAIL ? 'admin' : 'student',
             is_verified: true,
           }).select().maybeSingle();
 
@@ -115,7 +116,7 @@ export const protect = async (req, res, next) => {
         username: user.email?.split('@')?.[0]?.toLowerCase() || 'student',
         full_name: user.user_metadata?.full_name || null,
         avatar_url: user.user_metadata?.avatar_url || null,
-        role: user.email?.toLowerCase() === 'vitbsmashers@gmail.com' ? 'admin' : 'student',
+        role: user.email?.toLowerCase() === ADMIN_EMAIL ? 'admin' : 'student',
         is_verified: true,
       };
     }

@@ -1,5 +1,6 @@
 import { supabase } from '../lib/supabase.js';
 const hasValue = (value) => typeof value === 'string' ? value.trim().length > 0 : !!value;
+const ADMIN_EMAIL = (process.env.ADMIN_EMAIL || 'vitbsmashers@gmail.com').toLowerCase();
 
 // ── POST /api/v1/auth/signup ─────────────────────────────────────────────────
 export const signup = async (req, res) => {
@@ -15,7 +16,7 @@ export const signup = async (req, res) => {
     if (password.length < 6)
       return res.status(400).json({ status: 'error', message: 'Password must be at least 6 characters long' });
 
-    if (!email.endsWith('@vitbhopal.ac.in') && email !== 'vitbsmashers@gmail.com')
+    if (!email.endsWith('@vitbhopal.ac.in') && email.toLowerCase() !== ADMIN_EMAIL)
       return res.status(400).json({ status: 'error', message: 'Only VIT Bhopal emails (@vitbhopal.ac.in) are allowed' });
 
     // Check username not taken
@@ -38,7 +39,7 @@ export const signup = async (req, res) => {
       return res.status(400).json({ status: 'error', message: 'Signup failed. Try again.' });
 
     // Determine role: admin for vitbsmashers@gmail.com, student for others
-    const userRole = email.toLowerCase() === 'vitbsmashers@gmail.com' ? 'admin' : 'student';
+    const userRole = email.toLowerCase() === ADMIN_EMAIL ? 'admin' : 'student';
 
     // Insert profile row (user may not be confirmed yet — that's fine)
     const { error: profileError } = await supabase.schema('business').from('users').insert({
@@ -98,7 +99,7 @@ export const login = async (req, res) => {
       return res.status(403).json({ status: 'error', message: `Account banned: ${profile.ban_reason}` });
 
     // Auto-upgrade to admin if email matches
-    if (profile.email.toLowerCase() === 'vitbsmashers@gmail.com' && profile.role !== 'admin') {
+    if (profile.email.toLowerCase() === ADMIN_EMAIL && profile.role !== 'admin') {
       await supabase.schema('business').from('users').update({ role: 'admin' }).eq('id', profile.id);
       profile.role = 'admin';
     }
@@ -136,8 +137,8 @@ export const verifyGoogleToken = async (req, res) => {
     if (error || !user)
       return res.status(401).json({ status: 'error', message: 'Invalid token' });
 
-    // Allow vitbsmashers@gmail.com or @vitbhopal.ac.in emails
-    const isAdmin = user.email.toLowerCase() === 'vitbsmashers@gmail.com';
+    // Allow the configured admin email or @vitbhopal.ac.in emails
+    const isAdmin = user.email.toLowerCase() === ADMIN_EMAIL;
     if (!isAdmin && !user.email.endsWith('@vitbhopal.ac.in'))
       return res.status(403).json({ status: 'error', message: 'Must use VIT Bhopal Google account (@vitbhopal.ac.in) or authorized admin account' });
 

@@ -30,6 +30,11 @@ import { errorHandler, notFound } from './middleware/authMiddleware.js';
 const app = express();
 trustProxyIfNeeded(app);
 
+const envFrontendOrigins = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map(origin => origin.trim())
+  .filter(Boolean);
+
 app.use(helmet({
   crossOriginResourcePolicy: { policy: 'cross-origin' },
   contentSecurityPolicy: false,
@@ -44,18 +49,17 @@ const corsOptions = {
       'http://localhost:8000',
       'http://localhost:5500',
       'http://localhost:3000',
+      'http://localhost:5173',
       'http://127.0.0.1:8000',
       'http://127.0.0.1:5500',
       'http://127.0.0.1:3000',
+      'http://127.0.0.1:5173',
       'http://localhost:4000',
       'file://',
-      'https://vitbsmashers.vercel.app',
-      'https://vitbsmashers-main.vercel.app',
-      'https://vitbsmashers.onrender.com',
-      'https://vitbsmashers-backend.onrender.com',
-      process.env.FRONTEND_URL,
+      ...envFrontendOrigins,
       /^https:\/\/.*\.vercel\.app$/,
       /^https:\/\/.*\.onrender\.com$/,
+      /^https:\/\/.*\.railway\.app$/,
       /^https:\/\/([a-z0-9-]+\.)?razorpay\.com$/i,
       /^https?:\/\/localhost(:\d+)?$/,
       /^https?:\/\/127\.0\.0\.1(:\d+)?$/,
@@ -176,6 +180,14 @@ app.get('/', (req, res) => {
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+});
+
+app.get('/api/v1/health', (req, res) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV || 'development',
+  });
 });
 
 app.use(notFound);
