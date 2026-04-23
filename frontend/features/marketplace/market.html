@@ -99,12 +99,15 @@
                     console.warn('⚠️ Invalid or missing phone - this might cause payment issues');
                 }
                 
-                // Callback must hit the backend API (Railway), not the static frontend origin (Vercel).
-                const apiBase = window.config?.API_BASE || `${window.location.origin}/api/v1`;
-                const callbackUrl = `${apiBase}/payment/callback`;
-                const failedUrl = `${window.location.origin}/features/marketplace/market.html?payment=failed&sidebar=active`;
-                const cancelledUrl = `${window.location.origin}/features/marketplace/market.html?payment=cancelled&sidebar=active`;
-                
+                // Use backend-supplied absolute URLs so Vercel/Railway/Razorpay stay in sync.
+                const callbackUrl = orderData.callbackUrl;
+                const failedUrl = orderData.failedUrl || `${window.location.origin}/features/marketplace/market.html?payment=failed&sidebar=active`;
+                const cancelledUrl = orderData.cancelledUrl || `${window.location.origin}/features/marketplace/market.html?payment=cancelled&sidebar=active`;
+
+                if (!callbackUrl || !/^https?:\/\//i.test(callbackUrl)) {
+                    throw new Error('Payment callback URL is not configured correctly.');
+                }
+
                 console.log('🔗 Callback URL:', callbackUrl);
                 
                 const options = {

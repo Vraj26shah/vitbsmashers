@@ -9,6 +9,19 @@ const razorpay = new Razorpay({
 
 const IS_TEST_KEY = String(process.env.RAZORPAY_KEY_ID || '').startsWith('rzp_test_');
 const hasRazorpayConfig = () => !!(process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET);
+const getConfiguredBackendBase = (req) => {
+  const explicitBase = String(process.env.PUBLIC_API_BASE || '').trim().replace(/\/$/, '');
+  if (explicitBase) return explicitBase;
+
+  const forwardedProto = req.headers['x-forwarded-proto'];
+  const forwardedHost = req.headers['x-forwarded-host'];
+  if (forwardedProto && forwardedHost) {
+    return `${forwardedProto}://${forwardedHost}`.replace(/\/$/, '');
+  }
+
+  return `${req.protocol}://${req.get('host')}`.replace(/\/$/, '');
+};
+
 const getConfiguredFrontendBase = (req) => {
   const configuredOrigins = String(process.env.FRONTEND_URL || '')
     .split(',')
@@ -25,6 +38,20 @@ const getConfiguredFrontendBase = (req) => {
   if (firstOrigin) return firstOrigin;
 
   return `${req.protocol}://${req.get('host')}`;
+};
+
+const buildPaymentUrls = (req) => {
+  const frontendBase = getConfiguredFrontendBase(req);
+  const backendBase = getConfiguredBackendBase(req);
+
+  return {
+    frontendBase,
+    backendBase,
+    callbackUrl: `${backendBase}/api/v1/payment/callback`,
+    successUrl: `${frontendBase}/features/mycourses/mycourses.html?payment=success&sidebar=active`,
+    failedUrl: `${frontendBase}/features/marketplace/market.html?payment=failed&sidebar=active`,
+    cancelledUrl: `${frontendBase}/features/marketplace/market.html?payment=cancelled&sidebar=active`,
+  };
 };
 
 const verifyRazorpaySignature = ({ orderId, paymentId, signature }) => {
@@ -74,6 +101,7 @@ export const createOrder = async (req, res) => {
   try {
     const { courseId, subject, amount, items } = req.body;
     const userId = req.user.id;
+    const paymentUrls = buildPaymentUrls(req);
     if (!hasRazorpayConfig()) {
       return res.status(500).json({
         status: 'error',
@@ -137,6 +165,11 @@ export const createOrder = async (req, res) => {
         courseId:   resolvedCourseId,
         courseName: subject || course.title,
         key:        process.env.RAZORPAY_KEY_ID,
+        callbackUrl: paymentUrls.callbackUrl,
+        successUrl: paymentUrls.successUrl,
+        failedUrl: paymentUrls.failedUrl,
+        cancelledUrl: paymentUrls.cancelledUrl,
+        backendBase: paymentUrls.backendBase,
       });
     }
 
@@ -226,6 +259,11 @@ export const createOrder = async (req, res) => {
         currency:  'INR',
         key:       process.env.RAZORPAY_KEY_ID,
         test_mode: IS_TEST_KEY,
+        callbackUrl: paymentUrls.callbackUrl,
+        successUrl: paymentUrls.successUrl,
+        failedUrl: paymentUrls.failedUrl,
+        cancelledUrl: paymentUrls.cancelledUrl,
+        backendBase: paymentUrls.backendBase,
       });
     }
 
@@ -270,9 +308,7 @@ export const verifyPayment = async (req, res) => {
 
 // ── POST /api/v1/payment/callback ─────────────────────────────────────────────
 export const paymentCallback = async (req, res) => {
-  const frontendBase = getConfiguredFrontendBase(req);
-  const successUrl = `${frontendBase}/features/mycourses/mycourses.html?payment=success&sidebar=active`;
-  const failedUrl = `${frontendBase}/features/marketplace/market.html?payment=failed&sidebar=active`;
+  const { successUrl, failedUrl } = buildPaymentUrls(req);
 
   console.log('🔔 Payment callback received');
   console.log('📦 Request body:', req.body);
