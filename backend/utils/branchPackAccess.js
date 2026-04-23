@@ -6,11 +6,23 @@ let cachedBranches = null;
 async function loadBranchesConfig() {
   if (cachedBranches) return cachedBranches;
 
-  const configUrl = new URL('../../frontend/features/marketplace/branches.json', import.meta.url);
-  const raw = await readFile(configUrl, 'utf8');
-  const parsed = JSON.parse(raw);
-  cachedBranches = parsed?.branches || {};
-  return cachedBranches;
+  const configCandidates = [
+    new URL('../config/branches.json', import.meta.url),
+    new URL('../../frontend/features/marketplace/branches.json', import.meta.url),
+  ];
+
+  for (const configUrl of configCandidates) {
+    try {
+      const raw = await readFile(configUrl, 'utf8');
+      const parsed = JSON.parse(raw);
+      cachedBranches = parsed?.branches || {};
+      return cachedBranches;
+    } catch (error) {
+      continue;
+    }
+  }
+
+  throw new Error('Branch pack configuration could not be loaded');
 }
 
 export async function resolveCourseByAnyId(courseIdOrPid) {
