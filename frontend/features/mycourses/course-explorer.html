@@ -281,6 +281,16 @@
             border-left-color: var(--accent-blue);
         }
 
+        .file-item.file-item-disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        .file-item.file-item-disabled:hover {
+            background: transparent;
+            border-left-color: transparent;
+        }
+
         .file-icon {
             font-size: 18px;
             color: #e74c3c;
@@ -964,7 +974,7 @@
                 const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error(data.message || 'Failed to load modules');
+                    throw new Error(data.message || data.error || `Failed to load modules (${response.status})`);
                 }
 
                 currentModules = Array.isArray(data.data) ? data.data : [];
@@ -1011,6 +1021,17 @@
             return root;
         }
 
+        function buildFlatTree(modules) {
+            return {
+                folders: {},
+                files: (modules || []).map(mod => ({
+                    id: mod.id,
+                    title: mod.title || 'Untitled',
+                    hasFile: !!(mod.has_file ?? mod.r2_key)
+                }))
+            };
+        }
+
         function insertNode(node, parts, mod) {
             if (parts.length === 1) {
                 const displayName = parts[0].replace(/\.[^/.]+$/, ''); // strip extension
@@ -1024,9 +1045,11 @@
 
         function renderFileTree(modules) {
             const tree = buildPathTree(modules);
+            const hasStructuredTree = Object.keys(tree.folders).length > 0 || tree.files.length > 0;
+            const renderTree = hasStructuredTree ? tree : buildFlatTree(modules);
             const fileTree = document.getElementById('fileTree');
 
-            const html = renderTreeNode(tree, 0);
+            const html = renderTreeNode(renderTree, 0);
 
             fileTree.innerHTML = html || `
                 <div style="padding:20px;text-align:center;color:#aaa;">
@@ -1062,9 +1085,13 @@
 
             // Then render files at this level
             for (const file of node.files) {
+                const itemClass = file.hasFile === false ? 'file-item file-item-disabled' : 'file-item';
+                const action = file.hasFile === false
+                    ? ''
+                    : `onclick="openFile('${escapeJs(file.id)}','${escapeJs(file.title)}')"`;
                 html += `
-                    <div class="file-item" data-file-id="${escapeAttr(file.id)}"
-                         onclick="openFile('${escapeJs(file.id)}','${escapeJs(file.title)}')"
+                    <div class="${itemClass}" data-file-id="${escapeAttr(file.id)}"
+                         ${action}
                          style="padding-left:${12 + indent}px;">
                         <i class='bx bxs-file-pdf file-icon'></i>
                         <span class="file-name">${escapeHtml(file.title)}</span>

@@ -182,13 +182,17 @@ export const getCourseModules = async (req, res) => {
     const { resolvedCourse, purchase } = await findAccessiblePurchase(req.user.id, courseId);
 
     if (!resolvedCourse)
-      return res.status(404).json({ status: 'error', error: 'course_not_found' });
+      return res.status(404).json({
+        status: 'error',
+        error: 'course_not_found',
+        message: 'Course record not found. This subject may not be seeded in the database yet.',
+      });
 
     if (!purchase)
-      return res.status(403).json({ status: 'error', error: 'not_purchased' });
+      return res.status(403).json({ status: 'error', error: 'not_purchased', message: 'You do not have access to this course yet.' });
 
     const { data, error } = await supabase.schema('business').from('course_modules')
-      .select('id, type, title, topics, duration, module_no, academic_year, display_order, r2_key')
+      .select('*')
       .eq('course_id', resolvedCourse.id).eq('is_active', true)
       .order('type').order('display_order');
 
