@@ -1,4 +1,14 @@
 {
   "buildCommand": "echo 'No build required'",
-  "outputDirectory": "frontend"
+  "outputDirectory": "frontend",
+  "rewrites": [
+    {
+      "source": "/api/v1/(.*)",
+      "destination": "https://zestful-recreation-production-cd2d.up.railway.app/api/v1/$1"
+    },
+    {
+      "source": "/health",
+      "destination": "https://zestful-recreation-production-cd2d.up.railway.app/health"
+    }
+  ]
 }
