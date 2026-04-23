@@ -99,17 +99,11 @@
                     console.warn('⚠️ Invalid or missing phone - this might cause payment issues');
                 }
                 
-                // Use backend-supplied absolute URLs so Vercel/Railway/Razorpay stay in sync.
-                const callbackUrl = orderData.callbackUrl;
                 const failedUrl = orderData.failedUrl || `${window.location.origin}/features/marketplace/market.html?payment=failed&sidebar=active`;
                 const cancelledUrl = orderData.cancelledUrl || `${window.location.origin}/features/marketplace/market.html?payment=cancelled&sidebar=active`;
-
-                if (!callbackUrl || !/^https?:\/\//i.test(callbackUrl)) {
-                    throw new Error('Payment callback URL is not configured correctly.');
-                }
-
-                console.log('🔗 Callback URL:', callbackUrl);
                 
+                let paymentCompleted = false;
+
                 const options = {
                     key: orderData.key,
                     amount: orderData.amount,
@@ -117,9 +111,21 @@
                     order_id: orderData.orderId,
                     name: 'Scholars Stack',
                     description: description,
-                    // Use redirect mode to open in new window/tab
-                    redirect: true,
-                    callback_url: callbackUrl,
+                    handler: async function(response) {
+                        try {
+                            paymentCompleted = true;
+                            await verifyPayment(response, orderData.orderId);
+                        } catch (verifyError) {
+                            const reason = verifyError?.message || 'Payment verification failed';
+                            window.location.href = `${failedUrl}&reason=${encodeURIComponent(reason)}`;
+                        }
+                    },
+                    modal: {
+                        ondismiss: function() {
+                            if (paymentCompleted) return;
+                            window.location.href = `${cancelledUrl}&reason=${encodeURIComponent('Payment window closed by user.')}`;
+                        }
+                    },
                     prefill: {
                         name: userProfile.fullName || userProfile.name || 'Test User',
                         email: userProfile.email || 'test@example.com',
@@ -144,7 +150,7 @@
 
                 console.log('💳 Razorpay options:', options);
                 console.log('🔎 Razorpay: SDK present?', !!window.Razorpay, 'order:', orderData);
-                console.log('🚀 Opening Razorpay in redirect mode...');
+                console.log('🚀 Opening Razorpay checkout...');
 
                 try {
                     const rzp = new Razorpay(options);
@@ -180,11 +186,10 @@
                         window.location.href = `${failedUrl}&reason=${encodeURIComponent(reason)}`;
                     });
                     
-                    // Open Razorpay - in redirect mode, this will navigate to Razorpay's hosted page
+                    // Open Razorpay checkout in handler mode
                     try {
                         rzp.open();
-                        console.log('✅ Razorpay opened in redirect mode!');
-                        console.log('ℹ️ User will be redirected to Razorpay payment page...');
+                        console.log('✅ Razorpay opened successfully');
                     } catch (openError) {
                         console.error('❌ Razorpay open() error:', openError);
                         const errorMessage = openError?.message || 'Payment popup failed to open.';

@@ -198,9 +198,9 @@ export const getCourseModules = async (req, res) => {
 
     if (error) return res.status(500).json({ status: 'error', message: error.message });
 
-    const sanitized = (data || []).map(({ r2_key, ...rest }) => ({
+      const sanitized = (data || []).map(({ r2_key, drive_file_id, ...rest }) => ({
       ...rest,
-      has_file: !!r2_key,
+      has_file: !!(r2_key || drive_file_id),
       path_segments: r2_key ? r2_key.split('/') : null,
     }));
 
@@ -278,7 +278,7 @@ export const uploadDocument = [
 
       const { courseId, moduleId } = req.params;
       const r2Key = `courses/${courseId}/${moduleId}.pdf`;
-      await uploadToR2(req.file.buffer, r2Key, req.file.mimetype);
+      await uploadToR2(r2Key, req.file.buffer, req.file.mimetype);
 
       await supabase.schema('business').from('course_modules')
         .update({ r2_key: r2Key }).eq('id', moduleId);

@@ -58,7 +58,7 @@ async function main() {
 
       const safeName = mod.title.replace(/[^a-zA-Z0-9-]/g, '-').toLowerCase();
       const r2Key = `courses/${mod.course_id}/${safeName}.pdf`;
-      await uploadToR2(buffer, r2Key, 'application/pdf');
+      await uploadToR2(r2Key, buffer, 'application/pdf');
 
       await supabase.schema('business').from('course_modules')
         .update({ r2_key: r2Key }).eq('id', mod.id);

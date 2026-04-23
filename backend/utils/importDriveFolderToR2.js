@@ -98,7 +98,7 @@ async function importFolderRecursive(drive, folderId, currentPath, summary) {
       const fileName = extension ? `${safeBaseName}${extension}` : safeBaseName;
       const r2Key = [...currentPath, fileName].filter(Boolean).join('/');
 
-      await uploadToR2(buffer, r2Key, contentType);
+      await uploadToR2(r2Key, buffer, contentType);
       summary.uploaded += 1;
       console.log(`OK -> ${r2Key}`);
     } catch (error) {

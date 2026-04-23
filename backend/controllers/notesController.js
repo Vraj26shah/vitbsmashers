@@ -1,6 +1,7 @@
 import { GetObjectCommand } from '@aws-sdk/client-s3';
 import { pipeline } from 'stream/promises';
 import { Readable } from 'stream';
+import { google }         from 'googleapis';
 import { supabase }       from '../lib/supabase.js';
 import { getR2SignedUrl, r2, BUCKET } from '../lib/r2.js';
 import { findAccessiblePurchase } from '../utils/branchPackAccess.js';
@@ -13,6 +14,82 @@ function toNodeReadable(body) {
     return Readable.fromWeb(body.transformToWebStream());
   }
   return null;
+}
+
+let cachedDrive = null;
+function getDriveClient() {
+  if (cachedDrive) return cachedDrive;
+  if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) return null;
+
+  const auth = new google.auth.GoogleAuth({
+    credentials: JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY),
+    scopes: ['https://www.googleapis.com/auth/drive.readonly'],
+  });
+  cachedDrive = google.drive({ version: 'v3', auth });
+  return cachedDrive;
+}
+
+async function getLegacyDrivePdfBuffer(fileId) {
+  const drive = getDriveClient();
+  if (!drive || !fileId) return null;
+
+  const meta = await drive.files.get({
+    fileId,
+    fields: 'mimeType,name',
+    supportsAllDrives: true,
+  });
+
+  const mimeType = meta?.data?.mimeType || '';
+  const isGoogleDoc = mimeType.startsWith('application/vnd.google-apps.');
+
+  if (isGoogleDoc) {
+    const exported = await drive.files.export(
+      { fileId, mimeType: 'application/pdf' },
+      { responseType: 'arraybuffer' }
+    );
+    return Buffer.from(exported.data);
+  }
+
+  const downloaded = await drive.files.get(
+    { fileId, alt: 'media', supportsAllDrives: true },
+    { responseType: 'arraybuffer' }
+  );
+
+  return Buffer.from(downloaded.data);
+}
+
+function sendPdfBuffer(req, res, buffer) {
+  const totalLength = buffer.length;
+  const rangeHeader = req.headers.range;
+
+  res.setHeader('Accept-Ranges', 'bytes');
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'inline');
+  res.setHeader('Cache-Control', 'private, max-age=1800');
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+
+  if (rangeHeader) {
+    const match = String(rangeHeader).match(/bytes=(\d*)-(\d*)/);
+    if (match) {
+      const start = match[1] ? parseInt(match[1], 10) : 0;
+      const end = match[2] ? parseInt(match[2], 10) : totalLength - 1;
+      const safeStart = Number.isFinite(start) ? Math.max(0, start) : 0;
+      const safeEnd = Number.isFinite(end) ? Math.min(end, totalLength - 1) : totalLength - 1;
+
+      if (safeStart <= safeEnd) {
+        const chunk = buffer.subarray(safeStart, safeEnd + 1);
+        res.status(206);
+        res.setHeader('Content-Length', String(chunk.length));
+        res.setHeader('Content-Range', `bytes ${safeStart}-${safeEnd}/${totalLength}`);
+        res.end(chunk);
+        return;
+      }
+    }
+  }
+
+  res.status(200);
+  res.setHeader('Content-Length', String(totalLength));
+  res.end(buffer);
 }
 
 // ── GET /api/v1/courses/:courseId/notes/test-r2 ──────────────────────────────
@@ -65,10 +142,12 @@ export const getDocumentUrl = async (req, res) => {
     if (error || !mod)
       return res.status(404).json({ status: 'error', error: 'module_not_found' });
 
-    if (!mod.r2_key)
+    if (!mod.r2_key && !mod.drive_file_id)
       return res.status(404).json({ status: 'error', error: 'file_not_uploaded', message: 'PDF not yet uploaded for this module.' });
 
-    const signedUrl = await getR2SignedUrl(mod.r2_key, 1800);
+    const signedUrl = mod.r2_key
+      ? await getR2SignedUrl(mod.r2_key, 1800)
+      : `${req.protocol}://${req.get('host')}/api/v1/courses/${courseId}/notes/${moduleId}/stream`;
 
     return res.status(200).json({
       status: 'success',
@@ -121,8 +200,21 @@ export const streamDocument = async (req, res) => {
     if (error || !mod)
       return res.status(404).json({ status: 'error', error: 'module_not_found' });
 
-    if (!mod.r2_key)
+    if (!mod.r2_key && !mod.drive_file_id)
       return res.status(404).json({ status: 'error', error: 'file_not_uploaded', message: 'PDF not yet uploaded for this module.' });
+
+    if (!mod.r2_key && mod.drive_file_id) {
+      const legacyBuffer = await getLegacyDrivePdfBuffer(mod.drive_file_id);
+      if (!legacyBuffer || !legacyBuffer.length) {
+        return res.status(404).json({
+          status: 'error',
+          error: 'file_not_uploaded',
+          message: 'PDF not found in legacy storage for this module.',
+        });
+      }
+      sendPdfBuffer(req, res, legacyBuffer);
+      return;
+    }
 
     const rangeHeader = req.headers.range;
     const cmdParams = { Bucket: BUCKET, Key: mod.r2_key };
