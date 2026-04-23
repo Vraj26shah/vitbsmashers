@@ -3,6 +3,14 @@
   "outputDirectory": "frontend",
   "rewrites": [
     {
+      "source": "/auth/callback",
+      "destination": "/auth/callback.html"
+    },
+    {
+      "source": "/auth/callback/",
+      "destination": "/auth/callback.html"
+    },
+    {
       "source": "/api/v1/(.*)",
       "destination": "https://zestful-recreation-production-cd2d.up.railway.app/api/v1/$1"
     },
