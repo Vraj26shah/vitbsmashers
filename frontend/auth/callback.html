@@ -138,10 +138,27 @@
           }
         } catch (_) {}
 
+        // Determine destination: honour a saved return-to URL first
+        let redirectDest = data.data?.redirectTo || (profileComplete
+          ? '/features/marketplace/market.html'
+          : '/features/profile/complete-profile.html');
+
+        try {
+          const savedReturnTo = localStorage.getItem('loginReturnTo');
+          if (
+            savedReturnTo &&
+            savedReturnTo.trim() &&
+            !savedReturnTo.includes('index') &&
+            !savedReturnTo.includes('/login') &&
+            !savedReturnTo.includes('/auth/callback')
+          ) {
+            redirectDest = savedReturnTo;
+            localStorage.removeItem('loginReturnTo');
+          }
+        } catch (_) {}
+
         setTimeout(() => {
-          window.location.href = data.data?.redirectTo || (profileComplete
-            ? '/features/marketplace/market.html'
-            : '/features/profile/complete-profile.html');
+          window.location.href = redirectDest;
         }, 1000);
       } else {
         showError(data.message || 'Server verification failed. Only VIT Bhopal emails are allowed.');

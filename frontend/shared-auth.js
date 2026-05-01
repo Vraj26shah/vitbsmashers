@@ -539,6 +539,18 @@ class AuthManager {
 
     // Show login required message
     showLoginRequired() {
+        // Save current page so callback can return here after login
+        try {
+            const returnTo = window.location.pathname + window.location.search;
+            const skip = returnTo === '/' ||
+                returnTo.includes('index.html') ||
+                returnTo.includes('/login') ||
+                returnTo.includes('/auth/callback');
+            if (!skip) {
+                localStorage.setItem('loginReturnTo', returnTo);
+            }
+        } catch (_) {}
+
         document.body.innerHTML = `
             <div style="
                 display: flex;

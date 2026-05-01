@@ -1,7 +1,7 @@
 name: Keep Supabase Alive
 on:
   schedule:
-    - cron: '0 8 */3 * *'  # Every 3 days at 8 AM UTC
+    - cron: '0 6 * * *'  # Every day at 6 AM UTC
   workflow_dispatch:
 
 jobs:
@@ -10,6 +10,12 @@ jobs:
     steps:
       - name: Ping Supabase
         run: |
-          curl -s "${{ secrets.SUPABASE_URL }}/rest/v1/mess_menu?select=id&limit=1" \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}"
-          echo "Pinged Supabase"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/mess_menu?select=id&limit=1" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}")
+          echo "Supabase ping status: $STATUS"
+          if [ "$STATUS" -lt 200 ] || [ "$STATUS" -ge 300 ]; then
+            echo "Ping failed with status $STATUS"
+            exit 1
+          fi
+          echo "Supabase is alive"
