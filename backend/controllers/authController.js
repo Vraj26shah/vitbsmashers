@@ -19,6 +19,12 @@ export const signup = async (req, res) => {
     if (!email.endsWith('@vitbhopal.ac.in') && email.toLowerCase() !== ADMIN_EMAIL)
       return res.status(400).json({ status: 'error', message: 'Only VIT Bhopal emails (@vitbhopal.ac.in) are allowed' });
 
+    // Check email not already registered
+    const { data: existingEmail } = await supabase
+      .schema('business').from('users').select('id').eq('email', email.toLowerCase()).maybeSingle();
+    if (existingEmail)
+      return res.status(409).json({ status: 'error', message: 'An account with this email already exists. Please sign in instead.' });
+
     // Check username not taken
     const { data: existing } = await supabase
       .schema('business').from('users').select('id').eq('username', username.toLowerCase()).maybeSingle();
@@ -173,8 +179,9 @@ export const verifyGoogleToken = async (req, res) => {
     }
 
     if (!profile) {
-      const { data: inserted, error: insertError } = await supabase
-        .schema('business').from('users').insert({
+      // Upsert: create on first login, update on conflict (handles race conditions)
+      const { data: upserted, error: upsertError } = await supabase
+        .schema('business').from('users').upsert({
           id:          user.id,
           email:       emailLower,
           username:    baseUsername,
@@ -182,13 +189,13 @@ export const verifyGoogleToken = async (req, res) => {
           avatar_url:  user.user_metadata?.avatar_url || null,
           role:        userRole,
           is_verified: true,
-        }).select().maybeSingle();
+        }, { onConflict: 'id' }).select().maybeSingle();
 
-      if (insertError && !isPolicyRecursionError(insertError)) {
-        console.error('Google auth profile insert error:', insertError.message);
+      if (upsertError && !isPolicyRecursionError(upsertError)) {
+        console.error('Google auth profile upsert error:', upsertError.message);
       }
-      if (inserted) {
-        profile = inserted;
+      if (upserted) {
+        profile = upserted;
       }
     }
 
@@ -234,7 +241,7 @@ export const verifyGoogleToken = async (req, res) => {
         user:       profile,
         authMethod: 'google',
         redirectTo: isProfileComplete
-          ? '/features/profile/profile.html?sidebar=active'
+          ? '/features/marketplace/market.html?sidebar=active'
           : '/features/profile/complete-profile.html',
       },
     });

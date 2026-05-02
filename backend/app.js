@@ -140,6 +140,21 @@ app.use('/api/v1/admin',       adminRouter);
 // Frontend compatibility aliases
 app.use('/api/payments',       paymentRouter);
 
+// ── Public runtime config (replaces all hardcoded keys in HTML) ───────────────
+// Safe to expose: SUPABASE_URL and ANON_KEY are public by design;
+// GOOGLE_CLIENT_ID is a public OAuth identifier.
+app.get('/env-config.js', (req, res) => {
+  res.setHeader('Content-Type', 'application/javascript');
+  res.setHeader('Cache-Control', 'no-store');
+  res.send(
+    `window.ENV = {` +
+    `  SUPABASE_URL: '${process.env.SUPABASE_URL || ''}',` +
+    `  SUPABASE_ANON_KEY: '${process.env.SUPABASE_ANON_KEY || ''}',` +
+    `  GOOGLE_CLIENT_ID: '${process.env.GOOGLE_CLIENT_ID || ''}',` +
+    `};`
+  );
+});
+
 // ── Frontend Static Files ─────────────────────────────────────────────────────
 const __filename = fileURLToPath(import.meta.url);
 const __dirname  = path.dirname(__filename);

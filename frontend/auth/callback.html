@@ -52,13 +52,14 @@
   <a href="/index.html" id="loginLink" class="btn" style="display:none;">Back to Login</a>
 </div>
 
+<script src="/env-config.js"></script>
 <script src="/config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-  const SUPABASE_URL     = 'https://gunogitcgaietobakvbl.supabase.co';
-  const SUPABASE_ANON_KEY = 'sb_publishable_2i0qvEuWXv5KQEzYZ2X1sA_rJLIyZF6';
-
-  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  const client = window.supabase.createClient(
+    window.ENV?.SUPABASE_URL,
+    window.ENV?.SUPABASE_ANON_KEY
+  );
 
   function showError(msg) {
     document.getElementById('spinner').style.display = 'none';

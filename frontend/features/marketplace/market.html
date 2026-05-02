@@ -114,7 +114,7 @@
                     handler: async function(response) {
                         try {
                             paymentCompleted = true;
-                            await verifyPayment(response, orderData.orderId);
+                            await verifyPayment(response, orderData.orderId, orderData);
                         } catch (verifyError) {
                             const reason = verifyError?.message || 'Payment verification failed';
                             window.location.href = `${failedUrl}&reason=${encodeURIComponent(reason)}`;
@@ -3147,16 +3147,19 @@
         }
 
         // Verify payment with backend
-        async function verifyPayment(razorpayResponse, orderId) {
+        async function verifyPayment(razorpayResponse, orderId, orderData) {
             console.log('✅ [verifyPayment] Called');
             console.log('✅ [verifyPayment] Razorpay response:', razorpayResponse);
             console.log('✅ [verifyPayment] Order ID:', orderId);
-            
+
             try {
                 const payload = {
-                    order_id: orderId,
+                    order_id:  orderId,
                     payment_id: razorpayResponse.razorpay_payment_id,
-                    signature: razorpayResponse.razorpay_signature
+                    signature:  razorpayResponse.razorpay_signature,
+                    // Fallback: lets the backend finalize even if the DB order row is missing
+                    course_id: orderData?.courseId || null,
+                    amount:    orderData?.amount   || null,
                 };
                 
                 console.log('✅ [verifyPayment] Sending to backend:', payload);
@@ -3452,62 +3455,115 @@
         function isProfileComplete() {
             return isUserProfileComplete;
         }
+        function showPaymentBanner(type, reason) {
+            const existing = document.getElementById('paymentBanner');
+            if (existing) existing.remove();
+
+            const isSuccess   = type === 'success';
+            const isCancelled = type === 'cancelled';
+            const bg    = isSuccess   ? 'linear-gradient(135deg,#1a7a4a,#27ae60)'
+                        : isCancelled ? 'linear-gradient(135deg,#7d6608,#d4ac0d)'
+                        :               'linear-gradient(135deg,#922b21,#e74c3c)';
+            const icon  = isSuccess ? 'bxs-check-circle' : isCancelled ? 'bxs-info-circle' : 'bxs-error-circle';
+            const title = isSuccess ? 'Payment Successful!'
+                        : isCancelled ? 'Payment Cancelled'
+                        : 'Payment Failed';
+            const body  = reason
+                        || (isSuccess   ? 'Your course has been unlocked.'
+                          : isCancelled ? 'You can try again anytime.'
+                          : 'Something went wrong. Please try again.');
+
+            const banner = document.createElement('div');
+            banner.id = 'paymentBanner';
+            banner.style.cssText = `
+                position:fixed;top:80px;left:50%;transform:translateX(-50%);
+                z-index:9999;background:${bg};color:#fff;
+                padding:18px 28px;border-radius:14px;
+                box-shadow:0 8px 30px rgba(0,0,0,0.45);
+                display:flex;align-items:center;gap:14px;
+                font-size:15px;font-weight:600;
+                max-width:520px;width:calc(100% - 40px);
+                animation:slideDown 0.4s ease;
+            `;
+            banner.innerHTML = `
+                <i class='bx ${icon}' style="font-size:28px;flex-shrink:0;"></i>
+                <div>
+                    <div style="font-size:16px;font-weight:700;margin-bottom:3px;">${title}</div>
+                    <div style="font-size:13px;opacity:0.9;font-weight:400;">${body}</div>
+                </div>
+                <button onclick="document.getElementById('paymentBanner').remove()"
+                        style="margin-left:auto;background:rgba(255,255,255,0.25);border:none;color:#fff;
+                               width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:18px;
+                               display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    &times;
+                </button>
+            `;
+            const st = document.createElement('style');
+            st.textContent = `@keyframes slideDown{from{opacity:0;transform:translateX(-50%) translateY(-20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}`;
+            document.head.appendChild(st);
+            document.body.appendChild(banner);
+            setTimeout(() => {
+                if (banner.parentNode) {
+                    banner.style.opacity = '0';
+                    banner.style.transition = 'opacity 0.5s ease';
+                    setTimeout(() => banner.remove(), 500);
+                }
+            }, 10000);
+        }
+
         // Handle payment success/failure from URL parameters
         function handlePaymentStatus() {
             const urlParams = new URLSearchParams(window.location.search);
             const paymentStatus = urlParams.get('payment');
+            const reason = urlParams.get('reason');
 
             if (paymentStatus === 'success') {
-                // Clear cart on successful payment
                 cart = [];
                 localStorage.removeItem('cart');
                 updateCart();
-
-                // Show success message and redirect to MyCourses with payment=success so banner shows
-                showNotification('Payment successful! Redirecting to your courses...', 'success');
+                showPaymentBanner('success');
                 setTimeout(() => {
                     window.location.href = '../mycourses/mycourses.html?payment=success&sidebar=active';
-                }, 1500);
-
-                // Clean URL
+                }, 2000);
                 window.history.replaceState({}, document.title, window.location.pathname);
             } else if (paymentStatus === 'cancelled') {
-                const reason = urlParams.get('reason');
-                showNotification(reason || 'Payment was cancelled. You can try again anytime.', 'warning');
-                // Stay on marketplace - don't redirect anywhere
+                showPaymentBanner('cancelled', reason);
                 window.history.replaceState({}, document.title, window.location.pathname);
             } else if (paymentStatus === 'failed') {
-                const reason = urlParams.get('reason');
-                showNotification(reason || 'Payment failed. Please try again.', 'danger');
-                // Stay on marketplace - don't redirect anywhere
+                showPaymentBanner('failed', reason);
                 window.history.replaceState({}, document.title, window.location.pathname);
             }
         }
 
         // Show notification function (moved to top for availability)
         function showNotification(message, type = 'info') {
+            const bg = type === 'success'  ? '#1a7a4a'
+                     : type === 'warning'  ? '#d68910'
+                     : type === 'danger'   ? '#c0392b'
+                     : '#2471a3';
             const notification = document.createElement('div');
             notification.style.cssText = `
                 position: fixed;
                 top: 20px;
                 right: 20px;
-                background: ${type === 'success' ? 'var(--success-color)' : type === 'warning' ? 'var(--warning-color)' : 'var(--accent-blue)'};
+                background: ${bg};
                 color: white;
                 padding: 15px 20px;
                 border-radius: 10px;
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+                box-shadow: 0 4px 15px rgba(0,0,0,0.35);
                 z-index: 10000;
                 font-weight: 500;
-                max-width: 400px;
+                max-width: 420px;
+                font-size: 14px;
                 animation: slideIn 0.3s ease;
             `;
             notification.textContent = message;
             document.body.appendChild(notification);
-
+            const dur = (type === 'danger' || type === 'success') ? 6000 : 4000;
             setTimeout(() => {
                 notification.style.animation = 'slideOut 0.3s ease';
                 setTimeout(() => notification.remove(), 300);
-            }, 4000);
+            }, dur);
         }
 
         // Add CSS for notification animations

@@ -6,7 +6,7 @@
     <title>Scholars Stack - Premium Academic Resources</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800&display=swap" rel="stylesheet">
-    <meta name="google-signin-client_id" content="150852944049-1kljh7jhlubn7kpmrss0nccqkm61jv7u.apps.googleusercontent.com">
+    <meta name="google-signin-client_id" id="googleClientIdMeta" content="">
     <link rel="stylesheet" href="style.css">
     <style>
         .custom-google-btn {
@@ -506,25 +506,27 @@
         </div>
     </footer>
 
+    <script src="/env-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="config.js"></script>
     <script src="preload-manager.js"></script>
     <script src="feature-loader.js"></script>
     <script>
-        const SUPABASE_URL = 'https://gunogitcgaietobakvbl.supabase.co';
-        const SUPABASE_ANON_KEY = 'sb_publishable_2i0qvEuWXv5KQEzYZ2X1sA_rJLIyZF6';
-        const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_URL     = window.ENV?.SUPABASE_URL;
+        const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY;
+        const supabaseClient   = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        document.getElementById('googleClientIdMeta')?.setAttribute('content', window.ENV?.GOOGLE_CLIENT_ID || '');
 
         function initGoogleSignIn() {
             const customButton = document.getElementById('customGoogleSignIn');
             if (customButton) {
-                customButton.addEventListener('click', async function(e) {
+                customButton.addEventListener('click', function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    await supabaseClient.auth.signInWithOAuth({
-                        provider: 'google',
-                        options: { redirectTo: `${window.location.origin}/auth/callback` }
-                    });
+                    const origin = (window.config && window.config.API_ORIGIN)
+                        ? window.config.API_ORIGIN
+                        : window.location.origin;
+                    window.location.href = `${origin}/api/v1/auth/google`;
                 });
             }
         }

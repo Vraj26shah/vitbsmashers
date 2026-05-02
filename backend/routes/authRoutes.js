@@ -1,10 +1,15 @@
 import express from 'express';
 import { signup, login, verifyGoogleToken, refreshToken, logout, revokeProtectedSession } from '../controllers/authController.js';
+import { startGoogleOAuth, googleCallback } from '../controllers/googleOAuthController.js';
 import { protect } from '../middleware/authMiddleware.js';
 import { authLimiter, strictAuthLimiter } from '../middleware/securityMiddleware.js';
 
 const router = express.Router();
 const hasValue = (value) => typeof value === 'string' ? value.trim().length > 0 : !!value;
+
+// Server-side Google OAuth (bypasses Supabase redirect URL restrictions)
+router.get('/google',          startGoogleOAuth);
+router.get('/google/callback', googleCallback);
 
 // Public routes (rate-limited — protects Supabase + user accounts from brute force)
 router.post('/signup',        strictAuthLimiter, signup);
