@@ -145,14 +145,13 @@ app.use('/api/payments',       paymentRouter);
 // GOOGLE_CLIENT_ID is a public OAuth identifier.
 app.get('/env-config.js', (req, res) => {
   res.setHeader('Content-Type', 'application/javascript');
-  res.setHeader('Cache-Control', 'no-store');
-  res.send(
-    `window.ENV = {` +
-    `  SUPABASE_URL: '${process.env.SUPABASE_URL || ''}',` +
-    `  SUPABASE_ANON_KEY: '${process.env.SUPABASE_ANON_KEY || ''}',` +
-    `  GOOGLE_CLIENT_ID: '${process.env.GOOGLE_CLIENT_ID || ''}',` +
-    `};`
-  );
+  res.setHeader('Cache-Control', 'no-store, no-cache');
+  // Allow Vercel to proxy this endpoint cross-origin
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  const supabaseUrl    = process.env.SUPABASE_URL    || '';
+  const supabaseAnon   = process.env.SUPABASE_ANON_KEY || '';
+  const googleClientId = process.env.GOOGLE_CLIENT_ID || '';
+  res.send(`window.ENV={SUPABASE_URL:'${supabaseUrl}',SUPABASE_ANON_KEY:'${supabaseAnon}',GOOGLE_CLIENT_ID:'${googleClientId}'};`);
 });
 
 // ── Frontend Static Files ─────────────────────────────────────────────────────

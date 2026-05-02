@@ -11,6 +11,10 @@
       "destination": "/auth/callback.html"
     },
     {
+      "source": "/env-config.js",
+      "destination": "https://zestful-recreation-production-cd2d.up.railway.app/env-config.js"
+    },
+    {
       "source": "/api/v1/(.*)",
       "destination": "https://zestful-recreation-production-cd2d.up.railway.app/api/v1/$1"
     },
