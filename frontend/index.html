@@ -520,13 +520,21 @@
         function initGoogleSignIn() {
             const customButton = document.getElementById('customGoogleSignIn');
             if (customButton) {
-                customButton.addEventListener('click', function(e) {
+                customButton.addEventListener('click', async function(e) {
                     e.preventDefault();
                     e.stopPropagation();
-                    const origin = (window.config && window.config.API_ORIGIN)
-                        ? window.config.API_ORIGIN
-                        : window.location.origin;
-                    window.location.href = `${origin}/api/v1/auth/google`;
+                    if (!supabaseClient) {
+                        alert('Authentication not ready. Please refresh the page.');
+                        return;
+                    }
+                    // Use current origin so localhost stays on localhost,
+                    // and production stays on production — no redirect URL mismatch.
+                    await supabaseClient.auth.signInWithOAuth({
+                        provider: 'google',
+                        options: {
+                            redirectTo: `${window.location.origin}/auth/callback`,
+                        },
+                    });
                 });
             }
         }
