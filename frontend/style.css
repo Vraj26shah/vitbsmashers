@@ -1680,7 +1680,8 @@
 
 @media (max-width: 576px) {
     .compact-features-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
     }
 }
 
@@ -1773,13 +1774,13 @@
 
 @media (max-width: 480px) {
     .compact-features-grid {
-        grid-template-columns: 1fr;
-        max-width: 320px;
-        margin: 0 auto;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        width: 100%;
     }
-    
+
     .feature-card {
-        min-height: 150px;
+        min-height: 160px;
     }
 }
 /* Why Join Section */
@@ -2342,13 +2343,39 @@
 
 @media (max-width: 560px) {
     .features-section .compact-features-grid {
-        grid-template-columns: 1fr;
-        max-width: 360px;
-        margin: 0 auto;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
     }
 
     .features-section .feature-card {
-        min-height: 250px;
+        min-height: 210px;
+        padding: 14px 10px;
+    }
+
+    .features-section .feature-card h3 {
+        font-size: 0.92rem;
+        min-height: 42px;
+    }
+
+    .features-section .feature-card p {
+        font-size: 0.78rem;
+        min-height: 46px;
+        -webkit-line-clamp: 2;
+    }
+
+    .features-section .feature-icon {
+        width: 44px;
+        height: 44px;
+        font-size: 1.15rem;
+        margin-bottom: 8px;
+    }
+
+    .features-section .feature-card .access-now {
+        min-height: 28px;
+        font-size: 0.78rem;
     }
 }
 
@@ -2452,8 +2479,81 @@
     }
 
     .features-section .compact-features-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+    }
+}
+
+/* ===== Very small phones (360px and below) ===== */
+@media (max-width: 360px) {
+    .features-section .compact-features-grid,
+    .compact-features-grid {
         grid-template-columns: 1fr;
-        max-width: 360px;
-        margin: 0 auto;
+        gap: 10px;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .features-section .feature-card {
+        min-height: 180px;
+        padding: 14px 12px;
+    }
+
+    .logo-text h1 {
+        font-size: 1.1rem !important;
+    }
+
+    .logo-text p,
+    .logo-text span {
+        font-size: 0.65rem !important;
+    }
+
+    .logo img {
+        height: 42px !important;
+        margin-right: 8px !important;
+    }
+
+    .hero h1 {
+        font-size: 1.6rem;
+    }
+
+    .btn {
+        min-width: 140px;
+        font-size: 0.9rem;
+        padding: 12px 20px;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+    }
+
+    .benefit-card {
+        padding: 20px 15px;
+    }
+
+    .auth-note {
+        font-size: 12px;
+        padding: 12px;
+    }
+}
+
+/* ===== iPhone X+ safe-area insets ===== */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    body {
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    footer {
+        padding-bottom: calc(clamp(20px, 3vh, 30px) + env(safe-area-inset-bottom));
+    }
+}
+
+@supports (padding: max(0px)) {
+    header {
+        padding-left: max(15px, env(safe-area-inset-left)) !important;
+        padding-right: max(15px, env(safe-area-inset-right)) !important;
     }
 }

@@ -163,6 +163,42 @@ body {
     }
 
     .main-content {
+        padding: calc(var(--header-height) + 10px) 12px 12px;
+    }
+}
+
+/* Very small phones */
+@media (max-width: 480px) {
+    :root {
+        --header-height: 60px;
+    }
+
+    .header {
+        padding: 0 10px;
+    }
+
+    .main-content {
         padding: calc(var(--header-height) + 10px) 10px 10px;
+    }
+
+    /* Ensure minimum touch target size */
+    .sidebar-menu a {
+        min-height: 48px;
+    }
+}
+
+/* Safe-area insets for iPhone X and newer */
+@supports (padding: max(0px)) {
+    .header {
+        padding-left: max(20px, env(safe-area-inset-left));
+        padding-right: max(20px, env(safe-area-inset-right));
+    }
+
+    .main-content {
+        padding-bottom: max(12px, env(safe-area-inset-bottom));
+    }
+
+    .sidebar {
+        padding-bottom: env(safe-area-inset-bottom);
     }
 }

@@ -1416,32 +1416,32 @@ body {
     }
 
     .header {
-        padding: 0 12px;
+        padding: 0 15px;
     }
 
     .menu-toggle {
-        width: 34px;
-        height: 34px;
-        margin-right: 10px;
-    }
-
-    .menu-toggle span {
-        width: 22px;
-        height: 2.5px;
-        margin: 2px 0;
-    }
-
-    .logo img {
+        width: 40px;
         height: 40px;
         margin-right: 10px;
     }
 
+    .menu-toggle span {
+        width: 25px;
+        height: 3px;
+        margin: 3px 0;
+    }
+
+    .logo img {
+        height: 45px;
+        margin-right: 12px;
+    }
+
     .logo-text h1 {
-        font-size: 18px;
+        font-size: 22px;
     }
 
     .logo-text span {
-        font-size: 12px;
+        font-size: 14px;
     }
 
     .user-name {
@@ -1449,21 +1449,20 @@ body {
     }
 
     .user-profile {
-        padding: 4px;
+        padding: 5px;
     }
 
     .user-avatar {
-        width: 34px;
-        height: 34px;
-        font-size: 14px;
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
         margin-right: 0;
-        border-width: 1px;
     }
 
     .map-access {
-        width: 34px;
-        height: 34px;
-        font-size: 16px;
+        width: 40px;
+        height: 40px;
+        font-size: 18px;
     }
 
     .header-actions {
@@ -1704,27 +1703,28 @@ body {
 
 @media (max-width: 576px) {
     :root {
-        --header-height: 65px;
+        --header-height: 60px;
     }
 
     .header {
-        padding: 0 15px;
+        padding: 0 12px;
     }
 
     .menu-toggle {
         width: 36px;
         height: 36px;
-        margin-right: 12px;
+        margin-right: 8px;
     }
 
     .menu-toggle span {
-        width: 24px;
-        height: 3px;
+        width: 22px;
+        height: 2.5px;
+        margin: 2px 0;
     }
 
     .logo img {
-        height: 42px;
-        margin-right: 12px;
+        height: 40px;
+        margin-right: 10px;
     }
 
     .logo-text h1 {
@@ -1738,13 +1738,14 @@ body {
     .user-avatar {
         width: 36px;
         height: 36px;
-        font-size: 15px;
+        font-size: 14px;
+        margin-right: 0;
     }
 
     .map-access {
         width: 36px;
         height: 36px;
-        font-size: 18px;
+        font-size: 16px;
     }
 
     .sidebar {
@@ -1968,6 +1969,38 @@ body {
 }
 
 @media (max-width: 480px) {
+    :root {
+        --header-height: 60px;
+    }
+
+    .header {
+        height: 60px;
+        padding: 0 10px;
+    }
+
+    .logo img {
+        height: 36px;
+        margin-right: 8px;
+    }
+
+    .logo-text h1 {
+        font-size: 16px;
+    }
+
+    .logo-text span {
+        font-size: 11px;
+    }
+
+    .sidebar {
+        top: var(--header-height);
+        height: calc(100vh - var(--header-height));
+    }
+
+    .main-content {
+        padding: calc(var(--header-height) + 12px) 10px 15px;
+        padding-bottom: 20px;
+    }
+
     body {
         font-size: 13px;
     }
@@ -2015,6 +2048,10 @@ body {
         font-size: 10px;
     }
 
+    .logo img {
+        height: 34px;
+    }
+
     .page-title {
         font-size: 20px;
     }
@@ -2025,9 +2062,20 @@ body {
         font-size: 14px;
     }
 
+    .main-content {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+
     .schedule-table th,
     .schedule-table td {
         max-width: 40px;
+    }
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .main-content {
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
     }
 }
 

@@ -915,7 +915,7 @@
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 极 2px 5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             position: relative;
             touch-action: manipulation;
         }
@@ -948,7 +948,7 @@
         .keyboard-hint {
             background: rgba(52, 152, 219, 0.2);
             padding: 10px;
-            border-radius: 极;
+            border-radius: 8px;
             margin-top: 15px;
             font-size: 0.85rem;
             color: var(--accent-color);
@@ -1114,7 +1114,7 @@
             padding: 25px;
             text-align: center;
             color: #ddd;
-            margin: 极 0;
+            margin: 20px 0;
         }
 
         .empty-state i {
@@ -1450,7 +1450,7 @@
             }
 
             .map-access {
-                width: 极;
+                width: 34px;
                 height: 34px;
                 font-size: 16px;
             }
@@ -1628,7 +1628,7 @@
             .tentative-controls .btn {
                 width: 100%;
                 padding: 10px;
-                font-size: 极.9rem;
+                font-size: 0.9rem;
             }
 
             .tentative-slot-item {
@@ -1676,7 +1676,7 @@
                 min-width: 160px;
             }
 
-            .download-dropdown .极 {
+            .download-dropdown .btn {
                 width: 100%;
             }
 
@@ -1687,7 +1687,7 @@
 
         @media (max-width: 576px) {
             :root {
-                --header-height: 65px;
+                --header-height: 60px;
             }
 
             .header {
@@ -1809,7 +1809,7 @@
 
         @media (max-width: 480px) {
             :root {
-                --header-height: 65px;
+                --header-height: 60px;
             }
 
             .header {
@@ -1853,7 +1853,7 @@
             }
 
             .main-content {
-                padding: calc(var(--header极) + 12px) 12px 15px;
+                padding: calc(var(--header-height) + 12px) 12px 15px;
                 border-radius: 8px;
             }
 
@@ -1913,7 +1913,7 @@
             }
 
             .tentative-slot-item {
-                padding: 8极;
+                padding: 8px;
             }
 
             .tentative-actions .btn {

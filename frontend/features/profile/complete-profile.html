@@ -143,6 +143,87 @@
       line-height: 1.55;
     }
     .warning-note svg { flex-shrink: 0; margin-top: 1px; }
+
+    /* ===== Mobile responsive ===== */
+    @media (max-width: 600px) {
+      body {
+        padding: 16px;
+        align-items: flex-start;
+        padding-top: 24px;
+      }
+
+      .card {
+        padding: 24px 20px;
+        border-radius: 16px;
+      }
+
+      h2 {
+        font-size: 28px;
+      }
+
+      .subtitle {
+        font-size: 14px;
+        margin-bottom: 20px;
+      }
+
+      .brand-title {
+        font-size: 15px;
+      }
+
+      input, select {
+        font-size: 16px;
+        padding: 12px 14px;
+      }
+
+      .btn {
+        padding: 13px;
+        font-size: 14px;
+      }
+
+      .field {
+        margin-bottom: 16px;
+      }
+    }
+
+    @media (max-width: 400px) {
+      body {
+        padding: 12px;
+        padding-top: 16px;
+      }
+
+      .card {
+        padding: 20px 16px;
+        border-radius: 12px;
+      }
+
+      h2 {
+        font-size: 24px;
+      }
+
+      .step-chip {
+        font-size: 11px;
+        padding: 5px 8px;
+      }
+
+      label {
+        font-size: 11px;
+      }
+
+      input, select {
+        padding: 11px 12px;
+      }
+
+      .warning-note {
+        font-size: 12px;
+        padding: 10px 12px;
+      }
+    }
+
+    @supports (padding-bottom: env(safe-area-inset-bottom)) {
+      body {
+        padding-bottom: calc(22px + env(safe-area-inset-bottom));
+      }
+    }
   </style>
 </head>
 <body>
