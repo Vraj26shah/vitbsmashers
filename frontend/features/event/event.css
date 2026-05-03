@@ -2,6 +2,8 @@
    EVENTS — page-specific styles only.
    Shell (header, sidebar, background, layout) is handled
    by shared-feature-shell.css.
+   Designed to be visually consistent with club.css and
+   faculty.css — same glassmorphism aesthetic.
 ========================================================== */
 
 /* ---------- Page Title ---------- */
@@ -13,7 +15,7 @@
     padding-bottom: 12px;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 12px;
 }
 
 .page-title i {
@@ -35,13 +37,13 @@
 /* ---------- Tabs ---------- */
 .tabs {
     display: flex;
-    gap: 10px;
+    gap: 15px;
     margin-bottom: 25px;
     background: var(--glass-bg);
-    border-radius: 12px;
+    border-radius: 14px;
     padding: 15px;
-    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
-    border: 2px solid var(--accent-blue);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
     flex-wrap: wrap;
 }
 
@@ -49,8 +51,8 @@
     background: rgba(52, 152, 219, 0.2);
     color: var(--accent-blue);
     border: none;
-    padding: 12px 24px;
-    border-radius: 8px;
+    padding: 14px 24px;
+    border-radius: 10px;
     cursor: pointer;
     transition: all 0.3s ease;
     font-size: 16px;
@@ -61,7 +63,6 @@
     flex: 1;
     min-width: 200px;
     justify-content: center;
-    z-index: 10;
 }
 
 .tab-btn.admin-only { display: none !important; }
@@ -71,10 +72,9 @@
     background: var(--accent-blue);
     color: white;
     transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
 }
 
-.tab-btn i { font-size: 18px; }
+.tab-btn i { font-size: 20px; }
 
 .tab-content { display: none; }
 
@@ -91,11 +91,11 @@
 /* ---------- Event Registration Form ---------- */
 .event-registration {
     background: var(--glass-bg);
-    border-radius: 16px;
-    padding: 30px;
+    border-radius: 14px;
+    padding: 25px;
     margin-bottom: 30px;
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
-    border: 2px solid var(--accent-blue);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .form-title {
@@ -136,8 +136,8 @@
 .form-group select {
     width: 100%;
     padding: 14px;
-    background: rgba(26, 37, 47, 0.9);
-    border: 2px solid var(--accent-blue);
+    background: rgba(44, 62, 80, 0.8);
+    border: 1px solid rgba(52, 152, 219, 0.3);
     border-radius: 10px;
     color: var(--light-color);
     font-size: 16px;
@@ -149,7 +149,7 @@
 .form-group select:focus {
     outline: none;
     border-color: var(--accent-teal);
-    box-shadow: 0 0 0 4px rgba(46, 204, 113, 0.3);
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.3);
 }
 
 .form-group textarea {
@@ -175,8 +175,8 @@
     align-items: center;
     justify-content: center;
     padding: 14px;
-    background: rgba(26, 37, 47, 0.9);
-    border: 2px dashed var(--accent-blue);
+    background: rgba(44, 62, 80, 0.8);
+    border: 1px dashed rgba(52, 152, 219, 0.3);
     border-radius: 10px;
     color: #aaa;
     text-align: center;
@@ -184,7 +184,7 @@
     transition: all 0.3s ease;
 }
 
-.file-upload-label:hover { border-color: var(--accent-teal); }
+.file-upload-label:hover { border-color: var(--accent-blue); }
 .file-upload-label i { margin-right: 8px; font-size: 20px; color: var(--accent-blue); }
 
 .preview-container { margin-top: 15px; text-align: center; }
@@ -193,7 +193,7 @@
     max-width: 200px;
     max-height: 150px;
     border-radius: 8px;
-    border: 2px solid var(--accent-blue);
+    border: 1px solid rgba(52, 152, 219, 0.3);
     display: none;
 }
 
@@ -211,7 +211,6 @@
     gap: 8px;
     font-size: 16px;
     margin-top: 20px;
-    z-index: 10;
     min-width: 120px;
 }
 
@@ -224,29 +223,33 @@
 /* ---------- Event Grid ---------- */
 .event-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 25px;
     margin-bottom: 50px;
 }
 
+/* ---------- Event Card — matches club/faculty glassmorphism ---------- */
 .event-card {
-    background: var(--glass-bg);
+    background: transparent;
     backdrop-filter: blur(10px);
     border-radius: 14px;
     overflow: hidden;
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
-    border: 2px solid var(--accent-blue);
+    border: none;
     transition: all 0.4s ease;
     cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
 }
 
 .event-card:hover {
-    transform: translateY(-5px);
     box-shadow: 0 15px 30px rgba(0, 0, 0, 0.35);
+    background: rgba(255, 255, 255, 0.03);
 }
 
 .event-image {
-    height: 200px;
+    height: 190px;
     width: 100%;
     background-color: #1a252f;
     display: flex;
@@ -263,15 +266,20 @@
     position: absolute;
     top: 15px;
     right: 15px;
-    background: rgba(52, 152, 219, 0.9);
+    background: rgba(52, 152, 219, 0.85);
     color: white;
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: 20px;
     font-size: 13px;
     font-weight: 600;
 }
 
-.event-info { padding: 25px; }
+.event-info {
+    padding: 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
 
 .event-header {
     display: flex;
@@ -281,7 +289,7 @@
 }
 
 .event-title {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     color: var(--light-color);
     margin-bottom: 8px;
@@ -307,14 +315,14 @@
 .meta-item {
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
     font-size: 13px;
-    color: #aaa;
+    color: var(--light-color1);
 }
 
 .event-description {
     color: #ddd;
-    margin-bottom: 20px;
+    margin-bottom: 15px;
     line-height: 1.5;
     font-size: 14px;
 }
@@ -327,14 +335,24 @@
     gap: 10px;
     border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding-top: 15px;
+    margin-top: auto;
 }
 
+.faculty-contact {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    font-size: 13px;
+    color: #aaa;
+}
+
+/* ---------- Event Action Buttons ---------- */
 .register-btn {
     background: transparent;
     color: var(--accent-blue);
     border: 2px solid var(--accent-blue);
-    padding: 8px 16px;
-    border-radius: 7px;
+    padding: 10px 18px;
+    border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -342,8 +360,8 @@
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    z-index: 10;
-    min-width: 100px;
+    flex: 1;
+    justify-content: center;
     text-decoration: none;
 }
 
@@ -354,20 +372,20 @@
 }
 
 .register-btn.closed {
-    background: #7f8c8d;
-    color: var(--light-color);
+    background: rgba(127, 140, 141, 0.2);
+    color: #7f8c8d;
     border-color: #7f8c8d;
     cursor: not-allowed;
 }
 
-.register-btn.closed:hover { background: #7f8c8d; transform: none; }
+.register-btn.closed:hover { background: rgba(127, 140, 141, 0.2); transform: none; }
 
 .update-btn {
     background: transparent;
     color: var(--warning-color);
     border: 2px solid var(--warning-color);
-    padding: 8px 16px;
-    border-radius: 7px;
+    padding: 10px 18px;
+    border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -375,8 +393,8 @@
     align-items: center;
     gap: 8px;
     font-size: 14px;
-    z-index: 10;
-    min-width: 100px;
+    flex: 1;
+    justify-content: center;
 }
 
 .update-btn:hover {
@@ -385,14 +403,31 @@
     transform: translateY(-2px);
 }
 
+/* ---------- Status Indicators ---------- */
+.status-indicator {
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.status-pending    { background: rgba(243, 156, 18, 0.2);   color: var(--warning-color); }
+.status-approved   { background: rgba(46, 204, 113, 0.2);   color: var(--success-color); }
+.status-upcoming   { background: rgba(52, 152, 219, 0.2);   color: var(--accent-blue); }
+.status-ongoing    { background: rgba(46, 204, 113, 0.2);   color: var(--success-color); }
+.status-reg-closed { background: rgba(127, 140, 141, 0.2);  color: #7f8c8d; }
+.status-completed  { background: rgba(149, 165, 166, 0.2);  color: #95a5a6; }
+
 /* ---------- Admin Panel ---------- */
 .admin-panel {
     background: var(--glass-bg);
-    border-radius: 16px;
-    padding: 30px;
+    border-radius: 14px;
+    padding: 25px;
     margin-bottom: 30px;
     box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3);
-    border: 2px solid var(--accent-blue);
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .admin-title {
@@ -425,13 +460,13 @@
     font-weight: 500;
     flex: 1;
     min-width: 180px;
-    z-index: 10;
 }
 
 .admin-tab-btn.active,
 .admin-tab-btn:hover {
     background: var(--accent-blue);
     color: white;
+    transform: translateY(-2px);
 }
 
 .admin-tab-content { display: none; }
@@ -439,7 +474,8 @@
 
 .pending-events, .pending-updates { margin-top: 20px; }
 
-.pending-event, .pending-update {
+/* Pending event cards — match faculty style */
+.pending-event-card, .pending-update-card {
     background: rgba(26, 37, 47, 0.9);
     border-radius: 12px;
     padding: 20px;
@@ -450,23 +486,17 @@
     align-items: flex-start;
 }
 
-.pending-event-image, .pending-update-image {
-    width: 100px;
-    height: 100px;
-    border-radius: 10px;
-    background: #1a252f;
+/* Aliases for old names still rendered in JS */
+.pending-event, .pending-update {
+    background: rgba(26, 37, 47, 0.9);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-    flex-shrink: 0;
+    flex-wrap: wrap;
+    gap: 20px;
+    align-items: flex-start;
 }
-
-.pending-event-image img,
-.pending-update-image img { width: 100%; height: 100%; object-fit: cover; }
-
-.pending-event-image i,
-.pending-update-image i { font-size: 32px; color: var(--accent-blue); }
 
 .pending-event-details, .pending-update-details {
     flex: 1;
@@ -485,23 +515,20 @@
     gap: 15px;
     margin-bottom: 10px;
     flex-wrap: wrap;
-}
-
-.pending-event-description, .pending-update-description {
-    color: #ddd;
-    margin-bottom: 15px;
-    line-height: 1.5;
+    font-size: 13px;
+    color: #aaa;
 }
 
 .pending-event-actions, .pending-update-actions {
     display: flex;
-    gap: 10px;
+    gap: 8px;
     margin-top: 10px;
+    flex-wrap: wrap;
 }
 
 .action-btn {
-    padding: 8px 16px;
-    border-radius: 6px;
+    padding: 10px 18px;
+    border-radius: 10px;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -510,8 +537,14 @@
     gap: 6px;
     font-size: 14px;
     border: none;
-    z-index: 10;
-    min-width: 90px;
+}
+
+.action-btn:disabled,
+.action-btn.is-processing {
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+    pointer-events: none;
 }
 
 .approve-btn { background: var(--success-color); color: white; }
@@ -531,41 +564,6 @@
     margin-top: 15px;
     border-left: 3px solid var(--accent-blue);
 }
-
-.update-changes h4 {
-    color: var(--accent-blue);
-    margin-bottom: 10px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.change-item {
-    display: flex;
-    margin-bottom: 8px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.change-field { flex: 1; font-weight: 500; color: var(--light-color); }
-.change-old   { flex: 1; color: #ff6b6b; text-decoration: line-through; }
-.change-new   { flex: 1; color: var(--success-color); font-weight: 500; }
-
-/* ---------- Status Indicators ---------- */
-.status-indicator {
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 600;
-    display: inline-block;
-}
-
-.status-pending   { background: rgba(243, 156, 18, 0.2);   color: var(--warning-color); }
-.status-approved  { background: rgba(46, 204, 113, 0.2);   color: var(--success-color); }
-.status-upcoming  { background: rgba(52, 152, 219, 0.2);   color: var(--accent-blue); }
-.status-ongoing   { background: rgba(46, 204, 113, 0.2);   color: var(--success-color); }
-.status-reg-closed { background: rgba(127, 140, 141, 0.2); color: #7f8c8d; }
-.status-completed { background: rgba(149, 165, 166, 0.2);  color: #95a5a6; }
 
 /* ---------- Messages ---------- */
 .success-message {
@@ -598,7 +596,7 @@
 ========================================================== */
 
 @media (max-width: 1200px) {
-    .event-grid { grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 25px; }
+    .event-grid { grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
 }
 
 @media (max-width: 768px) {
@@ -609,31 +607,35 @@
     .event-registration, .admin-panel { padding: 20px; }
     .form-title, .admin-title { font-size: 20px; }
     .form-group  { min-width: 100%; }
-    .submit-btn  { padding: 12px 24px; font-size: 14px; min-width: 100px; }
-    .event-grid  { grid-template-columns: 1fr; gap: 20px; }
-    .event-image { height: 180px; }
-    .event-title { font-size: 20px; }
-    .register-btn, .update-btn { padding: 6px 12px; font-size: 13px; min-width: 80px; }
-    .pending-event, .pending-update { flex-direction: column; }
-    .pending-event-image, .pending-update-image { width: 100%; height: 150px; }
+    .submit-btn  { padding: 10px 20px; font-size: 14px; min-width: 80px; }
+    .event-grid  { grid-template-columns: 1fr; gap: 18px; }
+    .event-image { height: 170px; }
+    .event-title { font-size: 18px; }
+    .register-btn, .update-btn { padding: 8px 14px; font-size: 13px; }
+    .event-footer { flex-direction: column; align-items: stretch; gap: 8px; }
+    .event-footer .register-btn,
+    .event-footer .update-btn { width: 100%; justify-content: center; }
+    .pending-event, .pending-update,
+    .pending-event-card, .pending-update-card { flex-direction: column; }
     .pending-event-title, .pending-update-title { font-size: 16px; }
-    .action-btn  { padding: 6px 12px; font-size: 13px; min-width: 80px; }
+    .action-btn  { padding: 6px 12px; font-size: 13px; }
 }
 
 @media (max-width: 576px) {
-    .page-title  { font-size: 22px; }
+    .page-title  { font-size: 22px; padding-bottom: 10px; }
     .event-grid  { grid-template-columns: 1fr; }
-    .event-title { font-size: 18px; }
+    .event-title { font-size: 16px; }
     .form-group  { min-width: 100%; }
     .event-registration, .admin-panel { padding: 15px; }
+    .tab-btn     { padding: 10px 20px; font-size: 14px; min-width: 100%; }
 }
 
 @media (max-width: 480px) {
     .page-title  { font-size: 20px; }
     .tab-btn     { padding: 8px 14px; font-size: 13px; }
-    .submit-btn  { padding: 10px 18px; font-size: 13px; }
-    .register-btn, .update-btn { padding: 6px 10px; font-size: 12px; min-width: 70px; }
-    .action-btn  { padding: 6px 10px; font-size: 12px; min-width: 70px; }
+    .submit-btn  { padding: 8px 14px; font-size: 13px; }
+    .register-btn, .update-btn { padding: 7px 12px; font-size: 12px; }
+    .action-btn  { padding: 6px 10px; font-size: 12px; }
 }
 
 @supports (padding-bottom: env(safe-area-inset-bottom)) {

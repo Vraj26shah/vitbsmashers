@@ -82,9 +82,6 @@
         </ul>
     </nav>
 
-    <!-- Mobile overlay (dims content when sidebar is open on mobile) -->
-    <div class="mobile-overlay" id="mobileOverlay"></div>
-
     <!-- Main Content Area -->
     <main class="main-content" id="mainContent">
         <h1 class="page-title">
@@ -391,61 +388,6 @@
                 particle.style.opacity = Math.random() * 0.5 + 0.3;
 
                 particlesContainer.appendChild(particle);
-            }
-        }
-
-        // ── Sidebar boilerplate (match faculty/event) ───────────────────────────
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        const mobileOverlay = document.getElementById('mobileOverlay');
-
-        function openSidebar() {
-            sidebar.classList.add('active');
-            if (mobileOverlay) mobileOverlay.classList.add('active');
-        }
-
-        function closeSidebar() {
-            sidebar.classList.remove('active');
-            if (mobileOverlay) mobileOverlay.classList.remove('active');
-        }
-
-        function toggleSidebar() {
-            sidebar.classList.contains('active') ? closeSidebar() : openSidebar();
-        }
-
-        menuToggle?.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            toggleSidebar();
-        });
-
-        if (mobileOverlay) {
-            mobileOverlay.addEventListener('click', closeSidebar);
-        }
-
-        // Click-outside-to-close (match faculty/event)
-        document.addEventListener('click', (e) => {
-            if (!sidebar.classList.contains('active')) return;
-            if (sidebar.contains(e.target) || menuToggle.contains(e.target)) return;
-            closeSidebar();
-        });
-
-        // Close sidebar on mobile after navigation (match faculty/event)
-        document.querySelectorAll('.sidebar-menu a').forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.matchMedia('(max-width: 768px)').matches) {
-                    closeSidebar();
-                }
-            });
-        });
-
-        function checkSidebarActivation() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('sidebar') === 'active' && sidebar) {
-                openSidebar();
-                // Clean the URL so refreshing doesn't re-open sidebar
-                const cleanUrl = window.location.pathname + window.location.hash;
-                history.replaceState(null, '', cleanUrl);
             }
         }
 
@@ -1343,11 +1285,44 @@
             }
             enforcePendingPanelVisibility('clubs');
 
-            checkSidebarActivation();
+            // Setup sidebar toggle — exactly matching faculty methodology
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar    = document.getElementById('sidebar');
+
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    sidebar.classList.toggle('active');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (sidebar.classList.contains('active') &&
+                        !sidebar.contains(e.target) &&
+                        !menuToggle.contains(e.target)) {
+                        sidebar.classList.remove('active');
+                    }
+                });
+
+                document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.matchMedia('(max-width: 768px)').matches) {
+                            sidebar.classList.remove('active');
+                        }
+                    });
+                });
+            }
+
+            // Check for sidebar activation from URL — exactly matching faculty
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('sidebar') === 'active') {
+                const sb = document.getElementById('sidebar');
+                if (sb) sb.classList.add('active');
+            }
+
             createParticles();
             loadClubs();
             startPolling();
-            checkAdminAccess(); // Check if user is admin and show pending tab
+            checkAdminAccess();
         });
     </script>
 </body>

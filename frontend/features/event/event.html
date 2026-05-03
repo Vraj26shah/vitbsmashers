@@ -7,6 +7,7 @@
     <link href='https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../shared-feature-shell.css">
+    <link rel="stylesheet" href="../../shared-background.css">
     <link rel="stylesheet" href="event.css">
     <script src="../../config.js"></script>
     <script src="../../shared-auth.js"></script>
@@ -79,7 +80,7 @@
             <li><a href="#" class="logout-link"><i class='bx bxs-log-out'></i> Logout</a></li>
         </ul>
     </nav>    
-    
+
     <!-- Main Content Area -->
     <main class="main-content" id="mainContent">
         <h1 class="page-title">
@@ -389,31 +390,6 @@
                 particlesContainer.appendChild(particle);
             }
         }
-
-        // Setup menu toggle
-        const menuToggle = document.getElementById('menuToggle');
-        const sidebar = document.getElementById('sidebar');
-        
-        menuToggle.addEventListener('click', () => {
-            sidebar.classList.toggle('active');
-        });
-        
-        document.addEventListener('click', (e) => {
-            if (sidebar.classList.contains('active') && 
-                !sidebar.contains(e.target) && 
-                !menuToggle.contains(e.target)) {
-                sidebar.classList.remove('active');
-            }
-        });
-
-        // Close sidebar on mobile after navigation
-        document.querySelectorAll('.sidebar-menu a').forEach(link => {
-            link.addEventListener('click', () => {
-                if (window.matchMedia('(max-width: 768px)').matches) {
-                    sidebar.classList.remove('active');
-                }
-            });
-        });
 
         // Tab functionality
         const tabBtns = document.querySelectorAll('.tab-btn');
@@ -1486,17 +1462,6 @@
         function sendUpdateNotification(update) {
         }
 
-        // Check URL parameters for sidebar activation
-        function checkSidebarActivation() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.get('sidebar') === 'active') {
-                const sidebar = document.getElementById('sidebar');
-                if (sidebar) {
-                    sidebar.classList.add('active');
-                }
-            }
-        }
-
         // Check if user is admin and show pending tab
         async function checkAdminAccess() {
             const token = localStorage.getItem('scholars_token') || localStorage.getItem('token');
@@ -1590,12 +1555,43 @@
                 adminTab.style.setProperty('display', 'none', 'important');
             }
             enforceAdminPanelVisibility('events', false);
-            
+
             // Check admin access
             checkAdminAccess();
-            
-            // Check for sidebar activation from URL
-            checkSidebarActivation();
+
+            // Setup sidebar toggle — exactly matching faculty methodology
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar    = document.getElementById('sidebar');
+
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    sidebar.classList.toggle('active');
+                });
+
+                document.addEventListener('click', (e) => {
+                    if (sidebar.classList.contains('active') &&
+                        !sidebar.contains(e.target) &&
+                        !menuToggle.contains(e.target)) {
+                        sidebar.classList.remove('active');
+                    }
+                });
+
+                document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.matchMedia('(max-width: 768px)').matches) {
+                            sidebar.classList.remove('active');
+                        }
+                    });
+                });
+            }
+
+            // Check for sidebar activation from URL — exactly matching faculty
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('sidebar') === 'active') {
+                const sb = document.getElementById('sidebar');
+                if (sb) sb.classList.add('active');
+            }
 
             createParticles();
             loadPendingQueues();

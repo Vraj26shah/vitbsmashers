@@ -422,7 +422,7 @@ button:active {
         max-width: 100%;
     }
 
-    .sidebar.active + .main-content {
+    .sidebar.active+.main-content {
         margin-left: 0;
     }
 

@@ -162,7 +162,7 @@ body {
     margin-left: auto !important;
     display: flex !important;
     align-items: center !important;
-    gap: 16px !important;
+    gap: 20px !important;
     flex-shrink: 0 !important;
 }
 
@@ -170,29 +170,31 @@ body {
     display: flex !important;
     align-items: center !important;
     cursor: pointer !important;
-    padding: 7px 18px !important;
-    border-radius: 40px !important;
+    padding: 8px 22px 8px 8px !important;
+    border-radius: 50px !important;
     background: rgba(52, 152, 219, 0.2) !important;
+    border: 1.5px solid rgba(52, 152, 219, 0.35) !important;
     transition: all 0.3s ease !important;
-    gap: 10px !important;
+    gap: 12px !important;
 }
 
 .user-profile:hover {
     background: rgba(52, 152, 219, 0.38) !important;
+    border-color: rgba(52, 152, 219, 0.6) !important;
 }
 
 .user-avatar {
-    width: 46px !important;
-    height: 46px !important;
+    width: 56px !important;
+    height: 56px !important;
     border-radius: 50% !important;
     background: var(--accent-blue) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     font-weight: bold !important;
-    font-size: 18px !important;
+    font-size: 22px !important;
     margin-right: 0 !important;
-    border: 2px solid rgba(255, 255, 255, 0.85) !important;
+    border: 2.5px solid rgba(255, 255, 255, 0.9) !important;
     overflow: hidden !important;
     flex-shrink: 0 !important;
 }
@@ -208,18 +210,21 @@ body {
     font-size: 15px !important;
     color: var(--light-color) !important;
     white-space: nowrap !important;
+    letter-spacing: 0.8px !important;
+    min-width: 140px !important;
 }
 
 .map-access {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 46px !important;
-    height: 46px !important;
+    width: 54px !important;
+    height: 54px !important;
     border-radius: 50% !important;
     background-color: rgba(52, 152, 219, 0.2) !important;
+    border: 1.5px solid rgba(52, 152, 219, 0.35) !important;
     color: var(--light-color) !important;
-    font-size: 22px !important;
+    font-size: 26px !important;
     transition: all 0.3s ease !important;
     text-decoration: none !important;
     z-index: 1002 !important;
@@ -229,6 +234,8 @@ body {
 
 .map-access:hover {
     background: rgba(52, 152, 219, 0.4) !important;
+    border-color: rgba(52, 152, 219, 0.6) !important;
+    transform: scale(1.08) !important;
 }
 
 /* ---------- Sidebar ---------- */
@@ -374,15 +381,15 @@ body {
     }
 
     .user-avatar {
-        width: 38px !important;
-        height: 38px !important;
-        font-size: 15px !important;
+        width: 44px !important;
+        height: 44px !important;
+        font-size: 18px !important;
     }
 
     .map-access {
-        width: 38px !important;
-        height: 38px !important;
-        font-size: 19px !important;
+        width: 42px !important;
+        height: 42px !important;
+        font-size: 22px !important;
     }
 
     .sidebar {

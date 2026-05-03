@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Scholars Stack - Submit a Query</title>
+<meta name="description" content="Submit a support query to the Scholars Stack team. Report issues, request help, and track your tickets.">
+<link href='https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+<link rel="stylesheet" href="../../shared-feature-shell.css">
+<link rel="stylesheet" href="query.css">
+<script src="../../config.js"></script>
+<script src="../../shared-auth.js"></script>
+<script src="../../shared-logout.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', async function () {
+        const waitForAuth = () => new Promise(resolve => {
+            const check = () => window.authManager ? resolve(window.authManager) : setTimeout(check, 50);
+            check();
+        });
+        const mgr = await waitForAuth();
+        await mgr.initPromise;
+        if (!mgr.isAuthenticated) {
+            mgr.showLoginRequired();
+        }
+    });
+</script>
+</head>
+<body>
+    <!-- Background Particles -->
+    <div class="bg-particles" id="bgParticles"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="menu-toggle" id="menuToggle">
+            <span></span><span></span><span></span>
+        </div>
+        <div class="logo">
+            <a href="../../index.html" style="text-decoration:none;display:flex;align-items:center;">
+                <img src="../images/logo1.png" alt="Scholars Stack Logo">
+                <div class="logo-text">
+                    <h1>Scholars Stack</h1>
+                    <span>Premium Academic Resources</span>
+                </div>
+            </a>
+        </div>
+        <div class="header-actions">
+            <div class="user-profile" style="display:none;">
+                <div class="user-avatar"><span>S</span></div>
+                <div class="user-name"></div>
+            </div>
+            <a href="#" class="map-access" title="Campus Map" aria-label="View Campus Map">
+                <i class='bx bxs-map'></i>
+            </a>
+        </div>
+    </header>
+
+    <nav class="sidebar" id="sidebar">
+        <div class="sidebar-title">Main Navigation</div>
+        <ul class="sidebar-menu">
+            <li><a href="../profile/profile.html"><i class='bx bxs-user'></i> Profile</a></li>
+            <li><a href="../attendance/attendance.html"><i class='bx bxs-calculator'></i> Attendance Calculator</a></li>
+            <li><a href="../gpa-calculator/cgpa.html"><i class='bx bxs-calculator'></i> CGPA Calculator</a></li>
+            <li><a href="../ttmaker/ttmaker1.html"><i class='bx bxs-calendar'></i> Timetable Maker</a></li>
+        </ul>
+        <div class="sidebar-title">Resources</div>
+        <ul class="sidebar-menu">
+            <li><a href="../marketplace/market.html"><i class='bx bxs-store'></i> Marketplace</a></li>
+            <li><a href="../club/club.html"><i class='bx bxs-group'></i> Club Info</a></li>
+            <li><a href="../faculty/faculty.html"><i class='bx bxs-group'></i> Faculty Info</a></li>
+            <li><a href="../mess-menu/mess.html"><i class='bx bxs-food-menu'></i> Mess Menus</a></li>
+        </ul>
+        <div class="sidebar-title">Quick Links</div>
+        <ul class="sidebar-menu">
+            <li><a href="../mycourses/mycourses.html"><i class='bx bxs-graduation'></i> My Courses</a></li>
+            <li><a href="../event/event.html"><i class='bx bxs-calendar-event'></i> Events</a></li>
+        </ul>
+        <div class="sidebar-title">Account</div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="logout-link"><i class='bx bxs-log-out'></i> Logout</a></li>
+        </ul>
+    </nav>
+
+    <main class="main-content" id="mainContent">
+        <h1 class="page-title">
+            <i class='bx bxs-message-dots'></i> Submit a Query
+        </h1>
+
+        <a href="profile.html" class="back-link">
+            <i class='bx bx-arrow-back'></i> Back to Profile
+        </a>
+
+        <div class="query-wrapper">
+            <div class="query-card">
+                <p class="query-intro">Tell us exactly what happened and we will investigate quickly.</p>
+                <div class="query-tip">
+                    Helpful format:<br>
+                    1. What you expected to happen<br>
+                    2. What actually happened<br>
+                    3. Exact steps to reproduce (step-by-step)
+                </div>
+
+                <form class="query-form" id="queryForm" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label for="querySubject">Subject</label>
+                        <input type="text" class="form-control" id="querySubject"
+                            placeholder="Short title for your issue" required minlength="5" maxlength="140">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="queryCategory">Category</label>
+                        <select class="form-control" id="queryCategory" required>
+                            <option value="">Select category</option>
+                            <option>Academic</option>
+                            <option>Administrative</option>
+                            <option>Technical Support</option>
+                            <option>Payment</option>
+                            <option>Other</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="queryIssueType">Issue Type <span style="opacity:.6;font-weight:400;">(Optional)</span></label>
+                        <input type="text" class="form-control" id="queryIssueType"
+                            placeholder="e.g. Login failed, page crash, wrong data">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="queryExpected">Expected Behavior</label>
+                        <textarea class="form-control" id="queryExpected"
+                            placeholder="What should have happened?" required minlength="5"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="queryActual">Actual Behavior</label>
+                        <textarea class="form-control" id="queryActual"
+                            placeholder="What happened instead?" required minlength="5"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="querySteps">Steps to Reproduce</label>
+                        <textarea class="form-control" id="querySteps"
+                            placeholder="1) Go to ... 2) Click ... 3) See error ..." required minlength="10"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="queryMessage">Your Message</label>
+                        <textarea class="form-control" id="queryMessage"
+                            placeholder="Any extra context, timestamps, or account details that help us debug faster."
+                            required minlength="20"></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="queryScreenshot">Screenshot <span style="opacity:.6;font-weight:400;">(Optional — useful for technical issues)</span></label>
+                        <input type="file" class="form-control" id="queryScreenshot"
+                            accept="image/png,image/jpeg,image/jpg,image/webp">
+                        <p class="file-hint">Accepted: JPG, PNG, WEBP &nbsp;|&nbsp; Max 8 MB</p>
+                        <img id="queryScreenshotPreview" alt="Screenshot preview" class="screenshot-preview">
+                    </div>
+
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary" id="querySubmitBtn">
+                            <i class='bx bxs-send'></i> Submit Query
+                        </button>
+                        <button type="reset" class="btn btn-outline">
+                            <i class='bx bx-reset'></i> Clear Form
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Success state -->
+                <div class="success-message" id="successMessage">
+                    <i class='bx bxs-check-circle'></i>
+                    <h3>Query Submitted Successfully!</h3>
+                    <p id="querySuccessText">Our support team will review your query and get back to you soon.</p>
+                    <a id="queryScreenshotLink" href="#" target="_blank" rel="noopener" class="screenshot-link">
+                        View uploaded screenshot
+                    </a>
+                    <pre id="querySummaryText" class="ticket-summary"></pre>
+                    <a href="profile.html" class="btn btn-primary" style="margin-top:20px;text-decoration:none;">
+                        <i class='bx bx-arrow-back'></i> Back to Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Particles
+        function createParticles() {
+            const c = document.getElementById('bgParticles');
+            if (!c) return;
+            const frag = document.createDocumentFragment();
+            for (let i = 0; i < 14; i++) {
+                const p = document.createElement('div');
+                p.classList.add('particle');
+                const sz = Math.random() * 50 + 15;
+                p.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-delay:${Math.random()*8}s;opacity:${(Math.random()*0.35+0.15).toFixed(2)}`;
+                frag.appendChild(p);
+            }
+            c.appendChild(frag);
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            createParticles();
+
+            // Sidebar wiring — matches faculty methodology exactly
+            const menuToggle = document.getElementById('menuToggle');
+            const sidebar    = document.getElementById('sidebar');
+
+            if (menuToggle && sidebar) {
+                menuToggle.addEventListener('click', e => {
+                    e.preventDefault();
+                    sidebar.classList.toggle('active');
+                });
+                document.addEventListener('click', e => {
+                    if (sidebar.classList.contains('active') &&
+                        !sidebar.contains(e.target) &&
+                        !menuToggle.contains(e.target)) {
+                        sidebar.classList.remove('active');
+                    }
+                });
+                document.querySelectorAll('.sidebar-menu a').forEach(link => {
+                    link.addEventListener('click', () => {
+                        if (window.matchMedia('(max-width: 768px)').matches)
+                            sidebar.classList.remove('active');
+                    });
+                });
+            }
+
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('sidebar') === 'active' && sidebar)
+                sidebar.classList.add('active');
+
+            // Screenshot preview
+            const screenshotInput   = document.getElementById('queryScreenshot');
+            const screenshotPreview = document.getElementById('queryScreenshotPreview');
+
+            screenshotInput.addEventListener('change', function () {
+                const file = this.files?.[0];
+                if (!file) { screenshotPreview.style.display = 'none'; screenshotPreview.src = ''; return; }
+                if (file.size > 8 * 1024 * 1024) { alert('Screenshot must be 8 MB or smaller.'); this.value = ''; return; }
+                if (!file.type.startsWith('image/')) { alert('Please upload a valid image file.'); this.value = ''; return; }
+                const reader = new FileReader();
+                reader.onload = e => { screenshotPreview.src = e.target.result; screenshotPreview.style.display = 'block'; };
+                reader.readAsDataURL(file);
+            });
+
+            // Form submit
+            const queryForm      = document.getElementById('queryForm');
+            const querySubmitBtn = document.getElementById('querySubmitBtn');
+
+            queryForm.addEventListener('submit', async function (e) {
+                e.preventDefault();
+
+                const token = localStorage.getItem('token');
+                if (!token) { alert('Please login first.'); return; }
+
+                const formData = new FormData();
+                formData.append('subject',            document.getElementById('querySubject').value.trim());
+                formData.append('category',           document.getElementById('queryCategory').value);
+                formData.append('issue_type',         document.getElementById('queryIssueType').value.trim());
+                formData.append('expected_behavior',  document.getElementById('queryExpected').value.trim());
+                formData.append('actual_behavior',    document.getElementById('queryActual').value.trim());
+                formData.append('steps_to_reproduce', document.getElementById('querySteps').value.trim());
+                formData.append('message',            document.getElementById('queryMessage').value.trim());
+                formData.append('page_url',           window.location.href);
+
+                const screenshot = screenshotInput.files?.[0];
+                if (screenshot) formData.append('screenshot', screenshot);
+
+                const originalText      = querySubmitBtn.innerHTML;
+                querySubmitBtn.disabled = true;
+                querySubmitBtn.innerHTML = '<i class="bx bx-loader-alt bx-spin"></i> Submitting…';
+
+                try {
+                    const API_BASE = window.config ? window.config.API_BASE : '/api/v1';
+                    const response = await fetch(`${API_BASE}/profile/query`, {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${token}` },
+                        credentials: 'include',
+                        body: formData,
+                    });
+
+                    const result = await response.json();
+                    if (!response.ok || result.status !== 'success')
+                        throw new Error(result.message || 'Could not submit your query.');
+
+                    const ticketId  = result.data?.ticketId  || 'N/A';
+                    const createdAt = result.data?.createdAt ? new Date(result.data.createdAt).toLocaleString() : 'N/A';
+                    const summary   = result.data?.readableSummary || '';
+                    const shotUrl   = result.data?.screenshotUrl   || '';
+
+                    document.getElementById('querySuccessText').textContent =
+                        `Ticket ${ticketId} submitted at ${createdAt}. Our team will review this and update you.`;
+                    document.getElementById('querySummaryText').textContent = summary;
+
+                    const shotLink = document.getElementById('queryScreenshotLink');
+                    if (shotUrl) { shotLink.href = shotUrl; shotLink.style.display = 'inline-block'; }
+                    else         { shotLink.style.display = 'none'; }
+
+                    queryForm.style.display = 'none';
+                    document.getElementById('successMessage').style.display = 'block';
+
+                } catch (err) {
+                    alert(err.message || 'Failed to submit query. Please try again.');
+                } finally {
+                    querySubmitBtn.disabled = false;
+                    querySubmitBtn.innerHTML = originalText;
+                }
+            });
+
+            queryForm.addEventListener('reset', () => {
+                screenshotPreview.style.display = 'none';
+                screenshotPreview.src = '';
+            });
+        });
+    </script>
+</body>
+</html>

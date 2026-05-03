@@ -3,23 +3,93 @@ import { getImageSignedUrl, getR2Object, uploadToR2 } from '../lib/r2.js';
 
 const hasValue = (value) => typeof value === 'string' ? value.trim().length > 0 : !!value;
 
+// ── R2 Profile Cache ─────────────────────────────────────────────────────────
+const profileR2Key = (userId) => `profiles/${userId}/profile.json`;
+
+/**
+ * Write the user's profile data to R2 as a fast-read cache.
+ * Runs fire-and-forget — never blocks the HTTP response.
+ */
+async function saveProfileToR2(userId, profileData) {
+  try {
+    const payload = {
+      ...profileData,
+      _cached_at: new Date().toISOString(),
+    };
+    await uploadToR2(
+      profileR2Key(userId),
+      Buffer.from(JSON.stringify(payload)),
+      'application/json',
+      'private, max-age=0, no-store',   // always re-validate; don't serve stale
+    );
+  } catch (err) {
+    // Non-critical — log but never throw
+    console.warn('[R2 profile cache] write failed:', err.message);
+  }
+}
+
+/**
+ * Read the user's profile from R2 cache.
+ * Returns null on any error or cache miss.
+ */
+async function getProfileFromR2(userId) {
+  try {
+    const raw = await getR2Object(profileR2Key(userId));
+    const parsed = JSON.parse(raw);
+    return parsed || null;
+  } catch {
+    return null;   // cache miss — caller falls back to Supabase
+  }
+}
+
 // ── GET /api/v1/profile/me  OR  GET /api/v1/profile/:userId ─────────────────
 export const getProfile = async (req, res) => {
   try {
     const isSelf = req.params.userId === 'me' || !req.params.userId;
     const targetId = isSelf ? req.user.id : req.params.userId;
 
+    // Fast path: serve from R2 cache for the authenticated user's own profile
+    if (isSelf) {
+      const cached = await getProfileFromR2(targetId);
+      if (cached) {
+        // Respond immediately with cached data
+        res.status(200).json({
+          status:  'success',
+          source:  'cache',
+          data: {
+            user: cached,
+            profileComplete:
+              hasValue(cached.phone) &&
+              hasValue(cached.registration_number) &&
+              hasValue(cached.branch),
+          },
+        });
+
+        // Background: refresh cache from Supabase (fire-and-forget)
+        supabase
+          .schema('business').from('users').select('*').eq('id', targetId).maybeSingle()
+          .then(({ data }) => { if (data) saveProfileToR2(targetId, data); })
+          .catch(() => {});
+
+        return;
+      }
+    }
+
+    // Slow path: fetch from Supabase and populate cache
     const { data, error } = await supabase
       .schema('business').from('users').select('*').eq('id', targetId).maybeSingle();
 
-    // For /me: fall back to the profile already attached by protect middleware
     const user = data || (isSelf ? req.user : null);
 
     if (!user)
       return res.status(404).json({ status: 'error', message: 'User not found' });
 
+    // Populate R2 cache for next request (fire-and-forget)
+    if (isSelf) saveProfileToR2(targetId, user);
+
     return res.status(200).json({
       status: 'success',
+      source: 'db',
       data: {
         user,
         profileComplete: hasValue(user.phone) && hasValue(user.registration_number) && hasValue(user.branch),
@@ -111,9 +181,6 @@ export const updateProfile = async (req, res) => {
       console.error('updateProfile save error:', error.message, '| code:', error.code);
 
       if (isRLSRecursion) {
-        // RLS policy is recursive — data couldn't persist but the request is valid.
-        // Return success with the submitted values so the frontend can redirect.
-        // Fix: run backend/sql/fix-rls-policies.sql in Supabase SQL Editor.
         console.warn('[updateProfile] RLS recursion — returning in-memory success. Run fix-rls-policies.sql to fix permanently.');
         const syntheticUser = {
           ...user,
@@ -122,6 +189,8 @@ export const updateProfile = async (req, res) => {
           email: emailLower,
           username: user.username || emailLower.split('@')[0],
         };
+        // Still cache the synthetic data to R2 so fast reads work
+        saveProfileToR2(userId, syntheticUser);
         return res.status(200).json({
           status: 'success',
           message: 'Profile updated successfully',
@@ -132,6 +201,9 @@ export const updateProfile = async (req, res) => {
 
       return res.status(400).json({ status: 'error', message: error.message });
     }
+
+    // Write fresh profile to R2 cache (fire-and-forget, non-blocking)
+    saveProfileToR2(userId, data);
 
     return res.status(200).json({
       status: 'success',

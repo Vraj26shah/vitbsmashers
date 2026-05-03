@@ -1,0 +1,272 @@
+/* ==========================================================
+   QUERY PAGE — page-specific styles only.
+   Shell (header, sidebar, background, layout) handled by
+   shared-feature-shell.css.
+========================================================== */
+
+.page-title {
+    font-size: 40px;
+    margin-bottom: 25px;
+    color: var(--light-color);
+    position: relative;
+    padding-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.page-title i {
+    color: var(--accent-teal);
+    font-size: 1.2em;
+}
+
+.page-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100px;
+    height: 5px;
+    background: var(--accent-blue);
+    border-radius: 3px;
+}
+
+/* ---------- Query wrapper ---------- */
+.query-wrapper {
+    max-width: 860px;
+}
+
+.query-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 16px;
+    padding: 36px 40px;
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 30px;
+}
+
+.query-intro {
+    color: #c2d8ea;
+    margin-bottom: 20px;
+    font-size: 15px;
+    line-height: 1.6;
+}
+
+.query-tip {
+    margin-bottom: 24px;
+    padding: 14px 16px;
+    border-radius: 10px;
+    background: rgba(52, 152, 219, 0.12);
+    border: 1px solid rgba(52, 152, 219, 0.35);
+    color: #d8ebf8;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+/* ---------- Form elements ---------- */
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--light-color);
+    font-size: 14px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 13px 15px;
+    background: rgba(44, 62, 80, 0.8);
+    border: 1px solid rgba(52, 152, 219, 0.3);
+    border-radius: 10px;
+    color: var(--light-color);
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--accent-teal);
+    box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.25);
+    background: rgba(44, 62, 80, 0.95);
+}
+
+textarea.form-control {
+    min-height: 110px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+select.form-control option {
+    background: #1a2535;
+    color: var(--light-color);
+}
+
+/* Screenshot input */
+input[type="file"].form-control {
+    padding: 10px 15px;
+    cursor: pointer;
+}
+
+.file-hint {
+    margin-top: 6px;
+    font-size: 12px;
+    color: #a8c9df;
+}
+
+.screenshot-preview {
+    display: none;
+    margin-top: 12px;
+    max-width: 280px;
+    border-radius: 10px;
+    border: 1px solid rgba(52, 152, 219, 0.35);
+}
+
+/* ---------- Form actions ---------- */
+.form-actions {
+    display: flex;
+    gap: 14px;
+    margin-top: 28px;
+    flex-wrap: wrap;
+}
+
+.btn {
+    padding: 13px 28px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 15px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: none;
+}
+
+.btn-primary {
+    background: var(--accent-blue);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #1e7ab3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 18px rgba(52, 152, 219, 0.45);
+}
+
+.btn-primary:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.btn-outline {
+    background: transparent;
+    color: var(--light-color);
+    border: 1.5px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-outline:hover {
+    background: rgba(255, 255, 255, 0.07);
+}
+
+/* ---------- Success message ---------- */
+.success-message {
+    display: none;
+    background: rgba(46, 204, 113, 0.12);
+    border: 1px solid var(--success-color);
+    border-radius: 14px;
+    padding: 28px 32px;
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+}
+
+.success-message i {
+    font-size: 52px;
+    color: var(--success-color);
+    display: block;
+    margin-bottom: 14px;
+}
+
+.success-message h3 {
+    font-size: 22px;
+    color: var(--success-color);
+    margin-bottom: 10px;
+}
+
+.success-message p {
+    color: #daf7e7;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.ticket-summary {
+    text-align: left;
+    white-space: pre-wrap;
+    margin-top: 16px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: #daf7e7;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(46, 204, 113, 0.35);
+    border-radius: 10px;
+    padding: 14px;
+    max-height: 260px;
+    overflow: auto;
+}
+
+.screenshot-link {
+    display: none;
+    margin-top: 10px;
+    color: #9debc3;
+    text-decoration: underline;
+    font-size: 13px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---------- Back link ---------- */
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: var(--accent-blue);
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-bottom: 22px;
+    transition: all 0.2s ease;
+}
+
+.back-link:hover {
+    color: var(--accent-teal);
+    gap: 10px;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .page-title { font-size: 26px; }
+    .query-card { padding: 22px 18px; }
+    .form-actions { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
+}
+
+@media (max-width: 480px) {
+    .page-title { font-size: 22px; }
+    .query-card { padding: 18px 14px; }
+}
+
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    .main-content {
+        padding-bottom: calc(20px + env(safe-area-inset-bottom));
+    }
+}
