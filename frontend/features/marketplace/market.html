@@ -1792,10 +1792,10 @@
                     // shared-auth.js handles user profile display automatically
 
                     if (!isUserProfileComplete) {
-                        setTimeout(() => {
-                            goToCompleteProfile();
-                        }, 250);
-                        return;
+                        // Show the inline profile notice instead of forcefully redirecting.
+                        // Users can still browse the marketplace; redirect happens only on purchase.
+                        const profileNotice = document.getElementById('profileNotice');
+                        if (profileNotice) profileNotice.style.display = 'block';
                     }
                 } else {
                     isUserProfileComplete = false;

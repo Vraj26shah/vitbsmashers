@@ -22,8 +22,8 @@
     --warning-color: #f39c12;
     --danger-color: #e74c3c;
     --premium-color: #9b59b6;
-    --shell-header-height: 90px;
-    --shell-sidebar-width: 280px;
+    --shell-header-height: 110px;
+    --shell-sidebar-width: 308px;
 }
 
 /* ---------- Reset ---------- */
@@ -82,37 +82,42 @@ body {
     left: 0 !important;
     width: 100% !important;
     height: var(--shell-header-height) !important;
-    background: rgba(8, 18, 30, 0.55) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
+    background: rgba(8, 18, 30, 0.60) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
     display: flex !important;
     align-items: center !important;
-    padding: 0 25px !important;
+    padding: 0 32px !important;
     z-index: 1000 !important;
-    border-bottom: 1px solid rgba(79, 182, 255, 0.4) !important;
-    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.35) !important;
+    border-bottom: 2px solid rgba(79, 182, 255, 0.75) !important;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
 }
 
 /* ---------- Menu Toggle ---------- */
 .menu-toggle {
-    width: 40px !important;
-    height: 40px !important;
+    width: 48px !important;
+    height: 48px !important;
     display: flex !important;
     flex-direction: column !important;
     justify-content: center !important;
     align-items: center !important;
     cursor: pointer !important;
-    margin-right: 16px !important;
+    margin-right: 18px !important;
     flex-shrink: 0 !important;
+    border-radius: 10px !important;
     transition: all 0.3s ease !important;
+}
+
+.menu-toggle:hover {
+    background: rgba(79, 182, 255, 0.12) !important;
 }
 
 .menu-toggle span {
     display: block !important;
-    width: 24px !important;
+    width: 28px !important;
     height: 3px !important;
     background: var(--light-color) !important;
-    margin: 2px 0 !important;
+    margin: 3px 0 !important;
     border-radius: 3px !important;
     transition: all 0.3s ease !important;
 }
@@ -124,29 +129,30 @@ body {
 }
 
 .logo img {
-    height: 62px !important;
+    height: 88px !important;
     width: auto !important;
-    margin-right: 16px !important;
+    margin-right: 20px !important;
 }
 
 .logo-text {
     display: flex !important;
     flex-direction: column !important;
+    gap: 2px !important;
 }
 
 .logo-text h1 {
-    font-size: 26px !important;
+    font-size: 34px !important;
     font-weight: 700 !important;
     color: var(--light-color) !important;
     letter-spacing: 0.3px !important;
-    line-height: 1.2 !important;
+    line-height: 1.15 !important;
 }
 
 .logo-text span {
-    font-size: 14px !important;
+    font-size: 16px !important;
     color: #72d0ff !important;
     font-weight: 600 !important;
-    letter-spacing: 0.2px !important;
+    letter-spacing: 0.3px !important;
     display: block !important;
 }
 
@@ -155,7 +161,7 @@ body {
     margin-left: auto !important;
     display: flex !important;
     align-items: center !important;
-    gap: 14px !important;
+    gap: 16px !important;
     flex-shrink: 0 !important;
 }
 
@@ -163,28 +169,29 @@ body {
     display: flex !important;
     align-items: center !important;
     cursor: pointer !important;
-    padding: 5px 14px !important;
-    border-radius: 30px !important;
+    padding: 7px 18px !important;
+    border-radius: 40px !important;
     background: rgba(52, 152, 219, 0.2) !important;
     transition: all 0.3s ease !important;
+    gap: 10px !important;
 }
 
 .user-profile:hover {
-    background: rgba(52, 152, 219, 0.4) !important;
+    background: rgba(52, 152, 219, 0.38) !important;
 }
 
 .user-avatar {
-    width: 40px !important;
-    height: 40px !important;
+    width: 46px !important;
+    height: 46px !important;
     border-radius: 50% !important;
     background: var(--accent-blue) !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     font-weight: bold !important;
-    font-size: 16px !important;
-    margin-right: 10px !important;
-    border: 2px solid var(--light-color) !important;
+    font-size: 18px !important;
+    margin-right: 0 !important;
+    border: 2px solid rgba(255, 255, 255, 0.85) !important;
     overflow: hidden !important;
     flex-shrink: 0 !important;
 }
@@ -196,7 +203,7 @@ body {
 }
 
 .user-name {
-    font-weight: 500 !important;
+    font-weight: 600 !important;
     font-size: 15px !important;
     color: var(--light-color) !important;
     white-space: nowrap !important;
@@ -206,12 +213,12 @@ body {
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    width: 40px !important;
-    height: 40px !important;
+    width: 46px !important;
+    height: 46px !important;
     border-radius: 50% !important;
     background-color: rgba(52, 152, 219, 0.2) !important;
     color: var(--light-color) !important;
-    font-size: 20px !important;
+    font-size: 22px !important;
     transition: all 0.3s ease !important;
     text-decoration: none !important;
     z-index: 1002 !important;
@@ -230,15 +237,15 @@ body {
     left: calc(-1 * var(--shell-sidebar-width)) !important;
     width: var(--shell-sidebar-width) !important;
     height: calc(100vh - var(--shell-header-height)) !important;
-    background: rgba(8, 18, 30, 0.55) !important;
-    backdrop-filter: blur(12px) !important;
-    -webkit-backdrop-filter: blur(12px) !important;
+    background: rgba(7, 16, 28, 0.72) !important;
+    backdrop-filter: blur(18px) !important;
+    -webkit-backdrop-filter: blur(18px) !important;
     z-index: 900 !important;
     transition: left 0.3s ease !important;
-    border-right: 1px solid rgba(79, 182, 255, 0.35) !important;
-    box-shadow: 12px 0 30px rgba(0, 0, 0, 0.3) !important;
+    border-right: 1px solid rgba(79, 182, 255, 0.3) !important;
+    box-shadow: 16px 0 40px rgba(0, 0, 0, 0.38) !important;
     overflow-y: auto !important;
-    padding: 20px 0 !important;
+    padding: 24px 0 !important;
 }
 
 .sidebar.active {
@@ -247,12 +254,12 @@ body {
 
 /* ---------- Sidebar Title ---------- */
 .sidebar-title {
-    padding: 16px 20px 8px !important;
-    font-size: 13px !important;
-    color: #67c8ff !important;
-    font-weight: 600 !important;
+    padding: 20px 26px 10px !important;
+    font-size: 11px !important;
+    color: rgba(103, 200, 255, 0.7) !important;
+    font-weight: 700 !important;
     text-transform: uppercase !important;
-    letter-spacing: 0.7px !important;
+    letter-spacing: 1.2px !important;
 }
 
 /* ---------- Sidebar Menu ---------- */
@@ -261,32 +268,40 @@ body {
 }
 
 .sidebar-menu li {
-    margin-bottom: 4px !important;
+    margin-bottom: 2px !important;
 }
 
 .sidebar-menu a {
     display: flex !important;
     align-items: center !important;
-    padding: 13px 20px !important;
-    color: var(--light-color) !important;
+    padding: 15px 26px !important;
+    color: rgba(220, 235, 255, 0.82) !important;
     text-decoration: none !important;
-    font-size: 14px !important;
-    transition: all 0.3s ease !important;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    transition: all 0.25s ease !important;
     border-left: 3px solid transparent !important;
+    letter-spacing: 0.1px !important;
 }
 
 .sidebar-menu a:hover,
 .sidebar-menu a.active {
-    background: rgba(79, 182, 255, 0.18) !important;
+    background: rgba(79, 182, 255, 0.14) !important;
     border-left-color: #58beff !important;
+    color: var(--light-color) !important;
+}
+
+.sidebar-menu a.active {
+    background: rgba(79, 182, 255, 0.2) !important;
+    color: #ffffff !important;
 }
 
 .sidebar-menu i {
-    font-size: 18px !important;
-    margin-right: 12px !important;
-    width: 20px !important;
+    font-size: 20px !important;
+    margin-right: 14px !important;
+    width: 24px !important;
     text-align: center !important;
-    color: #4fb6ff !important;
+    color: #5bbfff !important;
     flex-shrink: 0 !important;
 }
 
@@ -315,38 +330,38 @@ body {
 ========================================== */
 @media (max-width: 768px) {
     :root {
-        --shell-header-height: 60px;
+        --shell-header-height: 72px;
         --shell-sidebar-width: 100%;
     }
 
     .header {
         height: var(--shell-header-height) !important;
-        padding: 0 14px !important;
+        padding: 0 16px !important;
     }
 
     .menu-toggle {
-        width: 34px !important;
-        height: 34px !important;
-        margin-right: 10px !important;
+        width: 40px !important;
+        height: 40px !important;
+        margin-right: 12px !important;
     }
 
     .menu-toggle span {
-        width: 20px !important;
+        width: 23px !important;
         height: 2.5px !important;
-        margin: 2px 0 !important;
+        margin: 2.5px 0 !important;
     }
 
     .logo img {
-        height: 44px !important;
+        height: 58px !important;
         margin-right: 12px !important;
     }
 
     .logo-text h1 {
-        font-size: 20px !important;
+        font-size: 24px !important;
     }
 
     .logo-text span {
-        font-size: 13px !important;
+        font-size: 14px !important;
     }
 
     .user-name {
@@ -354,20 +369,19 @@ body {
     }
 
     .user-profile {
-        padding: 4px 8px !important;
+        padding: 5px 10px !important;
     }
 
     .user-avatar {
-        width: 34px !important;
-        height: 34px !important;
-        font-size: 13px !important;
-        margin-right: 0 !important;
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 15px !important;
     }
 
     .map-access {
-        width: 34px !important;
-        height: 34px !important;
-        font-size: 17px !important;
+        width: 38px !important;
+        height: 38px !important;
+        font-size: 19px !important;
     }
 
     .sidebar {
@@ -375,6 +389,15 @@ body {
         left: -100% !important;
         width: 100% !important;
         height: calc(100vh - var(--shell-header-height)) !important;
+    }
+
+    .sidebar-menu a {
+        font-size: 16px !important;
+        padding: 17px 26px !important;
+    }
+
+    .sidebar-menu i {
+        font-size: 22px !important;
     }
 
     .sidebar.active {
@@ -386,10 +409,10 @@ body {
     }
 
     .main-content {
-        padding-top: calc(var(--shell-header-height) + 16px) !important;
-        padding-left: 14px !important;
-        padding-right: 14px !important;
-        padding-bottom: 20px !important;
+        padding-top: calc(var(--shell-header-height) + 18px) !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        padding-bottom: 24px !important;
         max-width: 100% !important;
     }
 
@@ -403,25 +426,29 @@ body {
    RESPONSIVE — 480px (small phone)
 ========================================== */
 @media (max-width: 480px) {
+    :root {
+        --shell-header-height: 64px;
+    }
+
     .header {
-        padding: 0 10px !important;
+        padding: 0 12px !important;
     }
 
     .logo img {
-        height: 38px !important;
+        height: 50px !important;
         margin-right: 10px !important;
     }
 
     .logo-text h1 {
-        font-size: 17px !important;
+        font-size: 21px !important;
     }
 
     .logo-text span {
-        font-size: 11px !important;
+        font-size: 13px !important;
     }
 
     .main-content {
-        padding-top: calc(var(--shell-header-height) + 12px) !important;
+        padding-top: calc(var(--shell-header-height) + 14px) !important;
         padding-left: 12px !important;
         padding-right: 12px !important;
         padding-bottom: 20px !important;
@@ -433,15 +460,15 @@ body {
 ========================================== */
 @media (max-width: 360px) {
     .logo-text h1 {
-        font-size: 14px !important;
+        font-size: 18px !important;
     }
 
     .logo-text span {
-        font-size: 10px !important;
+        font-size: 12px !important;
     }
 
     .logo img {
-        height: 32px !important;
+        height: 44px !important;
     }
 
     .main-content {

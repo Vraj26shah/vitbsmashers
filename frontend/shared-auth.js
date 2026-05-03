@@ -11,6 +11,10 @@ class AuthManager {
         await this.checkAuthentication();
         await this.hydrateProfileCompletion();
 
+        // Only redirect to complete-profile if:
+        // 1. User IS authenticated
+        // 2. Current page requires a complete profile
+        // 3. Profile is genuinely incomplete (checked against fresh backend data)
         if (this.isAuthenticated && this.pageRequiresCompleteProfile() && !this.isProfileComplete(this.userData)) {
             this.showCompleteProfileRequired();
             return;
@@ -334,8 +338,10 @@ class AuthManager {
     }
 
     pageRequiresCompleteProfile() {
-        const currentPath = window.location.pathname;
-        return currentPath.includes('/features/profile/profile.html');
+        // Profile pages handle their own complete-profile checks via initProfilePage(),
+        // which performs a comprehensive backend verification. Returning false here
+        // prevents a premature redirect race from shared-auth.js init().
+        return false;
     }
 
     showCompleteProfileRequired() {

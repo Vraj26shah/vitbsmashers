@@ -15,9 +15,9 @@
 <script src="../../shared-user-auth.js"></script>
 <script src="../../shared-logout.js"></script>
 <script>
-    // Initialize authentication check when DOM is loaded
+    // Authentication gate: wait for authManager, then check if user is logged in.
+    // The complete-profile check is handled by the main profile initialization below.
     document.addEventListener('DOMContentLoaded', async function () {
-        // Wait for authManager and its async init to fully complete
         const waitForAuth = () => new Promise(resolve => {
             const check = () => window.authManager ? resolve(window.authManager) : setTimeout(check, 50);
             check();
@@ -28,10 +28,8 @@
             mgr.showLoginRequired();
             return;
         }
-        if (mgr.pageRequiresCompleteProfile && mgr.isProfileComplete && !mgr.isProfileComplete(mgr.userData)) {
-            mgr.showCompleteProfileRequired();
-            return;
-        }
+        // Note: complete-profile redirect is intentionally handled by initProfilePage()
+        // below which does a comprehensive backend check, not here.
     });
 </script>
 </head>
@@ -518,25 +516,53 @@
         // Emergency check: If profile is completed or user is Google authenticated, ensure setup form is never shown
         function emergencyProfileCheck() {
             try {
+                // Check standalone flag first (fastest)
+                if (localStorage.getItem('profileCompleted') === 'true') {
+                    debugLog('🚨 EMERGENCY: profileCompleted flag is true, forcing profile view');
+                    const cachedProfile = getCachedProfileDataRaw();
+                    if (cachedProfile) showProfileFromCache(cachedProfile);
+                    return true;
+                }
+
                 const profileData = localStorage.getItem('profileData');
                 if (profileData) {
                     const parsed = JSON.parse(profileData);
-                    if (parsed.profileCompleted === true || parsed.googleId) {
-                        debugLog('🚨 EMERGENCY: Profile completed or Google user detected, forcing profile view');
-                        // Show profile view immediately with cached data
+                    // Check explicit completion flag
+                    if (parsed.profileCompleted === true || parsed.profile_completed === true || parsed.profileComplete === true) {
+                        debugLog('🚨 EMERGENCY: Profile completed flag in profileData, forcing profile view');
                         showProfileFromCache(parsed);
-                        if (parsed.googleId && !parsed.profileCompleted) {
-                            showProfileCompletionBanner();
-                        }
                         return true;
                     }
+                    // Check if all required fields are present
+                    const hasPhone = typeof parsed.phone === 'string' ? parsed.phone.trim().length > 0 : !!parsed.phone;
+                    const hasReg = !!(parsed.registrationNumber || parsed.regNumber || parsed.registration_number);
+                    const hasBranch = !!(parsed.branch || parsed.program);
+                    if (hasPhone && hasReg && hasBranch) {
+                        debugLog('🚨 EMERGENCY: All required fields present in profileData, forcing profile view');
+                        showProfileFromCache(parsed);
+                        return true;
+                    }
+                    // Google user that has not completed profile yet — keep on profile page with setup form
+                    if (parsed.googleId && !hasPhone) {
+                        // Don't show profile view — they need to complete the form
+                        return false;
+                    }
                 }
-                debugLog('🚨 EMERGENCY: Profile not completed and not Google user - setup form should be visible');
+                debugLog('🚨 EMERGENCY: Profile not completed - setup form should be visible');
             } catch (error) {
                 console.warn('⚠️ Error in emergency profile check:', error);
             }
             return false;
         }
+
+        // Raw cache accessor (before getCachedProfileData is defined later)
+        function getCachedProfileDataRaw() {
+            try {
+                const raw = localStorage.getItem('profileData');
+                return raw ? JSON.parse(raw) : null;
+            } catch (_) { return null; }
+        }
+
 
 
         // Create background particles (optimized)
