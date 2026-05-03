@@ -22,7 +22,7 @@
     --warning-color: #f39c12;
     --danger-color: #e74c3c;
     --premium-color: #9b59b6;
-    --shell-header-height: 110px;
+    --shell-header-height: 100px;
     --shell-sidebar-width: 308px;
 }
 
@@ -81,16 +81,16 @@ body {
     top: 0 !important;
     left: 0 !important;
     width: 100% !important;
-    height: var(--shell-header-height) !important;
-    background: rgba(8, 18, 30, 0.60) !important;
-    backdrop-filter: blur(16px) !important;
-    -webkit-backdrop-filter: blur(16px) !important;
+    min-height: var(--shell-header-height) !important;
+    background: var(--glass-bg) !important;
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
     display: flex !important;
     align-items: center !important;
-    padding: 0 32px !important;
+    padding: 15px 32px !important;
     z-index: 1000 !important;
-    border-bottom: 2px solid rgba(79, 182, 255, 0.75) !important;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4) !important;
+    border-bottom: 2px solid rgba(52, 152, 219, 0.6) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* ---------- Menu Toggle ---------- */
@@ -129,9 +129,9 @@ body {
 }
 
 .logo img {
-    height: 88px !important;
+    height: 70px !important;
     width: auto !important;
-    margin-right: 20px !important;
+    margin-right: 15px !important;
 }
 
 .logo-text {
@@ -141,18 +141,19 @@ body {
 }
 
 .logo-text h1 {
-    font-size: 34px !important;
+    font-size: clamp(1.5rem, 4vw, 1.8rem) !important;
     font-weight: 700 !important;
     color: var(--light-color) !important;
     letter-spacing: 0.3px !important;
-    line-height: 1.15 !important;
+    line-height: 1.2 !important;
+    font-family: 'Montserrat', 'Poppins', sans-serif !important;
 }
 
 .logo-text span {
-    font-size: 16px !important;
-    color: #72d0ff !important;
-    font-weight: 600 !important;
-    letter-spacing: 0.3px !important;
+    font-size: clamp(0.7rem, 2vw, 0.85rem) !important;
+    color: var(--accent-teal) !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.2px !important;
     display: block !important;
 }
 
@@ -330,13 +331,13 @@ body {
 ========================================== */
 @media (max-width: 768px) {
     :root {
-        --shell-header-height: 72px;
+        --shell-header-height: 76px;
         --shell-sidebar-width: 100%;
     }
 
     .header {
-        height: var(--shell-header-height) !important;
-        padding: 0 16px !important;
+        min-height: var(--shell-header-height) !important;
+        padding: 10px 16px !important;
     }
 
     .menu-toggle {
@@ -352,16 +353,16 @@ body {
     }
 
     .logo img {
-        height: 58px !important;
+        height: 52px !important;
         margin-right: 12px !important;
     }
 
     .logo-text h1 {
-        font-size: 24px !important;
+        font-size: clamp(1.2rem, 4vw, 1.5rem) !important;
     }
 
     .logo-text span {
-        font-size: 14px !important;
+        font-size: clamp(0.65rem, 2vw, 0.8rem) !important;
     }
 
     .user-name {
@@ -427,24 +428,24 @@ body {
 ========================================== */
 @media (max-width: 480px) {
     :root {
-        --shell-header-height: 64px;
+        --shell-header-height: 68px;
     }
 
     .header {
-        padding: 0 12px !important;
+        padding: 10px 12px !important;
     }
 
     .logo img {
-        height: 50px !important;
+        height: 46px !important;
         margin-right: 10px !important;
     }
 
     .logo-text h1 {
-        font-size: 21px !important;
+        font-size: clamp(1.1rem, 3.5vw, 1.3rem) !important;
     }
 
     .logo-text span {
-        font-size: 13px !important;
+        font-size: clamp(0.6rem, 1.8vw, 0.75rem) !important;
     }
 
     .main-content {
@@ -460,15 +461,15 @@ body {
 ========================================== */
 @media (max-width: 360px) {
     .logo-text h1 {
-        font-size: 18px !important;
+        font-size: 1rem !important;
     }
 
     .logo-text span {
-        font-size: 12px !important;
+        font-size: 0.6rem !important;
     }
 
     .logo img {
-        height: 44px !important;
+        height: 40px !important;
     }
 
     .main-content {

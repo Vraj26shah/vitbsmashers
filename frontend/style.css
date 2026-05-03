@@ -65,11 +65,12 @@
         header {
             background: var(--glass-bg);
             backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
             position: sticky;
             top: 0;
             z-index: 1000;
             box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            border-bottom: 1px solid rgba(52, 152, 219, 0.3);
+            border-bottom: 2px solid rgba(52, 152, 219, 0.6);
             padding: 15px 0;
         }
 
@@ -91,7 +92,7 @@
     min-width: 250px;
 }
 
-/* Logo image sizing */
+/* Logo image sizing — matches shared-feature-shell.css */
 .logo img {
     height: 70px;
     width: auto;
@@ -1137,11 +1138,11 @@
             }
             
             .logo-text h1 {
-                font-size: 2.2rem;
+                font-size: clamp(1.5rem, 4vw, 1.8rem);
             }
             
             .logo-text p {
-                font-size: 1rem;
+                font-size: clamp(0.7rem, 2vw, 0.85rem);
             }
             
             nav ul {
