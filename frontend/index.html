@@ -508,37 +508,6 @@
     <script src="/env-config.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
     <script src="config.js"></script>
-    <script>
-        // ── AUTO-REDIRECT for already-logged-in users ──────────────────────────────
-        // If user has a token and a complete profile, send them straight to marketplace.
-        // Run synchronously so the landing page never flickers.
-        (function() {
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) return; // not logged in — show landing page normally
-
-                // Optimistic redirect if we have cached "profile completed" flag.
-                // The marketplace's own auth will do the definitive check.
-                const profileCompleted = localStorage.getItem('profileCompleted') === 'true';
-                const profileData = JSON.parse(localStorage.getItem('profileData') || '{}');
-                const hasProfile = profileCompleted ||
-                    (profileData.phone && (profileData.registrationNumber || profileData.regNumber) && (profileData.branch || profileData.program));
-
-                if (hasProfile) {
-                    window.location.replace('/features/marketplace/market.html?sidebar=active');
-                    return;
-                }
-
-                // Has token but no complete profile — might be a new Google sign-in.
-                // Check if they were just redirected here after OAuth (google_success param).
-                const params = new URLSearchParams(window.location.search);
-                if (!params.get('google_success')) {
-                    // Token exists but profile incomplete — send to complete profile.
-                    window.location.replace('/features/profile/complete-profile.html');
-                }
-            } catch (e) { /* never block the landing page */ }
-        })();
-    </script>
     <script src="preload-manager.js"></script>
     <script src="feature-loader.js"></script>
     <script>
