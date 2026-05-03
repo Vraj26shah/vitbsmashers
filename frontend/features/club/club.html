@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scholars Stack - Club Info</title>
-    <link href='https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
+    <link href='https://cdn.jsdelivr.net/npm/boxicons@2.1.4/css/boxicons.min.css' rel='stylesheet'>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="../../shared-feature-shell.css">
     <link rel="stylesheet" href="../../shared-background.css">
@@ -80,7 +80,10 @@
             <!-- <li><a href="#"><i class='bx bxs-cog'></i> Settings</a></li> -->
             <li><a href="#" class="logout-link"><i class='bx bxs-log-out'></i> Logout</a></li>
         </ul>
-    </nav>    
+    </nav>
+
+    <!-- Mobile overlay (dims content when sidebar is open on mobile) -->
+    <div class="mobile-overlay" id="mobileOverlay"></div>
 
     <!-- Main Content Area -->
     <main class="main-content" id="mainContent">
@@ -394,54 +397,55 @@
         // ── Sidebar boilerplate (match faculty/event) ───────────────────────────
         const menuToggle = document.getElementById('menuToggle');
         const sidebar = document.getElementById('sidebar');
+        const mobileOverlay = document.getElementById('mobileOverlay');
+
+        function openSidebar() {
+            sidebar.classList.add('active');
+            if (mobileOverlay) mobileOverlay.classList.add('active');
+        }
+
+        function closeSidebar() {
+            sidebar.classList.remove('active');
+            if (mobileOverlay) mobileOverlay.classList.remove('active');
+        }
+
         function toggleSidebar() {
-            sidebar.classList.toggle('active');
+            sidebar.classList.contains('active') ? closeSidebar() : openSidebar();
         }
 
         menuToggle?.addEventListener('click', (e) => {
             e.preventDefault();
+            e.stopPropagation();
             toggleSidebar();
         });
+
+        if (mobileOverlay) {
+            mobileOverlay.addEventListener('click', closeSidebar);
+        }
 
         // Click-outside-to-close (match faculty/event)
         document.addEventListener('click', (e) => {
             if (!sidebar.classList.contains('active')) return;
             if (sidebar.contains(e.target) || menuToggle.contains(e.target)) return;
-            sidebar.classList.remove('active');
+            closeSidebar();
         });
 
         // Close sidebar on mobile after navigation (match faculty/event)
         document.querySelectorAll('.sidebar-menu a').forEach(link => {
             link.addEventListener('click', () => {
                 if (window.matchMedia('(max-width: 768px)').matches) {
-                    sidebar.classList.remove('active');
+                    closeSidebar();
                 }
             });
         });
 
         function checkSidebarActivation() {
             const urlParams = new URLSearchParams(window.location.search);
-            if (!sidebar) return;
-
-            const source = urlParams.get('source');
-            let isFromIndex = source === 'index';
-
-            if (!isFromIndex) {
-                try {
-                    if (document.referrer) {
-                        const refUrl = new URL(document.referrer);
-                        const refPath = refUrl.pathname || '';
-                        isFromIndex =
-                            refUrl.origin === window.location.origin &&
-                            (refPath === '/' || refPath.endsWith('/index.html'));
-                    }
-                } catch (_) {}
-            }
-
-            if (urlParams.get('sidebar') === 'active' && isFromIndex) {
-                sidebar.classList.add('active');
-            } else {
-                sidebar.classList.remove('active');
+            if (urlParams.get('sidebar') === 'active' && sidebar) {
+                openSidebar();
+                // Clean the URL so refreshing doesn't re-open sidebar
+                const cleanUrl = window.location.pathname + window.location.hash;
+                history.replaceState(null, '', cleanUrl);
             }
         }
 
@@ -497,8 +501,6 @@
                 document.getElementById(`${btn.dataset.adminTab}-tab`).classList.add('active');
             });
         });
-
-        // Keep club sidebar collapsed on entry for consistency with feature flow.
 
         // ── Toast ───────────────────────────────────────────────────────────────
         function showToast(msg, type = 'success') {
@@ -1339,7 +1341,7 @@
                 pendingTab.classList.add('admin-only');
                 pendingTab.style.setProperty('display', 'none', 'important');
             }
-            enforcePendingPanelVisibility('clubs', false);
+            enforcePendingPanelVisibility('clubs');
 
             checkSidebarActivation();
             createParticles();

@@ -2226,6 +2226,7 @@
     padding: 22px 18px;
     border-radius: 14px;
     text-decoration: none !important;
+    color: var(--light-color);
     cursor: pointer;
     overflow: visible;
 }
