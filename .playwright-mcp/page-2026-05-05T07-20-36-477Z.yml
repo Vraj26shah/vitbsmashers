@@ -1,0 +1,444 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e8]:
+    - generic [ref=e9]:
+      - link "Scholars Stack Logo Scholars Stack Premium Academic Resources" [ref=e10] [cursor=pointer]:
+        - /url: index.html
+        - img "Scholars Stack Logo" [ref=e11]
+        - generic [ref=e12]:
+          - heading "Scholars Stack" [level=1] [ref=e13]
+          - paragraph [ref=e14]: Premium Academic Resources
+      - text: 
+      - navigation [ref=e15]:
+        - list [ref=e16]:
+          - listitem [ref=e17]:
+            - link "Why Join?" [ref=e18] [cursor=pointer]:
+              - /url: "#why-join"
+          - listitem [ref=e19]:
+            - link "Testimonials" [ref=e20] [cursor=pointer]:
+              - /url: "#testimonials"
+          - listitem [ref=e21]:
+            - link "Features" [ref=e22] [cursor=pointer]:
+              - /url: "#features"
+          - listitem [ref=e23]:
+            - link " Browse Notes" [ref=e24] [cursor=pointer]:
+              - /url: features/marketplace/market.html?sidebar=active
+              - generic [ref=e25]: 
+              - text: Browse Notes
+  - generic [ref=e26]:
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - generic [ref=e30]:
+          - generic [ref=e31]: 
+          - text: "VITB's #1 Academic Platform"
+        - heading "Transform Your" [level=1] [ref=e32]: Transform Your
+        - paragraph [ref=e34]: Notes from students who've aced the same exams, tools that actually save time, and everything a VITB student needs — in one place.
+        - generic [ref=e35]:
+          - generic [ref=e36]:
+            - generic [ref=e37]: "17"
+            - generic [ref=e38]: "% Success Rate"
+          - generic [ref=e39]:
+            - generic [ref=e40]: 1+
+            - generic [ref=e41]: Avg. GPA
+          - generic [ref=e42]:
+            - generic [ref=e43]: 92+
+            - generic [ref=e44]: Students
+        - generic [ref=e46]:
+          - button "Sign in with Google" [ref=e47] [cursor=pointer]:
+            - img [ref=e48]
+            - text: Sign in with Google
+          - generic [ref=e53]:
+            - generic [ref=e54]: 
+            - generic [ref=e55]:
+              - strong [ref=e56]: Exclusive for VIT Bhopal University students
+              - generic [ref=e57]:
+                - text: Please use your
+                - strong [ref=e58]: "@vitbhopal.ac.in"
+                - text: Google account to sign in
+      - generic [ref=e60]:
+        - generic [ref=e61]:
+          - heading "Everything You Need" [level=2] [ref=e62]
+          - paragraph [ref=e63]: Tools, notes, and resources — all in one place, built for VITB students
+        - generic [ref=e64]:
+          - generic [ref=e65]:
+            - generic [ref=e66]:
+              - generic [ref=e67]: 
+              - text: Premium Notes Preview
+            - link "View All Notes " [ref=e68] [cursor=pointer]:
+              - /url: features/marketplace/market.html?sidebar=active
+              - text: View All Notes
+              - generic [ref=e69]: 
+          - generic [ref=e70]:
+            - button "Previous slide" [ref=e71] [cursor=pointer]:
+              - generic [ref=e72]: 
+            - generic [ref=e74]:
+              - link "View Data Structures and Algorithms in Marketplace" [ref=e75] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Data Structures and Algorithms" [ref=e76]
+                - generic [ref=e78]:
+                  - generic [ref=e79]: CSE2002
+                  - generic [ref=e80]: ₹499
+                - generic [ref=e81]:
+                  - heading "Data Structures and Algorithms" [level=3] [ref=e82]
+                  - paragraph [ref=e83]: Complete DSA notes with solved problems and PYQs
+                  - generic [ref=e84]:
+                    - text: Get Notes
+                    - generic [ref=e85]: 
+              - link "View Fundamentals in AI and ML in Marketplace" [ref=e86] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Fundamentals in AI and ML" [ref=e87]
+                - generic [ref=e89]:
+                  - generic [ref=e90]: CSA2001
+                  - generic [ref=e91]: ₹499
+                - generic [ref=e92]:
+                  - heading "Fundamentals in AI and ML" [level=3] [ref=e93]
+                  - paragraph [ref=e94]: AI & ML concepts with handwritten notes and reference PDFs
+                  - generic [ref=e95]:
+                    - text: Get Notes
+                    - generic [ref=e96]: 
+              - link "View Discrete Mathematics & Graph Theory in Marketplace" [ref=e97] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Discrete Mathematics & Graph Theory" [ref=e98]
+                - generic [ref=e100]:
+                  - generic [ref=e101]: MAT2002
+                  - generic [ref=e102]: ₹499
+                - generic [ref=e103]:
+                  - heading "Discrete Mathematics & Graph Theory" [level=3] [ref=e104]
+                  - paragraph [ref=e105]: Logic, graph theory, and combinatorics with PYQs included
+                  - generic [ref=e106]:
+                    - text: Get Notes
+                    - generic [ref=e107]: 
+              - link "View Engineering Physics in Marketplace" [ref=e108] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Engineering Physics" [ref=e109]
+                - generic [ref=e111]:
+                  - generic [ref=e112]: PHY1001
+                  - generic [ref=e113]: ₹499
+                - generic [ref=e114]:
+                  - heading "Engineering Physics" [level=3] [ref=e115]
+                  - paragraph [ref=e116]: Comprehensive physics notes by 9-pointer students
+                  - generic [ref=e117]:
+                    - text: Get Notes
+                    - generic [ref=e118]: 
+              - link "View Electric Circuits and Systems in Marketplace" [ref=e119] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Electric Circuits and Systems" [ref=e120]
+                - generic [ref=e122]:
+                  - generic [ref=e123]: EEE1001
+                  - generic [ref=e124]: ₹499
+                - generic [ref=e125]:
+                  - heading "Electric Circuits and Systems" [level=3] [ref=e126]
+                  - paragraph [ref=e127]: Circuit analysis, network theorems, and solved examples
+                  - generic [ref=e128]:
+                    - text: Get Notes
+                    - generic [ref=e129]: 
+              - link "View Cloud Architecture and Services in Marketplace" [ref=e130] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Cloud Architecture and Services" [ref=e131]
+                - generic [ref=e133]:
+                  - generic [ref=e134]: CCA2002
+                  - generic [ref=e135]: ₹499
+                - generic [ref=e136]:
+                  - heading "Cloud Architecture and Services" [level=3] [ref=e137]
+                  - paragraph [ref=e138]: AWS, Azure, cloud models, and deployment architecture notes
+                  - generic [ref=e139]:
+                    - text: Get Notes
+                    - generic [ref=e140]: 
+              - link "View Engineering Chemistry in Marketplace" [ref=e141] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Engineering Chemistry" [ref=e142]
+                - generic [ref=e144]:
+                  - generic [ref=e145]: CHY1001
+                  - generic [ref=e146]: ₹499
+                - generic [ref=e147]:
+                  - heading "Engineering Chemistry" [level=3] [ref=e148]
+                  - paragraph [ref=e149]: Chemistry fundamentals with lab notes and module slides
+                  - generic [ref=e150]:
+                    - text: Get Notes
+                    - generic [ref=e151]: 
+              - link "View Emotional Intelligence in Marketplace" [ref=e152] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Emotional Intelligence" [ref=e153]
+                - generic [ref=e155]:
+                  - generic [ref=e156]: HUM1002
+                  - generic [ref=e157]: ₹499
+                - generic [ref=e158]:
+                  - heading "Emotional Intelligence" [level=3] [ref=e159]
+                  - paragraph [ref=e160]: Self-awareness, empathy, leadership, and PYQ bank
+                  - generic [ref=e161]:
+                    - text: Get Notes
+                    - generic [ref=e162]: 
+              - link "View Digital Logic Design in Marketplace" [ref=e163] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Digital Logic Design" [ref=e164]
+                - generic [ref=e166]:
+                  - generic [ref=e167]: ECE2002
+                  - generic [ref=e168]: ₹499
+                - generic [ref=e169]:
+                  - heading "Digital Logic Design" [level=3] [ref=e170]
+                  - paragraph [ref=e171]: Gates, flip-flops, state machines, and circuit design
+                  - generic [ref=e172]:
+                    - text: Get Notes
+                    - generic [ref=e173]: 
+              - link "View Probability, Statistics & Reliability in Marketplace" [ref=e174] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Probability, Statistics & Reliability" [ref=e175]
+                - generic [ref=e177]:
+                  - generic [ref=e178]: MAT3003
+                  - generic [ref=e179]: ₹499
+                - generic [ref=e180]:
+                  - heading "Probability, Statistics & Reliability" [level=3] [ref=e181]
+                  - paragraph [ref=e182]: 6 PYQ papers, hypothesis testing, and regression analysis
+                  - generic [ref=e183]:
+                    - text: Get Notes
+                    - generic [ref=e184]: 
+            - button "Next slide" [ref=e185] [cursor=pointer]:
+              - generic [ref=e186]: 
+          - generic [ref=e187]:
+            - button "Go to slide 1" [ref=e188] [cursor=pointer]
+            - button "Go to slide 2" [ref=e189] [cursor=pointer]
+            - button "Go to slide 3" [ref=e190] [cursor=pointer]
+            - button "Go to slide 4" [ref=e191] [cursor=pointer]
+            - button "Go to slide 5" [ref=e192] [cursor=pointer]
+            - button "Go to slide 6" [ref=e193] [cursor=pointer]
+            - button "Go to slide 7" [ref=e194] [cursor=pointer]
+            - button "Go to slide 8" [ref=e195] [cursor=pointer]
+            - button "Go to slide 9" [ref=e196] [cursor=pointer]
+            - button "Go to slide 10" [ref=e197] [cursor=pointer]
+        - generic [ref=e198]:
+          - link "Open Timetable Maker" [ref=e199] [cursor=pointer]:
+            - /url: features/ttmaker/ttmaker1.html?sidebar=active
+            - generic [ref=e201]: 
+            - heading "Timetable Maker" [level=3] [ref=e202]
+            - paragraph [ref=e203]: Custom study schedules
+            - generic [ref=e204]:
+              - generic [ref=e205]: Access Now
+              - generic [ref=e206]: 
+          - link "Open Attendance Calculator" [ref=e207] [cursor=pointer]:
+            - /url: features/attendance/attendance.html?sidebar=active
+            - generic [ref=e209]: "%"
+            - heading "Attendance Calculator" [level=3] [ref=e210]
+            - paragraph [ref=e211]: Track and predict your attendance across all subjects
+            - generic [ref=e212]:
+              - generic [ref=e213]: Access Now
+              - generic [ref=e214]: 
+          - link "Open Mess Menus" [ref=e215] [cursor=pointer]:
+            - /url: features/mess-menu/mess.html?sidebar=active
+            - generic [ref=e217]: 
+            - heading "Mess Menus" [level=3] [ref=e218]
+            - paragraph [ref=e219]: Weekly menus for all campus messes and canteens
+            - generic [ref=e220]:
+              - generic [ref=e221]: Access Now
+              - generic [ref=e222]: 
+          - link "Open CGPA Calculator" [ref=e223] [cursor=pointer]:
+            - /url: features/gpa-calculator/cgpa.html?sidebar=active
+            - generic [ref=e225]: 
+            - heading "CGPA Calculator" [level=3] [ref=e226]
+            - paragraph [ref=e227]: Calculate and project your CGPA semester by semester
+            - generic [ref=e228]:
+              - generic [ref=e229]: Access Now
+              - generic [ref=e230]: 
+          - link "Open Faculty Info" [ref=e231] [cursor=pointer]:
+            - /url: features/faculty/faculty.html?sidebar=active
+            - generic [ref=e233]: 
+            - heading "Faculty Info" [level=3] [ref=e234]
+            - paragraph [ref=e235]: Browse faculty profiles and contact details at VIT Bhopal
+            - generic [ref=e236]:
+              - generic [ref=e237]: Access Now
+              - generic [ref=e238]: 
+          - link "Open Club Info" [ref=e239] [cursor=pointer]:
+            - /url: features/club/club.html
+            - generic [ref=e241]: 
+            - heading "Club Info" [level=3] [ref=e242]
+            - paragraph [ref=e243]: Browse and manage all college clubs
+            - generic [ref=e244]:
+              - generic [ref=e245]: Access Now
+              - generic [ref=e246]: 
+          - link "Open Events" [ref=e247] [cursor=pointer]:
+            - /url: features/event/event.html?sidebar=active
+            - generic [ref=e249]: 
+            - heading "Events" [level=3] [ref=e250]
+            - paragraph [ref=e251]: Latest campus events, fests, and announcements
+            - generic [ref=e252]:
+              - generic [ref=e253]: Access Now
+              - generic [ref=e254]: 
+          - link "Open Marketplace" [ref=e255] [cursor=pointer]:
+            - /url: features/marketplace/market.html?sidebar=active
+            - generic [ref=e257]: 
+            - heading "Marketplace" [level=3] [ref=e258]
+            - paragraph [ref=e259]: Premium notes and resources from 9-pointer students
+            - generic [ref=e260]:
+              - generic [ref=e261]: Access Now
+              - generic [ref=e262]: 
+    - button "Scroll down to explore" [ref=e263] [cursor=pointer]:
+      - generic [ref=e264]: 
+  - generic [ref=e266]:
+    - generic [ref=e267]:
+      - heading "Why Students Actually Use This" [level=2] [ref=e268]
+      - paragraph [ref=e269]: Six things that make a real difference when exams are two weeks away
+    - generic [ref=e270]:
+      - generic [ref=e271]:
+        - generic [ref=e272]:
+          - generic [ref=e274]: 
+          - heading "Notes from 9-pointers" [level=3] [ref=e275]
+          - paragraph [ref=e276]: Handwritten notes, slides & PYQs from students who scored 9.2+ in the same subjects
+        - generic [ref=e277]:
+          - generic [ref=e279]: 
+          - heading "Branch-wise Content" [level=3] [ref=e280]
+          - paragraph [ref=e281]: Subject notes filtered by your branch — CSE, ECE, MECH, AI, and more
+        - generic [ref=e282]:
+          - generic [ref=e284]: 
+          - heading "Bunk & GPA Planner" [level=3] [ref=e285]
+          - paragraph [ref=e286]: Know exactly how many classes you can skip and still hit your target CGPA
+      - generic [ref=e287]:
+        - generic [ref=e288]:
+          - generic [ref=e290]: 
+          - heading "Smart Timetable" [level=3] [ref=e291]
+          - paragraph [ref=e292]: Build a personalized study schedule that actually fits your life, not just your syllabus
+        - generic [ref=e293]:
+          - generic [ref=e295]: 
+          - heading "Campus Life Tools" [level=3] [ref=e296]
+          - paragraph [ref=e297]: Mess menus, faculty contacts, club listings, and events — no more hunting for info
+        - generic [ref=e298]:
+          - generic [ref=e300]: 
+          - heading "Module-by-Module" [level=3] [ref=e301]
+          - paragraph [ref=e302]: Every subject broken down by module so you study what matters, skip what doesn't
+      - generic [ref=e303]:
+        - heading "500+ VITB students already using it this semester" [level=3] [ref=e304]
+        - paragraph [ref=e305]: "Average GPA jump: +1.2 points in the first semester after joining"
+        - link " Join the Community" [ref=e306] [cursor=pointer]:
+          - /url: https://chat.whatsapp.com/GBLnFekrdLGCfW2Vc4MnUc?mode=ac_c
+          - generic [ref=e307]: 
+          - text: Join the Community
+  - generic [ref=e309]:
+    - generic [ref=e310]:
+      - heading "What Students Actually Said" [level=2] [ref=e311]
+      - paragraph [ref=e312]: Real words from real students — no PR polish, just honest feedback
+    - generic [ref=e313]:
+      - generic [ref=e314]:
+        - text: "\""
+        - generic [ref=e315]: ★★★★★
+        - paragraph [ref=e317]: Was drowning in notes and random YouTube videos. The curated stuff saved me SO much time — explanations that actually made sense. Timetable feature? Lifesaver. Went from barely passing to A- in one semester.
+        - generic [ref=e318]:
+          - generic [ref=e319]: PP
+          - generic [ref=e320]:
+            - heading "Parth Patel" [level=4] [ref=e321]
+            - paragraph [ref=e322]: "CSE 3rd Year · GPA: 9.16"
+      - generic [ref=e323]:
+        - text: "\""
+        - generic [ref=e324]: ★★★★★
+        - paragraph [ref=e326]: Skeptical at first — but these aren't just summaries. Structured like a tutor planned them. Paired with the timetable tool I finally stopped cramming. Went from B's to straight A's this semester.
+        - generic [ref=e327]:
+          - generic [ref=e328]: PS
+          - generic [ref=e329]:
+            - heading "Priyanshu Sharma" [level=4] [ref=e330]
+            - paragraph [ref=e331]: "AI 2nd Year · GPA: 8.89"
+      - generic [ref=e332]:
+        - text: "\""
+        - generic [ref=e333]: ★★★★★
+        - paragraph [ref=e335]: Fluid dynamics notes + linked videos — explained what my prof couldn't. Attendance calculator was low-key genius. Actually had time to breathe between labs. 10/10 for any overloaded eng student.
+        - generic [ref=e336]:
+          - generic [ref=e337]: SP
+          - generic [ref=e338]:
+            - heading "Sonu Pastagia" [level=4] [ref=e339]
+            - paragraph [ref=e340]: "CSE 3rd Year · GPA: 9.23"
+  - generic [ref=e343]:
+    - heading "Your GPA won't fix itself." [level=2] [ref=e344]
+    - paragraph [ref=e345]: Every semester, VITB students use Scholars Stack to cut prep time, hit their target CGPA, and actually understand what they're studying. Start today — it's free to explore.
+    - link " Browse the Marketplace" [ref=e346] [cursor=pointer]:
+      - /url: features/marketplace/market.html?sidebar=active
+      - generic [ref=e347]: 
+      - text: Browse the Marketplace
+  - contentinfo [ref=e348]:
+    - generic [ref=e349]:
+      - generic [ref=e350]:
+        - generic [ref=e351]:
+          - heading "Scholars Stack" [level=3] [ref=e352]
+          - paragraph [ref=e353]: Built by VITB students, for VITB students — real notes, real results, no filler.
+          - generic [ref=e354]:
+            - link "Instagram" [ref=e355] [cursor=pointer]:
+              - /url: https://instagram.com/vitbsmashers
+              - generic [ref=e356]: 
+            - link "WhatsApp Community" [ref=e357] [cursor=pointer]:
+              - /url: https://chat.whatsapp.com/GBLnFekrdLGCfW2Vc4MnUc?mode=ac_c
+              - generic [ref=e358]: 
+            - link "Email us" [ref=e359] [cursor=pointer]:
+              - /url: mailto:vitbsmashers@gmail.com
+              - generic [ref=e360]: 
+        - generic [ref=e361]:
+          - heading "Tools" [level=3] [ref=e362]
+          - list [ref=e363]:
+            - listitem [ref=e364]:
+              - link " Notes Marketplace" [ref=e365] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - generic [ref=e366]: 
+                - text: Notes Marketplace
+            - listitem [ref=e367]:
+              - link " CGPA Calculator" [ref=e368] [cursor=pointer]:
+                - /url: features/gpa-calculator/cgpa.html?sidebar=active
+                - generic [ref=e369]: 
+                - text: CGPA Calculator
+            - listitem [ref=e370]:
+              - link " Attendance Tracker" [ref=e371] [cursor=pointer]:
+                - /url: features/attendance/attendance.html?sidebar=active
+                - generic [ref=e372]: 
+                - text: Attendance Tracker
+            - listitem [ref=e373]:
+              - link " Timetable Maker" [ref=e374] [cursor=pointer]:
+                - /url: features/ttmaker/ttmaker1.html?sidebar=active
+                - generic [ref=e375]: 
+                - text: Timetable Maker
+            - listitem [ref=e376]:
+              - link " Mess Menu" [ref=e377] [cursor=pointer]:
+                - /url: features/mess-menu/mess.html?sidebar=active
+                - generic [ref=e378]: 
+                - text: Mess Menu
+        - generic [ref=e379]:
+          - heading "Campus" [level=3] [ref=e380]
+          - list [ref=e381]:
+            - listitem [ref=e382]:
+              - link " Faculty Directory" [ref=e383] [cursor=pointer]:
+                - /url: features/faculty/faculty.html?sidebar=active
+                - generic [ref=e384]: 
+                - text: Faculty Directory
+            - listitem [ref=e385]:
+              - link " Club Listings" [ref=e386] [cursor=pointer]:
+                - /url: features/club/club.html
+                - generic [ref=e387]: 
+                - text: Club Listings
+            - listitem [ref=e388]:
+              - link " Campus Events" [ref=e389] [cursor=pointer]:
+                - /url: features/event/event.html?sidebar=active
+                - generic [ref=e390]: 
+                - text: Campus Events
+            - listitem [ref=e391]:
+              - link " Privacy Policy" [ref=e392] [cursor=pointer]:
+                - /url: privacy-policy.html
+                - generic [ref=e393]: 
+                - text: Privacy Policy
+            - listitem [ref=e394]:
+              - link " Terms of Service" [ref=e395] [cursor=pointer]:
+                - /url: terms-of-service.html
+                - generic [ref=e396]: 
+                - text: Terms of Service
+        - generic [ref=e397]:
+          - heading "Contact" [level=3] [ref=e398]
+          - list [ref=e399]:
+            - listitem [ref=e400]:
+              - link " vitbsmashers@gmail.com" [ref=e401] [cursor=pointer]:
+                - /url: mailto:vitbsmashers@gmail.com
+                - generic [ref=e402]: 
+                - text: vitbsmashers@gmail.com
+            - listitem [ref=e403]:
+              - link " +91 79841 82948" [ref=e404] [cursor=pointer]:
+                - /url: tel:+917984182948
+                - generic [ref=e405]: 
+                - text: +91 79841 82948
+            - listitem [ref=e406]:
+              - generic [ref=e407]: 
+              - text: VIT Bhopal University
+            - listitem [ref=e408]: Bhopal–Indore Highway, MP
+      - paragraph [ref=e410]: © 2025 Scholars Stack. All Rights Reserved.
+  - link "Explore Notes Marketplace":
+    - /url: features/marketplace/market.html?sidebar=active
+    - generic: 
+    - generic: Explore Notes

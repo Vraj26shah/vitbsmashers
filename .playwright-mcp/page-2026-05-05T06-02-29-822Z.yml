@@ -1,0 +1,457 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e8]:
+    - generic [ref=e9]:
+      - link "Scholars Stack Logo Scholars Stack Premium Academic Resources" [ref=e10] [cursor=pointer]:
+        - /url: index.html
+        - img "Scholars Stack Logo" [ref=e11]
+        - generic [ref=e12]:
+          - heading "Scholars Stack" [level=1] [ref=e13]
+          - paragraph [ref=e14]: Premium Academic Resources
+      - text: 
+      - navigation [ref=e15]:
+        - list [ref=e16]:
+          - listitem [ref=e17]:
+            - link "Why Join?" [ref=e18] [cursor=pointer]:
+              - /url: "#why-join"
+          - listitem [ref=e19]:
+            - link "Testimonials" [ref=e20] [cursor=pointer]:
+              - /url: "#testimonials"
+          - listitem [ref=e21]:
+            - link "Resources" [ref=e22] [cursor=pointer]:
+              - /url: features/marketplace/market.html?sidebar=active
+          - listitem [ref=e23]:
+            - link " Get Started" [ref=e24] [cursor=pointer]:
+              - /url: features/marketplace/market.html?sidebar=active
+              - generic [ref=e25]: 
+              - text: Get Started
+  - generic [ref=e26]:
+    - generic [ref=e28]:
+      - generic [ref=e29]:
+        - heading "Transform Your at VIT Bhopal" [level=1] [ref=e30]:
+          - text: Transform Your
+          - text: at VIT Bhopal
+        - paragraph [ref=e32]: Access premium study materials from 9-pointer students, curated resources, and powerful tools designed to maximize your GPA and minimize your effort.
+        - generic "How to get started" [ref=e33]:
+          - generic [ref=e34]:
+            - strong [ref=e35]: "1."
+            - text: Sign in
+          - generic [ref=e36]:
+            - strong [ref=e37]: "2."
+            - text: Pick a feature
+          - generic [ref=e38]:
+            - strong [ref=e39]: "3."
+            - text: Start learning
+        - generic [ref=e40]:
+          - generic [ref=e41]:
+            - generic [ref=e42]: "3"
+            - generic [ref=e43]: "% Success Rate"
+          - generic [ref=e44]:
+            - generic [ref=e45]: 0+
+            - generic [ref=e46]: Avg. GPA
+          - generic [ref=e47]:
+            - generic [ref=e48]: 16+
+            - generic [ref=e49]: Students
+        - generic [ref=e51]:
+          - button "Sign in with Google" [ref=e52] [cursor=pointer]:
+            - img [ref=e53]
+            - text: Sign in with Google
+          - generic [ref=e58]:
+            - generic [ref=e59]: 
+            - generic [ref=e60]:
+              - strong [ref=e61]: Exclusive for VIT Bhopal University students
+              - generic [ref=e62]:
+                - text: Please use your
+                - strong [ref=e63]: "@vitbhopal.ac.in"
+                - text: Google account to sign in
+      - generic [ref=e65]:
+        - generic [ref=e66]:
+          - heading "Features" [level=2] [ref=e67]
+          - paragraph [ref=e68]: Premium academic resources curated by top-performing students
+          - paragraph [ref=e69]:
+            - generic [ref=e70]: 
+            - text: Tap any card to open the feature
+        - generic [ref=e71]:
+          - generic [ref=e72]:
+            - generic [ref=e73]:
+              - generic [ref=e74]: 
+              - text: Premium Notes Preview
+            - link "View All Notes " [ref=e75] [cursor=pointer]:
+              - /url: features/marketplace/market.html?sidebar=active
+              - text: View All Notes
+              - generic [ref=e76]: 
+          - generic [ref=e77]:
+            - button "Previous slide" [ref=e78] [cursor=pointer]:
+              - generic [ref=e79]: 
+            - generic [ref=e81]:
+              - link "View Data Structures and Algorithms in Marketplace" [ref=e82] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Data Structures and Algorithms" [ref=e83]
+                - generic [ref=e85]:
+                  - generic [ref=e86]: CSE2002
+                  - generic [ref=e87]: ₹499
+                - generic [ref=e88]:
+                  - heading "Data Structures and Algorithms" [level=3] [ref=e89]
+                  - paragraph [ref=e90]: Complete DSA notes with solved problems and PYQs
+                  - generic [ref=e91]:
+                    - text: Get Notes
+                    - generic [ref=e92]: 
+              - link "View Fundamentals in AI and ML in Marketplace" [ref=e93] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Fundamentals in AI and ML" [ref=e94]
+                - generic [ref=e96]:
+                  - generic [ref=e97]: CSA2001
+                  - generic [ref=e98]: ₹499
+                - generic [ref=e99]:
+                  - heading "Fundamentals in AI and ML" [level=3] [ref=e100]
+                  - paragraph [ref=e101]: AI & ML concepts with handwritten notes and reference PDFs
+                  - generic [ref=e102]:
+                    - text: Get Notes
+                    - generic [ref=e103]: 
+              - link "View Discrete Mathematics & Graph Theory in Marketplace" [ref=e104] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Discrete Mathematics & Graph Theory" [ref=e105]
+                - generic [ref=e107]:
+                  - generic [ref=e108]: MAT2002
+                  - generic [ref=e109]: ₹499
+                - generic [ref=e110]:
+                  - heading "Discrete Mathematics & Graph Theory" [level=3] [ref=e111]
+                  - paragraph [ref=e112]: Logic, graph theory, and combinatorics with PYQs included
+                  - generic [ref=e113]:
+                    - text: Get Notes
+                    - generic [ref=e114]: 
+              - link "View Engineering Physics in Marketplace" [ref=e115] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Engineering Physics" [ref=e116]
+                - generic [ref=e118]:
+                  - generic [ref=e119]: PHY1001
+                  - generic [ref=e120]: ₹499
+                - generic [ref=e121]:
+                  - heading "Engineering Physics" [level=3] [ref=e122]
+                  - paragraph [ref=e123]: Comprehensive physics notes by 9-pointer students
+                  - generic [ref=e124]:
+                    - text: Get Notes
+                    - generic [ref=e125]: 
+              - link "View Electric Circuits and Systems in Marketplace" [ref=e126] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Electric Circuits and Systems" [ref=e127]
+                - generic [ref=e129]:
+                  - generic [ref=e130]: EEE1001
+                  - generic [ref=e131]: ₹499
+                - generic [ref=e132]:
+                  - heading "Electric Circuits and Systems" [level=3] [ref=e133]
+                  - paragraph [ref=e134]: Circuit analysis, network theorems, and solved examples
+                  - generic [ref=e135]:
+                    - text: Get Notes
+                    - generic [ref=e136]: 
+              - link "View Cloud Architecture and Services in Marketplace" [ref=e137] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Cloud Architecture and Services" [ref=e138]
+                - generic [ref=e140]:
+                  - generic [ref=e141]: CCA2002
+                  - generic [ref=e142]: ₹499
+                - generic [ref=e143]:
+                  - heading "Cloud Architecture and Services" [level=3] [ref=e144]
+                  - paragraph [ref=e145]: AWS, Azure, cloud models, and deployment architecture notes
+                  - generic [ref=e146]:
+                    - text: Get Notes
+                    - generic [ref=e147]: 
+              - link "View Engineering Chemistry in Marketplace" [ref=e148] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Engineering Chemistry" [ref=e149]
+                - generic [ref=e151]:
+                  - generic [ref=e152]: CHY1001
+                  - generic [ref=e153]: ₹499
+                - generic [ref=e154]:
+                  - heading "Engineering Chemistry" [level=3] [ref=e155]
+                  - paragraph [ref=e156]: Chemistry fundamentals with lab notes and module slides
+                  - generic [ref=e157]:
+                    - text: Get Notes
+                    - generic [ref=e158]: 
+              - link "View Emotional Intelligence in Marketplace" [ref=e159] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Emotional Intelligence" [ref=e160]
+                - generic [ref=e162]:
+                  - generic [ref=e163]: HUM1002
+                  - generic [ref=e164]: ₹499
+                - generic [ref=e165]:
+                  - heading "Emotional Intelligence" [level=3] [ref=e166]
+                  - paragraph [ref=e167]: Self-awareness, empathy, leadership, and PYQ bank
+                  - generic [ref=e168]:
+                    - text: Get Notes
+                    - generic [ref=e169]: 
+              - link "View Digital Logic Design in Marketplace" [ref=e170] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Digital Logic Design" [ref=e171]
+                - generic [ref=e173]:
+                  - generic [ref=e174]: ECE2002
+                  - generic [ref=e175]: ₹499
+                - generic [ref=e176]:
+                  - heading "Digital Logic Design" [level=3] [ref=e177]
+                  - paragraph [ref=e178]: Gates, flip-flops, state machines, and circuit design
+                  - generic [ref=e179]:
+                    - text: Get Notes
+                    - generic [ref=e180]: 
+              - link "View Probability, Statistics & Reliability in Marketplace" [ref=e181] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - img "Probability, Statistics & Reliability" [ref=e182]
+                - generic [ref=e184]:
+                  - generic [ref=e185]: MAT3003
+                  - generic [ref=e186]: ₹499
+                - generic [ref=e187]:
+                  - heading "Probability, Statistics & Reliability" [level=3] [ref=e188]
+                  - paragraph [ref=e189]: 6 PYQ papers, hypothesis testing, and regression analysis
+                  - generic [ref=e190]:
+                    - text: Get Notes
+                    - generic [ref=e191]: 
+            - button "Next slide" [ref=e192] [cursor=pointer]:
+              - generic [ref=e193]: 
+          - generic [ref=e194]:
+            - button "Go to slide 1" [ref=e195] [cursor=pointer]
+            - button "Go to slide 2" [ref=e196] [cursor=pointer]
+            - button "Go to slide 3" [ref=e197] [cursor=pointer]
+            - button "Go to slide 4" [ref=e198] [cursor=pointer]
+            - button "Go to slide 5" [ref=e199] [cursor=pointer]
+            - button "Go to slide 6" [ref=e200] [cursor=pointer]
+            - button "Go to slide 7" [ref=e201] [cursor=pointer]
+            - button "Go to slide 8" [ref=e202] [cursor=pointer]
+            - button "Go to slide 9" [ref=e203] [cursor=pointer]
+            - button "Go to slide 10" [ref=e204] [cursor=pointer]
+        - generic [ref=e205]: Platform Tools
+        - generic [ref=e206]:
+          - button "Upcoming  Campus Map Interactive VIT Bhopal campus map with building locations Coming Soon " [disabled] [ref=e207]:
+            - generic: Upcoming
+            - generic [ref=e209]: 
+            - heading "Campus Map" [level=3] [ref=e210]
+            - paragraph [ref=e211]: Interactive VIT Bhopal campus map with building locations
+            - generic [ref=e212]:
+              - generic [ref=e213]: Coming Soon
+              - generic [ref=e214]: 
+          - link "Open Timetable Maker" [ref=e215] [cursor=pointer]:
+            - /url: features/ttmaker/ttmaker1.html?sidebar=active
+            - generic [ref=e217]: 
+            - heading "Timetable Maker" [level=3] [ref=e218]
+            - paragraph [ref=e219]: Custom study schedules
+            - generic [ref=e220]:
+              - generic [ref=e221]: Access Now
+              - generic [ref=e222]: 
+          - link "Open Attendance Calculator" [ref=e223] [cursor=pointer]:
+            - /url: features/attendance/attendance.html?sidebar=active
+            - generic [ref=e225]: "%"
+            - heading "Attendance Calculator" [level=3] [ref=e226]
+            - paragraph [ref=e227]: Track and predict your attendance across all subjects
+            - generic [ref=e228]:
+              - generic [ref=e229]: Access Now
+              - generic [ref=e230]: 
+          - link "Open Mess Menus" [ref=e231] [cursor=pointer]:
+            - /url: features/mess-menu/mess.html?sidebar=active
+            - generic [ref=e233]: 
+            - heading "Mess Menus" [level=3] [ref=e234]
+            - paragraph [ref=e235]: Weekly menus for all campus messes and canteens
+            - generic [ref=e236]:
+              - generic [ref=e237]: Access Now
+              - generic [ref=e238]: 
+          - link "Open CGPA Calculator" [ref=e239] [cursor=pointer]:
+            - /url: features/gpa-calculator/cgpa.html?sidebar=active
+            - generic [ref=e241]: 
+            - heading "CGPA Calculator" [level=3] [ref=e242]
+            - paragraph [ref=e243]: Calculate and project your CGPA semester by semester
+            - generic [ref=e244]:
+              - generic [ref=e245]: Access Now
+              - generic [ref=e246]: 
+          - link "Open Faculty Info" [ref=e247] [cursor=pointer]:
+            - /url: features/faculty/faculty.html?sidebar=active
+            - generic [ref=e249]: 
+            - heading "Faculty Info" [level=3] [ref=e250]
+            - paragraph [ref=e251]: Browse faculty profiles and contact details at VIT Bhopal
+            - generic [ref=e252]:
+              - generic [ref=e253]: Access Now
+              - generic [ref=e254]: 
+          - link "Open Club Info" [ref=e255] [cursor=pointer]:
+            - /url: features/club/club.html
+            - generic [ref=e257]: 
+            - heading "Club Info" [level=3] [ref=e258]
+            - paragraph [ref=e259]: Browse and manage all college clubs
+            - generic [ref=e260]:
+              - generic [ref=e261]: Access Now
+              - generic [ref=e262]: 
+          - link "Open Events" [ref=e263] [cursor=pointer]:
+            - /url: features/event/event.html?sidebar=active
+            - generic [ref=e265]: 
+            - heading "Events" [level=3] [ref=e266]
+            - paragraph [ref=e267]: Latest campus events, fests, and announcements
+            - generic [ref=e268]:
+              - generic [ref=e269]: Access Now
+              - generic [ref=e270]: 
+          - link "Open Marketplace" [ref=e271] [cursor=pointer]:
+            - /url: features/marketplace/market.html?sidebar=active
+            - generic [ref=e273]: 
+            - heading "Marketplace" [level=3] [ref=e274]
+            - paragraph [ref=e275]: Premium notes and resources from 9-pointer students
+            - generic [ref=e276]:
+              - generic [ref=e277]: Access Now
+              - generic [ref=e278]: 
+    - button "Scroll down to explore" [ref=e279] [cursor=pointer]:
+      - generic [ref=e280]: 
+  - generic [ref=e282]:
+    - generic [ref=e283]:
+      - heading "Why Join Scholars Stack?" [level=2] [ref=e284]
+      - paragraph [ref=e285]: Premium benefits for academic excellence at VIT Bhopal
+    - generic [ref=e286]:
+      - generic [ref=e287]:
+        - generic [ref=e288]:
+          - generic [ref=e290]: 
+          - heading "Elite Materials" [level=3] [ref=e291]
+          - paragraph [ref=e292]: Study resources from 9-pointer students
+        - generic [ref=e293]:
+          - generic [ref=e295]: 
+          - heading "Curated Resources" [level=3] [ref=e296]
+          - paragraph [ref=e297]: Perfectly organized for every course
+        - generic [ref=e298]:
+          - generic [ref=e300]: 
+          - heading "Smart Calculators" [level=3] [ref=e301]
+          - paragraph [ref=e302]: CGPA and attendance trackers
+      - generic [ref=e303]:
+        - generic [ref=e304]:
+          - generic [ref=e306]: 
+          - heading "Personalized Guidance" [level=3] [ref=e307]
+          - paragraph [ref=e308]: Study recommendations tailored for you
+        - generic [ref=e309]:
+          - generic [ref=e311]: 
+          - heading "Priority Support" [level=3] [ref=e312]
+          - paragraph [ref=e313]: Direct help from top students
+        - generic [ref=e314]:
+          - generic [ref=e316]: 
+          - heading "Exam Strategies" [level=3] [ref=e317]
+          - paragraph [ref=e318]: Proven techniques for better scores
+      - generic [ref=e319]:
+        - heading "Join hundreds of VITB students achieving academic excellence" [level=3] [ref=e320]
+        - paragraph [ref=e321]: "Average GPA increase: 1.2 points within first semester"
+        - link " Join Elite Students" [ref=e322] [cursor=pointer]:
+          - /url: https://chat.whatsapp.com/GBLnFekrdLGCfW2Vc4MnUc?mode=ac_c
+          - generic [ref=e323]: 
+          - text: Join Elite Students
+  - generic [ref=e325]:
+    - generic [ref=e326]:
+      - heading "Student Success Stories" [level=2] [ref=e327]
+      - paragraph [ref=e328]: Hear from VITB students who transformed their academic journey
+    - generic [ref=e329]:
+      - generic [ref=e330]:
+        - text: "\""
+        - paragraph [ref=e332]: Honestly, I was drowning in notes and random YouTube videos before this. Your curated stuff saved me SO much time – finally found explanations that actually made sense! The timetable feature? Lifesaver. Went from barely passing to an A- in organic chem. Can't believe I waited this long.
+        - generic [ref=e334]:
+          - heading "Parth Patel" [level=4] [ref=e335]
+          - paragraph [ref=e336]: "CSE 3rd Year | GPA: 9.16"
+      - generic [ref=e337]:
+        - text: "\""
+        - paragraph [ref=e339]: I was skeptical about 'bought notes' but wow. These aren't just summaries – they're structured like a tutor planned them. Paired with the timetable tool? Finally stopped cramming. Went from B's to straight A's this semester. Seriously, if you're struggling to organize, just try it.
+        - generic [ref=e341]:
+          - heading "Priyanshu Sharma" [level=4] [ref=e342]
+          - paragraph [ref=e343]: "AI 2nd Year | GPA: 8.89"
+      - generic [ref=e344]:
+        - text: "\""
+        - paragraph [ref=e346]: Dude, the fluid dynamics notes + linked videos? Spot on. Explained concepts my prof couldn't. But the attendance calculator was low-key genius – took so much stress off my shoulders. Actually had time to breathe between labs. 10/10 would recommend for any overloaded eng student.
+        - generic [ref=e348]:
+          - heading "Sonu Pastagia" [level=4] [ref=e349]
+          - paragraph [ref=e350]: "CSE 3th Year | GPA: 9.23"
+  - generic [ref=e353]:
+    - heading "Ready to Transform Your Academic Journey?" [level=2] [ref=e354]
+    - paragraph [ref=e355]: Join hundreds of VITB students who are using our premium resources to maximize their academic performance and achieve their GPA goals.
+    - link " Get Started Now" [ref=e356] [cursor=pointer]:
+      - /url: features/marketplace/market.html?sidebar=active
+      - generic [ref=e357]: 
+      - text: Get Started Now
+    - paragraph [ref=e358]: "Average GPA increase: 1.2 points within first semester"
+  - contentinfo [ref=e359]:
+    - generic [ref=e360]:
+      - generic [ref=e361]:
+        - generic [ref=e362]:
+          - heading "Scholars Stack" [level=3] [ref=e363]
+          - paragraph [ref=e364]: Providing premium academic resources curated by top-performing students to help you excel in your courses.
+          - generic [ref=e365]:
+            - link "" [ref=e366] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e367]: 
+            - link "" [ref=e368] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e369]: 
+            - link "" [ref=e370] [cursor=pointer]:
+              - /url: "#"
+              - generic [ref=e371]: 
+        - generic [ref=e372]:
+          - heading "Quick Links" [level=3] [ref=e373]
+          - list [ref=e374]:
+            - listitem [ref=e375]:
+              - link " Home" [ref=e376] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e377]: 
+                - text: Home
+            - listitem [ref=e378]:
+              - link " Marketplace" [ref=e379] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e380]: 
+                - text: Marketplace
+            - listitem [ref=e381]:
+              - link " My Courses" [ref=e382] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e383]: 
+                - text: My Courses
+            - listitem [ref=e384]:
+              - link " CGPA Calculator" [ref=e385] [cursor=pointer]:
+                - /url: features/gpa-calculator/cgpa.html?sidebar=active
+                - generic [ref=e386]: 
+                - text: CGPA Calculator
+            - listitem [ref=e387]:
+              - link " Marketplace" [ref=e388] [cursor=pointer]:
+                - /url: features/marketplace/market.html?sidebar=active
+                - generic [ref=e389]: 
+                - text: Marketplace
+        - generic [ref=e390]:
+          - heading "Resources" [level=3] [ref=e391]
+          - list [ref=e392]:
+            - listitem [ref=e393]:
+              - link " Handwritten Notes" [ref=e394] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e395]: 
+                - text: Handwritten Notes
+            - listitem [ref=e396]:
+              - link " Teacher's Materials" [ref=e397] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e398]: 
+                - text: Teacher's Materials
+            - listitem [ref=e399]:
+              - link " Previous Year Papers" [ref=e400] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e401]: 
+                - text: Previous Year Papers
+            - listitem [ref=e402]:
+              - link " Video Resources" [ref=e403] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e404]: 
+                - text: Video Resources
+            - listitem [ref=e405]:
+              - link " Timetable Maker" [ref=e406] [cursor=pointer]:
+                - /url: "#"
+                - generic [ref=e407]: 
+                - text: Timetable Maker
+        - generic [ref=e408]:
+          - heading "Contact" [level=3] [ref=e409]
+          - list [ref=e410]:
+            - listitem [ref=e411]:
+              - generic [ref=e412]: 
+              - text: vitbsmashers@gmail.com
+            - listitem [ref=e413]:
+              - generic [ref=e414]: 
+              - text: +91 7984182948
+            - listitem [ref=e415]:
+              - generic [ref=e416]: 
+              - text: VIT Bhopal Campus
+            - listitem [ref=e417]: Bhopal-Indore Highway
+            - listitem [ref=e418]: Madhya Pradesh
+      - paragraph [ref=e420]: © 2025 Scholars Stack. All Rights Reserved.
+  - generic [ref=e423]:
+    - strong [ref=e424]: "22"
+    - text: students online
+  - link "Explore Notes Marketplace":
+    - /url: features/marketplace/market.html?sidebar=active
+    - generic: 
+    - generic: Explore Notes

@@ -1,0 +1,46 @@
+[      77ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/env-config.js:0
+[     132ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/preload-manager.js:0
+[     144ms] Uncaught Error: supabaseUrl is required.
+    at <anonymous> (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190278)
+    at ps (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190549)
+    at e.createClient (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:195783)
+    at <anonymous> (http://localhost:5500/index.html:523:49)
+[   84456ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/terms-of-service.html:0
+[   86008ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/env-config.js:0
+[   86009ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/preload-manager.js:0
+[   86099ms] Uncaught Error: supabaseUrl is required.
+    at <anonymous> (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190278)
+    at ps (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190549)
+    at e.createClient (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:195783)
+    at <anonymous> (http://localhost:5500/index.html:523:49)
+[   88297ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/privacy-policy.html:0
+[   90687ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/env-config.js:0
+[   90688ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/preload-manager.js:0
+[   90700ms] Uncaught Error: supabaseUrl is required.
+    at <anonymous> (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190278)
+    at ps (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190549)
+    at e.createClient (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:195783)
+    at <anonymous> (http://localhost:5500/index.html:523:49)
+[  102240ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/v1/auth/validate-token:0
+[  102272ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/v1/auth/validate-token:0
+[  103078ms] [ERROR] Error fetching faculty: TypeError: Failed to fetch
+    at patchedFetch (http://localhost:5500/config.js:126:14)
+    at fetchFaculty (http://localhost:5500/features/faculty/faculty.html?sidebar=active:453:40)
+    at renderFaculty (http://localhost:5500/features/faculty/faculty.html?sidebar=active:469:19)
+    at HTMLDocument.<anonymous> (http://localhost:5500/features/faculty/faculty.html?sidebar=active:1311:19) @ http://localhost:5500/features/faculty/faculty.html?sidebar=active:462
+[  103113ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/env-config.js:0
+[  103113ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/preload-manager.js:0
+[  103128ms] Uncaught Error: supabaseUrl is required.
+    at <anonymous> (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190278)
+    at ps (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190549)
+    at e.createClient (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:195783)
+    at <anonymous> (http://localhost:5500/index.html:523:49)
+[  105146ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/v1/auth/validate-token:0
+[  105162ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/v1/auth/validate-token:0
+[  106275ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/env-config.js:0
+[  106275ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/preload-manager.js:0
+[  106288ms] Uncaught Error: supabaseUrl is required.
+    at <anonymous> (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190278)
+    at ps (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190549)
+    at e.createClient (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:195783)
+    at <anonymous> (http://localhost:5500/index.html:523:49)

@@ -1,0 +1,24 @@
+[     154ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/env-config.js:0
+[     397ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/preload-manager.js:0
+[     499ms] Uncaught Error: supabaseUrl is required.
+    at <anonymous> (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190278)
+    at ps (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190549)
+    at e.createClient (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:195783)
+    at <anonymous> (http://localhost:5500/index.html:541:49)
+[   33048ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/v1/auth/validate-token:0
+[   33091ms] [ERROR] Failed to load resource: the server responded with a status of 401 (Unauthorized) @ http://localhost:4000/api/v1/auth/validate-token:0
+[   34117ms] [WARNING] Unrecognized feature: 'web-share'. @ https://checkout.razorpay.com/v1/checkout.js:0
+[   34298ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/env-config.js:0
+[   34315ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/preload-manager.js:0
+[   34355ms] Uncaught Error: supabaseUrl is required.
+    at <anonymous> (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190278)
+    at ps (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190549)
+    at e.createClient (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:195783)
+    at <anonymous> (http://localhost:5500/index.html:541:49)
+[ 3375586ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/env-config.js:0
+[ 3375587ms] [ERROR] Failed to load resource: the server responded with a status of 404 (File not found) @ http://localhost:5500/preload-manager.js:0
+[ 3375701ms] Uncaught Error: supabaseUrl is required.
+    at <anonymous> (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190278)
+    at ps (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:190549)
+    at e.createClient (https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js:6:195783)
+    at <anonymous> (http://localhost:5500/index.html:541:49)

@@ -71,17 +71,6 @@
     document.getElementById('loginLink').style.display = 'inline-block';
   }
 
-  function hasValue(value) {
-    return typeof value === 'string' ? value.trim().length > 0 : !!value;
-  }
-
-  function isProfileComplete(profile = {}, backendFlag = false) {
-    if (backendFlag === true) return true;
-    return hasValue(profile.phone) &&
-      hasValue(profile.registration_number || profile.registrationNumber) &&
-      hasValue(profile.branch || profile.program);
-  }
-
   async function handleSession(session) {
     if (!session || !session.access_token) {
       showError('No session found. Please try logging in again.');
@@ -118,45 +107,8 @@
         document.getElementById('status').textContent = 'Success! Redirecting…';
         document.getElementById('sub').textContent = `Welcome, ${name}!`;
 
-        let profileComplete = isProfileComplete(user);
-
-        // Always confirm completion status from profile endpoint after auth.
-        try {
-          const profileRes = await fetch(`${API_BASE}/profile/me`, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${data.token}`,
-            },
-            credentials: 'include'
-          });
-
-          if (profileRes.ok) {
-            const profileData = await profileRes.json();
-            const remoteUser = profileData?.data?.user || {};
-            profileComplete = isProfileComplete(remoteUser, profileData?.data?.profileComplete === true);
-            localStorage.setItem('userProfile', JSON.stringify(remoteUser));
-          }
-        } catch (_) {}
-
-        // Determine destination: honour a saved return-to URL first
-        let redirectDest = data.data?.redirectTo || (profileComplete
-          ? '/features/marketplace/market.html'
-          : '/features/profile/complete-profile.html');
-
-        try {
-          const savedReturnTo = localStorage.getItem('loginReturnTo');
-          if (
-            savedReturnTo &&
-            savedReturnTo.trim() &&
-            !savedReturnTo.includes('index') &&
-            !savedReturnTo.includes('/login') &&
-            !savedReturnTo.includes('/auth/callback')
-          ) {
-            redirectDest = savedReturnTo;
-            localStorage.removeItem('loginReturnTo');
-          }
-        } catch (_) {}
+        // Always redirect to marketplace after login
+        const redirectDest = '/features/marketplace/market.html';
 
         setTimeout(() => {
           window.location.href = redirectDest;
