@@ -27,15 +27,11 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
             min-height: 52px;
             width: 100%;
-            max-width: 340px;
+            max-width: 320px;
             margin: 0 auto;
             text-decoration: none;
             position: relative;
             overflow: hidden;
-        }
-        .custom-google-btn:disabled {
-            opacity: 0.75;
-            cursor: not-allowed;
         }
 
         .custom-google-btn::before {
@@ -141,9 +137,10 @@
             
             <nav id="mainNav">
                 <ul>
-                    <li><a href="#features" class="nav-link">Preview Notes</a></li>
-                    <li><a href="#testimonials" class="nav-link">Reviews</a></li>
-                    <li><a href="features/marketplace/market.html?sidebar=active" class="nav-btn"><i class="fas fa-book-open"></i> Browse Notes</a></li>
+                    <li><a href="#why-join" class="nav-link">Why Join?</a></li>
+                    <li><a href="#testimonials" class="nav-link">Testimonials</a></li>
+                    <li><a href="features/marketplace/market.html?sidebar=active" class="nav-link">Resources</a></li>
+                    <li><a href="features/marketplace/market.html?sidebar=active" class="nav-btn"><i class="fas fa-rocket"></i> Get Started</a></li>
                 </ul>
             </nav>
         </div>
@@ -157,78 +154,176 @@
             <div class="hero-content">
                 <!-- Hero Text -->
                 <div class="hero-text">
-                    <div class="hero-badge"><i class="fas fa-graduation-cap"></i> VITB's #1 Academic Platform</div>
-                    <h1>Transform Your Academic Performance</h1>
-                    <p>Notes from students who've aced the same exams, tools that actually save time, and everything a VITB student needs — in one place.</p>
+                    <h1>Transform Your Academic Performance at VIT Bhopal</h1>
+                    <p>Access premium study materials from 9-pointer students, curated resources, and powerful tools designed to maximize your GPA and minimize your effort.</p>
+                    <div class="quick-start-strip" aria-label="How to get started">
+                        <span><strong>1.</strong> Sign in</span>
+                        <span><strong>2.</strong> Pick a feature</span>
+                        <span><strong>3.</strong> Start learning</span>
+                    </div>
+                    
+                    <div class="stats">
+                        <div class="stat-item">
+                            <div class="stat-number">97 </div>
+                            <div class="stat-label">% Success Rate</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">9+</div>
+                            <div class="stat-label">Avg. GPA</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-number">500+</div>
+                            <div class="stat-label">Students</div>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-btns">
+                        <div class="auth-section">
+                            <button id="customGoogleSignIn" class="custom-google-btn">
+                                <svg class="google-icon" viewBox="0 0 24 24">
+                                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                                </svg>
+                                Sign in with Google
+                            </button>
+                            <div class="auth-note">
+                                <i class="fas fa-university"></i>
+                                <div class="auth-note-content">
+                                    <strong>Exclusive for VIT Bhopal University students</strong>
+                                    <br>
+                                    <span>Please use your <strong>@vitbhopal.ac.in</strong> Google account to sign in</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-
-                <!-- Notes Showcase -->
-                <div class="features-section" id="features">
-                    <div class="section-title">
-                        <h2>Everything You Need</h2>
-                        <p>Tools, notes, and resources — all in one place, built for VITB students</p>
-                    </div>
-                    <div class="notes-showcase">
-                        <div class="showcase-header-row">
-                            <div class="showcase-badge-pill">
-                                <i class="fas fa-fire"></i> Premium Notes Preview
-                            </div>
-                            <a href="features/marketplace/market.html?sidebar=active" class="showcase-all-link">
-                                View All Notes <i class="fas fa-arrow-right"></i>
-                            </a>
-                        </div>
-                        <div class="showcase-wrapper">
-                            <button class="showcase-arrow showcase-prev" id="showcasePrev" aria-label="Previous slide">
-                                <i class="fas fa-chevron-left"></i>
-                            </button>
-                            <div class="showcase-viewport" id="showcaseViewport">
-                                <div class="showcase-track" id="showcaseTrack"></div>
-                            </div>
-                            <button class="showcase-arrow showcase-next" id="showcaseNext" aria-label="Next slide">
-                                <i class="fas fa-chevron-right"></i>
-                            </button>
-                        </div>
-                        <div class="showcase-dots" id="showcaseDots"></div>
-                    </div>
+                
+                <!-- Compact Feature Cards -->
+<!-- Feature Cards Section -->
+<section class="features-section" id="features">
+    <div class="container">
+        <div class="section-title">
+            <h2>Features</h2>
+            <p>Premium academic resources curated by top-performing students</p>
+            <p class="features-click-hint"><i class="fas fa-hand-pointer"></i> Tap any card to open the feature</p>
+        </div>
+        
+        <div class="compact-features-grid">
+            <!-- Feature Card 1 -->
+             <div class="feature-card feature-card--disabled" role="button" aria-disabled="true" title="Map is coming soon">
+                <span class="upcoming-tag">Upcoming</span>
+                <div class="feature-icon">
+                    <i class="fas fa-map-marked-alt"></i>
+                </div>
+                <h3>Campus Map</h3>
+                <p>Interactive VIT Bhopal campus map with building locations</p>
+                <div class="access-now">
+                    <span>Coming Soon</span>
+                    <i class="fas fa-clock"></i>
                 </div>
             </div>
+            
+            
+             <a class="feature-card" href="features/ttmaker/ttmaker1.html?sidebar=active" title="Open Timetable Maker" aria-label="Open Timetable Maker">
+                 <div class="feature-icon">
+                     <i class="fas fa-calendar-alt"></i>
+                 </div>
+                 <h3>Timetable Maker</h3>
+                 <p>Custom study schedules</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
 
-            <!-- Stats + Sign-in centered below both columns -->
-            <div class="hero-bottom">
-                <div class="stats">
-                    <div class="stat-item">
-                        <div class="stat-number">97</div>
-                        <div class="stat-label">% Success Rate</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">9+</div>
-                        <div class="stat-label">Avg. GPA</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-number">500+</div>
-                        <div class="stat-label">Students</div>
-                    </div>
-                </div>
-                <div class="auth-section">
-                    <button id="customGoogleSignIn" class="custom-google-btn">
-                        <svg class="google-icon" viewBox="0 0 24 24">
-                            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
-                            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-                        </svg>
-                        Sign in with Google
-                    </button>
-                    <div class="auth-note">
-                        <i class="fas fa-university"></i>
-                        <div class="auth-note-content">
-                            <strong>Exclusive for VIT Bhopal University students</strong>
-                            <br>
-                            <span>Please use your <strong>@vitbhopal.ac.in</strong> Google account to sign in</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
+             <a class="feature-card" href="features/attendance/attendance.html?sidebar=active" title="Open Attendance Calculator" aria-label="Open Attendance Calculator">
+                 <div class="feature-icon">
+                     <i class="fas fa-percent"></i>
+                 </div>
+                 <h3>Attendance Calculator</h3>
+                 <p>Track and predict your attendance across all subjects</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+             <!-- Repeat for other 7 features with unique icons -->
+             <a class="feature-card" href="features/mess-menu/mess.html?sidebar=active" title="Open Mess Menus" aria-label="Open Mess Menus">
+                 <div class="feature-icon">
+                     <i class="fas fa-utensils"></i>
+                 </div>
+                 <h3>Mess Menus</h3>
+                 <p>Weekly menus for all campus messes and canteens</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+             <a class="feature-card" href="features/gpa-calculator/cgpa.html?sidebar=active" title="Open CGPA Calculator" aria-label="Open CGPA Calculator">
+                 <div class="feature-icon">
+                     <i class="fas fa-graduation-cap"></i>
+                 </div>
+                 <h3>CGPA Calculator</h3>
+                 <p>Calculate and project your CGPA semester by semester</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+
+             <a class="feature-card" href="features/faculty/faculty.html?sidebar=active" title="Open Faculty Info" aria-label="Open Faculty Info">
+                 <div class="feature-icon">
+                     <i class="fas fa-chalkboard-teacher"></i>
+                 </div>
+                 <h3>Faculty Info</h3>
+                 <p>Browse faculty profiles and contact details at VIT Bhopal</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+
+             <a class="feature-card" href="features/club/club.html" title="Open Club Info" aria-label="Open Club Info">
+                 <div class="feature-icon">
+                     <i class="fas fa-users"></i>
+                 </div>
+                 <h3>Club Info</h3>
+                 <p>Browse and manage all college clubs</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+
+             <a class="feature-card" href="features/event/event.html?sidebar=active" title="Open Events" aria-label="Open Events">
+                 <div class="feature-icon">
+                     <i class="fas fa-calendar-check"></i>
+                 </div>
+                 <h3>Events</h3>
+                 <p>Latest campus events, fests, and announcements</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+
+
+             <a class="feature-card" href="features/marketplace/market.html?sidebar=active" title="Open Marketplace" aria-label="Open Marketplace">
+                 <div class="feature-icon">
+                     <i class="fas fa-book-open"></i>
+                 </div>
+                 <h3>Marketplace</h3>
+                 <p>Premium notes and resources from 9-pointer students</p>
+                 <div class="access-now">
+                     <span>Access Now</span>
+                     <i class="fas fa-arrow-right"></i>
+                 </div>
+             </a>
+        </div>
+    </div>
+</section>            </div>
         </div>
     </section>
 
@@ -236,64 +331,64 @@
 <section class="why-join" id="why-join">
     <div class="container">
         <div class="section-title centered">
-            <h2>Why Students Actually Use This</h2>
-            <p>Six things that make a real difference when exams are two weeks away</p>
+            <h2>Why Join Scholars Stack?</h2>
+            <p>Premium benefits for academic excellence at VIT Bhopal</p>
         </div>
-
+        
         <div class="benefits-container">
             <div class="benefit-row">
                 <div class="benefit-card">
                     <div class="benefit-icon">
                         <i class="fas fa-star"></i>
                     </div>
-                    <h3>Notes from 9-pointers</h3>
-                    <p>Handwritten notes, slides & PYQs from students who scored 9.2+ in the same subjects</p>
+                    <h3>Elite Materials</h3>
+                    <p>Study resources from 9-pointer students</p>
                 </div>
                 <div class="benefit-card">
                     <div class="benefit-icon">
-                        <i class="fas fa-layer-group"></i>
+                        <i class="fas fa-book"></i>
                     </div>
-                    <h3>Branch-wise Content</h3>
-                    <p>Subject notes filtered by your branch — CSE, ECE, MECH, AI, and more</p>
+                    <h3>Curated Resources</h3>
+                    <p>Perfectly organized for every course</p>
                 </div>
                 <div class="benefit-card">
                     <div class="benefit-icon">
                         <i class="fas fa-calculator"></i>
                     </div>
-                    <h3>Bunk & GPA Planner</h3>
-                    <p>Know exactly how many classes you can skip and still hit your target CGPA</p>
+                    <h3>Smart Calculators</h3>
+                    <p>CGPA and attendance trackers</p>
                 </div>
             </div>
-
+            
             <div class="benefit-row">
                 <div class="benefit-card">
                     <div class="benefit-icon">
-                        <i class="fas fa-calendar-alt"></i>
+                        <i class="fas fa-user-graduate"></i>
                     </div>
-                    <h3>Smart Timetable</h3>
-                    <p>Build a personalized study schedule that actually fits your life, not just your syllabus</p>
+                    <h3>Personalized Guidance</h3>
+                    <p>Study recommendations tailored for you</p>
                 </div>
                 <div class="benefit-card">
                     <div class="benefit-icon">
-                        <i class="fas fa-utensils"></i>
+                        <i class="fas fa-headset"></i>
                     </div>
-                    <h3>Campus Life Tools</h3>
-                    <p>Mess menus, faculty contacts, club listings, and events — no more hunting for info</p>
+                    <h3>Priority Support</h3>
+                    <p>Direct help from top students</p>
                 </div>
                 <div class="benefit-card">
                     <div class="benefit-icon">
                         <i class="fas fa-chart-line"></i>
                     </div>
-                    <h3>Module-by-Module</h3>
-                    <p>Every subject broken down by module so you study what matters, skip what doesn't</p>
+                    <h3>Exam Strategies</h3>
+                    <p>Proven techniques for better scores</p>
                 </div>
             </div>
-
+            
             <div class="benefit-cta">
-                <h3>500+ VITB students already using it this semester</h3>
-                <p>Average GPA jump: +1.2 points in the first semester after joining</p>
+                <h3>Join hundreds of VITB students achieving academic excellence</h3>
+                <p>Average GPA increase: 1.2 points within first semester</p>
                 <a href="https://chat.whatsapp.com/GBLnFekrdLGCfW2Vc4MnUc?mode=ac_c" class="btn btn-primary1">
-                    <i class="fas fa-whatsapp"></i> Join the Community
+                    <i class="fas fa-rocket"></i> Join Elite Students
                 </a>
             </div>
         </div>
@@ -305,46 +400,40 @@
     <section id="testimonials" class="testimonials">
         <div class="container">
             <div class="section-title">
-                <h2>What Students Actually Said</h2>
-                <p>Real words from real students — no PR polish, just honest feedback</p>
+                <h2>Student Success Stories</h2>
+                <p>Hear from VITB students who transformed their academic journey</p>
             </div>
             <div class="testimonial-grid">
                 <div class="testimonial-card">
-                    <div class="t-stars">★★★★★</div>
                     <div class="testimonial-content">
-                        <p>Was drowning in notes and random YouTube videos. The curated stuff saved me SO much time — explanations that actually made sense. Timetable feature? Lifesaver. Went from barely passing to A- in one semester.</p>
+                        <p>Honestly, I was drowning in notes and random YouTube videos before this. Your curated stuff saved me SO much time – finally found explanations that actually made sense! The timetable feature? Lifesaver. Went from barely passing to an A- in organic chem. Can't believe I waited this long.</p>
                     </div>
                     <div class="testimonial-author">
-                        <div class="author-avatar">PP</div>
                         <div class="author-info">
                             <h4>Parth Patel</h4>
-                            <p>CSE 3rd Year &nbsp;·&nbsp; GPA: 9.16</p>
+                            <p>CSE 3rd Year | GPA: 9.16</p>
                         </div>
                     </div>
                 </div>
                 <div class="testimonial-card">
-                    <div class="t-stars">★★★★★</div>
                     <div class="testimonial-content">
-                        <p>Skeptical at first — but these aren't just summaries. Structured like a tutor planned them. Paired with the timetable tool I finally stopped cramming. Went from B's to straight A's this semester.</p>
+                        <p>I was skeptical about 'bought notes' but wow. These aren't just summaries – they're structured like a tutor planned them. Paired with the timetable tool? Finally stopped cramming. Went from B's to straight A's this semester. Seriously, if you're struggling to organize, just try it.</p>
                     </div>
                     <div class="testimonial-author">
-                        <div class="author-avatar">PS</div>
                         <div class="author-info">
                             <h4>Priyanshu Sharma</h4>
-                            <p>AI 2nd Year &nbsp;·&nbsp; GPA: 8.89</p>
+                            <p>AI 2nd Year | GPA: 8.89</p>
                         </div>
                     </div>
                 </div>
                 <div class="testimonial-card">
-                    <div class="t-stars">★★★★★</div>
                     <div class="testimonial-content">
-                        <p>Fluid dynamics notes + linked videos — explained what my prof couldn't. Attendance calculator was low-key genius. Actually had time to breathe between labs. 10/10 for any overloaded eng student.</p>
+                        <p>Dude, the fluid dynamics notes + linked videos? Spot on. Explained concepts my prof couldn't. But the attendance calculator was low-key genius – took so much stress off my shoulders. Actually had time to breathe between labs. 10/10 would recommend for any overloaded eng student.</p>
                     </div>
                     <div class="testimonial-author">
-                        <div class="author-avatar">SP</div>
                         <div class="author-info">
                             <h4>Sonu Pastagia</h4>
-                            <p>CSE 3rd Year &nbsp;·&nbsp; GPA: 9.23</p>
+                            <p>CSE 3th Year | GPA: 9.23</p>
                         </div>
                     </div>
                 </div>
@@ -356,11 +445,12 @@
     <section class="cta">
         <div class="container">
             <div class="cta-content">
-                <h2>Your GPA won't fix itself.</h2>
-                <p>Every semester, VITB students use Scholars Stack to cut prep time, hit their target CGPA, and actually understand what they're studying. Start today — it's free to explore.</p>
+                <h2>Ready to Transform Your Academic Journey?</h2>
+                <p>Join hundreds of VITB students who are using our premium resources to maximize their academic performance and achieve their GPA goals.</p>
                 <a href="features/marketplace/market.html?sidebar=active" class="btn btn-primary btn-light">
-                    <i class="fas fa-book-open"></i> Browse the Marketplace
+                    <i class="fas fa-rocket"></i> Get Started Now
                 </a>
+                <p class="cta-note" style="margin-top: 20px; font-size: 0.9rem;">Average GPA increase: 1.2 points within first semester</p>
             </div>
         </div>
     </section>
@@ -368,57 +458,49 @@
     <!-- Footer -->
     <footer>
         <div class="container">
-            <div class="footer-content footer-content--3col">
-
-                <!-- Brand -->
+            <div class="footer-content">
                 <div class="footer-column">
-                    <div class="footer-brand">
-                        <img src="features/images/logo1.png" alt="Scholars Stack" class="footer-logo">
-                        <span class="footer-brand-name">Scholars <span>Stack</span></span>
-                    </div>
-                    <p>Built by VITB students, for VITB students — real notes, real results, no filler.</p>
+                    <h3>Scholars Stack</h3>
+                    <p>Providing premium academic resources curated by top-performing students to help you excel in your courses.</p>
                     <div class="social-links">
-                        <a href="https://instagram.com/vitbsmashers" target="_blank" rel="noopener" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
-                        <a href="https://chat.whatsapp.com/GBLnFekrdLGCfW2Vc4MnUc?mode=ac_c" target="_blank" rel="noopener" aria-label="WhatsApp"><i class="fab fa-whatsapp"></i></a>
-                        <a href="mailto:vitbsmashers@gmail.com" aria-label="Email"><i class="fas fa-envelope"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-whatsapp"></i></a>
                     </div>
                 </div>
-
-                <!-- Quick Links -->
                 <div class="footer-column">
                     <h3>Quick Links</h3>
                     <ul>
-                        <li><a href="features/marketplace/market.html?sidebar=active"><i class="fas fa-book-open"></i> Notes Marketplace</a></li>
-                        <li><a href="https://chat.whatsapp.com/GBLnFekrdLGCfW2Vc4MnUc?mode=ac_c" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> Join Community</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Home</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Marketplace</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> My Courses</a></li>
+                        <li><a href="features/gpa-calculator/cgpa.html?sidebar=active"><i class="fas fa-chevron-right"></i> CGPA Calculator</a></li>
+                        <li><a href="features/marketplace/market.html?sidebar=active"><i class="fas fa-chevron-right"></i> Marketplace</a></li>
                     </ul>
                 </div>
-
-                <!-- Contact -->
+                <div class="footer-column">
+                    <h3>Resources</h3>
+                    <ul>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Handwritten Notes</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Teacher's Materials</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Previous Year Papers</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Video Resources</a></li>
+                        <li><a href="#"><i class="fas fa-chevron-right"></i> Timetable Maker</a></li>
+                    </ul>
+                </div>
                 <div class="footer-column">
                     <h3>Contact</h3>
-                    <ul class="footer-contact-list">
-                        <li>
-                            <a href="mailto:vitbsmashers@gmail.com">
-                                <i class="fas fa-envelope"></i>
-                                <span>vitbsmashers@gmail.com</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="tel:+917984182948">
-                                <i class="fas fa-phone"></i>
-                                <span>+91 79841 82948</span>
-                            </a>
-                        </li>
-                        <li class="footer-address">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <span>VIT Bhopal University<br>Bhopal–Indore Highway, MP</span>
-                        </li>
+                    <ul>
+                        <li><i class="fas fa-envelope"></i> vitbsmashers@gmail.com</li>
+                        <li><i class="fas fa-phone"></i> +91 7984182948</li>
+                        <li><i class="fas fa-map-marker-alt"></i> VIT Bhopal Campus</li>
+                        <li>Bhopal-Indore Highway</li>
+                        <li>Madhya Pradesh</li>
                     </ul>
                 </div>
-
             </div>
             <div class="copyright">
-                <p>&copy; 2025 Scholars Stack &nbsp;·&nbsp; All Rights Reserved</p>
+                <p>&copy; 2025 Scholars Stack. All Rights Reserved.</p>
             </div>
         </div>
     </footer>
@@ -429,168 +511,70 @@
     <script src="preload-manager.js"></script>
     <script src="feature-loader.js"></script>
     <script>
-        const SUPABASE_URL      = window.ENV?.SUPABASE_URL;
+        const SUPABASE_URL     = window.ENV?.SUPABASE_URL;
         const SUPABASE_ANON_KEY = window.ENV?.SUPABASE_ANON_KEY;
-        const supabaseClient    = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient   = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         document.getElementById('googleClientIdMeta')?.setAttribute('content', window.ENV?.GOOGLE_CLIENT_ID || '');
 
-        /* ── Google Sign-In — always shows the standard button ──────────── */
         function initGoogleSignIn() {
-            const btn = document.getElementById('customGoogleSignIn');
-            if (!btn) return;
-
-            btn.addEventListener('click', async function (e) {
-                e.preventDefault();
-                e.stopPropagation();
-                if (!supabaseClient) {
-                    alert('Authentication not ready. Please refresh the page.');
-                    return;
-                }
-                btn.disabled = true;
-                btn.innerHTML = '<i class="fas fa-spinner fa-spin" style="font-size:1.1rem;margin-right:8px"></i> Signing in…';
-                try {
+            const customButton = document.getElementById('customGoogleSignIn');
+            if (customButton) {
+                customButton.addEventListener('click', async function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!supabaseClient) {
+                        alert('Authentication not ready. Please refresh the page.');
+                        return;
+                    }
+                    // Use current origin so localhost stays on localhost,
+                    // and production stays on production — no redirect URL mismatch.
                     await supabaseClient.auth.signInWithOAuth({
                         provider: 'google',
                         options: {
                             redirectTo: `${window.location.origin}/auth/callback`,
                         },
                     });
-                } catch (_) {
-                    btn.disabled = false;
-                    btn.innerHTML = '<svg class="google-icon" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>Sign in with Google';
-                }
-            });
+                });
+            }
         }
 
-        /* ── Toast helper ────────────────────────────────────────────────── */
         function showToast(message, type = 'info') {
-            document.querySelectorAll('.auth-toast').forEach(t => t.remove());
+            // Remove existing toasts
+            const existingToasts = document.querySelectorAll('.auth-toast');
+            existingToasts.forEach(toast => toast.remove());
+
+            // Create new toast
             const toast = document.createElement('div');
             toast.className = `auth-toast ${type}`;
-            toast.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : 'info-circle'}"></i><span>${message}</span>`;
+            toast.innerHTML = `
+                <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-triangle' : type === 'warning' ? 'exclamation-triangle' : 'info-circle'}"></i>
+                <span>${message}</span>
+            `;
+
             document.body.appendChild(toast);
-            setTimeout(() => toast.classList.add('show'), 100);
-            setTimeout(() => { toast.classList.remove('show'); setTimeout(() => toast.remove(), 300); }, 4000);
+
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+
+            // Auto-hide after 4 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, 4000);
         }
 
-        document.addEventListener('DOMContentLoaded', initGoogleSignIn);
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', () => {
+            initGoogleSignIn();
+        });
     </script>
     <script src="script.js"></script>
-    <script src="interactive.js"></script>
-    <script>
-    // ===== Notes Showcase Slider =====
-    (function () {
-        var COURSES = [
-            { id: 'CSE2002', title: 'Data Structures and Algorithms', image: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?auto=format&fit=crop&w=600&q=80', price: '₹499', desc: 'Complete DSA notes with solved problems and PYQs' },
-            { id: 'CSA2001', title: 'Fundamentals in AI and ML', image: 'https://images.unsplash.com/photo-1581094794329-16d1f0d22b6c?auto=format&fit=crop&w=600&q=80', price: '₹499', desc: 'AI & ML concepts with handwritten notes and reference PDFs' },
-            { id: 'MAT2002', title: 'Discrete Mathematics & Graph Theory', image: 'https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=600&q=80', price: '₹499', desc: 'Logic, graph theory, and combinatorics with PYQs included' },
-            { id: 'PHY1001', title: 'Engineering Physics', image: 'https://images.unsplash.com/photo-1507413245164-6160d8298b31?auto=format&fit=crop&w=600&q=80', price: '₹499', desc: 'Comprehensive physics notes by 9-pointer students' },
-            { id: 'EEE1001', title: 'Electric Circuits and Systems', image: 'https://images.unsplash.com/photo-1593642632599-e993fe1d1eb8?auto=format&fit=crop&w=600&q=80', price: '₹499', desc: 'Circuit analysis, network theorems, and solved examples' },
-            { id: 'CCA2002', title: 'Cloud Architecture and Services', image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&w=600&q=80', price: '₹499', desc: 'AWS, Azure, cloud models, and deployment architecture notes' },
-            { id: 'CHY1001', title: 'Engineering Chemistry', image: 'https://images.unsplash.com/photo-1532094349884-543bc11b234d?auto=format&fit=crop&w=600&q=80', price: '₹499', desc: 'Chemistry fundamentals with lab notes and module slides' },
-            { id: 'HUM1002', title: 'Emotional Intelligence', image: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?auto=format&fit=crop&w=600&q=80', price: '₹499', desc: 'Self-awareness, empathy, leadership, and PYQ bank' },
-            { id: 'ECE2002', title: 'Digital Logic Design', image: 'https://images.unsplash.com/photo-1562408590-e32931084e23?auto=format&fit=crop&w=600&q=80', price: '₹499', desc: 'Gates, flip-flops, state machines, and circuit design' },
-            { id: 'MAT3003', title: 'Probability, Statistics & Reliability', image: 'https://images.unsplash.com/photo-1596495577886-d920f1fb7238?auto=format&fit=crop&w=600&q=80', price: '₹499', desc: '6 PYQ papers, hypothesis testing, and regression analysis' }
-        ];
-
-        var market = 'features/marketplace/market.html?sidebar=active';
-        var viewport = document.getElementById('showcaseViewport');
-        var track = document.getElementById('showcaseTrack');
-        var dotsEl = document.getElementById('showcaseDots');
-        var prevBtn = document.getElementById('showcasePrev');
-        var nextBtn = document.getElementById('showcaseNext');
-
-        if (!track || !viewport) return;
-
-        // Responsive card width: 2 cards fill the viewport on desktop, 1 on mobile
-        function setCardWidth() {
-            var vw = viewport.clientWidth;
-            var perView = vw >= 520 ? 2 : 1.15;
-            var gap = 14;
-            var gapCount = Math.floor(perView) - 1;
-            var cardW = Math.floor((vw - gapCount * gap) / perView);
-            document.documentElement.style.setProperty('--showcase-card-w', cardW + 'px');
-        }
-        setCardWidth();
-        window.addEventListener('resize', setCardWidth);
-
-        // Build cards
-        COURSES.forEach(function (c, i) {
-            var a = document.createElement('a');
-            a.href = market;
-            a.className = 'showcase-card';
-            a.setAttribute('aria-label', 'View ' + c.title + ' in Marketplace');
-            a.innerHTML =
-                '<img class="showcase-card-img" src="' + c.image + '" alt="' + c.title + '" loading="' + (i < 3 ? 'eager' : 'lazy') + '">' +
-                '<div class="showcase-card-overlay"></div>' +
-                '<div class="showcase-card-badges">' +
-                    '<span class="showcase-code-badge">' + c.id + '</span>' +
-                    '<span class="showcase-price-badge">' + c.price + '</span>' +
-                '</div>' +
-                '<div class="showcase-card-body">' +
-                    '<h3 class="showcase-card-title">' + c.title + '</h3>' +
-                    '<p class="showcase-card-desc">' + c.desc + '</p>' +
-                    '<span class="showcase-card-cta">Get Notes <i class="fas fa-arrow-right"></i></span>' +
-                '</div>';
-            track.appendChild(a);
-        });
-
-        // Build dots
-        COURSES.forEach(function (_, i) {
-            var dot = document.createElement('button');
-            dot.className = 'showcase-dot' + (i === 0 ? ' active' : '');
-            dot.setAttribute('aria-label', 'Go to slide ' + (i + 1));
-            dot.addEventListener('click', function () { scrollToIndex(i); });
-            dotsEl.appendChild(dot);
-        });
-
-        function cardStep() {
-            var first = track.querySelector('.showcase-card');
-            if (!first) return 309;
-            var vw = viewport.clientWidth;
-            var perView = vw >= 520 ? 2 : 1;
-            return Math.floor((vw - (Math.floor(perView) - 1) * 14) / perView) + 14;
-        }
-
-        function scrollToIndex(i) {
-            viewport.scrollTo({ left: i * cardStep(), behavior: 'smooth' });
-        }
-
-        function updateDots() {
-            var idx = Math.round(viewport.scrollLeft / cardStep());
-            var dots = dotsEl.querySelectorAll('.showcase-dot');
-            dots.forEach(function (d, i) { d.classList.toggle('active', i === idx); });
-        }
-
-        prevBtn.addEventListener('click', function () {
-            viewport.scrollBy({ left: -cardStep() * 2, behavior: 'smooth' });
-        });
-        nextBtn.addEventListener('click', function () {
-            viewport.scrollBy({ left: cardStep() * 2, behavior: 'smooth' });
-        });
-
-        viewport.addEventListener('scroll', updateDots, { passive: true });
-
-        var timer;
-        function startAuto() {
-            timer = setInterval(function () {
-                var max = viewport.scrollWidth - viewport.clientWidth;
-                if (viewport.scrollLeft >= max - 5) {
-                    viewport.scrollTo({ left: 0, behavior: 'smooth' });
-                } else {
-                    viewport.scrollBy({ left: cardStep(), behavior: 'smooth' });
-                }
-            }, 3600);
-        }
-        function stopAuto() { clearInterval(timer); }
-
-        viewport.addEventListener('mouseenter', stopAuto);
-        viewport.addEventListener('mouseleave', startAuto);
-        viewport.addEventListener('touchstart', stopAuto, { passive: true });
-        viewport.addEventListener('touchend', startAuto, { passive: true });
-
-        startAuto();
-    })();
-    </script>
 </body>
 </html>

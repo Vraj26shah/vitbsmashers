@@ -724,28 +724,7 @@
             max-width: 400px;
         }
 
-        /* ── Folder expand animation ── */
-        .folder-files {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.22s ease;
-        }
-        .folder-files.expanded {
-            max-height: 3000px;
-            transition: max-height 0.32s ease;
-        }
-
-        /* ── Mobile backdrop overlay ── */
-        .mobile-sidebar-overlay {
-            display: none;
-            position: absolute;
-            inset: 0;
-            background: rgba(0,0,0,0.55);
-            z-index: 49;
-        }
-        .mobile-sidebar-overlay.active { display: block; }
-
-        /* ── Responsive ── */
+        /* Responsive */
         @media (max-width: 768px) {
             :root {
                 --sidebar-width: 280px;
@@ -757,23 +736,30 @@
                 left: calc(-1 * var(--sidebar-width));
                 height: 100%;
                 z-index: 50;
-                background: rgba(8, 16, 28, 0.97);
-                backdrop-filter: blur(14px);
-                -webkit-backdrop-filter: blur(14px);
-                transition: left 0.25s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                transition: none !important;
                 animation: none !important;
-                border-right: 1px solid rgba(52,152,219,0.3);
             }
 
             .file-explorer.mobile-open {
                 left: 0;
-                box-shadow: 4px 0 24px rgba(0,0,0,0.5);
             }
 
-            .current-file-name { display: none; }
-            .explorer-header { padding: 0 12px; gap: 10px; }
-            .course-badge { display: none; }
-            .resize-handle { display: none; }
+            .current-file-name {
+                display: none;
+            }
+
+            .explorer-header {
+                padding: 0 12px;
+                gap: 10px;
+            }
+
+            .course-badge {
+                display: none;
+            }
+
+            .resize-handle {
+                display: none;
+            }
         }
 
         /* Protection overlay when tab hidden — handled by #protection-overlay */
@@ -821,9 +807,6 @@
 
     <!-- Main Container -->
     <div class="explorer-container">
-        <!-- Mobile backdrop — tap to close sidebar -->
-        <div class="mobile-sidebar-overlay" id="mobileSidebarOverlay" onclick="closeMobileSidebar()"></div>
-
         <!-- File Explorer Sidebar -->
         <div class="file-explorer" id="fileExplorer">
             <div class="explorer-title">
@@ -857,9 +840,9 @@
 
             <!-- Placeholder -->
             <div class="viewer-placeholder" id="viewerPlaceholder">
-                <i class='bx bxs-file-pdf' style="color:#e74c3c;opacity:0.6;"></i>
-                <h2>Select a file to read</h2>
-                <p>Open the <strong style="color:#58beff;">Files</strong> panel on the left, expand a folder, and tap any PDF to start reading.</p>
+                <i class='bx bx-file'></i>
+                <h2>Select a File</h2>
+                <p>Choose a file from the explorer to view its contents</p>
             </div>
 
             <!-- PDF Viewer (dedicated focus region; not browser page zoom) -->
@@ -1133,27 +1116,33 @@
         }
 
         async function openFile(fileId, fileName) {
-            // Mark active in tree
-            document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
-            const clicked = document.querySelector(`[data-file-id="${fileId}"]`);
-            if (clicked) clicked.classList.add('active');
+            // Update active state
+            document.querySelectorAll('.file-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            const clickedItem = document.querySelector(`[data-file-id="${fileId}"]`);
+            if (clickedItem) {
+                clickedItem.classList.add('active');
+            }
 
-            // Update header filename
+            // Update header
             document.getElementById('current-file-name').textContent = `/ ${fileName}`;
 
-            // On mobile: close sidebar so the PDF is visible
-            if (isMobile()) closeMobileSidebar();
-
-            // Hide placeholder, show loading
+            // Hide placeholder and show loading
             document.getElementById('viewerPlaceholder').style.display = 'none';
             document.getElementById('pdf-viewer-container').classList.remove('active');
             document.getElementById('pdf-viewer-shell')?.classList.remove('pdf-viewer-shell--active');
-            showLoading(`Loading ${fileName}…`);
+            showLoading(`Loading ${fileName}...`);
 
             try {
                 const token = getToken();
                 const streamUrl = `${getApiBase()}/courses/${courseId}/notes/${fileId}/stream`;
                 await loadPdf(streamUrl, fileName, token);
+
+                if (window.innerWidth <= 768) {
+                    document.getElementById('fileExplorer').classList.remove('mobile-open');
+                }
+
             } catch (error) {
                 console.error('Failed to open file:', error);
                 hideLoading();
@@ -1659,32 +1648,17 @@
             });
         }
 
-        // ── Sidebar toggle ────────────────────────────────────────────────────────
-        function isMobile() { return window.innerWidth <= 768; }
-
-        function closeMobileSidebar() {
-            document.getElementById('fileExplorer').classList.remove('mobile-open');
-            document.getElementById('mobileSidebarOverlay').classList.remove('active');
-            document.getElementById('sidebarToggle').classList.remove('sidebar-open');
-        }
-
+        // ── Sidebar toggle — instant width only; PDF reflow via ResizeObserver (debounced), no extra rAF render
         function toggleSidebar() {
-            const sidebar  = document.getElementById('fileExplorer');
-            const handle   = document.getElementById('resizeHandle');
-            const btn      = document.getElementById('sidebarToggle');
-            const overlay  = document.getElementById('mobileSidebarOverlay');
-
-            if (isMobile()) {
-                const opening = !sidebar.classList.contains('mobile-open');
-                sidebar.classList.toggle('mobile-open', opening);
-                overlay.classList.toggle('active', opening);
-                btn.classList.toggle('sidebar-open', opening);
-            } else {
-                const collapsed = sidebar.classList.toggle('collapsed');
-                handle.classList.toggle('hidden', collapsed);
-                btn.classList.toggle('sidebar-open', !collapsed);
-                localStorage.setItem('course-explorer-sidebar-collapsed', collapsed ? '1' : '0');
-            }
+            const sidebar = document.getElementById('fileExplorer');
+            const handle  = document.getElementById('resizeHandle');
+            const btn     = document.getElementById('sidebarToggle');
+            const collapsed = sidebar.classList.toggle('collapsed');
+            handle.classList.toggle('hidden', collapsed);
+            btn.classList.toggle('sidebar-open', !collapsed);
+            document.getElementById('sidebarToggleIcon').className  = collapsed ? 'bx bx-menu' : 'bx bx-menu';
+            document.getElementById('sidebarToggleLabel').textContent = collapsed ? 'Files' : 'Files';
+            localStorage.setItem('course-explorer-sidebar-collapsed', collapsed ? '1' : '0');
         }
 
         let _protectionBound = false;
@@ -1813,21 +1787,12 @@
 
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            if (!isMobile()) {
-                const isCollapsed = localStorage.getItem('course-explorer-sidebar-collapsed') === '1';
-                if (isCollapsed) {
-                    document.getElementById('fileExplorer').classList.add('collapsed');
-                    document.getElementById('resizeHandle').classList.add('hidden');
-                    document.getElementById('sidebarToggle').classList.remove('sidebar-open');
-                }
+            const isCollapsed = localStorage.getItem('course-explorer-sidebar-collapsed') === '1';
+            if (isCollapsed) {
+                document.getElementById('fileExplorer').classList.add('collapsed');
+                document.getElementById('resizeHandle').classList.add('hidden');
+                document.getElementById('sidebarToggle').classList.remove('sidebar-open');
             }
-            // If window resizes from mobile → desktop, clean up mobile state
-            window.addEventListener('resize', () => {
-                if (!isMobile()) {
-                    document.getElementById('fileExplorer').classList.remove('mobile-open');
-                    document.getElementById('mobileSidebarOverlay').classList.remove('active');
-                }
-            });
             initPdfViewerShell();
             loadCourseModules();
         });
